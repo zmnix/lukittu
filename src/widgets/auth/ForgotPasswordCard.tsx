@@ -1,7 +1,7 @@
 'use client';
 import forgotPassword from '@/actions/auth/forgot-password';
 import ForgotPasswordSuccessModal from '@/components/auth/ForgotPasswordSuccessModal';
-import SubmitButton from '@/components/shared/SubmitButton';
+import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Card,
@@ -113,10 +113,9 @@ export default function ForgotPasswordCard() {
                   </FormItem>
                 )}
               />
-              <SubmitButton
-                label={t('auth.reset_password.send_reset_email')}
-                pending={pending}
-              />
+              <LoadingButton type="submit" pending={pending} className="w-full">
+                {t('auth.reset_password.send_reset_email')}
+              </LoadingButton>
             </form>
           </Form>
         </CardContent>

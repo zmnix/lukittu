@@ -1,7 +1,7 @@
 'use client';
 import { resetPassword } from '@/actions/auth/reset-password';
+import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
-import SubmitButton from '@/components/shared/SubmitButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -166,10 +166,13 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
                       </FormItem>
                     )}
                   />
-                  <SubmitButton
-                    label={t('auth.reset_password.reset_password')}
+                  <LoadingButton
+                    type="submit"
                     pending={pending}
-                  />
+                    className="w-full"
+                  >
+                    {t('auth.reset_password.reset_password')}
+                  </LoadingButton>
                 </form>
               </Form>
             </>

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
-import SubmitButton from '../shared/SubmitButton';
+import LoadingButton from '../shared/LoadingButton';
 
 const initialState = {
   message: '',
@@ -64,7 +64,9 @@ export default function ResendVerifyEmailModal({
             </DialogHeader>
             <DialogFooter>
               <form action={onClose}>
-                <SubmitButton label={t('general.close')} />
+                <LoadingButton type="submit" className="w-full">
+                  {t('general.close')}
+                </LoadingButton>
               </form>
             </DialogFooter>
           </>
@@ -78,10 +80,13 @@ export default function ResendVerifyEmailModal({
             </DialogHeader>
             <DialogFooter>
               <form onSubmit={onSubmit}>
-                <SubmitButton
-                  label={t('auth.verify_email.resend_email')}
+                <LoadingButton
+                  type="submit"
                   pending={pending}
-                />
+                  className="w-full"
+                >
+                  {t('auth.verify_email.resend_email')}
+                </LoadingButton>
               </form>
             </DialogFooter>
           </>

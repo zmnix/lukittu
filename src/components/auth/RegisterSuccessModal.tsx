@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useTranslations } from 'next-intl';
-import SubmitButton from '../shared/SubmitButton';
+import LoadingButton from '../shared/LoadingButton';
 
 interface RegisterSuccessModalProps {
   open: boolean;
@@ -35,7 +35,9 @@ export default function RegisterSuccessModal({
         </DialogHeader>
         <DialogFooter>
           <form action={onClose}>
-            <SubmitButton label={t('general.close')} />
+            <LoadingButton type="submit" className="w-full">
+              {t('general.close')}
+            </LoadingButton>
           </form>
         </DialogFooter>
       </DialogContent>

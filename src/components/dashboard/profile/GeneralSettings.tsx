@@ -1,4 +1,5 @@
 'use client';
+import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -128,7 +129,7 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
                   </Button>
                 </>
               ) : (
-                <Button
+                <LoadingButton
                   type="submit"
                   variant="secondary"
                   size="sm"
@@ -137,7 +138,7 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   {t('general.edit')}
-                </Button>
+                </LoadingButton>
               )}
             </div>
           </form>

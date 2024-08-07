@@ -3,7 +3,7 @@ import loginWithCredentials from '@/actions/auth/login';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import OauthLoginFailedccessModal from '@/components/auth/OauthLoginFailedModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
-import SubmitButton from '@/components/shared/SubmitButton';
+import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -182,7 +182,9 @@ export default function LoginCard() {
                   </FormItem>
                 )}
               />
-              <SubmitButton label={t('general.login')} pending={pending} />
+              <LoadingButton pending={pending} type="submit" className="w-full">
+                {t('general.login')}
+              </LoadingButton>
               <div className="space-y-4">
                 <div className="flex w-full items-center gap-4">
                   <Separator className="w-auto flex-grow" />

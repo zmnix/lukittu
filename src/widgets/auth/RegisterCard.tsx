@@ -3,8 +3,8 @@ import register from '@/actions/auth/register';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import RegisterSuccessModal from '@/components/auth/RegisterSuccessModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
+import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
-import SubmitButton from '@/components/shared/SubmitButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -217,10 +217,9 @@ export default function RegisterCard() {
                   </FormItem>
                 )}
               />
-              <SubmitButton
-                label={t('auth.register.button')}
-                pending={pending}
-              />
+              <LoadingButton type="submit" pending={pending} className="w-full">
+                {t('auth.register.button')}
+              </LoadingButton>
               <div className="space-y-4">
                 <div className="flex w-full items-center gap-4">
                   <Separator className="w-auto flex-grow" />

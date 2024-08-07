@@ -1,6 +1,6 @@
 'use client';
 import createTeam from '@/actions/teams/create-team';
-import SubmitButton from '@/components/shared/SubmitButton';
+import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Dialog,
   DialogContent,
@@ -98,14 +98,19 @@ export default function CreateTeamModal({
         </Form>
         <DialogFooter>
           <form action={onClose}>
-            <SubmitButton label={t('general.close')} variant="outline" />
+            <LoadingButton variant="outline" type="submit" className="w-full">
+              {t('general.close')}
+            </LoadingButton>
           </form>
           <div>
-            <SubmitButton
-              label={t('general.create')}
+            <LoadingButton
+              className="w-full"
+              type="submit"
               pending={pending}
               onClick={() => form.handleSubmit(onSubmit)()}
-            />
+            >
+              {t('general.create')}
+            </LoadingButton>
           </div>
         </DialogFooter>
       </DialogContent>

@@ -3,29 +3,30 @@ import { VariantProps } from 'class-variance-authority';
 import { Button, buttonVariants } from '../ui/button';
 import { LoadingSpinner } from './LoadingSpinner';
 
-interface SubmitButtonProps
+interface LoadingButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  label: string;
+  children: React.ReactNode;
   pending?: boolean;
+  size?: VariantProps<typeof buttonVariants>['size'];
   variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
-export default function SubmitButton({
-  label,
+export default function LoadingButton({
+  children,
   pending = false,
   variant = 'default',
   disabled = false,
+  size = 'default',
   ...props
-}: SubmitButtonProps) {
+}: LoadingButtonProps) {
   return (
     <Button
-      className="w-full"
       disabled={pending || disabled}
-      type="submit"
       variant={variant}
       {...props}
+      size={size}
     >
-      {pending ? <LoadingSpinner /> : label}
+      {pending ? <LoadingSpinner /> : children}
     </Button>
   );
 }

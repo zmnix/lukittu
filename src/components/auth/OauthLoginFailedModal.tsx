@@ -9,7 +9,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import SubmitButton from '../shared/SubmitButton';
+import LoadingButton from '../shared/LoadingButton';
 
 interface OauthLoginFailedModalProps {
   error: string;
@@ -53,7 +53,9 @@ export default function OauthLoginFailedccessModal({
         </DialogHeader>
         <DialogFooter>
           <form action={handleClose}>
-            <SubmitButton label={t('general.close')} />
+            <LoadingButton type="submit" className="w-full">
+              {t('general.close')}
+            </LoadingButton>
           </form>
         </DialogFooter>
       </DialogContent>
