@@ -20,7 +20,7 @@ export default async function DashboardLayout({
         <div className="max-w-full flex-1 bg-background">
           <MainArea>
             <Header session={session} />
-            <div className="p-10">{children}</div>
+            <div className="p-10 max-md:p-6">{children}</div>
           </MainArea>
         </div>
       </div>

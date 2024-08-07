@@ -35,6 +35,17 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
     },
   });
 
+  const handleCancel = () => {
+    setEdit(false);
+    form.reset();
+  };
+
+  const handleSubmit = () => {
+    console.log(form.getValues());
+  };
+
+  const isTouched = form.formState.isDirty || form.formState.isSubmitting;
+
   return (
     <Card>
       <CardHeader>
@@ -44,19 +55,24 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <div className="flex max-w-md flex-col gap-6">
-            <div className="flex h-10 items-center text-sm">
+          <form
+            className="flex max-w-lg flex-col gap-6"
+            onSubmit={form.handleSubmit(handleSubmit)}
+          >
+            <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
               <div className="w-1/3 font-semibold">{t('general.email')}</div>
               <div className="w-2/3">{user.email}</div>
             </div>
-            <div className="flex h-10 items-center text-sm">
-              <div className="w-1/3 font-semibold">{t('general.name')}</div>
+            <div className="flex min-h-10 items-start text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
+              <div className="flex h-full min-h-10 w-1/3 items-center font-semibold max-sm:h-auto max-sm:min-h-[auto]">
+                {t('general.name')}
+              </div>
               {edit ? (
                 <FormField
                   control={form.control}
                   name="fullName"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="w-2/3 max-sm:w-full">
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -65,11 +81,15 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
                   )}
                 />
               ) : (
-                <div className="w-2/3">{user.fullName}</div>
+                <div className="flex min-h-10 w-2/3 items-center max-sm:w-full">
+                  {user.fullName}
+                </div>
               )}
             </div>
-            <div className="flex h-10 items-center text-sm">
-              <div className="w-1/3 font-semibold">{t('general.password')}</div>
+            <div className="flex min-h-10 items-center text-sm max-sm:h-auto max-sm:flex-col max-sm:items-start max-sm:gap-2">
+              <div className="w-1/3 font-semibold max-sm:w-full">
+                {t('general.password')}
+              </div>
               {edit ? (
                 <Button
                   size="sm"
@@ -79,10 +99,10 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
                   {t('dashboard.profile.change_password')}...
                 </Button>
               ) : (
-                <div className="w-2/3">••••••••</div>
+                <div className="w-2/3 max-sm:w-full">••••••••</div>
               )}
             </div>
-            <div className="flex h-10 items-center text-sm">
+            <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
               <div className="w-1/3 font-semibold">
                 {t('dashboard.profile.login_provider')}
               </div>
@@ -92,35 +112,35 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
                 )}
               </div>
             </div>
-          </div>
-          <div className="mt-6 flex gap-2">
-            {edit ? (
-              <>
+            <div className="flex gap-2">
+              {edit ? (
+                <>
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleCancel}
+                  >
+                    {t('general.cancel')}
+                  </Button>
+                  <Button type="submit" size="sm" disabled={!isTouched}>
+                    {t('general.save')}
+                  </Button>
+                </>
+              ) : (
                 <Button
                   type="submit"
                   variant="secondary"
                   size="sm"
-                  onClick={() => setEdit(false)}
+                  className="flex items-center gap-1"
+                  onClick={() => setEdit(true)}
                 >
-                  {t('general.cancel')}
+                  <Edit className="mr-2 h-4 w-4" />
+                  {t('general.edit')}
                 </Button>
-                <Button type="submit" size="sm">
-                  {t('general.save')}
-                </Button>
-              </>
-            ) : (
-              <Button
-                type="submit"
-                variant="secondary"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={() => setEdit(true)}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                {t('general.edit')}
-              </Button>
-            )}
-          </div>
+              )}
+            </div>
+          </form>
         </Form>
       </CardContent>
     </Card>
