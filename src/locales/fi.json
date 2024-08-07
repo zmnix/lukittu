@@ -1,0 +1,137 @@
+{
+  "validation": {
+    "invalid_email": "Invalid email address!",
+    "invalid_token": "Invalid token.",
+    "user_not_found": "User not found.",
+    "email_already_verified": "Email already verified!",
+    "email_required": "Email is required!",
+    "password_required": "Password is required!",
+    "password_min_length": "Password must be at least 6 characters long!",
+    "password_uppercase": "Password must contain at least one uppercase letter!",
+    "password_lowercase": "Password must contain at least one lowercase letter!",
+    "password_number": "Password must contain at least one number!",
+    "password_special": "Password must contain at least one special character!",
+    "full_name_required": "Full name is required!",
+    "full_name_min_length": "Full name must be at least 3 characters long!",
+    "full_name_max_length": "Full name must be at most 255 characters long!",
+    "terms_of_service_required": "You must agree to the terms of service and privacy policy!",
+    "password_confirmation_required": "Password confirmation is required!",
+    "password_mismatch": "Passwords do not match!",
+    "token_required": "Token is required!",
+    "team_name_required": "Team name is required!",
+    "team_name_min_length": "Team name must be at least 3 characters long!",
+    "team_name_max_length": "Team name must be at most 255 characters long!",
+    "team_name_invalid": "Team name can only contain letters, numbers, spaces, and the following characters: - _"
+  },
+  "general": {
+    "error": "Error",
+    "email": "Email",
+    "full_name": "Full Name",
+    "password": "Password",
+    "or": "or",
+    "error_occurred": "An error occurred",
+    "login": "Login",
+    "close": "Close",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "back_to_login": "Back to login",
+    "continue_with_google": "Continue with Google",
+    "wrong_provider": "You have an account with a different provider! Please login with {provider}.",
+    "new_license": "New License",
+    "select_team": "Select team",
+    "search_team": "Search team...",
+    "no_team_found": "No teams found",
+    "sign_out": "Sign out",
+    "toggle_theme": "Toggle theme",
+    "switch_language": "Switch language",
+    "profile": "Profile",
+    "name": "Name",
+    "create": "Create"
+  },
+  "auth": {
+    "oauth": {
+      "server_error": "An error occurred while authenticating with the server. Please try again later.",
+      "unverified_email": "You have an unverified email attached to your {provider} account. Please verify your email first.",
+      "credentials": "email and password",
+      "google": "Google"
+    },
+    "login": {
+      "title": "Sign in to your account",
+      "description": "Enter your email and password to access your account.",
+      "forgot_password": "Forgot your password?",
+      "stay_signed_in": "Stay signed in",
+      "new_to_app": "New to Lukittu?",
+      "create_account": "Create an account",
+      "invalid_email_password": "Invalid email or password",
+      "login_failed": "Login failed"
+    },
+    "register": {
+      "title": "Create your Lukittu account",
+      "description": "Enter your details to create your account.",
+      "agree": "I agree to the",
+      "terms_of_service": "Terms of Service",
+      "privacy_policy": "Privacy Policy",
+      "and": "and",
+      "button": "Register",
+      "already_have_account": "Already have an account?",
+      "email_already_in_use": "This email is already in use!",
+      "email_sent_title": "Confirm your registration",
+      "email_sent_description": "We have sent a email verification mail to <strong>{email}</strong>. Please check your inbox spam folder. If you don't receive the email within a few minutes, you can try registering again."
+    },
+    "forgot_password": {
+      "title": "Forgot your password?",
+      "description": "Enter your email to reset your password.",
+      "remember_password": "Remember your password?",
+      "email_sent_title": "Password reset email sent",
+      "email_sent_description": "We have sent a password reset email to <strong>{email}</strong>. Please check your inbox spam folder. If you don't receive the email within a few minutes, you can try resetting your password again."
+    },
+    "reset_password": {
+      "title": "Reset your password",
+      "description": "Enter your new password below.",
+      "confirm_password": "Confirm Password",
+      "dont_want_to_reset": "Don't want to reset your password?",
+      "reset_password": "Reset password",
+      "send_reset_email": "Send reset email",
+      "reset_success_title": "Password reset successfully",
+      "reset_success_description": "Password reset successfully. You can now login with your new password."
+    },
+    "verify_email": {
+      "title": "Your email is not verified",
+      "description": "You haven't verified your email yet. Please check your inbox for the verification email. If you can't find it, you can resend it here.",
+      "verification_failed_title": "Email verification failed",
+      "verification_success_title": "Your email is now verified",
+      "verification_success": "Your email is now verified. You can now go back to the login page and login.",
+      "resend_email": "Resend email"
+    },
+    "resend_verify": {
+      "title": "We have resent the verification email",
+      "description": "We have resent a verification email to <strong>{email}</strong>. Please check your inbox and spam folder. If you don't receive the email within a few minutes, you can try registering again.",
+      "already_verified": "Your email is already verified"
+    },
+    "emails": {
+      "expired_link": "This link has expired.",
+      "sending_failed_title": "Sending verification email failed",
+      "sending_failed_description": "There was an unexpected error sending the email. Please try again later. If the problem persists, please contact support."
+    }
+  },
+  "dashboard": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "licenses": "Licenses",
+      "products": "Products",
+      "customers": "Customers",
+      "team": "Team",
+      "users": "Users",
+      "audit_log": "Audit Log",
+      "external_links": "External Links",
+      "documentation": "Documentation",
+      "discord": "Discord"
+    },
+    "teams": {
+      "create_team": "Create a team",
+      "create_team_info": "You can change the team name after creation and add additional information.",
+      "my_first_team_placeholder": "My first team"
+    }
+  }
+}
