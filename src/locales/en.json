@@ -47,7 +47,11 @@
     "switch_language": "Switch language",
     "profile": "Profile",
     "name": "Name",
-    "create": "Create"
+    "create": "Create",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "user": "User"
   },
   "auth": {
     "oauth": {
@@ -132,6 +136,10 @@
       "create_team": "Create a team",
       "create_team_info": "You can change the team name after creation and add additional information.",
       "my_first_team_placeholder": "My first team"
+    },
+    "profile": {
+      "change_password": "Change password",
+      "login_provider": "Login provider"
     }
   }
 }

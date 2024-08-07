@@ -8,7 +8,6 @@ import {
 } from '@/lib/validation/team/create-team-schema';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
-import { redirect, RedirectType } from 'next/navigation';
 
 export default async function createTeam({ name }: CreateTeamSchema) {
   const t = await getTranslations({ locale: getLanguage() });
@@ -25,10 +24,6 @@ export default async function createTeam({ name }: CreateTeamSchema) {
   }
 
   const session = await getSession({ user: true });
-
-  if (!session) {
-    redirect('/api/sign-out', RedirectType.replace);
-  }
 
   const createdTeam = await prisma.team.create({
     data: {

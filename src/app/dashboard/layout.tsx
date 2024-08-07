@@ -3,7 +3,6 @@ import MainArea from '@/components/dashboard/layout/MainArea';
 import { Sidebar } from '@/components/dashboard/layout/Sidebar';
 import { getSession } from '@/lib/utils/auth';
 import { SidebarProvider } from '@/providers/SidebarProvider';
-import { redirect, RedirectType } from 'next/navigation';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,10 +12,6 @@ export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   const session = await getSession({ user: { include: { teams: true } } });
-
-  if (!session) {
-    redirect('/api/sign-out', RedirectType.replace);
-  }
 
   return (
     <SidebarProvider>
