@@ -64,7 +64,11 @@ export default function ResendVerifyEmailModal({
             </DialogHeader>
             <DialogFooter>
               <form action={onClose}>
-                <LoadingButton type="submit" className="w-full">
+                <LoadingButton
+                  className="w-full"
+                  type="submit"
+                  variant="secondary"
+                >
                   {t('general.close')}
                 </LoadingButton>
               </form>
@@ -81,9 +85,9 @@ export default function ResendVerifyEmailModal({
             <DialogFooter>
               <form onSubmit={onSubmit}>
                 <LoadingButton
-                  type="submit"
-                  pending={pending}
                   className="w-full"
+                  pending={pending}
+                  type="submit"
                 >
                   {t('auth.verify_email.resend_email')}
                 </LoadingButton>

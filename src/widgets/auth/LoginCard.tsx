@@ -182,7 +182,7 @@ export default function LoginCard() {
                   </FormItem>
                 )}
               />
-              <LoadingButton pending={pending} type="submit" className="w-full">
+              <LoadingButton className="w-full" pending={pending} type="submit">
                 {t('general.login')}
               </LoadingButton>
               <div className="space-y-4">

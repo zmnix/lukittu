@@ -217,7 +217,7 @@ export default function RegisterCard() {
                   </FormItem>
                 )}
               />
-              <LoadingButton type="submit" pending={pending} className="w-full">
+              <LoadingButton className="w-full" pending={pending} type="submit">
                 {t('auth.register.button')}
               </LoadingButton>
               <div className="space-y-4">

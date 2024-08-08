@@ -53,7 +53,7 @@ export default function OauthLoginFailedccessModal({
         </DialogHeader>
         <DialogFooter>
           <form action={handleClose}>
-            <LoadingButton type="submit" className="w-full">
+            <LoadingButton className="w-full" type="submit" variant="secondary">
               {t('general.close')}
             </LoadingButton>
           </form>

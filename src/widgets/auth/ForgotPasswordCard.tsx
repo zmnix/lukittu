@@ -113,7 +113,7 @@ export default function ForgotPasswordCard() {
                   </FormItem>
                 )}
               />
-              <LoadingButton type="submit" pending={pending} className="w-full">
+              <LoadingButton className="w-full" pending={pending} type="submit">
                 {t('auth.reset_password.send_reset_email')}
               </LoadingButton>
             </form>

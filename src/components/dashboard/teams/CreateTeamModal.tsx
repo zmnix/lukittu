@@ -98,15 +98,15 @@ export default function CreateTeamModal({
         </Form>
         <DialogFooter>
           <form action={onClose}>
-            <LoadingButton variant="outline" type="submit" className="w-full">
+            <LoadingButton className="w-full" type="submit" variant="outline">
               {t('general.close')}
             </LoadingButton>
           </form>
           <div>
             <LoadingButton
               className="w-full"
-              type="submit"
               pending={pending}
+              type="submit"
               onClick={() => form.handleSubmit(onSubmit)()}
             >
               {t('general.create')}

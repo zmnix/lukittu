@@ -21,7 +21,9 @@
     "team_name_required": "Team name is required!",
     "team_name_min_length": "Team name must be at least 3 characters long!",
     "team_name_max_length": "Team name must be at most 255 characters long!",
-    "team_name_invalid": "Team name can only contain letters, numbers, spaces, and the following characters: - _"
+    "team_name_invalid": "Team name can only contain letters, numbers, spaces, and the following characters: - _",
+    "invalid_provider": "Invalid provider!",
+    "wrong_password": "Wrong password!"
   },
   "general": {
     "error": "Error",
@@ -139,7 +141,8 @@
     },
     "profile": {
       "change_password": "Change password",
-      "login_provider": "Login provider"
+      "login_provider": "Login provider",
+      "new_password": "New password"
     }
   }
 }

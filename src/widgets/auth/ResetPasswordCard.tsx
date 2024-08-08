@@ -167,9 +167,9 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
                     )}
                   />
                   <LoadingButton
-                    type="submit"
-                    pending={pending}
                     className="w-full"
+                    pending={pending}
+                    type="submit"
                   >
                     {t('auth.reset_password.reset_password')}
                   </LoadingButton>

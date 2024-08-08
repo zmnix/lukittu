@@ -37,7 +37,7 @@ export default function ForgotPasswordSuccessModal({
         </DialogHeader>
         <DialogFooter>
           <form action={onClose}>
-            <LoadingButton type="submit" className="w-full">
+            <LoadingButton className="w-full" type="submit" variant="secondary">
               {t('general.close')}
             </LoadingButton>
           </form>

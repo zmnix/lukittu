@@ -5,7 +5,7 @@ import { getLanguage } from '@/lib/utils/header-helpers';
 import {
   updateProfileSchema,
   UpdateProfileSchema,
-} from '@/lib/validation/profile/update-profile';
+} from '@/lib/validation/profile/update-profile-schema';
 import { getTranslations } from 'next-intl/server';
 
 export default async function updateProfile({ fullName }: UpdateProfileSchema) {

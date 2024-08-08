@@ -75,7 +75,7 @@ export default async function register({
 
     await prisma.team.create({
       data: {
-        name: `My first team`,
+        name: 'My first team',
         ownerId: user.id,
         users: {
           connect: {
