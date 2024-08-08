@@ -22,5 +22,6 @@ export const loginSchema = (
           message: t('validation.password_min_length'),
         }),
       rememberMe: z.boolean(),
+      token: z.string(),
     })
     .strict();

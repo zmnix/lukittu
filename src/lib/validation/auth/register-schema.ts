@@ -38,4 +38,5 @@ export const registerSchema = (
     terms: z
       .boolean()
       .refine((v) => v, { message: t('validation.terms_of_service_required') }),
+    token: z.string(),
   });

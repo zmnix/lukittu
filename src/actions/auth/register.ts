@@ -1,5 +1,6 @@
 'use server';
 import prisma from '@/lib/database/prisma';
+import { verifyTurnstileToken } from '@/lib/utils/cloudflare-helpers';
 import { hashPassword } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { sendEmail } from '@/lib/utils/nodemailer';
@@ -17,6 +18,7 @@ export default async function register({
   password,
   fullName,
   terms,
+  token,
 }: RegisterSchema) {
   const t = await getTranslations({ locale: getLanguage() });
   const validated = await registerSchema(t).safeParseAsync({
@@ -24,6 +26,7 @@ export default async function register({
     password,
     fullName,
     terms,
+    token,
   });
 
   if (!validated.success) {
@@ -31,6 +34,15 @@ export default async function register({
       isError: true,
       message: validated.error.errors[0].message,
       field: validated.error.errors[0].path[0],
+    };
+  }
+
+  const turnstileValid = await verifyTurnstileToken(token);
+
+  if (!turnstileValid) {
+    return {
+      isError: true,
+      message: t('validation.invalid_turnstile_token'),
     };
   }
 
@@ -88,7 +100,7 @@ export default async function register({
     return user;
   });
 
-  const token = jwt.sign(
+  const verifyToken = jwt.sign(
     {
       userId: user.id,
       type: JwtTypes.NEW_ACCOUNT_EMAIL_VERIFICATION,
@@ -99,7 +111,7 @@ export default async function register({
     },
   );
 
-  const verifyLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email?token=${token}`;
+  const verifyLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email?token=${verifyToken}`;
 
   const success = await sendEmail({
     to: email,

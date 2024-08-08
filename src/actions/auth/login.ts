@@ -1,6 +1,7 @@
 'use server';
 import prisma from '@/lib/database/prisma';
 import { createSession } from '@/lib/utils/auth';
+import { verifyTurnstileToken } from '@/lib/utils/cloudflare-helpers';
 import { verifyPassword } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { loginSchema, LoginSchema } from '@/lib/validation/auth/login-schema';
@@ -12,12 +13,14 @@ export default async function loginWithCredentials({
   email,
   password,
   rememberMe,
+  token,
 }: LoginSchema) {
   const t = await getTranslations({ locale: getLanguage() });
   const validated = await loginSchema(t).safeParseAsync({
     email,
     password,
     rememberMe,
+    token,
   });
 
   if (!validated.success) {
@@ -25,6 +28,15 @@ export default async function loginWithCredentials({
       isError: true,
       message: validated.error.errors[0].message,
       field: validated.error.errors[0].path[0],
+    };
+  }
+
+  const turnstileValid = await verifyTurnstileToken(token);
+
+  if (!turnstileValid) {
+    return {
+      isError: true,
+      message: t('validation.invalid_turnstile_token'),
     };
   }
 

@@ -31,21 +31,24 @@ import {
   registerSchema,
 } from '@/lib/validation/auth/register-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 export default function RegisterCard() {
   const t = useTranslations();
-
+  const turnstile = useRef<TurnstileInstance>(null);
   const [pending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [resendVerifyEmailModalOpen, setResendVerifyEmailModalOpen] =
     useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [turnstileLoading, setTurnstileLoading] = useState(false);
+  const [showTurnstile, setShowTurnstile] = useState(false);
 
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema(t)),
@@ -54,6 +57,7 @@ export default function RegisterCard() {
       fullName: '',
       password: '',
       terms: false,
+      token: '',
     },
   });
 
@@ -89,6 +93,13 @@ export default function RegisterCard() {
     });
   };
 
+  const prepareSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setTurnstileLoading(true);
+    setShowTurnstile(true);
+    turnstile.current?.reset();
+  };
+
   return (
     <>
       {resendVerifyEmailModalOpen && (
@@ -121,7 +132,7 @@ export default function RegisterCard() {
             </Alert>
           )}
           <Form {...form}>
-            <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+            <form className="space-y-4" onSubmit={prepareSubmit}>
               <FormField
                 control={form.control}
                 name="email"
@@ -217,7 +228,25 @@ export default function RegisterCard() {
                   </FormItem>
                 )}
               />
-              <LoadingButton className="w-full" pending={pending} type="submit">
+              {showTurnstile && (
+                <Turnstile
+                  ref={turnstile}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  onError={() => {
+                    setTurnstileLoading(false);
+                  }}
+                  onSuccess={(token) => {
+                    form.setValue('token', token);
+                    form.handleSubmit(onSubmit)();
+                    setTurnstileLoading(false);
+                  }}
+                />
+              )}
+              <LoadingButton
+                className="w-full"
+                pending={pending || turnstileLoading}
+                type="submit"
+              >
                 {t('auth.register.button')}
               </LoadingButton>
               <div className="space-y-4">

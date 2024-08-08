@@ -75,7 +75,7 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
         }
 
         // Fallback should never happen
-        return setFormError(res.message ?? 'An error occurred');
+        return setFormError(res.message ?? t('general.error_occurred'));
       }
 
       setPasswordResetSuccess(true);

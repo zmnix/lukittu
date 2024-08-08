@@ -23,7 +23,8 @@
     "team_name_max_length": "Team name must be at most 255 characters long!",
     "team_name_invalid": "Team name can only contain letters, numbers, spaces, and the following characters: - _",
     "invalid_provider": "Invalid provider!",
-    "wrong_password": "Wrong password!"
+    "wrong_password": "Wrong password!",
+    "invalid_turnstile_token": "Failed to verify that you are a human. Please try again."
   },
   "general": {
     "error": "Error",
