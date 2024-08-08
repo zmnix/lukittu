@@ -1,4 +1,5 @@
 'use client';
+import updateProfile from '@/actions/profile/update-profile';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { User } from '@prisma/client';
 import { Edit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 interface GeneralSettingsProps {
@@ -27,6 +28,7 @@ interface GeneralSettingsProps {
 
 export default function GeneralSettings({ user }: GeneralSettingsProps) {
   const t = useTranslations();
+  const [pending, startTransition] = useTransition();
   const [edit, setEdit] = useState(false);
 
   const form = useForm<UpdateProfileSchema>({
@@ -41,8 +43,21 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
     form.reset();
   };
 
-  const handleSubmit = () => {
-    console.log(form.getValues());
+  const onSubmit = (data: UpdateProfileSchema) => {
+    startTransition(async () => {
+      const res = await updateProfile(data);
+      if (res.isError) {
+        form.setError(res.field as keyof UpdateProfileSchema, {
+          type: 'manual',
+          message: res.message,
+        });
+      }
+
+      if (!res.isError) {
+        user.fullName = data.fullName;
+        setEdit(false);
+      }
+    });
   };
 
   const isTouched = form.formState.isDirty || form.formState.isSubmitting;
@@ -58,7 +73,7 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
         <Form {...form}>
           <form
             className="flex max-w-lg flex-col gap-6"
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
               <div className="w-1/3 font-semibold">{t('general.email')}</div>
@@ -117,28 +132,33 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
               {edit ? (
                 <>
                   <Button
-                    type="submit"
                     variant="secondary"
+                    type="button"
                     size="sm"
                     onClick={handleCancel}
                   >
                     {t('general.cancel')}
                   </Button>
-                  <Button type="submit" size="sm" disabled={!isTouched}>
+                  <LoadingButton
+                    type="submit"
+                    size="sm"
+                    disabled={!isTouched}
+                    pending={pending}
+                  >
                     {t('general.save')}
-                  </Button>
+                  </LoadingButton>
                 </>
               ) : (
-                <LoadingButton
-                  type="submit"
+                <Button
                   variant="secondary"
                   size="sm"
+                  type="button"
                   className="flex items-center gap-1"
                   onClick={() => setEdit(true)}
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   {t('general.edit')}
-                </LoadingButton>
+                </Button>
               )}
             </div>
           </form>
