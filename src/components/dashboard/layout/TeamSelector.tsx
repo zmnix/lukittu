@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { Team } from '@prisma/client';
 import { CommandList } from 'cmdk';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import CreateTeamModal from '../teams/CreateTeamModal';
@@ -150,6 +150,7 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
                 variant="outline"
                 onClick={() => setCreateTeamModalOpen(true)}
               >
+                <Users className="mr-2 h-4 w-4 shrink-0" />
                 {t('dashboard.teams.create_team')}
               </Button>
             </CommandList>

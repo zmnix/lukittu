@@ -24,7 +24,8 @@
     "team_name_invalid": "Team name can only contain letters, numbers, spaces, and the following characters: - _",
     "invalid_provider": "Invalid provider!",
     "wrong_password": "Wrong password!",
-    "invalid_turnstile_token": "Failed to verify that you are a human. Please try again."
+    "invalid_turnstile_token": "Failed to verify that you are a human. Please try again.",
+    "invalid_session": "Invalid session!"
   },
   "general": {
     "error": "Error",
@@ -54,7 +55,11 @@
     "edit": "Edit",
     "save": "Save",
     "cancel": "Cancel",
-    "user": "User"
+    "user": "User",
+    "location": "Location",
+    "device": "Device",
+    "ip_address": "IP address",
+    "date": "Date"
   },
   "auth": {
     "oauth": {
@@ -133,7 +138,8 @@
       "audit_log": "Audit Log",
       "external_links": "External Links",
       "documentation": "Documentation",
-      "discord": "Discord"
+      "discord": "Discord",
+      "injector": "Injector"
     },
     "teams": {
       "create_team": "Create a team",
@@ -143,7 +149,10 @@
     "profile": {
       "change_password": "Change password",
       "login_provider": "Login provider",
-      "new_password": "New password"
+      "new_password": "New password",
+      "login_sessions": "Login sessions",
+      "current_session": "Current session",
+      "logout_all_sessions": "Sign out all other sessions"
     }
   }
 }

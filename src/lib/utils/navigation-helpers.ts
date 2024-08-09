@@ -6,6 +6,7 @@ import {
   LucideIcon,
   Shield,
   ShoppingCart,
+  Syringe,
   Users,
 } from 'lucide-react';
 import { Messages } from '../../../global';
@@ -75,6 +76,18 @@ export function getMenuList(pathname: string): Group[] {
           translation: 'customers',
           active: pathname === '/dashboard/customers',
           icon: Users,
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupTranslation: '',
+      menus: [
+        {
+          href: '/dashboard/injector',
+          translation: 'injector',
+          active: pathname === '/dashboard/injector',
+          icon: Syringe,
           submenus: [],
         },
       ],

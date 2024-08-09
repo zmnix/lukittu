@@ -28,8 +28,11 @@ interface GeneralSettingsProps {
   user: User;
 }
 
-export default function GeneralSettings({ user }: GeneralSettingsProps) {
+export default function GeneralSettings({
+  user: initialUser,
+}: GeneralSettingsProps) {
   const t = useTranslations();
+  const [user, setUser] = useState<User>(initialUser);
   const [pending, startTransition] = useTransition();
   const [edit, setEdit] = useState(false);
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
@@ -57,7 +60,7 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
       }
 
       if (!res.isError) {
-        user.fullName = data.fullName;
+        setUser((prev) => ({ ...prev, fullName: data.fullName }));
         setEdit(false);
       }
     });
@@ -75,7 +78,7 @@ export default function GeneralSettings({ user }: GeneralSettingsProps) {
       )}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-xl font-bold">
             {t('general.user')}
           </CardTitle>
         </CardHeader>

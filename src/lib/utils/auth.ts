@@ -65,6 +65,9 @@ export const getSession = cache(
     }
 
     // TODO: Improve type.
-    return session as Prisma.SessionGetPayload<{ include: T }>;
+    return {
+      ...session,
+      sessionId,
+    } as Prisma.SessionGetPayload<{ include: T }>;
   },
 );

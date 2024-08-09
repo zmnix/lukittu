@@ -9,6 +9,10 @@
     "no-trailing-spaces": "error",
     "quotes": ["error", "single"],
     "no-console": "error",
+    "react/jsx-curly-brace-presence": [
+      "error",
+      { "props": "never", "children": "never" }
+    ],
     "react/jsx-sort-props": [
       "error",
       {
