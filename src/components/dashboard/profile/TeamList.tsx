@@ -23,7 +23,8 @@ import { useModal } from '@/hooks/useModal';
 import { Team, User } from '@prisma/client';
 import { EllipsisVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
 import { LeaveTeamConfirmModal } from './TeamLeaveConfirmModal';
 import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
@@ -46,6 +47,11 @@ export default function TeamList({ teams: initialTeams }: TeamListProps) {
 
   const { ConfirmModal, openConfirmModal } = useModal();
   const t = useTranslations();
+  const router = useRouter();
+
+  useEffect(() => {
+    setTeams(initialTeams);
+  }, [initialTeams]);
 
   const handleTeamLeave = async (team: Team) => {
     const res = await leaveTeam(team.id);
@@ -58,6 +64,7 @@ export default function TeamList({ teams: initialTeams }: TeamListProps) {
     }
 
     setTeams((prev) => prev.filter((t) => t.id !== team.id));
+    router.refresh();
   };
 
   const handleTeamDelete = async (team: Team, teamNameConfirmation: string) => {
@@ -71,6 +78,7 @@ export default function TeamList({ teams: initialTeams }: TeamListProps) {
     }
 
     setTeams((prev) => prev.filter((t) => t.id !== team.id));
+    router.refresh();
   };
 
   const handleTeamDeleteConfirm = (team: Team & { users: User[] }) => {
