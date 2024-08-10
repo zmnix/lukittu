@@ -98,18 +98,18 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: '',
           translation: 'team',
-          active: pathname === '/dashboard/bookings',
+          active: pathname === '/dashboard/team',
           icon: Shield,
           submenus: [
             {
-              href: '/dashboard/bookings/list',
+              href: '/dashboard/team/list',
               translation: 'users',
-              active: pathname === '/dashboard/bookings',
+              active: pathname === '/dashboard/team/list',
             },
             {
-              href: '/dashboard/bookings/timeline',
+              href: '/dashboard/team/audit-log',
               translation: 'audit_log',
-              active: pathname === '/dashboard/bookings/timeline',
+              active: pathname === '/dashboard/team/audit-log',
             },
           ],
         },
@@ -128,7 +128,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: '#',
           translation: 'discord',
-          active: pathname === '/dashboard/customers',
+          active: pathname === '#',
           icon: discordIcon as LucideIcon,
           submenus: [],
         },
