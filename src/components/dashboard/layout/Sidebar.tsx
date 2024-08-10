@@ -23,7 +23,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-20 h-screen -translate-x-full bg-background transition-[width] duration-300 ease-in-out lg:translate-x-0',
+        'sticky left-0 top-0 z-20 h-screen -translate-x-full bg-background transition-[width] duration-300 ease-in-out max-lg:hidden lg:translate-x-0',
         ctx?.open === false ? 'w-[90px]' : 'w-72',
       )}
     >
