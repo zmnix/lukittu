@@ -27,7 +27,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Team, User } from '@prisma/client';
 import { ChevronsUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 interface TransferTeamOwnershipModalProps {
   team: Team & { users: User[] };
@@ -44,6 +44,19 @@ export function TransferTeamOwnershipModal({
   const [pending, startTransition] = useTransition();
   const [newOwner, setNewOwner] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
+  const [confirmTimer, setConfirmTimer] = useState(15);
+
+  useEffect(() => {
+    if (confirmTimer === 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setConfirmTimer(confirmTimer - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [confirmTimer]);
 
   const handleConfirm = async () => {
     if (!newOwner) return;
@@ -133,11 +146,13 @@ export function TransferTeamOwnershipModal({
               variant: 'destructive',
               size: 'sm',
             })}
-            disabled={!newOwner}
+            disabled={!newOwner || confirmTimer > 0}
             pending={pending}
             onClick={handleConfirm}
           >
-            {t('general.transfer_ownership')}
+            {confirmTimer === 0
+              ? t('general.transfer_ownership')
+              : `${t('general.transfer_ownership')} (${confirmTimer})`}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

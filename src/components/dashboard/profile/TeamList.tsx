@@ -103,7 +103,7 @@ export default function TeamList({ teams: initialTeams }: TeamListProps) {
     setTeams((prev) =>
       prev.map((t) => ({
         ...t,
-        isOwner: t.id === team.id ? true : false,
+        isOwner: t.id === team.id ? false : t.isOwner,
       })),
     );
   };
