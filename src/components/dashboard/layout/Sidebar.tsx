@@ -1,14 +1,24 @@
 'use client';
+import logoTextDark from '@/../public/logo_text_dark.svg';
+import logoTextLight from '@/../public/logo_text_light.svg';
+import logoCircle from '@/../public/lukittu_logo.svg';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { SidebarContext } from '@/providers/SidebarProvider';
-import { LoaderPinwheel } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Menu } from './Menu';
 
 export function Sidebar() {
+  const [logo, setLogo] = useState(logoTextDark);
+  const theme = useTheme();
   const ctx = useContext(SidebarContext);
+
+  useEffect(() => {
+    setLogo(theme.theme === 'light' ? logoTextDark : logoTextLight);
+  }, [theme.theme]);
 
   return (
     <aside
@@ -27,17 +37,18 @@ export function Sidebar() {
           asChild
         >
           <Link className="flex items-center gap-2" href="/dashboard">
-            <LoaderPinwheel className="mr-1 h-6 w-6" />
-            <h1
-              className={cn(
-                'whitespace-nowrap text-lg font-bold uppercase transition-[transform,opacity,display] duration-300 ease-in-out',
-                ctx.open === false
-                  ? 'hidden -translate-x-96 opacity-0'
-                  : 'translate-x-0 opacity-100',
-              )}
-            >
-              Lukittu
-            </h1>
+            <Image
+              alt="Lukittu"
+              className={ctx.open ? '' : 'hidden'}
+              height={38}
+              src={logo}
+            />
+            <Image
+              alt="Lukittu"
+              className={ctx.open ? 'hidden' : ''}
+              height={33}
+              src={logoCircle}
+            />
           </Link>
         </Button>
         <Menu isOpen={ctx.open} />

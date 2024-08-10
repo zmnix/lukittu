@@ -1,3 +1,6 @@
+'use client';
+import logoTextDark from '@/../public/logo_text_dark.svg';
+import logoTextLight from '@/../public/logo_text_light.svg';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -7,8 +10,11 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Team } from '@prisma/client';
-import { MenuIcon, PanelsTopLeft } from 'lucide-react';
+import { MenuIcon } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Menu } from './Menu';
 import { TeamSelector } from './TeamSelector';
 
@@ -17,6 +23,13 @@ interface SheetMenuProps {
 }
 
 export function SheetMenu({ teams }: SheetMenuProps) {
+  const [logo, setLogo] = useState(logoTextDark);
+  const theme = useTheme();
+
+  useEffect(() => {
+    setLogo(theme.theme === 'light' ? logoTextDark : logoTextLight);
+  }, [theme.theme]);
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -32,8 +45,7 @@ export function SheetMenu({ teams }: SheetMenuProps) {
             asChild
           >
             <Link className="flex items-center gap-2" href="/dashboard">
-              <PanelsTopLeft className="mr-1 h-6 w-6" />
-              <h1 className="text-lg font-bold">Lukittu</h1>
+              <Image alt="Lukittu" height={38} src={logo} />
             </Link>
           </Button>
         </SheetHeader>
