@@ -15,7 +15,9 @@ export default async function DashboardLayout({
     user: {
       include: {
         teams: {
-          where: { deletedAt: null },
+          where: {
+            deletedAt: null,
+          },
         },
       },
     },
