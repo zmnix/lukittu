@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^3.9.0",
     "@marsidev/react-turnstile": "^0.7.2",
     "@prisma/client": "^5.17.0",
+    "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.0",

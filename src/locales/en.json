@@ -25,7 +25,13 @@
     "invalid_provider": "Invalid provider!",
     "wrong_password": "Wrong password!",
     "invalid_turnstile_token": "Failed to verify that you are a human. Please try again.",
-    "invalid_session": "Invalid session!"
+    "invalid_session": "Invalid session!",
+    "team_not_found": "Team not found!",
+    "unauthorized": "Unauthorized!",
+    "bad_request": "Bad request!",
+    "team_has_users": "Team has still users left and cannot be deleted!",
+    "team_owner_cannot_leave": "Team owner cannot leave the team!",
+    "user_not_in_team": "User is not in the team!"
   },
   "general": {
     "error": "Error",
@@ -59,7 +65,18 @@
     "location": "Location",
     "device": "Device",
     "ip_address": "IP address",
-    "date": "Date"
+    "date": "Date",
+    "role": "Role",
+    "actions": "Actions",
+    "owner": "Owner",
+    "member": "Member",
+    "leave_team": "Leave team",
+    "delete_team": "Delete team",
+    "teams": "Teams",
+    "transfer_ownership": "Transfer ownership",
+    "select_new_owner": "Select new owner",
+    "no_users_found": "No users found",
+    "search_user": "Search user..."
   },
   "auth": {
     "oauth": {
@@ -152,7 +169,16 @@
       "new_password": "New password",
       "login_sessions": "Login sessions",
       "current_session": "Current session",
-      "logout_all_sessions": "Sign out all other sessions"
+      "logout_all_sessions": "Sign out all other sessions",
+      "team_leave_confirm_title": "Are you absolutely sure?",
+      "team_leave_confirm_description": "You are about to leave team <strong>{teamName}</strong>! You will lose access to this team and all its resources. This action cannot be undone.",
+      "delete_team_confirm_title": "Are you absolutely sure?",
+      "delete_team_confirm_description": "You are about to delete team <strong>{teamName}</strong>! This will <strong>permanently delete</strong> the team and all its resources. This action cannot be undone.",
+      "delete_team_confirm_input": "Please type <code>{teamName}</code> to confirm",
+      "delete_team_not_empty_title": "Team is not empty",
+      "delete_team_not_empty_description": "Team <strong>{teamName}</strong> must be empty from users before it can be deleted. Please remove all users from the team and try again when you are the last user left.",
+      "transfer_ownership_title": "Transfer ownership",
+      "transfer_ownership_description": "You are about to transfer the ownership of team <strong>{teamName}</strong>. Please select a new owner from the list below. Keep in mind that you will lose all ownership rights and become a member of the team."
     }
   }
 }

@@ -94,7 +94,9 @@ export default function LoginSessions({
                 {t('general.ip_address')}
               </TableHead>
               <TableHead className="truncate">{t('general.date')}</TableHead>
-              <TableHead />
+              <TableHead className="text-right">
+                {t('general.actions')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -106,7 +108,11 @@ export default function LoginSessions({
                 <TableCell className="truncate">
                   {parseDeviceFromUserAgent(session.userAgent) ?? 'N/A'}
                 </TableCell>
-                <TableCell className="truncate">{session.ipAddress}</TableCell>
+                <TableCell className="truncate">
+                  {session.ipAddress === '::1'
+                    ? '127.0.0.1'
+                    : session.ipAddress}
+                </TableCell>
                 <TableCell className="truncate">
                   {getRelativeTimeString(session.createdAt, locale)}
                 </TableCell>

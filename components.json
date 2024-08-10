@@ -12,6 +12,6 @@
   },
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils/tailwind-helpers/tailwind-helpers"
+    "utils": "@/lib/utils/tailwind-helpers"
   }
 }

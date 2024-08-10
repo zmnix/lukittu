@@ -1,5 +1,6 @@
 import GeneralSettings from '@/components/dashboard/profile/GeneralSettings';
 import LoginSessions from '@/components/dashboard/profile/LoginSessions';
+import TeamList from '@/components/dashboard/profile/TeamList';
 import { Separator } from '@/components/ui/separator';
 import { getSession } from '@/lib/utils/auth';
 import { getTranslations } from 'next-intl/server';
@@ -13,6 +14,14 @@ export default async function ProfilePage() {
     user: {
       include: {
         sessions: true,
+        teams: {
+          where: {
+            deletedAt: null,
+          },
+          include: {
+            users: true,
+          },
+        },
       },
     },
   });
@@ -20,6 +29,11 @@ export default async function ProfilePage() {
   const sessionsWithCurrent = session.user.sessions.map((session) => ({
     ...session,
     current: session.sessionId === currentSessionCookie?.value,
+  }));
+
+  const teamsWithOwner = session.user.teams.map((team) => ({
+    ...team,
+    isOwner: team.ownerId === session.user.id,
   }));
 
   return (
@@ -31,6 +45,7 @@ export default async function ProfilePage() {
       <div className="mt-6 flex flex-col gap-6">
         <GeneralSettings user={session.user} />
         <LoginSessions sessions={sessionsWithCurrent} />
+        <TeamList teams={teamsWithOwner} />
       </div>
     </>
   );

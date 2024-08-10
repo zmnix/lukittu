@@ -118,32 +118,36 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
           >
             <CommandInput placeholder={t('general.search_team')} />
             <CommandList>
-              <CommandEmpty>{t('general.no_team_found')}</CommandEmpty>
-              <CommandGroup>
-                <ScrollArea className="flex max-h-40 flex-col overflow-y-auto">
-                  {teams.map((team) => (
-                    <CommandItem
-                      key={team.id}
-                      value={team.id.toString()}
-                      onSelect={(currentValue) => {
-                        setValue(currentValue);
-                        setOpen(false);
-                        updateSelectedTeam(currentValue);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4 shrink-0',
-                          value === team.id.toString()
-                            ? 'opacity-100'
-                            : 'opacity-0',
-                        )}
-                      />
-                      <span className="line-clamp-2">{team.name}</span>
-                    </CommandItem>
-                  ))}
-                </ScrollArea>
-              </CommandGroup>
+              <CommandEmpty className="px-4 py-4 text-sm">
+                {t('general.no_team_found')}
+              </CommandEmpty>
+              {Boolean(teams.length) && (
+                <CommandGroup>
+                  <ScrollArea className="flex max-h-40 flex-col overflow-y-auto">
+                    {teams.map((team) => (
+                      <CommandItem
+                        key={team.id}
+                        value={team.id.toString()}
+                        onSelect={(currentValue) => {
+                          setValue(currentValue);
+                          setOpen(false);
+                          updateSelectedTeam(currentValue);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4 shrink-0',
+                            value === team.id.toString()
+                              ? 'opacity-100'
+                              : 'opacity-0',
+                          )}
+                        />
+                        <span className="line-clamp-2">{team.name}</span>
+                      </CommandItem>
+                    ))}
+                  </ScrollArea>
+                </CommandGroup>
+              )}
               <Button
                 className="w-full rounded-none border-x-0 border-b-0 border-t"
                 size="sm"

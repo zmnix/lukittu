@@ -28,7 +28,7 @@ export default function Header({ session }: HeaderProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:mr-4">
           <ThemeSwitcher variant="ghost" />
           <LanguageSwitcher variant="ghost" />
           <UserDropdown user={session.user} />

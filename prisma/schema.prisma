@@ -42,13 +42,14 @@ model Session {
 }
 
 model Team {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
   ownerId   Int
-  owner     User     @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  users     User[]   @relation("TeamUsers")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  owner     User      @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  users     User[]    @relation("TeamUsers")
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 enum Provider {
