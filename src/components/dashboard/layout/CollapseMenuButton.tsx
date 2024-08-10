@@ -158,7 +158,12 @@ export function CollapseMenuButton({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DropdownMenuContent align="start" side="right" sideOffset={25}>
+      <DropdownMenuContent
+        align="start"
+        side="right"
+        sideOffset={25}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuLabel className="max-w-[190px] truncate">
           {t(`dashboard.navigation.${translation}`)}
         </DropdownMenuLabel>

@@ -65,7 +65,12 @@ export function UserDropdown({ user }: UserDropdownProps) {
         </Tooltip>
       </TooltipProvider>
 
-      <DropdownMenuContent align="end" className="w-56" forceMount>
+      <DropdownMenuContent
+        align="end"
+        className="w-56"
+        forceMount
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.fullName}</p>

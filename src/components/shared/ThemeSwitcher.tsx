@@ -31,7 +31,7 @@ export function ThemeSwitcher({ variant = 'outline' }: ThemeSwitcherProps) {
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" variant={variant}>
+              <Button size="icon" tabIndex={-1} variant={variant}>
                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
@@ -42,7 +42,10 @@ export function ThemeSwitcher({ variant = 'outline' }: ThemeSwitcherProps) {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuItem onClick={() => setTheme('light')}>
           {t('general.light')}
         </DropdownMenuItem>

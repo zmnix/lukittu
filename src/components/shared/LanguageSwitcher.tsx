@@ -48,7 +48,10 @@ export function LanguageSwitcher({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
           English
         </DropdownMenuItem>
