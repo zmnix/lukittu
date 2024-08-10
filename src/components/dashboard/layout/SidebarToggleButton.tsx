@@ -7,7 +7,7 @@ import { useContext } from 'react';
 export function SidebarToggleButton() {
   const ctx = useContext(SidebarContext);
   return (
-    <Button variant="ghost" onClick={ctx.toggle}>
+    <Button className="ml-4" size="icon" variant="ghost" onClick={ctx.toggle}>
       {ctx.open ? <PanelLeftClose /> : <PanelLeftOpen />}
     </Button>
   );

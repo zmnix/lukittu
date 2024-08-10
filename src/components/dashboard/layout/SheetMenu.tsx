@@ -33,7 +33,7 @@ export function SheetMenu({ teams }: SheetMenuProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="h-8" variant="ghost">
+        <Button className="h-8" size="icon" variant="ghost">
           <MenuIcon />
         </Button>
       </SheetTrigger>
