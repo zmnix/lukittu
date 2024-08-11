@@ -67,7 +67,7 @@ export default function ResendVerifyEmailModal({
                 <LoadingButton
                   className="w-full"
                   type="submit"
-                  variant="secondary"
+                  variant="outline"
                 >
                   {t('general.close')}
                 </LoadingButton>

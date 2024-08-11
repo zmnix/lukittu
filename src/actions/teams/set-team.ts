@@ -3,16 +3,17 @@ import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import {
-  createTeamSchema,
-  CreateTeamSchema,
-} from '@/lib/validation/team/create-team-schema';
+  setTeamSchema,
+  SetTeamSchema,
+} from '@/lib/validation/team/set-team-schema';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 
-export default async function createTeam({ name }: CreateTeamSchema) {
+export default async function setTeam({ name, id }: SetTeamSchema) {
   const t = await getTranslations({ locale: getLanguage() });
-  const validated = await createTeamSchema(t).safeParseAsync({
+  const validated = await setTeamSchema(t).safeParseAsync({
     name,
+    id,
   });
 
   if (!validated.success) {
@@ -23,10 +24,31 @@ export default async function createTeam({ name }: CreateTeamSchema) {
     };
   }
 
-  const session = await getSession({ user: true });
+  const session = await getSession({
+    user: {
+      include: {
+        teams: {
+          where: {
+            deletedAt: null,
+          },
+        },
+      },
+    },
+  });
 
-  const createdTeam = await prisma.team.create({
-    data: {
+  if (id && !session.user.teams.some((team) => team.id === id)) {
+    return {
+      isError: true,
+      message: t('validation.team_not_found'),
+      field: 'id',
+    };
+  }
+
+  const createdTeam = await prisma.team.upsert({
+    where: {
+      id: id,
+    },
+    create: {
       name,
       ownerId: session.user.id,
       users: {
@@ -34,6 +56,9 @@ export default async function createTeam({ name }: CreateTeamSchema) {
           id: session.user.id,
         },
       },
+    },
+    update: {
+      name,
     },
   });
 

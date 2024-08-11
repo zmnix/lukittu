@@ -116,7 +116,7 @@ export default function LoginSessionsCard({
                 <TableCell className="truncate">
                   {getRelativeTimeString(session.createdAt, locale)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="py-0 text-right">
                   {session.current ? (
                     t('dashboard.profile.current_session')
                   ) : (

@@ -22,7 +22,7 @@ export const useModal = () => {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState<React.ReactNode | string>('');
 
   const handleClose = () => {
     setOpen(false);

@@ -1,5 +1,5 @@
 'use client';
-import createTeam from '@/actions/teams/create-team';
+import setTeam from '@/actions/teams/set-team';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Dialog,
@@ -19,41 +19,44 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
-  CreateTeamSchema,
-  createTeamSchema,
-} from '@/lib/validation/team/create-team-schema';
+  SetTeamSchema,
+  setTeamSchema,
+} from '@/lib/validation/team/set-team-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-interface CreateTeamModalProps {
+interface SetTeamModalProps {
   open: boolean;
   onClose: () => void;
+  team: Team | null;
 }
 
-export default function CreateTeamModal({
+export default function SetTeamModal({
   open,
   onClose,
-}: CreateTeamModalProps) {
+  team,
+}: SetTeamModalProps) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
-  const form = useForm<CreateTeamSchema>({
-    resolver: zodResolver(createTeamSchema(t)),
+  const form = useForm<SetTeamSchema>({
+    resolver: zodResolver(setTeamSchema(t)),
     defaultValues: {
       name: '',
     },
   });
 
-  const onSubmit = (data: CreateTeamSchema) => {
+  const onSubmit = (data: SetTeamSchema) => {
     startTransition(async () => {
-      const res = await createTeam(data);
+      const res = await setTeam(data);
       if (res?.isError) {
         if (res.field) {
-          return form.setError(res.field as keyof CreateTeamSchema, {
+          return form.setError(res.field as keyof SetTeamSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -65,11 +68,22 @@ export default function CreateTeamModal({
     });
   };
 
+  useEffect(() => {
+    form.reset({
+      id: team?.id,
+      name: team?.name || '',
+    });
+  }, [form, team?.name, team?.id]);
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t('dashboard.teams.create_team')}</DialogTitle>
+          <DialogTitle>
+            {Boolean(team)
+              ? t('dashboard.teams.edit_team')
+              : t('dashboard.teams.create_team')}
+          </DialogTitle>
           <DialogDescription>
             {t('dashboard.teams.create_team_info')}
           </DialogDescription>

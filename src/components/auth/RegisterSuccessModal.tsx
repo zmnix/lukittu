@@ -35,7 +35,7 @@ export default function RegisterSuccessModal({
         </DialogHeader>
         <DialogFooter>
           <form action={onClose}>
-            <LoadingButton className="w-full" type="submit" variant="secondary">
+            <LoadingButton className="w-full" type="submit" variant="outline">
               {t('general.close')}
             </LoadingButton>
           </form>

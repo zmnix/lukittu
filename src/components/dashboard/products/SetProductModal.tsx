@@ -1,5 +1,5 @@
 'use client';
-import createProduct from '@/actions/products/create-product';
+import setProduct from '@/actions/products/set-product';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Dialog,
@@ -21,32 +21,36 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useModal } from '@/hooks/useModal';
 import {
-  CreateProductSchema,
-  createProductSchema,
-} from '@/lib/validation/products/create-product-schema';
+  SetProductSchema,
+  setProductSchema,
+} from '@/lib/validation/products/set-product-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-interface CreateProductModalProps {
+interface SetProductModalProps {
   open: boolean;
   onClose: () => void;
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  products: Product[];
+  product: Product | null;
 }
 
-export default function CreateProductModal({
+export default function SetProductModal({
   open,
   onClose,
   setProducts,
-}: CreateProductModalProps) {
+  products,
+  product,
+}: SetProductModalProps) {
   const t = useTranslations();
   const { ConfirmModal, openConfirmModal } = useModal();
   const [pending, startTransition] = useTransition();
 
-  const form = useForm<CreateProductSchema>({
-    resolver: zodResolver(createProductSchema(t)),
+  const form = useForm<SetProductSchema>({
+    resolver: zodResolver(setProductSchema(t)),
     defaultValues: {
       name: '',
       description: '',
@@ -54,12 +58,21 @@ export default function CreateProductModal({
     },
   });
 
-  const onSubmit = (data: CreateProductSchema) => {
+  useEffect(() => {
+    form.reset({
+      id: product?.id,
+      name: product?.name || '',
+      description: product?.description || '',
+      url: product?.url || '',
+    });
+  }, [form, product?.name, product?.description, product?.url, product?.id]);
+
+  const onSubmit = (data: SetProductSchema) => {
     startTransition(async () => {
-      const res = await createProduct(data);
+      const res = await setProduct(data);
       if (res.isError) {
         if (res.field) {
-          return form.setError(res.field as keyof CreateProductSchema, {
+          return form.setError(res.field as keyof SetProductSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -72,7 +85,17 @@ export default function CreateProductModal({
         });
       }
 
-      setProducts((prev) => [...prev, res.product!]);
+      if (res.product) {
+        const existingProduct = products.find((p) => p.id === product?.id);
+        if (existingProduct) {
+          setProducts(
+            products.map((p) => (p.id === product?.id ? res.product : p)),
+          );
+        } else {
+          setProducts([...products, res.product]);
+        }
+      }
+
       onClose();
     });
   };
@@ -83,7 +106,11 @@ export default function CreateProductModal({
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{t('dashboard.products.add_product')}</DialogTitle>
+            <DialogTitle>
+              {Boolean(product)
+                ? t('dashboard.products.edit_product')
+                : t('dashboard.products.add_product')}
+            </DialogTitle>
             <DialogDescription>
               {t('dashboard.products.product_description')}
             </DialogDescription>

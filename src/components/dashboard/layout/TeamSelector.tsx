@@ -19,8 +19,9 @@ import { Team } from '@prisma/client';
 import { CommandList } from 'cmdk';
 import { Check, ChevronsUpDown, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import CreateTeamModal from '../teams/CreateTeamModal';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import SetTeamModal from './SetTeamModal';
 
 interface TeamSelectorProps {
   fullWidth?: boolean;
@@ -32,14 +33,20 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(true);
-  const [createTeamModalOpen, setCreateTeamModalOpen] = useState(false);
+  const [createTeamModalOpen, setTeamModalOpen] = useState(false);
+  const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
+  const router = useRouter();
 
-  const updateSelectedTeam = (teamId: string) => {
-    setValue(teamId);
-    document.cookie = `selectedTeam=${teamId}; expires=${new Date(
-      Date.now() + 1000 * 60 * 60 * 24 * 365 * 5,
-    ).toUTCString()}; path=/`;
-  };
+  const updateSelectedTeam = useCallback(
+    (teamId: string) => {
+      setValue(teamId);
+      document.cookie = `selectedTeam=${teamId}; expires=${new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 365 * 5,
+      ).toUTCString()}; path=/`;
+      router.refresh();
+    },
+    [router],
+  );
 
   useEffect(() => {
     const loadSelectedTeam = () => {
@@ -71,13 +78,17 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
     } finally {
       setLoading(false);
     }
-  }, [teams]);
+  }, [router, teams, updateSelectedTeam]);
 
   return (
     <>
-      <CreateTeamModal
+      <SetTeamModal
         open={createTeamModalOpen}
-        onClose={() => setCreateTeamModalOpen(false)}
+        team={teamToEdit}
+        onClose={() => {
+          setTeamModalOpen(false);
+          setTeamToEdit(null);
+        }}
       />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -141,6 +152,20 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
                           )}
                         />
                         <span className="line-clamp-2">{team.name}</span>
+                        {team.id.toString() === value && (
+                          <Button
+                            className="ml-auto h-5 text-xs text-foreground"
+                            size="sm"
+                            variant="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTeamToEdit(team);
+                              setTeamModalOpen(true);
+                            }}
+                          >
+                            {t('general.edit')}
+                          </Button>
+                        )}
                       </CommandItem>
                     ))}
                   </ScrollArea>
@@ -150,7 +175,10 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
                 className="w-full rounded-none border-x-0 border-b-0 border-t"
                 size="sm"
                 variant="outline"
-                onClick={() => setCreateTeamModalOpen(true)}
+                onClick={() => {
+                  setTeamModalOpen(true);
+                  setTeamToEdit(null);
+                }}
               >
                 <Users className="mr-2 h-4 w-4 shrink-0" />
                 {t('dashboard.teams.create_team')}

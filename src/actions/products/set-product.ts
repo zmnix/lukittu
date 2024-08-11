@@ -3,21 +3,23 @@ import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
-  createProductSchema,
-  CreateProductSchema,
-} from '@/lib/validation/products/create-product-schema';
+  setProductSchema,
+  SetProductSchema,
+} from '@/lib/validation/products/set-product-schema';
 import { getTranslations } from 'next-intl/server';
 
-export default async function createProduct({
+export default async function setProduct({
   name,
   url,
   description,
-}: CreateProductSchema) {
+  id,
+}: SetProductSchema) {
   const t = await getTranslations({ locale: getLanguage() });
-  const validated = await createProductSchema(t).safeParseAsync({
+  const validated = await setProductSchema(t).safeParseAsync({
     name,
     url,
     description,
+    id,
   });
 
   if (!validated.success) {
@@ -31,7 +33,11 @@ export default async function createProduct({
   const session = await getSession({
     user: {
       include: {
-        teams: true,
+        teams: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     },
   });
@@ -55,9 +61,14 @@ export default async function createProduct({
   const team = await prisma.team.findUnique({
     where: {
       id: selectedTeam,
+      deletedAt: null,
     },
     include: {
-      products: true,
+      products: {
+        where: {
+          deletedAt: null,
+        },
+      },
     },
   });
 
@@ -68,7 +79,7 @@ export default async function createProduct({
     };
   }
 
-  if (team.products.find((product) => product.name === name)) {
+  if (!id && team.products.find((product) => product.name === name)) {
     return {
       isError: true,
       message: t('validation.product_already_exists'),
@@ -76,8 +87,12 @@ export default async function createProduct({
     };
   }
 
-  const product = await prisma.product.create({
-    data: {
+  const product = await prisma.product.upsert({
+    where: {
+      id: id || 0,
+      teamId: selectedTeam,
+    },
+    create: {
       name,
       url: url || null,
       description: description || null,
@@ -86,6 +101,11 @@ export default async function createProduct({
           id: selectedTeam,
         },
       },
+    },
+    update: {
+      name,
+      url: url || null,
+      description: description || null,
     },
   });
 

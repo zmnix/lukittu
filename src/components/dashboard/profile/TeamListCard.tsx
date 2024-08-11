@@ -160,7 +160,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                       {team.isOwner ? t('general.owner') : t('general.member')}
                     </Badge>
                   </TableCell>
-                  <TableCell className="truncate text-right">
+                  <TableCell className="truncate py-0 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="icon" variant="ghost">
@@ -177,7 +177,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                           disabled={!team.isOwner || team.users.length <= 1}
                           onClick={() => setTeamTransferConfirmation(team)}
                         >
-                          {t('general.transfer_ownership')}
+                          {t('dashboard.profile.transfer_ownership')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive hover:cursor-pointer"
@@ -190,8 +190,8 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                           }}
                         >
                           {team.isOwner
-                            ? t('general.delete_team')
-                            : t('general.leave_team')}
+                            ? t('dashboard.profile.delete_team')
+                            : t('dashboard.profile.leave_team')}
                           ...
                         </DropdownMenuItem>
                       </DropdownMenuContent>

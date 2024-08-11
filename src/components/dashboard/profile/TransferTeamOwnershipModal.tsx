@@ -92,7 +92,7 @@ export function TransferTeamOwnershipModal({
             >
               {newOwner
                 ? team.users.find((user) => user.id === newOwner)?.fullName
-                : t('general.select_new_owner')}
+                : t('dashboard.profile.select_new_owner')}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -112,7 +112,7 @@ export function TransferTeamOwnershipModal({
               <CommandInput placeholder={t('general.search_user')} />
               <CommandList>
                 <CommandEmpty className="px-4 py-4 text-sm">
-                  {t('general.no_users_found')}
+                  {t('dashboard.profile.no_users_found')}
                 </CommandEmpty>
                 <CommandGroup>
                   <ScrollArea className="flex max-h-40 flex-col overflow-y-auto">
@@ -153,8 +153,8 @@ export function TransferTeamOwnershipModal({
             onClick={handleConfirm}
           >
             {confirmTimer === 0
-              ? t('general.transfer_ownership')
-              : `${t('general.transfer_ownership')} (${confirmTimer})`}
+              ? t('dashboard.profile.transfer_ownership')
+              : `${t('dashboard.profile.transfer_ownership')} (${confirmTimer})`}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

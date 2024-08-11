@@ -1,13 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 
-export type CreateTeamSchema = z.infer<ReturnType<typeof createTeamSchema>>;
+export type SetTeamSchema = z.infer<ReturnType<typeof setTeamSchema>>;
 
-export const createTeamSchema = (
+export const setTeamSchema = (
   t: Awaited<ReturnType<typeof getTranslations<never>>>,
 ) =>
   z
     .object({
+      id: z.number().positive().optional(),
       name: z
         .string({
           required_error: t('validation.team_name_required'),

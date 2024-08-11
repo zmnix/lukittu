@@ -78,8 +78,8 @@ export function LeaveTeamConfirmModal({
             onClick={handleConfirm}
           >
             {confirmTimer === 0
-              ? t('general.leave_team')
-              : `${t('general.leave_team')} (${confirmTimer})`}
+              ? t('dashboard.profile.leave_team')
+              : `${t('dashboard.profile.leave_team')} (${confirmTimer})`}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>

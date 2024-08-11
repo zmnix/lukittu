@@ -1,15 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 
-export type CreateProductSchema = z.infer<
-  ReturnType<typeof createProductSchema>
->;
+export type SetProductSchema = z.infer<ReturnType<typeof setProductSchema>>;
 
-export const createProductSchema = (
+export const setProductSchema = (
   t: Awaited<ReturnType<typeof getTranslations<never>>>,
 ) =>
   z
     .object({
+      id: z.number().positive().optional(),
       name: z
         .string({
           required_error: t('validation.product_name_required'),

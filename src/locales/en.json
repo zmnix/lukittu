@@ -38,7 +38,8 @@
     "product_name_invalid": "Product name can only contain letters, numbers, spaces, and the following characters: - _",
     "product_description_max_length": "Product description must be at most 500 characters long!",
     "product_url_invalid": "Product URL is invalid!",
-    "product_already_exists": "Team already has a product with this name!"
+    "product_already_exists": "Team already has a product with this name!",
+    "product_not_found": "Product not found!"
   },
   "general": {
     "error": "Error",
@@ -77,15 +78,11 @@
     "actions": "Actions",
     "owner": "Owner",
     "member": "Member",
-    "leave_team": "Leave team",
-    "delete_team": "Delete team",
     "teams": "Teams",
-    "transfer_ownership": "Transfer ownership",
-    "select_new_owner": "Select new owner",
-    "no_users_found": "No users found",
     "search_user": "Search user...",
     "description": "Description",
-    "url": "URL"
+    "url": "URL",
+    "created_at": "Created at"
   },
   "auth": {
     "oauth": {
@@ -169,6 +166,7 @@
     },
     "teams": {
       "create_team": "Create a team",
+      "edit_team": "Edit team",
       "create_team_info": "You can change the team name after creation and add additional information.",
       "my_first_team_placeholder": "My first team"
     },
@@ -187,12 +185,23 @@
       "delete_team_not_empty_title": "Team is not empty",
       "delete_team_not_empty_description": "Team <strong>{teamName}</strong> must be empty from users before it can be deleted. Please remove all users from the team and try again when you are the last user left.",
       "transfer_ownership_title": "Transfer ownership",
-      "transfer_ownership_description": "You are about to transfer the ownership of team <strong>{teamName}</strong>. Please select a new owner from the list below. Keep in mind that you will lose all ownership rights and become a member of the team."
+      "transfer_ownership_description": "You are about to transfer the ownership of team <strong>{teamName}</strong>. Please select a new owner from the list below. Keep in mind that you will lose all ownership rights and become a member of the team.",
+      "leave_team": "Leave team",
+      "delete_team": "Delete team",
+      "transfer_ownership": "Transfer ownership",
+      "select_new_owner": "Select new owner",
+      "no_users_found": "No users found"
     },
     "products": {
       "add_product": "Add product",
       "product_description": "Products are what you sell to your customers. It can be any digital software you want to license.",
-      "my_first_product_placeholder": "My first product"
+      "my_first_product_placeholder": "My first product",
+      "edit_product": "Edit product",
+      "delete_product": "Delete product",
+      "delete_product_confirm_title": "Are you absolutely sure?",
+      "delete_product_confirm_description": "You are about to delete product <strong>{productName}</strong>! This will <strong>permanently delete</strong> all the data related to this product <strong>including all licenses</strong>. This action cannot be undone.",
+      "delete_product_confirm_input": "Please type <code>{productName}</code> to confirm",
+      "add_your_first_product": "Add your first product"
     }
   }
 }

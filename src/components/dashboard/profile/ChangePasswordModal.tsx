@@ -160,7 +160,7 @@ export default function ChangePasswordModal({
           </form>
         </Form>
         <DialogFooter>
-          <LoadingButton type="submit" variant="secondary" onClick={onClose}>
+          <LoadingButton type="submit" variant="outline" onClick={onClose}>
             {t('general.close')}
           </LoadingButton>
           <div>

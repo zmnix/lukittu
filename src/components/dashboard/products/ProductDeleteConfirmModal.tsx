@@ -12,52 +12,55 @@ import {
 import { buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Team } from '@prisma/client';
+import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 
-interface DeleteTeamConfirmModalProps {
-  team: Team | null;
+interface DeleteProductConfirmModalProps {
+  product: Product | null;
   onClose: () => void;
-  onConfirm: (team: Team, teamNameConfirmation: string) => Promise<void>;
+  onConfirm: (
+    product: Product,
+    productNameConfirmation: string,
+  ) => Promise<void>;
 }
 
-export function DeleteTeamConfirmModal({
-  team,
+export function DeleteProductConfirmModal({
+  product,
   onClose,
   onConfirm,
-}: DeleteTeamConfirmModalProps) {
+}: DeleteProductConfirmModalProps) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [confirmName, setConfirmName] = useState('');
 
-  if (!team) return null;
+  if (!product) return null;
 
   const handleConfirm = async () => {
     startTransition(async () => {
-      await onConfirm(team, confirmName);
+      await onConfirm(product, confirmName);
       onClose();
     });
   };
 
   return (
-    <AlertDialog open={Boolean(team)} onOpenChange={onClose}>
+    <AlertDialog open={Boolean(product)} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t('dashboard.profile.delete_team_confirm_title')}
+            {t('dashboard.products.delete_product_confirm_title')}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {t.rich('dashboard.profile.delete_team_confirm_description', {
-              teamName: team.name,
+            {t.rich('dashboard.products.delete_product_confirm_description', {
+              productName: product.name,
               strong: (child) => <strong>{child}</strong>,
             })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid w-full gap-1.5">
           <Label htmlFor="confirmName">
-            {t.rich('dashboard.profile.delete_team_confirm_input', {
-              teamName: `"${team.name.toUpperCase()}"`,
+            {t.rich('dashboard.products.delete_product_confirm_input', {
+              productName: `"${product.name.toUpperCase()}"`,
               code: (child) => (
                 <code className="text-xs font-semibold">{child}</code>
               ),
@@ -80,11 +83,11 @@ export function DeleteTeamConfirmModal({
               variant: 'destructive',
               size: 'sm',
             })}
-            disabled={confirmName !== team.name.toUpperCase()}
+            disabled={confirmName !== product.name.toUpperCase()}
             pending={pending}
             onClick={handleConfirm}
           >
-            {t('dashboard.profile.delete_team')}
+            {t('dashboard.products.delete_product')}
           </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>
