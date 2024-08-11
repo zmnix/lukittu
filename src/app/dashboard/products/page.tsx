@@ -20,14 +20,20 @@ export default async function ProductsPage({
 
   const allowedPageSizes = [25, 50, 100];
   const allowedSortDirections = ['asc', 'desc'];
+  const allowedSortColumns = ['name', 'createdAt'];
 
   let page = parseInt(searchParams.page as string) || 1;
   let pageSize = parseInt(searchParams.pageSize as string) || 10;
-  let sortName = searchParams.sortName as 'asc' | 'desc';
+  let sortColumn = searchParams.sortColumn as string;
+  let sortDirection = searchParams.sortDirection as 'asc' | 'desc';
   let search = (searchParams.search as string) || '';
 
-  if (!allowedSortDirections.includes(sortName)) {
-    sortName = 'asc';
+  if (!allowedSortDirections.includes(sortDirection)) {
+    sortDirection = 'desc';
+  }
+
+  if (!sortColumn || !allowedSortColumns.includes(sortColumn)) {
+    sortColumn = 'createdAt';
   }
 
   if (!allowedPageSizes.includes(pageSize)) {
@@ -65,7 +71,9 @@ export default async function ProductsPage({
         },
         skip,
         take,
-        orderBy: sortName ? { name: sortName } : undefined,
+        orderBy: {
+          [sortColumn]: sortDirection,
+        },
       },
       _count: {
         select: {

@@ -39,7 +39,7 @@ import {
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DeleteProductConfirmModal } from './ProductDeleteConfirmModal';
 import SetProductModal from './SetProductModal';
 
@@ -47,6 +47,14 @@ interface ProductListProps {
   products: Product[];
   total: number;
   hasProducts: boolean;
+}
+
+interface SortableProps {
+  pageSize?: number;
+  page?: number;
+  search?: string;
+  sortColumn?: string;
+  sortDirection?: 'asc' | 'desc';
 }
 
 export default function ProductsListCard({
@@ -73,20 +81,62 @@ export default function ProductsListCard({
   const pageSize = parseInt(searchParams.get('pageSize') as string) || 25;
   const totalPages = Math.ceil(total / pageSize);
 
+  const handleFilterChange = useCallback(
+    ({ pageSize, page, search, sortColumn, sortDirection }: SortableProps) => {
+      const currentPageSize = searchParams.get('pageSize');
+      const currentPage = searchParams.get('page');
+      const currentSearch = searchParams.get('search');
+      const currentSortColumn = searchParams.get('sortColumn');
+      const currentSortDirection = searchParams.get('sortDirection');
+
+      if (
+        currentPageSize !== pageSize?.toString() ||
+        currentPage !== page?.toString() ||
+        currentSearch !== search ||
+        currentSortColumn !== sortColumn ||
+        currentSortDirection !== sortDirection
+      ) {
+        const newSearchParams = new URLSearchParams(searchParams.toString());
+
+        if (pageSize) {
+          newSearchParams.set('pageSize', pageSize.toString());
+        }
+
+        if (page) {
+          newSearchParams.set('page', page.toString());
+        }
+
+        if (search) {
+          newSearchParams.set('search', search);
+        }
+
+        if (sortColumn) {
+          newSearchParams.set('sortColumn', sortColumn);
+        }
+
+        if (sortDirection) {
+          newSearchParams.set('sortDirection', sortDirection);
+        }
+
+        router.replace(`/dashboard/products?${newSearchParams.toString()}`);
+      }
+    },
+    [router, searchParams],
+  );
+
   useEffect(() => {
     setProducts(initialProducts);
   }, [initialProducts]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      router.replace(
-        `/dashboard/products?page=${page}&pageSize=${pageSize}` +
-          (debounceSearch ? `&search=${debounceSearch}` : ''),
-      );
+      handleFilterChange({
+        search: debounceSearch,
+      });
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [debounceSearch, page, pageSize, router]);
+  }, [debounceSearch, handleFilterChange, page, pageSize, router]);
 
   const handleProductDelete = async (
     product: Product,
@@ -115,7 +165,6 @@ export default function ProductsListCard({
         products={products}
         setProducts={setProducts}
         onClose={() => {
-          setProductToEdit(null);
           setProductModalOpen(false);
         }}
       />
@@ -163,13 +212,14 @@ export default function ProductsListCard({
                       <Button
                         variant="ghost"
                         onClick={() => {
-                          router.replace(
-                            `/dashboard/products?page=${page}&pageSize=${pageSize}&sortName=${
-                              searchParams.get('sortName') === 'desc'
-                                ? 'asc'
-                                : 'desc'
-                            }`,
-                          );
+                          handleFilterChange({
+                            sortColumn: 'name',
+                            sortDirection:
+                              searchParams.get('sortColumn') === 'name' &&
+                              searchParams.get('sortDirection') === 'asc'
+                                ? 'desc'
+                                : 'asc',
+                          });
                         }}
                       >
                         {t('general.name')}
@@ -177,7 +227,22 @@ export default function ProductsListCard({
                       </Button>
                     </TableHead>
                     <TableHead className="truncate">
-                      {t('general.created_at')}
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          handleFilterChange({
+                            sortColumn: 'createdAt',
+                            sortDirection:
+                              searchParams.get('sortColumn') === 'createdAt' &&
+                              searchParams.get('sortDirection') === 'asc'
+                                ? 'desc'
+                                : 'asc',
+                          });
+                        }}
+                      >
+                        {t('general.created_at')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
                     </TableHead>
                     <TableHead className="truncate text-right">
                       {t('general.actions')}
@@ -242,9 +307,9 @@ export default function ProductsListCard({
                   <Select
                     value={pageSize.toString()}
                     onValueChange={(value) => {
-                      router.replace(
-                        `/dashboard/products?page=1&pageSize=${value}&search=${debounceSearch}`,
-                      );
+                      handleFilterChange({
+                        pageSize: parseInt(value),
+                      });
                     }}
                   >
                     <SelectTrigger className="h-8 w-[70px]">
@@ -271,9 +336,9 @@ export default function ProductsListCard({
                     disabled={page === 1}
                     variant="outline"
                     onClick={() => {
-                      router.replace(
-                        `/dashboard/products?page=1&pageSize=${pageSize}&search=${debounceSearch}`,
-                      );
+                      handleFilterChange({
+                        page: 1,
+                      });
                     }}
                   >
                     <ChevronsLeft className="h-4 w-4" />
@@ -283,9 +348,9 @@ export default function ProductsListCard({
                     disabled={page === 1}
                     variant="outline"
                     onClick={() => {
-                      router.replace(
-                        `/dashboard/products?page=${page - 1}&pageSize=${pageSize}&search=${debounceSearch}`,
-                      );
+                      handleFilterChange({
+                        page: page - 1,
+                      });
                     }}
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -295,9 +360,9 @@ export default function ProductsListCard({
                     disabled={page === totalPages}
                     variant="outline"
                     onClick={() => {
-                      router.replace(
-                        `/dashboard/products?page=${page + 1}&pageSize=${pageSize}&search=${debounceSearch}`,
-                      );
+                      handleFilterChange({
+                        page: page + 1,
+                      });
                     }}
                   >
                     <ArrowRight className="h-4 w-4" />
@@ -307,9 +372,9 @@ export default function ProductsListCard({
                     disabled={page === totalPages}
                     variant="outline"
                     onClick={() => {
-                      router.replace(
-                        `/dashboard/products?page=${totalPages}&pageSize=${pageSize}&search=${debounceSearch}`,
-                      );
+                      handleFilterChange({
+                        page: totalPages,
+                      });
                     }}
                   >
                     <ChevronsRight className="h-4 w-4" />
