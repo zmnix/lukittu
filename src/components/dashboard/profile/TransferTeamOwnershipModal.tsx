@@ -30,7 +30,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState, useTransition } from 'react';
 
 interface TransferTeamOwnershipModalProps {
-  team: Team & { users: User[] };
+  team: (Team & { users: User[] }) | null;
   onClose: () => void;
   onConfirm: (team: Team, newOwnerId: number) => Promise<void>;
 }
@@ -57,6 +57,8 @@ export function TransferTeamOwnershipModal({
 
     return () => clearTimeout(timer);
   }, [confirmTimer]);
+
+  if (!team) return null;
 
   const handleConfirm = async () => {
     if (!newOwner) return;

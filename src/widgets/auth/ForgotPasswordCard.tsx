@@ -74,13 +74,11 @@ export default function ForgotPasswordCard() {
 
   return (
     <>
-      {successModalOpen && (
-        <ForgotPasswordSuccessModal
-          email={formWatcher.email as string}
-          open={successModalOpen}
-          onClose={() => setSuccessModalOpen(false)}
-        />
-      )}
+      <ForgotPasswordSuccessModal
+        email={formWatcher.email as string}
+        open={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+      />
       <Card className="mx-auto w-full max-w-lg p-6 max-md:max-w-md max-md:px-0">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">

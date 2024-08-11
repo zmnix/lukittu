@@ -47,9 +47,25 @@ model Team {
   ownerId   Int
   owner     User      @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   users     User[]    @relation("TeamUsers")
+  products  Product[]
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  url         String?
+  teamId      Int
+  team        Team      @relation(fields: [teamId], references: [id])
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  /// Product name must be unique within a team
+  @@unique([name, teamId])
 }
 
 enum Provider {

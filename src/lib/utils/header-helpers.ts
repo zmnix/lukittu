@@ -43,3 +43,14 @@ export const getLanguage = () => {
 
   return lang;
 };
+
+export const getSelectedTeam = () => {
+  const selectedTeamCookie = cookies().get('selectedTeam')?.value;
+
+  if (!selectedTeamCookie) return null;
+
+  if (isNaN(parseInt(selectedTeamCookie)) || parseInt(selectedTeamCookie) < 1)
+    return null;
+
+  return parseInt(selectedTeamCookie);
+};

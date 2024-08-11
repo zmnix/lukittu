@@ -17,7 +17,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 
 interface DeleteTeamConfirmModalProps {
-  team: Team;
+  team: Team | null;
   onClose: () => void;
   onConfirm: (team: Team, teamNameConfirmation: string) => Promise<void>;
 }
@@ -30,6 +30,8 @@ export function DeleteTeamConfirmModal({
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [confirmName, setConfirmName] = useState('');
+
+  if (!team) return null;
 
   const handleConfirm = async () => {
     startTransition(async () => {

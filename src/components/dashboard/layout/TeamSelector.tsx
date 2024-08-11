@@ -75,12 +75,10 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
 
   return (
     <>
-      {createTeamModalOpen && (
-        <CreateTeamModal
-          open={createTeamModalOpen}
-          onClose={() => setCreateTeamModalOpen(false)}
-        />
-      )}
+      <CreateTeamModal
+        open={createTeamModalOpen}
+        onClose={() => setCreateTeamModalOpen(false)}
+      />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

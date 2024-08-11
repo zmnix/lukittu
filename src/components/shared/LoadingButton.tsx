@@ -16,7 +16,7 @@ export default function LoadingButton({
   pending = false,
   variant = 'default',
   disabled = false,
-  size = 'default',
+  size = 'sm',
   ...props
 }: LoadingButtonProps) {
   return (

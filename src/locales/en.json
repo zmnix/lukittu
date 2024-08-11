@@ -31,7 +31,14 @@
     "bad_request": "Bad request!",
     "team_has_users": "Team has still users left and cannot be deleted!",
     "team_owner_cannot_leave": "Team owner cannot leave the team!",
-    "user_not_in_team": "User is not in the team!"
+    "user_not_in_team": "User is not in the team!",
+    "product_name_required": "Product name is required!",
+    "product_name_min_length": "Product name must be at least 3 characters long!",
+    "product_name_max_length": "Product name must be at most 255 characters long!",
+    "product_name_invalid": "Product name can only contain letters, numbers, spaces, and the following characters: - _",
+    "product_description_max_length": "Product description must be at most 500 characters long!",
+    "product_url_invalid": "Product URL is invalid!",
+    "product_already_exists": "Team already has a product with this name!"
   },
   "general": {
     "error": "Error",
@@ -76,7 +83,9 @@
     "transfer_ownership": "Transfer ownership",
     "select_new_owner": "Select new owner",
     "no_users_found": "No users found",
-    "search_user": "Search user..."
+    "search_user": "Search user...",
+    "description": "Description",
+    "url": "URL"
   },
   "auth": {
     "oauth": {
@@ -179,6 +188,11 @@
       "delete_team_not_empty_description": "Team <strong>{teamName}</strong> must be empty from users before it can be deleted. Please remove all users from the team and try again when you are the last user left.",
       "transfer_ownership_title": "Transfer ownership",
       "transfer_ownership_description": "You are about to transfer the ownership of team <strong>{teamName}</strong>. Please select a new owner from the list below. Keep in mind that you will lose all ownership rights and become a member of the team."
+    },
+    "products": {
+      "add_product": "Add product",
+      "product_description": "Products are what you sell to your customers. It can be any digital software you want to license.",
+      "my_first_product_placeholder": "My first product"
     }
   }
 }

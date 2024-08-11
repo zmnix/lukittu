@@ -14,7 +14,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState, useTransition } from 'react';
 
 interface LeaveTeamConfirmModalProps {
-  team: Team;
+  team: Team | null;
   onClose: () => void;
   // eslint-disable-next-line no-unused-vars
   onConfirm: (team: Team) => Promise<void>;
@@ -40,6 +40,8 @@ export function LeaveTeamConfirmModal({
 
     return () => clearTimeout(timer);
   }, [confirmTimer]);
+
+  if (!team) return null;
 
   const handleConfirm = async () => {
     startTransition(async () => {

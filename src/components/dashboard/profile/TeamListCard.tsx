@@ -119,27 +119,21 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
   return (
     <>
       <ConfirmModal />
-      {teamLeaveConfirmation && (
-        <LeaveTeamConfirmModal
-          team={teamLeaveConfirmation}
-          onClose={() => setTeamLeaveConfirmation(null)}
-          onConfirm={handleTeamLeave}
-        />
-      )}
-      {teamDeleteConfirmation && (
-        <DeleteTeamConfirmModal
-          team={teamDeleteConfirmation}
-          onClose={() => setTeamDeleteConfirmation(null)}
-          onConfirm={handleTeamDelete}
-        />
-      )}
-      {teamTransferConfirmation && (
-        <TransferTeamOwnershipModal
-          team={teamTransferConfirmation}
-          onClose={() => setTeamTransferConfirmation(null)}
-          onConfirm={handleTeamTransfer}
-        />
-      )}
+      <LeaveTeamConfirmModal
+        team={teamLeaveConfirmation}
+        onClose={() => setTeamLeaveConfirmation(null)}
+        onConfirm={handleTeamLeave}
+      />
+      <DeleteTeamConfirmModal
+        team={teamDeleteConfirmation}
+        onClose={() => setTeamDeleteConfirmation(null)}
+        onConfirm={handleTeamDelete}
+      />
+      <TransferTeamOwnershipModal
+        team={teamTransferConfirmation}
+        onClose={() => setTeamTransferConfirmation(null)}
+        onConfirm={handleTeamTransfer}
+      />
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-bold">

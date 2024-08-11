@@ -100,16 +100,12 @@ export default function LoginCard() {
 
   return (
     <>
-      {error && (
-        <OauthLoginFailedccessModal error={error} provider={provider} />
-      )}
-      {resendVerifyEmailModalOpen && (
-        <ResendVerifyEmailModal
-          email={formWatcher.email as string}
-          open={resendVerifyEmailModalOpen}
-          onClose={() => setResendVerifyEmailModalOpen(false)}
-        />
-      )}
+      <OauthLoginFailedccessModal error={error} provider={provider} />
+      <ResendVerifyEmailModal
+        email={formWatcher.email as string}
+        open={resendVerifyEmailModalOpen}
+        onClose={() => setResendVerifyEmailModalOpen(false)}
+      />
       <Card className="mx-auto w-full max-w-lg p-6 max-md:max-w-md max-md:px-0">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">

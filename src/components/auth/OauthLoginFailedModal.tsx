@@ -8,11 +8,10 @@ import {
 } from '@/components/ui/dialog';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import LoadingButton from '../shared/LoadingButton';
 
 interface OauthLoginFailedModalProps {
-  error: string;
+  error: string | null;
   provider: string | null;
 }
 
@@ -21,17 +20,17 @@ export default function OauthLoginFailedccessModal({
   provider,
 }: OauthLoginFailedModalProps) {
   const t = useTranslations();
-  const [open, setOpen] = useState(true);
 
   const router = useRouter();
 
   const handleClose = () => {
-    setOpen(false);
     router.push('/auth/login');
   };
 
+  if (!error) return null;
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={Boolean(error)} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t('auth.login.login_failed')}</DialogTitle>
