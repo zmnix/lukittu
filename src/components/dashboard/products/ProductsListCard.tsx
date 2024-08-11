@@ -80,7 +80,8 @@ export default function ProductsListCard({
   useEffect(() => {
     const timeout = setTimeout(() => {
       router.replace(
-        `/dashboard/products?page=${page}&pageSize=${pageSize}&search=${debounceSearch}`,
+        `/dashboard/products?page=${page}&pageSize=${pageSize}` +
+          (debounceSearch ? `&search=${debounceSearch}` : ''),
       );
     }, 500);
 
