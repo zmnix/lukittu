@@ -33,7 +33,7 @@ interface TeamListProps {
   teams: (Team & { isOwner: boolean; users: User[] })[];
 }
 
-export default function TeamList({ teams: initialTeams }: TeamListProps) {
+export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
   const [teams, setTeams] =
     useState<(Team & { isOwner: boolean; users: User[] })[]>(initialTeams);
   const [teamLeaveConfirmation, setTeamLeaveConfirmation] =

@@ -22,7 +22,7 @@ interface LoginSessionsProps {
   sessions: (Session & { current: boolean })[];
 }
 
-export default function LoginSessions({
+export default function LoginSessionsCard({
   sessions: initialSessions,
 }: LoginSessionsProps) {
   const [sessions, setSessions] =

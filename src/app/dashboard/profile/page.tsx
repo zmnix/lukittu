@@ -1,6 +1,6 @@
-import GeneralSettings from '@/components/dashboard/profile/GeneralSettings';
-import LoginSessions from '@/components/dashboard/profile/LoginSessions';
-import TeamList from '@/components/dashboard/profile/TeamList';
+import GeneralSettingsCard from '@/components/dashboard/profile/GeneralSettingsCard';
+import LoginSessionsCard from '@/components/dashboard/profile/LoginSessionsCard';
+import TeamListCard from '@/components/dashboard/profile/TeamListCard';
 import { Separator } from '@/components/ui/separator';
 import { getSession } from '@/lib/utils/auth';
 import { getTranslations } from 'next-intl/server';
@@ -43,9 +43,9 @@ export default async function ProfilePage() {
         <Separator className="mt-2" />
       </div>
       <div className="mt-6 flex flex-col gap-6">
-        <GeneralSettings user={session.user} />
-        <LoginSessions sessions={sessionsWithCurrent} />
-        <TeamList teams={teamsWithOwner} />
+        <GeneralSettingsCard user={session.user} />
+        <LoginSessionsCard sessions={sessionsWithCurrent} />
+        <TeamListCard teams={teamsWithOwner} />
       </div>
     </>
   );

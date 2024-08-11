@@ -28,7 +28,7 @@ interface GeneralSettingsProps {
   user: User;
 }
 
-export default function GeneralSettings({
+export default function GeneralSettingsCard({
   user: initialUser,
 }: GeneralSettingsProps) {
   const t = useTranslations();

@@ -1,3 +1,4 @@
+import ProductsList from '@/components/dashboard/products/ProductsList';
 import { Separator } from '@/components/ui/separator';
 import { getTranslations } from 'next-intl/server';
 
@@ -9,6 +10,9 @@ export default async function ProductsPage() {
         {t('dashboard.navigation.products')}
       </h1>
       <Separator className="mt-2" />
+      <div className="mt-6 flex flex-col gap-6">
+        <ProductsList />
+      </div>
     </div>
   );
 }
