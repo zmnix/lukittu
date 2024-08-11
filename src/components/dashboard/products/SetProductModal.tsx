@@ -85,6 +85,8 @@ export default function SetProductModal({
         });
       }
 
+      onClose();
+
       if (res.product) {
         const existingProduct = products.find((p) => p.id === product?.id);
         if (existingProduct) {
@@ -95,8 +97,6 @@ export default function SetProductModal({
           setProducts([...products, res.product]);
         }
       }
-
-      onClose();
     });
   };
 
