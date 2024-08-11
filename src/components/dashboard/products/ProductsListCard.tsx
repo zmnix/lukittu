@@ -8,6 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -18,30 +26,66 @@ import {
 } from '@/components/ui/table';
 import { useModal } from '@/hooks/useModal';
 import { Product } from '@prisma/client';
-import { EllipsisVertical, Package, Plus } from 'lucide-react';
+import {
+  ArrowDownUp,
+  ArrowLeft,
+  ArrowRight,
+  ChevronsLeft,
+  ChevronsRight,
+  EllipsisVertical,
+  Package,
+  Plus,
+  Search,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DeleteProductConfirmModal } from './ProductDeleteConfirmModal';
 import SetProductModal from './SetProductModal';
 
 interface ProductListProps {
   products: Product[];
+  total: number;
+  hasProducts: boolean;
 }
 
 export default function ProductsListCard({
   products: initialProducts,
+  total,
+  hasProducts,
 }: ProductListProps) {
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const t = useTranslations();
+
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const locale = useLocale();
-  const t = useTranslations();
+  const [debounceSearch, setDebounceSearch] = useState(
+    searchParams.get('search') || '',
+  );
+
   const { ConfirmModal, openConfirmModal } = useModal();
+
+  const page = parseInt(searchParams.get('page') as string) || 1;
+  const pageSize = parseInt(searchParams.get('pageSize') as string) || 25;
+  const totalPages = Math.ceil(total / pageSize);
 
   useEffect(() => {
     setProducts(initialProducts);
   }, [initialProducts]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace(
+        `/dashboard/products?page=${page}&pageSize=${pageSize}&search=${debounceSearch}`,
+      );
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [debounceSearch, page, pageSize, router]);
 
   const handleProductDelete = async (
     product: Product,
@@ -98,69 +142,180 @@ export default function ProductsListCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {products.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="truncate">
-                    {t('general.name')}
-                  </TableHead>
-                  <TableHead className="truncate">
-                    {t('general.created_at')}
-                  </TableHead>
-                  <TableHead className="truncate text-right">
-                    {t('general.actions')}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="truncate">{product.name}</TableCell>
-                    <TableCell
-                      className="truncate"
-                      title={new Date(product.createdAt).toLocaleString(locale)}
-                    >
-                      {new Date(product.createdAt).toLocaleString(locale, {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </TableCell>
-                    <TableCell className="truncate py-0 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="icon" variant="ghost">
-                            <EllipsisVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="font-medium"
-                          forceMount
-                        >
-                          <DropdownMenuItem
-                            className="hover:cursor-pointer"
-                            onClick={() => {
-                              setProductToEdit(product);
-                              setProductModalOpen(true);
-                            }}
-                          >
-                            {t('dashboard.products.edit_product')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive hover:cursor-pointer"
-                            onClick={() => setProductToDelete(product)}
-                          >
-                            {t('dashboard.products.delete_product')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+          <div className="relative mb-4 flex max-w-xs items-center max-sm:max-w-full">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+            <Input
+              className="pl-8"
+              placeholder="Search products"
+              value={debounceSearch}
+              onChange={(e) => {
+                setDebounceSearch(e.target.value);
+              }}
+            />
+          </div>
+          {hasProducts ? (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="truncate">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          router.replace(
+                            `/dashboard/products?page=${page}&pageSize=${pageSize}&sortName=${
+                              searchParams.get('sortName') === 'desc'
+                                ? 'asc'
+                                : 'desc'
+                            }`,
+                          );
+                        }}
+                      >
+                        {t('general.name')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="truncate">
+                      {t('general.created_at')}
+                    </TableHead>
+                    <TableHead className="truncate text-right">
+                      {t('general.actions')}
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="truncate">{product.name}</TableCell>
+                      <TableCell
+                        className="truncate"
+                        title={new Date(product.createdAt).toLocaleString(
+                          locale,
+                        )}
+                      >
+                        {new Date(product.createdAt).toLocaleString(locale, {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </TableCell>
+                      <TableCell className="truncate py-0 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="icon" variant="ghost">
+                              <EllipsisVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="font-medium"
+                            forceMount
+                          >
+                            <DropdownMenuItem
+                              className="hover:cursor-pointer"
+                              onClick={() => {
+                                setProductToEdit(product);
+                                setProductModalOpen(true);
+                              }}
+                            >
+                              {t('dashboard.products.edit_product')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive hover:cursor-pointer"
+                              onClick={() => setProductToDelete(product)}
+                            >
+                              {t('dashboard.products.delete_product')}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="mt-4 flex items-center justify-end gap-4">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">
+                    {t('general.rows_per_page')}:
+                  </p>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => {
+                      router.replace(
+                        `/dashboard/products?page=1&pageSize=${value}&search=${debounceSearch}`,
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    {t('general.page_of', {
+                      page: page,
+                      pages: totalPages,
+                    })}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    className="hidden h-8 w-8 p-0 lg:flex"
+                    disabled={page === 1}
+                    variant="outline"
+                    onClick={() => {
+                      router.replace(
+                        `/dashboard/products?page=1&pageSize=${pageSize}&search=${debounceSearch}`,
+                      );
+                    }}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    className="h-8 w-8 p-0"
+                    disabled={page === 1}
+                    variant="outline"
+                    onClick={() => {
+                      router.replace(
+                        `/dashboard/products?page=${page - 1}&pageSize=${pageSize}&search=${debounceSearch}`,
+                      );
+                    }}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    className="h-8 w-8 p-0"
+                    disabled={page === totalPages}
+                    variant="outline"
+                    onClick={() => {
+                      router.replace(
+                        `/dashboard/products?page=${page + 1}&pageSize=${pageSize}&search=${debounceSearch}`,
+                      );
+                    }}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    className="hidden h-8 w-8 p-0 lg:flex"
+                    disabled={page === totalPages}
+                    variant="outline"
+                    onClick={() => {
+                      router.replace(
+                        `/dashboard/products?page=${totalPages}&pageSize=${pageSize}&search=${debounceSearch}`,
+                      );
+                    }}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">

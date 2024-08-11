@@ -82,7 +82,9 @@
     "search_user": "Search user...",
     "description": "Description",
     "url": "URL",
-    "created_at": "Created at"
+    "created_at": "Created at",
+    "page_of": "Page {page} of {pages}",
+    "rows_per_page": "Rows per page"
   },
   "auth": {
     "oauth": {

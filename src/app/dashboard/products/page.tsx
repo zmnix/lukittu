@@ -5,14 +5,41 @@ import { getSession } from '@/lib/utils/auth';
 import { getSelectedTeam } from '@/lib/utils/header-helpers';
 import { getTranslations } from 'next-intl/server';
 
-export default async function ProductsPage() {
+interface ProductsPageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
   const t = await getTranslations();
   const session = await getSession({ user: true });
   const selectedTeam = getSelectedTeam();
 
-  if (!selectedTeam) {
-    return null;
+  if (!selectedTeam) return null;
+
+  const allowedPageSizes = [25, 50, 100];
+  const allowedSortDirections = ['asc', 'desc'];
+
+  let page = parseInt(searchParams.page as string) || 1;
+  let pageSize = parseInt(searchParams.pageSize as string) || 10;
+  let sortName = searchParams.sortName as 'asc' | 'desc';
+  let search = (searchParams.search as string) || '';
+
+  if (!allowedSortDirections.includes(sortName)) {
+    sortName = 'asc';
   }
+
+  if (!allowedPageSizes.includes(pageSize)) {
+    pageSize = 25;
+  }
+
+  if (page < 1) {
+    page = 1;
+  }
+
+  const skip = (page - 1) * pageSize;
+  const take = pageSize;
 
   const teamProducts = await prisma.team.findUnique({
     where: {
@@ -28,14 +55,42 @@ export default async function ProductsPage() {
       products: {
         where: {
           deletedAt: null,
+          teamId: selectedTeam,
+          name: search
+            ? {
+                contains: search,
+                mode: 'insensitive',
+              }
+            : undefined,
+        },
+        skip,
+        take,
+        orderBy: sortName ? { name: sortName } : undefined,
+      },
+      _count: {
+        select: {
+          products: {
+            where: {
+              deletedAt: null,
+              teamId: selectedTeam,
+              name: search
+                ? { contains: search, mode: 'insensitive' }
+                : undefined,
+            },
+          },
         },
       },
     },
   });
 
-  if (!teamProducts) {
-    return null;
-  }
+  const teamHasProducts = await prisma.product.findFirst({
+    where: {
+      teamId: selectedTeam,
+      deletedAt: null,
+    },
+  });
+
+  if (!teamProducts) return null;
 
   return (
     <div>
@@ -44,7 +99,11 @@ export default async function ProductsPage() {
       </h1>
       <Separator className="mt-2" />
       <div className="mt-6 flex flex-col gap-6">
-        <ProductsListCard products={teamProducts.products} />
+        <ProductsListCard
+          hasProducts={Boolean(teamHasProducts)}
+          products={teamProducts.products}
+          total={teamProducts._count.products}
+        />
       </div>
     </div>
   );
