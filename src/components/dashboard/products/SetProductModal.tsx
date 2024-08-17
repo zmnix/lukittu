@@ -27,27 +27,25 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 interface SetProductModalProps {
-  open: boolean;
   onClose: () => void;
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
-  products: Product[];
+  open: boolean;
   product: Product | null;
 }
 
 export default function SetProductModal({
-  open,
   onClose,
-  setProducts,
-  products,
+  open,
   product,
 }: SetProductModalProps) {
   const t = useTranslations();
   const { ConfirmModal, openConfirmModal } = useModal();
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   const form = useForm<SetProductSchema>({
     resolver: zodResolver(setProductSchema(t)),
@@ -86,17 +84,7 @@ export default function SetProductModal({
       }
 
       onClose();
-
-      if (res.product) {
-        const existingProduct = products.find((p) => p.id === product?.id);
-        if (existingProduct) {
-          setProducts(
-            products.map((p) => (p.id === product?.id ? res.product : p)),
-          );
-        } else {
-          setProducts([...products, res.product]);
-        }
-      }
+      router.refresh();
     });
   };
 
@@ -178,7 +166,9 @@ export default function SetProductModal({
                 type="submit"
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
-                {t('dashboard.products.add_product')}
+                {Boolean(product)
+                  ? t('dashboard.products.edit_product')
+                  : t('dashboard.products.add_product')}
               </LoadingButton>
             </div>
           </DialogFooter>
