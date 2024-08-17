@@ -162,6 +162,7 @@ export default function SetProductModal({
                   </FormItem>
                 )}
               />
+              <button className="hidden" type="submit" />
             </form>
           </Form>
           <DialogFooter>

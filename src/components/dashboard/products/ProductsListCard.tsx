@@ -108,6 +108,8 @@ export default function ProductsListCard({
 
         if (search) {
           newSearchParams.set('search', search);
+        } else {
+          newSearchParams.delete('search');
         }
 
         if (sortColumn) {
