@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import TableSearch from '../../shared/table/TableSearch';
 import AddProductButton from './AddProductButton';
 import { ProductListTable } from './ProductListTable';
+import ProductListTableSkeleton from './ProductListTableSkeleton';
 
 interface ProductsListCardProps {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -26,7 +27,7 @@ export default async function ProductsListCard({
         </CardHeader>
         <CardContent>
           <TableSearch />
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<ProductListTableSkeleton />}>
             <ProductListTable searchParams={searchParams} />
           </Suspense>
         </CardContent>
