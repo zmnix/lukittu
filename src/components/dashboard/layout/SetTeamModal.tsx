@@ -1,5 +1,5 @@
 'use client';
-import setTeam from '@/actions/teams/set-team';
+import { TeamsPostResponse } from '@/app/api/teams/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Form,
@@ -22,11 +22,11 @@ import {
   SetTeamSchema,
   setTeamSchema,
 } from '@/lib/validation/team/set-team-schema';
+import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useEffect, useTransition } from 'react';
+import { useContext, useEffect, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 interface SetTeamModalProps {
@@ -42,8 +42,8 @@ export default function SetTeamModal({
   teamToEdit,
 }: SetTeamModalProps) {
   const t = useTranslations();
+  const authCtx = useContext(AuthContext);
   const [pending, startTransition] = useTransition();
-  const router = useRouter();
 
   const form = useForm<SetTeamSchema>({
     resolver: zodResolver(setTeamSchema(t)),
@@ -52,10 +52,21 @@ export default function SetTeamModal({
     },
   });
 
+  const handleTeamCreate = async (data: SetTeamSchema) => {
+    const response = await fetch('/api/teams', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+
+    const responseData = (await response.json()) as TeamsPostResponse;
+
+    return responseData;
+  };
+
   const onSubmit = (data: SetTeamSchema) => {
     startTransition(async () => {
-      const res = await setTeam(data);
-      if (res?.isError) {
+      const res = await handleTeamCreate(data);
+      if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof SetTeamSchema, {
             type: 'manual',
@@ -64,7 +75,28 @@ export default function SetTeamModal({
         }
       }
 
-      router.refresh();
+      if ('team' in res && authCtx.session) {
+        if (teamToEdit) {
+          authCtx.setSession({
+            ...authCtx.session,
+            user: {
+              ...authCtx.session.user,
+              teams: authCtx.session.user.teams.map((team) =>
+                team.id === res.team?.id ? res.team : team,
+              ),
+            },
+          });
+        } else {
+          authCtx.setSession({
+            ...authCtx.session,
+            user: {
+              ...authCtx.session.user,
+              teams: [...authCtx.session.user.teams, res.team],
+            },
+          });
+        }
+      }
+
       onOpenChange(false);
     });
   };

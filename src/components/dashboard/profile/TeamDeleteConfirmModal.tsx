@@ -33,7 +33,8 @@ export function DeleteTeamConfirmModal({
 
   if (!team) return null;
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (e: React.FormEvent) => {
+    e.preventDefault();
     startTransition(async () => {
       await onConfirm(team, confirmName);
       onOpenChange(false);
@@ -54,7 +55,7 @@ export function DeleteTeamConfirmModal({
             })}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
-        <div className="grid w-full gap-1.5 px-4">
+        <form className="grid w-full gap-1.5 px-4" onSubmit={handleConfirm}>
           <Label htmlFor="confirmName">
             {t.rich('dashboard.profile.delete_team_confirm_input', {
               teamName: `"${team.name.toUpperCase()}"`,
@@ -67,7 +68,8 @@ export function DeleteTeamConfirmModal({
             id="confirmName"
             onChange={(e) => setConfirmName(e.target.value)}
           />
-        </div>
+          <input className="hidden" type="submit" />
+        </form>
         <ResponsiveDialogFooter>
           <LoadingButton
             size="sm"

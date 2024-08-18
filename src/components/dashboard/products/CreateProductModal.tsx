@@ -1,5 +1,5 @@
 'use client';
-import setProduct from '@/actions/products/set-product';
+import { ProductPostResponse } from '@/app/api/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Form,
@@ -47,10 +47,24 @@ export default function CreateProductModal() {
     },
   });
 
+  const handleProductCreate = async (data: SetProductSchema) => {
+    const response = await fetch('/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = (await response.json()) as ProductPostResponse;
+
+    return responseData;
+  };
+
   const onSubmit = (data: SetProductSchema) => {
     startTransition(async () => {
-      const res = await setProduct(data);
-      if (res.isError) {
+      const res = await handleProductCreate(data);
+      if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof SetProductSchema, {
             type: 'manual',

@@ -1,9 +1,8 @@
-'use server';
 import prisma from '@/lib/database/prisma';
 import { cookies } from 'next/headers';
-import { redirect, RedirectType } from 'next/navigation';
+import { NextResponse } from 'next/server';
 
-export default async function signOut() {
+export async function POST() {
   const sessionId = cookies().get('session')?.value;
 
   if (sessionId) {
@@ -19,5 +18,7 @@ export default async function signOut() {
     });
   }
 
-  redirect('/auth/login', RedirectType.replace);
+  return NextResponse.json({
+    success: true,
+  });
 }

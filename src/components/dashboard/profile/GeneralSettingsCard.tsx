@@ -16,23 +16,18 @@ import {
   UpdateProfileSchema,
   updateProfileSchema,
 } from '@/lib/validation/profile/update-profile-schema';
+import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { User } from '@prisma/client';
 import { Edit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useContext, useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import ChangePasswordModal from './ChangePasswordModal';
 
-interface GeneralSettingsProps {
-  user: User;
-}
-
-export default function GeneralSettingsCard({
-  user: initialUser,
-}: GeneralSettingsProps) {
+export default function GeneralSettingsCard() {
   const t = useTranslations();
-  const [user, setUser] = useState<User>(initialUser);
+  const authCtx = useContext(AuthContext);
+  const user = authCtx.session?.user;
   const [pending, startTransition] = useTransition();
   const [edit, setEdit] = useState(false);
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
@@ -40,9 +35,15 @@ export default function GeneralSettingsCard({
   const form = useForm<UpdateProfileSchema>({
     resolver: zodResolver(updateProfileSchema(t)),
     defaultValues: {
-      fullName: user.fullName,
+      fullName: '',
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      form.reset({ fullName: user.fullName });
+    }
+  }, [form, user]);
 
   const handleCancel = () => {
     setEdit(false);
@@ -60,7 +61,16 @@ export default function GeneralSettingsCard({
       }
 
       if (!res.isError) {
-        setUser((prev) => ({ ...prev, fullName: data.fullName }));
+        const session = authCtx.session;
+        if (session) {
+          authCtx.setSession({
+            ...session,
+            user: {
+              ...session.user,
+              fullName: data.fullName,
+            },
+          });
+        }
         setEdit(false);
       }
     });
@@ -88,7 +98,7 @@ export default function GeneralSettingsCard({
             >
               <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
                 <div className="w-1/3 font-semibold">{t('general.email')}</div>
-                <div className="w-2/3">{user.email}</div>
+                <div className="w-2/3">{user?.email}</div>
               </div>
               <div className="flex min-h-10 items-start text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
                 <div className="flex h-full min-h-10 w-1/3 items-center font-semibold max-sm:h-auto max-sm:min-h-[auto]">
@@ -109,7 +119,7 @@ export default function GeneralSettingsCard({
                   />
                 ) : (
                   <div className="flex min-h-10 w-2/3 items-center max-sm:w-full">
-                    {user.fullName}
+                    {user?.fullName}
                   </div>
                 )}
               </div>
@@ -119,7 +129,7 @@ export default function GeneralSettingsCard({
                 </div>
                 {edit ? (
                   <Button
-                    disabled={user.provider !== 'CREDENTIALS'}
+                    disabled={user?.provider !== 'CREDENTIALS'}
                     size="sm"
                     variant="secondary"
                     onClick={() => setChangePasswordModalOpen(true)}
@@ -137,7 +147,7 @@ export default function GeneralSettingsCard({
                 <div className="w-2/3">
                   {firstLetterUppercase(
                     t(
-                      `auth.oauth.${user.provider.toLowerCase() as 'google' | 'credentials'}`,
+                      `auth.oauth.${user?.provider.toLowerCase() as 'google' | 'credentials'}`,
                     ),
                   )}
                 </div>

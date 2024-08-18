@@ -1,5 +1,5 @@
 'use client';
-import loginWithCredentials from '@/actions/auth/login';
+import { LoginPostResponse } from '@/app/api/auth/login/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import OauthLoginFailedccessModal from '@/components/auth/OauthLoginFailedModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
@@ -31,13 +31,14 @@ import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 export default function LoginCard() {
   const t = useTranslations();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const turnstile = useRef<TurnstileInstance>(null);
   const [turnstileLoading, setTurnstileLoading] = useState(false);
@@ -77,10 +78,25 @@ export default function LoginCard() {
     }
   }, [error]);
 
+  const handleCredentialsLogin = async (data: LoginSchema) => {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+
+    const responseData = (await response.json()) as LoginPostResponse;
+
+    return responseData;
+  };
+
   const onSubmit = (data: LoginSchema) => {
     startTransition(async () => {
-      const res = await loginWithCredentials(data);
-      if (res?.isError) {
+      const res = await handleCredentialsLogin(data);
+      if ('message' in res) {
         if (res.reverifyEmail) {
           return setResendVerifyEmailModalOpen(true);
         }
@@ -95,6 +111,9 @@ export default function LoginCard() {
         // Fallback should never happen
         return setFormError(res.message ?? t('general.error_occurred'));
       }
+
+      // Redirect to dashboard
+      router.push('/dashboard');
     });
   };
 
@@ -116,7 +135,7 @@ export default function LoginCard() {
       <ResendVerifyEmailModal
         email={formWatcher.email as string}
         open={resendVerifyEmailModalOpen}
-        onClose={() => setResendVerifyEmailModalOpen(false)}
+        onOpenChange={setResendVerifyEmailModalOpen}
       />
       <Card className="mx-auto w-full max-w-lg p-6 max-md:max-w-md max-md:px-0">
         <CardHeader className="space-y-1">

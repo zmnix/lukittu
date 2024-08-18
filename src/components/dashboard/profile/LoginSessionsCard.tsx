@@ -15,22 +15,28 @@ import { getRelativeTimeString } from '@/lib/utils/date-helpers';
 import { Session } from '@prisma/client';
 import { LogOut } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import UAParser from 'ua-parser-js';
 
-interface LoginSessionsProps {
-  sessions: (Session & { current: boolean })[];
-}
-
-export default function LoginSessionsCard({
-  sessions: initialSessions,
-}: LoginSessionsProps) {
-  const [sessions, setSessions] =
-    useState<(Session & { current: boolean })[]>(initialSessions);
+export default function LoginSessionsCard() {
+  const [sessions, setSessions] = useState<(Session & { current: boolean })[]>(
+    [],
+  );
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const t = useTranslations();
   const locale = useLocale();
+
+  useEffect(() => {
+    startTransition(async () => {
+      const res = await fetch('/api/session');
+      const data = await res.json();
+      console.log(data);
+      if (res.ok) {
+        setSessions(data.sessions);
+      }
+    });
+  }, []);
 
   const parseDeviceFromUserAgent = (userAgent: string | null) => {
     if (!userAgent) return null;
@@ -100,7 +106,7 @@ export default function LoginSessionsCard({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sessions.map((session) => (
+            {sessions?.map((session) => (
               <TableRow key={session.id}>
                 <TableCell className="truncate">
                   {session.country ?? 'N/A'}

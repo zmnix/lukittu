@@ -1,19 +1,27 @@
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
+import { ErrorResponse } from '@/types/common-api-types';
 import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
-export interface LicenseKeyResponse {
-  licenseKey: string;
-}
+export type LicenseKeyResponse =
+  | ErrorResponse
+  | {
+      licenseKey: string;
+    };
 
 export async function GET(): Promise<NextResponse<LicenseKeyResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
   const selectedTeam = getSelectedTeam();
 
   if (!selectedTeam) {
-    throw new Error(t('validation.team_not_found'));
+    return NextResponse.json(
+      {
+        message: t('validation.team_not_found'),
+      },
+      { status: 404 },
+    );
   }
 
   const session = await getSession({
@@ -29,8 +37,22 @@ export async function GET(): Promise<NextResponse<LicenseKeyResponse>> {
     },
   });
 
+  if (!session) {
+    return NextResponse.json(
+      {
+        message: t('validation.unauthorized'),
+      },
+      { status: 401 },
+    );
+  }
+
   if (!session.user.teams.length) {
-    throw new Error(t('validation.team_not_found'));
+    return NextResponse.json(
+      {
+        message: t('validation.team_not_found'),
+      },
+      { status: 404 },
+    );
   }
 
   const generateRandomString = (length: number): string => {

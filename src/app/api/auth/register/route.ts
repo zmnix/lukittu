@@ -1,49 +1,54 @@
-'use server';
 import prisma from '@/lib/database/prisma';
 import { verifyTurnstileToken } from '@/lib/utils/cloudflare-helpers';
 import { hashPassword } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { sendEmail } from '@/lib/utils/nodemailer';
 import {
-  RegisterSchema,
   registerSchema,
+  RegisterSchema,
 } from '@/lib/validation/auth/register-schema';
+import { ErrorResponse } from '@/types/common-api-types';
 import { JwtTypes } from '@/types/jwt-types-enum';
 import { Provider } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export default async function register({
-  email,
-  password,
-  fullName,
-  terms,
-  token,
-}: RegisterSchema) {
+export type RegisterPostResponse =
+  | ErrorResponse
+  | {
+      success: boolean;
+    };
+
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<RegisterPostResponse>> {
+  const body = (await request.json()) as RegisterSchema;
+
   const t = await getTranslations({ locale: getLanguage() });
-  const validated = await registerSchema(t).safeParseAsync({
-    email,
-    password,
-    fullName,
-    terms,
-    token,
-  });
+  const validated = await registerSchema(t).safeParseAsync(body);
 
   if (!validated.success) {
-    return {
-      isError: true,
-      message: validated.error.errors[0].message,
-      field: validated.error.errors[0].path[0],
-    };
+    return NextResponse.json(
+      {
+        message: validated.error.errors[0].message,
+        field: validated.error.errors[0].path[0],
+      },
+      { status: 400 },
+    );
   }
+
+  const { email, password, fullName, token } = validated.data;
 
   const turnstileValid = await verifyTurnstileToken(token);
 
   if (!turnstileValid) {
-    return {
-      isError: true,
-      message: t('validation.invalid_turnstile_token'),
-    };
+    return NextResponse.json(
+      {
+        message: t('validation.invalid_turnstile_token'),
+      },
+      { status: 400 },
+    );
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -51,27 +56,35 @@ export default async function register({
   });
 
   if (existingUser && existingUser.provider !== Provider.CREDENTIALS) {
-    return {
-      isError: true,
-      message: t('general.wrong_provider', {
-        provider: t(`auth.oauth.${existingUser.provider.toLowerCase()}` as any),
-      }),
-    };
+    return NextResponse.json(
+      {
+        message: t('general.wrong_provider', {
+          provider: t(
+            `auth.oauth.${existingUser.provider.toLowerCase()}` as any,
+          ),
+        }),
+      },
+      { status: 400 },
+    );
   }
 
   if (existingUser && existingUser.emailVerified) {
-    return {
-      isError: true,
-      message: t('auth.register.email_already_in_use'),
-      field: 'email',
-    };
+    return NextResponse.json(
+      {
+        message: t('auth.register.email_already_in_use'),
+      },
+      { status: 400 },
+    );
   }
 
   if (existingUser && !existingUser.emailVerified) {
-    return {
-      isError: true,
-      reverifyEmail: true,
-    };
+    return NextResponse.json(
+      {
+        message: t('auth.login.email_not_verified'),
+        reverifyEmail: true,
+      },
+      { status: 400 },
+    );
   }
 
   const passwordHash = hashPassword(password);
@@ -117,21 +130,23 @@ export default async function register({
     to: email,
     subject: 'Verify your email address',
     html: `
-            <p>
-                Welcome to our app! To get started, please verify your email address by clicking the link below.
-            </p>
-            <a href="${verifyLink}">Verify email address</a>
-        `,
+              <p>
+                  Welcome to our app! To get started, please verify your email address by clicking the link below.
+              </p>
+              <a href="${verifyLink}">Verify email address</a>
+          `,
   });
 
   if (!success) {
-    return {
-      isError: true,
-      message: t('auth.emails.sending_failed_title'),
-    };
+    return NextResponse.json(
+      {
+        message: t('auth.emails.sending_failed_title'),
+      },
+      { status: 500 },
+    );
   }
 
-  return {
-    isError: false,
-  };
+  return NextResponse.json({
+    success: true,
+  });
 }

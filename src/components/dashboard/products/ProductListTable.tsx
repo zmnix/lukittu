@@ -1,5 +1,5 @@
 'use client';
-import { ProductsGetResponse } from '@/app/api/products/route';
+import { ProductsGetResponse } from '@/app/api/products/(get)/route';
 import TablePagination from '@/components/shared/table/TablePagination';
 import { Button } from '@/components/ui/button';
 import {

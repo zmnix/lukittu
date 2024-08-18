@@ -1,6 +1,6 @@
 'use client';
 import { LicenseKeyResponse } from '@/app/api/licenses/route';
-import { ProductsGetResponse } from '@/app/api/products/route';
+import { ProductsGetResponse } from '@/app/api/products/(get)/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';

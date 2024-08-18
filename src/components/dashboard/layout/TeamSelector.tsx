@@ -15,27 +15,30 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { AuthContext } from '@/providers/AuthProvider';
 import { Team } from '@prisma/client';
 import { CommandList } from 'cmdk';
 import { Check, ChevronsUpDown, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import SetTeamModal from './SetTeamModal';
 
 interface TeamSelectorProps {
   fullWidth?: boolean;
-  teams: Team[];
 }
 
-export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
+export function TeamSelector({ fullWidth }: TeamSelectorProps) {
   const t = useTranslations();
+  const authCtx = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [createTeamModalOpen, setTeamModalOpen] = useState(false);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const router = useRouter();
+
+  const teams = useMemo(() => authCtx.session?.user.teams || [], [authCtx]);
 
   const updateSelectedTeam = useCallback(
     (teamId: string) => {

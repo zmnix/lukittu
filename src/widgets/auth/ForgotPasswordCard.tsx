@@ -1,5 +1,5 @@
 'use client';
-import forgotPassword from '@/actions/auth/forgot-password';
+import { ForgotPasswordPostResponse } from '@/app/api/auth/forgot-password/route';
 import ForgotPasswordSuccessModal from '@/components/auth/ForgotPasswordSuccessModal';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -53,18 +53,30 @@ export default function ForgotPasswordCard() {
     setFormError(null);
   }, [formWatcher]);
 
+  const handleForgotPassword = async (data: ForgotPasswordSchema) => {
+    const response = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = (await response.json()) as ForgotPasswordPostResponse;
+
+    return responseData;
+  };
+
   const onSubmit = (data: ForgotPasswordSchema) => {
     startTransition(async () => {
-      const res = await forgotPassword(data);
-      if (res?.isError) {
+      const res = await handleForgotPassword(data);
+      if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof ForgotPasswordSchema, {
             type: 'manual',
             message: res.message,
           });
         }
-
-        // Fallback should never happen
         return setFormError(res.message ?? t('general.error_occurred'));
       }
 

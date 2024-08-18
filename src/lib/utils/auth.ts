@@ -2,7 +2,6 @@ import prisma from '@/lib/database/prisma';
 import { Prisma } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
-import { redirect, RedirectType } from 'next/navigation';
 import { cache } from 'react';
 import 'server-only';
 import { getIp, getUserAgent } from './header-helpers';
@@ -46,9 +45,7 @@ export const getSession = cache(
   async <T extends Prisma.SessionInclude>(include: T | null = null) => {
     const sessionId = cookies().get('session')?.value;
 
-    if (!sessionId) {
-      redirect('/api/sign-out', RedirectType.replace);
-    }
+    if (!sessionId) return null;
 
     const session = await prisma.session.findUnique({
       where: {
@@ -60,9 +57,7 @@ export const getSession = cache(
       include,
     });
 
-    if (!session) {
-      redirect('/api/sign-out', RedirectType.replace);
-    }
+    if (!session) return null;
 
     // TODO: Improve type.
     return {

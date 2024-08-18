@@ -108,7 +108,8 @@
       "new_to_app": "New to Lukittu?",
       "create_account": "Create an account",
       "invalid_email_password": "Invalid email or password",
-      "login_failed": "Login failed"
+      "login_failed": "Login failed",
+      "email_not_verified": "Your email is not verified. Please verify your email first."
     },
     "register": {
       "title": "Create your Lukittu account",

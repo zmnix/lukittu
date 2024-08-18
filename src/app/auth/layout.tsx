@@ -11,7 +11,6 @@ interface AuthLayoutProps {
 export default async function AuthLayout({ children }: AuthLayoutProps) {
   const sessionId = cookies().get('session')?.value;
 
-  // No database query here. Done in the dashboard layout.
   if (sessionId) {
     redirect('/dashboard');
   }

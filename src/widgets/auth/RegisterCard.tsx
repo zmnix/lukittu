@@ -1,5 +1,5 @@
 'use client';
-import register from '@/actions/auth/register';
+import { RegisterPostResponse } from '@/app/api/auth/register/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import RegisterSuccessModal from '@/components/auth/RegisterSuccessModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
@@ -70,10 +70,24 @@ export default function RegisterCard() {
     setFormError(null);
   }, [formWatcher]);
 
+  const handleCredentialsRegister = async (data: RegisterSchema) => {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = (await response.json()) as RegisterPostResponse;
+
+    return responseData;
+  };
+
   const onSubmit = async (data: RegisterSchema) => {
     startTransition(async () => {
-      const res = await register(data);
-      if (res.isError) {
+      const res = await handleCredentialsRegister(data);
+      if ('message' in res) {
         if (res.reverifyEmail) {
           return setResendVerifyEmailModalOpen(true);
         }
@@ -85,7 +99,6 @@ export default function RegisterCard() {
           });
         }
 
-        // Fallback should never happen
         return setFormError(res.message ?? t('general.error_occurred'));
       }
 

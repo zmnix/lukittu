@@ -9,7 +9,6 @@ import {
   SheetHeader,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Team } from '@prisma/client';
 import { MenuIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -18,11 +17,7 @@ import { useEffect, useState } from 'react';
 import { Menu } from './Menu';
 import { TeamSelector } from './TeamSelector';
 
-interface SheetMenuProps {
-  teams: Team[];
-}
-
-export function SheetMenu({ teams }: SheetMenuProps) {
+export function SheetMenu() {
   const [logo, setLogo] = useState(logoTextDark);
   const theme = useTheme();
 
@@ -49,7 +44,7 @@ export function SheetMenu({ teams }: SheetMenuProps) {
             </Link>
           </Button>
         </SheetHeader>
-        <TeamSelector teams={teams} fullWidth />
+        <TeamSelector fullWidth />
         <Separator />
         <Menu topSpacing={false} isOpen />
       </SheetContent>

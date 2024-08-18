@@ -1,4 +1,4 @@
-import resendVerifyEmail from '@/actions/auth/resend-verify-email';
+import { ResendVerifyEmailResponse } from '@/app/api/auth/resend-verify-email/route';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -35,11 +35,35 @@ export default function ResendVerifyEmailModal({
   const [pending, startTransition] = useTransition();
   const [response, setResponse] = useState<typeof initialState | null>(null);
 
+  const handleResendVerifyEmail = async (email: string) => {
+    const response = await fetch('/api/auth/resend-verify-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const responseData = (await response.json()) as ResendVerifyEmailResponse;
+
+    return responseData;
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     startTransition(async () => {
-      const response = await resendVerifyEmail({ email });
-      setResponse(response);
+      const response = await handleResendVerifyEmail(email);
+
+      if ('message' in response) {
+        setResponse({
+          isError: true,
+          message: response.message,
+        });
+      } else {
+        setResponse({
+          isError: false,
+        });
+      }
     });
   };
 

@@ -1,5 +1,5 @@
 'use client';
-import { resetPassword } from '@/actions/auth/reset-password';
+import { ResetPasswordResponse } from '@/app/api/auth/reset-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -60,13 +60,29 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
     setFormError(null);
   }, [formWatcher]);
 
+  const handleResetPassword = async (
+    data: ResetPasswordSchema & { token: string },
+  ) => {
+    const response = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...data, token }),
+    });
+
+    const responseData = (await response.json()) as ResetPasswordResponse;
+
+    return responseData;
+  };
+
   const onSubmit = async (data: ResetPasswordSchema) => {
     startTransition(async () => {
-      const res = await resetPassword({
+      const res = await handleResetPassword({
         ...data,
         token: token as string,
       });
-      if (res.isError) {
+      if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof ResetPasswordSchema, {
             type: 'manual',
@@ -74,7 +90,6 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
           });
         }
 
-        // Fallback should never happen
         return setFormError(res.message ?? t('general.error_occurred'));
       }
 

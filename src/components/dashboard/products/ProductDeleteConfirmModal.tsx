@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import deleteProduct from '@/actions/products/delete-product';
+import { ProductDeleteResponse } from '@/app/api/products/[slug]/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,7 @@ export function DeleteProductConfirmModal() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
   const [pending, startTransition] = useTransition();
-  const [confirmName, setConfirmName] = useState('');
+  const [productNameConfirmation, setProductNameConfirmation] = useState('');
   const { ConfirmModal, openConfirmModal } = useModal();
   const router = useRouter();
 
@@ -29,11 +29,31 @@ export function DeleteProductConfirmModal() {
 
   if (!product) return null;
 
+  const handleDeleteProduct = async (
+    productId: number,
+    productNameConfirmation: string,
+  ) => {
+    const response = await fetch(`/api/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ productNameConfirmation }),
+    });
+
+    const responseData = (await response.json()) as ProductDeleteResponse;
+
+    return responseData;
+  };
+
   const handleDelete = async () => {
     startTransition(async () => {
-      const res = await deleteProduct(product.id, confirmName);
+      const res = await handleDeleteProduct(
+        product.id,
+        productNameConfirmation,
+      );
 
-      if (res.isError) {
+      if ('message' in res) {
         return openConfirmModal({
           title: t('general.error'),
           description: res.message,
@@ -66,7 +86,7 @@ export function DeleteProductConfirmModal() {
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
           <div className="grid w-full gap-1.5 px-4">
-            <Label htmlFor="confirmName">
+            <Label htmlFor="productNameConfirmation">
               {t.rich('dashboard.products.delete_product_confirm_input', {
                 productName: `"${product.name.toUpperCase()}"`,
                 code: (child) => (
@@ -75,8 +95,8 @@ export function DeleteProductConfirmModal() {
               })}
             </Label>
             <Input
-              id="confirmName"
-              onChange={(e) => setConfirmName(e.target.value)}
+              id="productNameConfirmation"
+              onChange={(e) => setProductNameConfirmation(e.target.value)}
             />
           </div>
           <ResponsiveDialogFooter>
@@ -91,7 +111,7 @@ export function DeleteProductConfirmModal() {
               {t('general.cancel')}
             </LoadingButton>
             <LoadingButton
-              disabled={confirmName !== product.name.toUpperCase()}
+              disabled={productNameConfirmation !== product.name.toUpperCase()}
               pending={pending}
               size="sm"
               variant="destructive"

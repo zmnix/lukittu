@@ -1,7 +1,8 @@
 'use client';
-import deleteTeam from '@/actions/profile/delete-team';
 import leaveTeam from '@/actions/profile/leave-team';
 import transferTeamOwnership from '@/actions/profile/transfer-team-ownership';
+import { TeamDeleteResponse } from '@/app/api/teams/[slug]/route';
+import { TeamsGetResponse, TeamWithUsers } from '@/app/api/teams/route';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,22 +21,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useModal } from '@/hooks/useModal';
+import { AuthContext } from '@/providers/AuthProvider';
 import { Team, User } from '@prisma/client';
 import { EllipsisVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
 import { LeaveTeamConfirmModal } from './TeamLeaveConfirmModal';
 import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
 
-interface TeamListProps {
-  teams: (Team & { isOwner: boolean; users: User[] })[];
-}
+export default function TeamListCard() {
+  const authCtx = useContext(AuthContext);
 
-export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
-  const [teams, setTeams] =
-    useState<(Team & { isOwner: boolean; users: User[] })[]>(initialTeams);
+  const [teams, setTeams] = useState<TeamWithUsers[]>([]);
   const [teamLeaveConfirmation, setTeamLeaveConfirmation] =
     useState<Team | null>(null);
   const [teamTransferConfirmation, setTeamTransferConfirmation] = useState<
@@ -58,8 +57,16 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
   const router = useRouter();
 
   useEffect(() => {
-    setTeams(initialTeams);
-  }, [initialTeams]);
+    const handleTeamGet = async () => {
+      const response = await fetch('/api/teams');
+      const data = (await response.json()) as TeamsGetResponse;
+      if ('teams' in data) {
+        setTeams(data.teams);
+      }
+    };
+
+    handleTeamGet();
+  }, []);
 
   const handleTeamLeave = async (team: Team) => {
     const res = await leaveTeam(team.id);
@@ -71,21 +78,50 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
       });
     }
 
-    setTeams((prev) => prev.filter((t) => t.id !== team.id));
+    const session = authCtx.session;
+    if (session) {
+      authCtx.setSession({
+        ...session,
+        user: {
+          ...session.user,
+          teams: session.user.teams.filter((t) => t.id !== team.id),
+        },
+      });
+    }
     router.refresh();
   };
 
-  const handleTeamDelete = async (team: Team, teamNameConfirmation: string) => {
-    const res = await deleteTeam(team.id, teamNameConfirmation);
+  const handleDeleteTeam = async (team: Team, teamNameConfirmation: string) => {
+    const response = await fetch(`/api/teams/${team.id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ teamNameConfirmation }),
+    });
 
-    if (res.isError) {
+    const responseData = (await response.json()) as TeamDeleteResponse;
+
+    return responseData;
+  };
+
+  const handleTeamDelete = async (team: Team, teamNameConfirmation: string) => {
+    const res = await handleDeleteTeam(team, teamNameConfirmation);
+
+    if ('message' in res) {
       return openConfirmModal({
         title: t('general.error'),
         description: res.message,
       });
     }
 
-    setTeams((prev) => prev.filter((t) => t.id !== team.id));
+    const session = authCtx.session;
+    if (session) {
+      authCtx.setSession({
+        ...session,
+        user: {
+          ...session.user,
+          teams: session.user.teams.filter((t) => t.id !== team.id),
+        },
+      });
+    }
     router.refresh();
   };
 
@@ -117,12 +153,18 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
       });
     }
 
-    setTeams((prev) =>
-      prev.map((t) => ({
-        ...t,
-        isOwner: t.id === team.id ? false : t.isOwner,
-      })),
-    );
+    const session = authCtx.session;
+    if (session) {
+      authCtx.setSession({
+        ...session,
+        user: {
+          ...session.user,
+          teams: session.user.teams.map((t) =>
+            t.id === team.id ? { ...t, isOwner: false } : t,
+          ),
+        },
+      });
+    }
   };
 
   return (
@@ -169,7 +211,9 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                   <TableCell className="truncate">{team.name}</TableCell>
                   <TableCell className="truncate">
                     <Badge variant="outline">
-                      {team.isOwner ? t('general.owner') : t('general.member')}
+                      {team.ownerId === authCtx.session?.user.id
+                        ? t('general.owner')
+                        : t('general.member')}
                     </Badge>
                   </TableCell>
                   <TableCell className="truncate py-0 text-right">
@@ -186,7 +230,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                       >
                         <DropdownMenuItem
                           className="hover:cursor-pointer"
-                          disabled={!team.isOwner || team.users.length <= 1}
+                          disabled={team.ownerId !== authCtx.session?.user.id}
                           onClick={() => {
                             setTeamTransferConfirmation(team);
                             setTeamTransferConfirmationModalOpen(true);
@@ -197,7 +241,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                         <DropdownMenuItem
                           className="text-destructive hover:cursor-pointer"
                           onClick={() => {
-                            if (team.isOwner) {
+                            if (team.ownerId === authCtx.session?.user.id) {
                               handleTeamDeleteConfirm(team);
                             } else {
                               setTeamLeaveConfirmationModalOpen(true);
@@ -205,7 +249,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                             }
                           }}
                         >
-                          {team.isOwner
+                          {team.ownerId === authCtx.session?.user.id
                             ? t('dashboard.profile.delete_team')
                             : t('dashboard.profile.leave_team')}
                           ...

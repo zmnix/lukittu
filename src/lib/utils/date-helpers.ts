@@ -8,7 +8,7 @@ export function getRelativeTimeString(
   lang = navigator.language,
 ): string {
   // Allow dates or times to be passed
-  const timeMs = typeof date === 'number' ? date : date.getTime();
+  const timeMs = typeof date === 'number' ? date : new Date(date).getTime();
 
   // Get the amount of seconds between the given date and now
   const deltaSeconds = Math.round((timeMs - Date.now()) / 1000);
