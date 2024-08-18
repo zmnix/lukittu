@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function TableSearch() {
-  const [debounceSearch, setDebounceSearch] = useState('');
   const searchParams = useSearchParams();
+  const [debounceSearch, setDebounceSearch] = useState(
+    searchParams.get('search') || '',
+  );
   const router = useRouter();
 
   useEffect(() => {

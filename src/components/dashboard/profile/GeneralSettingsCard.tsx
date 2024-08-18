@@ -72,7 +72,7 @@ export default function GeneralSettingsCard({
     <>
       <ChangePasswordModal
         open={changePasswordModalOpen}
-        onClose={() => setChangePasswordModalOpen(false)}
+        onOpenChange={setChangePasswordModalOpen}
       />
       <Card>
         <CardHeader>

@@ -1,140 +1,246 @@
+'use client';
+import { ProductsGetResponse } from '@/app/api/products/route';
 import TablePagination from '@/components/shared/table/TablePagination';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
-import prisma from '@/lib/database/prisma';
-import { getSession } from '@/lib/utils/auth';
-import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
-import { Package } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ProductModalContext } from '@/providers/ProductModalProvider';
+import { Product } from '@prisma/client';
+import {
+  ArrowDownUp,
+  EllipsisVertical,
+  Frown,
+  Package,
+  Search,
+} from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useContext, useEffect, useState } from 'react';
 import AddProductButton from './AddProductButton';
-import ProductListTableActions from './ProductListTableActions';
-import ProductListTableHeader from './ProductListTableHeader';
+import ProductListTableSkeleton from './ProductListTableSkeleton';
 
-interface ProductListTableProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
+export function ProductListTable() {
+  const locale = useLocale();
+  const t = useTranslations();
+  const ctx = useContext(ProductModalContext);
 
-export async function ProductListTable({
-  searchParams,
-}: ProductListTableProps) {
-  const locale = getLanguage();
-  const t = await getTranslations({ locale });
-  const session = await getSession({ user: true });
-  const selectedTeam = getSelectedTeam();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [totalProducts, setTotalProducts] = useState(1);
+  const [debounceSearch, setDebounceSearch] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [sortColumn, setSortColumn] = useState<'createdAt' | 'name' | null>(
+    null,
+  );
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
+    null,
+  );
 
-  if (!selectedTeam) return null;
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const searchParams = new URLSearchParams();
+        if (sortColumn) {
+          searchParams.set('sortColumn', sortColumn);
+        }
 
-  const allowedPageSizes = [25, 50, 100];
-  const allowedSortDirections = ['asc', 'desc'];
-  const allowedSortColumns = ['name', 'createdAt'];
+        if (sortDirection) {
+          searchParams.set('sortDirection', sortDirection);
+        }
 
-  let page = parseInt(searchParams.page as string) || 1;
-  let pageSize = parseInt(searchParams.pageSize as string) || 10;
-  let sortColumn = searchParams.sortColumn as string;
-  let sortDirection = searchParams.sortDirection as 'asc' | 'desc';
-  let search = (searchParams.search as string) || '';
+        if (search) {
+          searchParams.set('search', search);
+        }
 
-  if (!allowedSortDirections.includes(sortDirection)) {
-    sortDirection = 'desc';
-  }
+        searchParams.set('page', page.toString());
+        searchParams.set('pageSize', pageSize.toString());
 
-  if (!sortColumn || !allowedSortColumns.includes(sortColumn)) {
-    sortColumn = 'createdAt';
-  }
+        const response = await fetch(
+          `/api/products?${searchParams.toString()}`,
+        );
 
-  if (!allowedPageSizes.includes(pageSize)) {
-    pageSize = 25;
-  }
+        const data = (await response.json()) as ProductsGetResponse;
 
-  if (page < 1) {
-    page = 1;
-  }
+        if ('error' in data) {
+          return setError(data.error);
+        }
 
-  const skip = (page - 1) * pageSize;
-  const take = pageSize;
+        if (!response.ok) {
+          setError(t('auth.oauth.server_error'));
+        }
+        setProducts(data.products);
+        setTotalProducts(data.totalProducts);
+      } catch (error: any) {
+        setError(t('auth.oauth.server_error'));
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [page, pageSize, sortColumn, sortDirection, search, t]);
 
-  const team = await prisma.team.findUnique({
-    where: {
-      id: selectedTeam,
-      deletedAt: null,
-      users: {
-        some: {
-          id: session.user.id,
-        },
-      },
-    },
-    include: {
-      products: {
-        where: {
-          deletedAt: null,
-          teamId: selectedTeam,
-          name: search
-            ? {
-                contains: search,
-                mode: 'insensitive',
-              }
-            : undefined,
-        },
-        skip,
-        take,
-        orderBy: {
-          [sortColumn]: sortDirection,
-        },
-      },
-      _count: {
-        select: {
-          products: {
-            where: {
-              deletedAt: null,
-              teamId: selectedTeam,
-              name: search
-                ? { contains: search, mode: 'insensitive' }
-                : undefined,
-            },
-          },
-        },
-      },
-    },
-  });
+  useEffect(() => {
+    setLoading(true);
+    const timeout = setTimeout(() => {
+      setSearch(debounceSearch);
+      setLoading(false);
+    }, 500);
 
-  if (!team) {
-    redirect('/dashboard');
-  }
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [debounceSearch]);
 
-  const hasProducts = await prisma.product.findFirst({
-    where: {
-      teamId: selectedTeam,
-      deletedAt: null,
-    },
-  });
-
-  return hasProducts && team ? (
+  return totalProducts ? (
     <>
-      <Table>
-        <ProductListTableHeader />
-        <TableBody>
-          {team.products.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell className="truncate">{product.name}</TableCell>
-              <TableCell
-                className="truncate"
-                title={new Date(product.createdAt).toLocaleString(locale)}
-              >
-                {new Date(product.createdAt).toLocaleString(locale, {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </TableCell>
-              <TableCell className="truncate py-0 text-right">
-                <ProductListTableActions product={product} />
-              </TableCell>
+      <div className="relative mb-4 flex max-w-xs items-center max-sm:max-w-full">
+        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+        <Input
+          className="pl-8"
+          placeholder="Search products"
+          value={debounceSearch}
+          onChange={(e) => {
+            setDebounceSearch(e.target.value);
+          }}
+        />
+      </div>
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
+            <div className="flex">
+              <span className="rounded-lg bg-secondary p-4">
+                <Frown className="h-6 w-6" />
+              </span>
+            </div>
+            <h3 className="text-lg font-bold">{t('general.error')}</h3>
+            <p className="max-w-sm text-center text-sm text-muted-foreground">
+              {error}
+            </p>
+            <Button
+              onClick={() => {
+                setError(null);
+              }}
+            >
+              {t('general.retry')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="truncate">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSortColumn('name');
+                    setSortDirection(
+                      sortColumn === 'name' && sortDirection === 'asc'
+                        ? 'desc'
+                        : 'asc',
+                    );
+                  }}
+                >
+                  {t('general.name')}
+                  <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
+              <TableHead className="truncate">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSortColumn('createdAt');
+                    setSortDirection(
+                      sortColumn === 'createdAt' && sortDirection === 'asc'
+                        ? 'desc'
+                        : 'asc',
+                    );
+                  }}
+                >
+                  {t('general.created_at')}
+                  <ArrowDownUp className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
+              <TableHead className="truncate text-right">
+                {t('general.actions')}
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          {loading ? (
+            <ProductListTableSkeleton />
+          ) : (
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="truncate">{product.name}</TableCell>
+                  <TableCell
+                    className="truncate"
+                    title={new Date(product.createdAt).toLocaleString(locale)}
+                  >
+                    {new Date(product.createdAt).toLocaleString(locale, {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </TableCell>
+                  <TableCell className="truncate py-0 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon" variant="ghost">
+                          <EllipsisVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="font-medium"
+                        forceMount
+                      >
+                        <DropdownMenuItem
+                          className="hover:cursor-pointer"
+                          onClick={() => ctx.setProductModalOpen(true)}
+                        >
+                          {t('dashboard.products.edit_product')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive hover:cursor-pointer"
+                          onClick={() => {
+                            ctx.setProductToDelete(product);
+                            ctx.setProductToDeleteModalOpen(true);
+                          }}
+                        >
+                          {t('dashboard.products.delete_product')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
+        </Table>
+      )}
       <TablePagination
-        totalPages={Math.ceil(team.products.length / pageSize)}
+        page={page}
+        pageSize={pageSize}
+        setPage={setPage}
+        setPageSize={setPageSize}
+        totalPages={Math.ceil(totalProducts / pageSize)}
       />
     </>
   ) : (

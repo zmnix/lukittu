@@ -14,47 +14,23 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 interface TablePaginationProps {
+  pageSize: number;
+  page: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
   totalPages: number;
+  setPageSize: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function TablePagination({ totalPages }: TablePaginationProps) {
+export default function TablePagination({
+  setPage,
+  setPageSize,
+  totalPages,
+  page,
+  pageSize,
+}: TablePaginationProps) {
   const t = useTranslations();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  let page = parseInt(searchParams.get('page') as string) || 1;
-  let pageSize = parseInt(searchParams.get('pageSize') as string) || 25;
-
-  if (page < 1) {
-    page = 1;
-  }
-
-  if (![25, 50, 100].includes(pageSize)) {
-    pageSize = 25;
-  }
-
-  const handleFilterChange = ({
-    page,
-    pageSize,
-  }: {
-    page?: number;
-    pageSize?: number;
-  }) => {
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-
-    if (page) {
-      newSearchParams.set('page', page.toString());
-    }
-
-    if (pageSize) {
-      newSearchParams.set('pageSize', pageSize.toString());
-    }
-
-    router.replace(`?${newSearchParams.toString()}`);
-  };
 
   return (
     <div className="mt-4 flex items-center justify-end gap-4">
@@ -63,9 +39,7 @@ export default function TablePagination({ totalPages }: TablePaginationProps) {
         <Select
           value={pageSize.toString()}
           onValueChange={(value) => {
-            handleFilterChange({
-              pageSize: parseInt(value),
-            });
+            setPageSize(parseInt(value));
           }}
         >
           <SelectTrigger className="h-8 w-[70px]">
@@ -92,9 +66,7 @@ export default function TablePagination({ totalPages }: TablePaginationProps) {
           disabled={page === 1}
           variant="outline"
           onClick={() => {
-            handleFilterChange({
-              page: 1,
-            });
+            setPage(1);
           }}
         >
           <ChevronsLeft className="h-4 w-4" />
@@ -104,9 +76,7 @@ export default function TablePagination({ totalPages }: TablePaginationProps) {
           disabled={page === 1}
           variant="outline"
           onClick={() => {
-            handleFilterChange({
-              page: page - 1,
-            });
+            setPage((prev) => prev - 1);
           }}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -116,9 +86,7 @@ export default function TablePagination({ totalPages }: TablePaginationProps) {
           disabled={page === totalPages}
           variant="outline"
           onClick={() => {
-            handleFilterChange({
-              page: page + 1,
-            });
+            setPage((prev) => prev + 1);
           }}
         >
           <ArrowRight className="h-4 w-4" />
@@ -128,9 +96,7 @@ export default function TablePagination({ totalPages }: TablePaginationProps) {
           disabled={page === totalPages}
           variant="outline"
           onClick={() => {
-            handleFilterChange({
-              page: totalPages,
-            });
+            setPage(totalPages);
           }}
         >
           <ChevronsRight className="h-4 w-4" />

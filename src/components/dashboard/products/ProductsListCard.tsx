@@ -1,20 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getLanguage } from '@/lib/utils/header-helpers';
 import { ProductModalProvider } from '@/providers/ProductModalProvider';
 import { getTranslations } from 'next-intl/server';
-import { Suspense } from 'react';
-import TableSearch from '../../shared/table/TableSearch';
 import AddProductButton from './AddProductButton';
 import { ProductListTable } from './ProductListTable';
-import ProductListTableSkeleton from './ProductListTableSkeleton';
 
-interface ProductsListCardProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default async function ProductsListCard({
-  searchParams,
-}: ProductsListCardProps) {
-  const t = await getTranslations();
+export default async function ProductsListCard() {
+  const t = await getTranslations({ locale: getLanguage() });
 
   return (
     <ProductModalProvider>
@@ -26,10 +18,7 @@ export default async function ProductsListCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <TableSearch />
-          <Suspense fallback={<ProductListTableSkeleton />}>
-            <ProductListTable searchParams={searchParams} />
-          </Suspense>
+          <ProductListTable />
         </CardContent>
       </Card>
     </ProductModalProvider>

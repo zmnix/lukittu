@@ -1,12 +1,12 @@
 import resendVerifyEmail from '@/actions/auth/resend-verify-email';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import LoadingButton from '../shared/LoadingButton';
@@ -21,13 +21,14 @@ const initialState = {
 
 interface ResendVerifyEmailModalProps {
   open: boolean;
-  onClose: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onOpenChange: (boolean: boolean) => void;
   email: string;
 }
 
 export default function ResendVerifyEmailModal({
   open,
-  onClose,
+  onOpenChange,
   email,
 }: ResendVerifyEmailModalProps) {
   const t = useTranslations();
@@ -43,46 +44,49 @@ export default function ResendVerifyEmailModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-[525px]">
         {response ? (
           <>
-            <DialogHeader>
-              <DialogTitle>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>
                 {response.isError
                   ? t('auth.emails.sending_failed_title')
                   : t('auth.resend_verify.title')}
-              </DialogTitle>
-              <DialogDescription>
+              </ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>
                 {response.isError
                   ? response.message
                   : t.rich('auth.resend_verify.description', {
                       email,
                       strong: (children) => <strong>{children}</strong>,
                     })}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <form action={onClose}>
+              </ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
+            <ResponsiveDialogFooter>
+              <div>
                 <LoadingButton
                   className="w-full"
                   type="submit"
                   variant="outline"
+                  onClick={() => onOpenChange(false)}
                 >
                   {t('general.close')}
                 </LoadingButton>
-              </form>
-            </DialogFooter>
+              </div>
+            </ResponsiveDialogFooter>
           </>
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle>{t('auth.verify_email.title')}</DialogTitle>
-              <DialogDescription>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>
+                {t('auth.verify_email.title')}
+              </ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>
                 {t('auth.verify_email.description')}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
+              </ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
+            <ResponsiveDialogFooter>
               <form onSubmit={onSubmit}>
                 <LoadingButton
                   className="w-full"
@@ -92,10 +96,10 @@ export default function ResendVerifyEmailModal({
                   {t('auth.verify_email.resend_email')}
                 </LoadingButton>
               </form>
-            </DialogFooter>
+            </ResponsiveDialogFooter>
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

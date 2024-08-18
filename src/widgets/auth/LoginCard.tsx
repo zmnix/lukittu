@@ -37,6 +37,8 @@ import { useForm, useWatch } from 'react-hook-form';
 
 export default function LoginCard() {
   const t = useTranslations();
+  const searchParams = useSearchParams();
+
   const turnstile = useRef<TurnstileInstance>(null);
   const [turnstileLoading, setTurnstileLoading] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -45,8 +47,7 @@ export default function LoginCard() {
   const [resendVerifyEmailModalOpen, setResendVerifyEmailModalOpen] =
     useState(false);
   const [showTurnstile, setShowTurnstile] = useState(false);
-
-  const searchParams = useSearchParams();
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
 
   const error = searchParams.get('error');
   const provider = searchParams.get('provider');
@@ -69,6 +70,12 @@ export default function LoginCard() {
   useEffect(() => {
     setFormError(null);
   }, [formWatcher]);
+
+  useEffect(() => {
+    if (error) {
+      setErrorModalOpen(true);
+    }
+  }, [error]);
 
   const onSubmit = (data: LoginSchema) => {
     startTransition(async () => {
@@ -100,7 +107,12 @@ export default function LoginCard() {
 
   return (
     <>
-      <OauthLoginFailedccessModal error={error} provider={provider} />
+      <OauthLoginFailedccessModal
+        error={error}
+        open={errorModalOpen}
+        provider={provider}
+        onOpenChange={setErrorModalOpen}
+      />
       <ResendVerifyEmailModal
         email={formWatcher.email as string}
         open={resendVerifyEmailModalOpen}

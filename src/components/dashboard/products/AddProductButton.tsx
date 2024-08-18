@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { Plus } from 'lucide-react';
@@ -15,10 +14,7 @@ export default function AddProductButton() {
       className="ml-auto"
       size="sm"
       variant="default"
-      onClick={() => {
-        ctx.setProductToEdit(null);
-        ctx.setProductModalOpen(true);
-      }}
+      onClick={() => ctx.setProductModalOpen(true)}
     >
       <Plus className="mr-2 h-4 w-4" />
       {t('dashboard.products.add_product')}

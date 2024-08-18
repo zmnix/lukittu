@@ -45,7 +45,7 @@ export function SheetMenu({ teams }: SheetMenuProps) {
             asChild
           >
             <Link className="flex items-center gap-2" href="/dashboard">
-              <Image alt="Lukittu" height={38} src={logo} />
+              <Image alt="Lukittu" height={38} src={logo} priority />
             </Link>
           </Button>
         </SheetHeader>

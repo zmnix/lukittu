@@ -2,14 +2,6 @@
 import setProduct from '@/actions/products/set-product';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Form,
   FormControl,
   FormField,
@@ -18,31 +10,30 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useModal } from '@/hooks/useModal';
 import {
   SetProductSchema,
   setProductSchema,
 } from '@/lib/validation/products/set-product-schema';
+import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useTransition } from 'react';
+import { useContext, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-interface SetProductModalProps {
-  onClose: () => void;
-  open: boolean;
-  product: Product | null;
-}
-
-export default function SetProductModal({
-  onClose,
-  open,
-  product,
-}: SetProductModalProps) {
+export default function CreateProductModal() {
   const t = useTranslations();
+  const ctx = useContext(ProductModalContext);
   const { ConfirmModal, openConfirmModal } = useModal();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -56,15 +47,6 @@ export default function SetProductModal({
     },
   });
 
-  useEffect(() => {
-    form.reset({
-      id: product?.id,
-      name: product?.name || '',
-      description: product?.description || '',
-      url: product?.url || '',
-    });
-  }, [form, product?.name, product?.description, product?.url, product?.id]);
-
   const onSubmit = (data: SetProductSchema) => {
     startTransition(async () => {
       const res = await setProduct(data);
@@ -76,14 +58,15 @@ export default function SetProductModal({
           });
         }
 
-        onClose();
+        ctx.setProductModalOpen(false);
         return openConfirmModal({
           title: t('general.error'),
           description: res.message,
         });
       }
 
-      onClose();
+      ctx.setProductModalOpen(false);
+      form.reset();
       router.refresh();
     });
   };
@@ -91,20 +74,24 @@ export default function SetProductModal({
   return (
     <>
       <ConfirmModal />
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {Boolean(product)
-                ? t('dashboard.products.edit_product')
-                : t('dashboard.products.add_product')}
-            </DialogTitle>
-            <DialogDescription>
+      <ResponsiveDialog
+        open={ctx.productModalOpen}
+        onOpenChange={ctx.setProductModalOpen}
+      >
+        <ResponsiveDialogContent className="sm:max-w-[525px]">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>
+              {t('dashboard.products.add_product')}
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {t('dashboard.products.product_description')}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <Form {...form}>
-            <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+            <form
+              className="space-y-4 px-4"
+              onSubmit={form.handleSubmit(onSubmit)}
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -153,12 +140,17 @@ export default function SetProductModal({
               <button className="hidden" type="submit" />
             </form>
           </Form>
-          <DialogFooter>
-            <form action={onClose}>
-              <LoadingButton className="w-full" type="submit" variant="outline">
+          <ResponsiveDialogFooter>
+            <div>
+              <LoadingButton
+                className="w-full"
+                type="submit"
+                variant="outline"
+                onClick={() => ctx.setProductModalOpen(false)}
+              >
                 {t('general.close')}
               </LoadingButton>
-            </form>
+            </div>
             <div>
               <LoadingButton
                 className="w-full"
@@ -166,14 +158,12 @@ export default function SetProductModal({
                 type="submit"
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
-                {Boolean(product)
-                  ? t('dashboard.products.edit_product')
-                  : t('dashboard.products.add_product')}
+                {t('dashboard.products.add_product')}
               </LoadingButton>
             </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   );
 }

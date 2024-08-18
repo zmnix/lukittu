@@ -14,18 +14,20 @@ datasource db {
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
-  email           String    @unique
-  emailVerified   Boolean   @default(false)
-  fullName        String
-  passwordHash    String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  provider        Provider  @default(CREDENTIALS)
-  sessions        Session[]
-  createdProducts Product[]
-  ownedTeams      Team[]    @relation("TeamOwner")
-  teams           Team[]    @relation("TeamUsers")
+  id               Int        @id @default(autoincrement())
+  email            String     @unique
+  emailVerified    Boolean    @default(false)
+  fullName         String
+  passwordHash     String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  provider         Provider   @default(CREDENTIALS)
+  sessions         Session[]
+  createdProducts  Product[]
+  ownedTeams       Team[]     @relation("TeamOwner")
+  teams            Team[]     @relation("TeamUsers")
+  createdLicenses  License[]
+  createdCustomers Customer[]
 }
 
 model Session {
@@ -36,22 +38,22 @@ model Session {
   ipAddress String?
   userAgent String?
   country   String?
-  lastSeen  DateTime @default(now())
   expiresAt DateTime
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Team {
-  id        Int       @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   name      String
   ownerId   Int
-  owner     User      @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  users     User[]    @relation("TeamUsers")
+  owner     User       @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  users     User[]     @relation("TeamUsers")
   products  Product[]
+  licenses  License[]
+  customers Customer[]
   deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model Product {
@@ -60,15 +62,75 @@ model Product {
   description     String?
   url             String?
   teamId          Int
-  team            Team      @relation(fields: [teamId], references: [id])
-  createdByUserId Int
-  createdBy       User      @relation(fields: [createdByUserId], references: [id])
+  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdByUserId Int?
+  createdBy       User?     @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  licenses        License[]
   deletedAt       DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
 
+model Customer {
+  id              Int       @id @default(autoincrement())
+  email           String?
+  firstName       String?
+  lastName        String?
+  description     String?
+  teamId          Int
+  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  licenses        License[]
+  createdByUserId Int?
+  createdBy       User?     @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([email, teamId])
+}
+
+model License {
+  id              Int                    @id @default(autoincrement())
+  licenseKey      String
+  ipLimit         Int?
+  expirationType  LicenseExpirationType  @default(NEVER)
+  expirationStart LicenseExpirationStart @default(CREATION)
+  expirationDate  DateTime?
+  expirationDays  Int?
+  suspended       Boolean                @default(false)
+  teamId          Int
+  team            Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  products        Product[]
+  customerId      Int?
+  customer        Customer?              @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdByUserId Int?
+  createdBy       User?                  @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  requestLogs     RequestLog[]
+
+  @@index([teamId, licenseKey])
+}
+
+model RequestLog {
+  id        Int      @id @default(autoincrement())
+  ipAddress String?
+  licenseId Int
+  license   License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
 enum Provider {
   CREDENTIALS
   GOOGLE
+}
+
+enum LicenseExpirationType {
+  NEVER
+  DATE
+  DURATION
+}
+
+enum LicenseExpirationStart {
+  ACTIVATION
+  CREATION
 }

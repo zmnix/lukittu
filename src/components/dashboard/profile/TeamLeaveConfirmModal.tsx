@@ -1,28 +1,29 @@
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useTransition } from 'react';
 
 interface LeaveTeamConfirmModalProps {
   team: Team | null;
-  onClose: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
   // eslint-disable-next-line no-unused-vars
   onConfirm: (team: Team) => Promise<void>;
 }
 
 export function LeaveTeamConfirmModal({
   team,
-  onClose,
+  onOpenChange,
+  open,
   onConfirm,
 }: LeaveTeamConfirmModalProps) {
   const t = useTranslations();
@@ -46,43 +47,45 @@ export function LeaveTeamConfirmModal({
   const handleConfirm = async () => {
     startTransition(async () => {
       await onConfirm(team);
-      onClose();
+      onOpenChange(false);
     });
   };
 
   return (
-    <AlertDialog open={Boolean(team)} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {t('dashboard.profile.team_leave_confirm_title')}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {t.rich('dashboard.profile.team_leave_confirm_description', {
               teamName: team.name,
               strong: (child) => <strong>{child}</strong>,
             })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            onClick={onClose}
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
+          <LoadingButton
+            size="sm"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
           >
             {t('general.cancel')}
-          </AlertDialogCancel>
+          </LoadingButton>
           <LoadingButton
-            className={buttonVariants({ variant: 'destructive', size: 'sm' })}
             disabled={confirmTimer > 0}
             pending={pending}
+            size="sm"
+            variant="destructive"
             onClick={handleConfirm}
           >
             {confirmTimer === 0
               ? t('dashboard.profile.leave_team')
               : `${t('dashboard.profile.leave_team')} (${confirmTimer})`}
           </LoadingButton>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

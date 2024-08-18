@@ -44,6 +44,14 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
   const [teamDeleteConfirmation, setTeamDeleteConfirmation] = useState<
     (Team & { users: User[] }) | null
   >(null);
+  const [teamDeleteConfirmationModalOpen, setTeamDeleteConfirmationModalOpen] =
+    useState(false);
+  const [teamLEaveConfirmationModalOpen, setTeamLeaveConfirmationModalOpen] =
+    useState(false);
+  const [
+    teamTransferConfirmationModalOpen,
+    setTeamTransferConfirmationModalOpen,
+  ] = useState(false);
 
   const { ConfirmModal, openConfirmModal } = useModal();
   const t = useTranslations();
@@ -96,6 +104,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
     }
 
     setTeamDeleteConfirmation(team);
+    setTeamDeleteConfirmationModalOpen(true);
   };
 
   const handleTeamTransfer = async (team: Team, newOwnerId: number) => {
@@ -120,19 +129,22 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
     <>
       <ConfirmModal />
       <LeaveTeamConfirmModal
+        open={teamLEaveConfirmationModalOpen}
         team={teamLeaveConfirmation}
-        onClose={() => setTeamLeaveConfirmation(null)}
         onConfirm={handleTeamLeave}
+        onOpenChange={setTeamLeaveConfirmationModalOpen}
       />
       <DeleteTeamConfirmModal
+        open={teamDeleteConfirmationModalOpen}
         team={teamDeleteConfirmation}
-        onClose={() => setTeamDeleteConfirmation(null)}
         onConfirm={handleTeamDelete}
+        onOpenChange={setTeamDeleteConfirmationModalOpen}
       />
       <TransferTeamOwnershipModal
+        open={teamTransferConfirmationModalOpen}
         team={teamTransferConfirmation}
-        onClose={() => setTeamTransferConfirmation(null)}
         onConfirm={handleTeamTransfer}
+        onOpenChange={setTeamTransferConfirmationModalOpen}
       />
       <Card>
         <CardHeader>
@@ -175,7 +187,10 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                         <DropdownMenuItem
                           className="hover:cursor-pointer"
                           disabled={!team.isOwner || team.users.length <= 1}
-                          onClick={() => setTeamTransferConfirmation(team)}
+                          onClick={() => {
+                            setTeamTransferConfirmation(team);
+                            setTeamTransferConfirmationModalOpen(true);
+                          }}
                         >
                           {t('dashboard.profile.transfer_ownership')}
                         </DropdownMenuItem>
@@ -185,6 +200,7 @@ export default function TeamListCard({ teams: initialTeams }: TeamListProps) {
                             if (team.isOwner) {
                               handleTeamDeleteConfirm(team);
                             } else {
+                              setTeamLeaveConfirmationModalOpen(true);
                               setTeamLeaveConfirmation(team);
                             }
                           }}

@@ -2,14 +2,6 @@
 import setTeam from '@/actions/teams/set-team';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Form,
   FormControl,
   FormField,
@@ -18,6 +10,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import {
   SetTeamSchema,
   setTeamSchema,
@@ -31,14 +31,15 @@ import { useForm } from 'react-hook-form';
 
 interface SetTeamModalProps {
   open: boolean;
-  onClose: () => void;
-  team: Team | null;
+  // eslint-disable-next-line no-unused-vars
+  onOpenChange: (boolean: boolean) => void;
+  teamToEdit: Team | null;
 }
 
 export default function SetTeamModal({
   open,
-  onClose,
-  team,
+  onOpenChange,
+  teamToEdit,
 }: SetTeamModalProps) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
@@ -64,32 +65,32 @@ export default function SetTeamModal({
       }
 
       router.refresh();
-      onClose();
+      onOpenChange(false);
     });
   };
 
   useEffect(() => {
     form.reset({
-      id: team?.id,
-      name: team?.name || '',
+      id: teamToEdit?.id,
+      name: teamToEdit?.name || '',
     });
-  }, [form, team?.name, team?.id]);
+  }, [form, teamToEdit?.name, teamToEdit?.id]);
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {Boolean(team)
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-[525px]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            {Boolean(teamToEdit)
               ? t('dashboard.teams.edit_team')
               : t('dashboard.teams.create_team')}
-          </DialogTitle>
-          <DialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {t('dashboard.teams.create_team_info')}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="px-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="name"
@@ -110,12 +111,17 @@ export default function SetTeamModal({
             />
           </form>
         </Form>
-        <DialogFooter>
-          <form action={onClose}>
-            <LoadingButton className="w-full" type="submit" variant="outline">
+        <ResponsiveDialogFooter>
+          <div>
+            <LoadingButton
+              className="w-full"
+              type="submit"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               {t('general.close')}
             </LoadingButton>
-          </form>
+          </div>
           <div>
             <LoadingButton
               className="w-full"
@@ -126,8 +132,8 @@ export default function SetTeamModal({
               {t('general.create')}
             </LoadingButton>
           </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -1,38 +1,31 @@
 /* eslint-disable no-unused-vars */
 import deleteProduct from '@/actions/products/delete-product';
 import LoadingButton from '@/components/shared/LoadingButton';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useModal } from '@/hooks/useModal';
-import { Product } from '@prisma/client';
+import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useContext, useState, useTransition } from 'react';
 
-interface DeleteProductConfirmModalProps {
-  product: Product | null;
-  onClose: () => void;
-}
-
-export function DeleteProductConfirmModal({
-  product,
-  onClose,
-}: DeleteProductConfirmModalProps) {
+export function DeleteProductConfirmModal() {
   const t = useTranslations();
+  const ctx = useContext(ProductModalContext);
   const [pending, startTransition] = useTransition();
   const [confirmName, setConfirmName] = useState('');
   const { ConfirmModal, openConfirmModal } = useModal();
   const router = useRouter();
+
+  const product = ctx.productToDelete;
 
   if (!product) return null;
 
@@ -48,27 +41,31 @@ export function DeleteProductConfirmModal({
       }
 
       router.refresh();
-      onClose();
+      ctx.setProductToDelete(null);
+      ctx.setProductToDeleteModalOpen(false);
     });
   };
 
   return (
     <>
       <ConfirmModal />
-      <AlertDialog open={Boolean(product)} onOpenChange={onClose}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
+      <ResponsiveDialog
+        open={ctx.productToDeleteModalOpen}
+        onOpenChange={ctx.setProductToDeleteModalOpen}
+      >
+        <ResponsiveDialogContent>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>
               {t('dashboard.products.delete_product_confirm_title')}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {t.rich('dashboard.products.delete_product_confirm_description', {
                 productName: product.name,
                 strong: (child) => <strong>{child}</strong>,
               })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="grid w-full gap-1.5">
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
+          <div className="grid w-full gap-1.5 px-4">
             <Label htmlFor="confirmName">
               {t.rich('dashboard.products.delete_product_confirm_input', {
                 productName: `"${product.name.toUpperCase()}"`,
@@ -82,27 +79,29 @@ export function DeleteProductConfirmModal({
               onChange={(e) => setConfirmName(e.target.value)}
             />
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
-              onClick={onClose}
+          <ResponsiveDialogFooter>
+            <LoadingButton
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                ctx.setProductToDeleteModalOpen(false);
+                ctx.setProductToDelete(null);
+              }}
             >
               {t('general.cancel')}
-            </AlertDialogCancel>
+            </LoadingButton>
             <LoadingButton
-              className={buttonVariants({
-                variant: 'destructive',
-                size: 'sm',
-              })}
               disabled={confirmName !== product.name.toUpperCase()}
               pending={pending}
+              size="sm"
+              variant="destructive"
               onClick={handleDelete}
             >
               {t('dashboard.products.delete_product')}
             </LoadingButton>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   );
 }

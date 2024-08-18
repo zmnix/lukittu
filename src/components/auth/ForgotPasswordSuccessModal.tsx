@@ -1,48 +1,54 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useTranslations } from 'next-intl';
 import LoadingButton from '../shared/LoadingButton';
 
 interface ForgotPasswordSuccessModalProps {
   open: boolean;
-  onClose: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onOpenChange: (boolean: boolean) => void;
   email: string;
 }
 
 export default function ForgotPasswordSuccessModal({
   open,
-  onClose,
+  onOpenChange,
   email,
 }: ForgotPasswordSuccessModalProps) {
   const t = useTranslations();
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-[525px]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {t('auth.forgot_password.email_sent_title')}
-          </DialogTitle>
-          <DialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {t.rich('auth.forgot_password.email_sent_description', {
               email,
               strong: (child) => <strong>{child}</strong>,
             })}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <form action={onClose}>
-            <LoadingButton className="w-full" type="submit" variant="outline">
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
+          <div>
+            <LoadingButton
+              className="w-full"
+              type="submit"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               {t('general.close')}
             </LoadingButton>
-          </form>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

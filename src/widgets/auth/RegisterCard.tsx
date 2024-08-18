@@ -105,12 +105,12 @@ export default function RegisterCard() {
       <ResendVerifyEmailModal
         email={formWatcher.email as string}
         open={resendVerifyEmailModalOpen}
-        onClose={() => setResendVerifyEmailModalOpen(false)}
+        onOpenChange={setResendVerifyEmailModalOpen}
       />
       <RegisterSuccessModal
         email={formWatcher.email as string}
         open={successModalOpen}
-        onClose={() => setSuccessModalOpen(false)}
+        onOpenChange={setSuccessModalOpen}
       />
       <Card className="mx-auto w-full max-w-lg p-6 max-md:max-w-md max-md:px-0">
         <CardHeader className="space-y-1">

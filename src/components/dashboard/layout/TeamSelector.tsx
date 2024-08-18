@@ -84,10 +84,12 @@ export function TeamSelector({ fullWidth, teams }: TeamSelectorProps) {
     <>
       <SetTeamModal
         open={createTeamModalOpen}
-        team={teamToEdit}
-        onClose={() => {
-          setTeamModalOpen(false);
-          setTeamToEdit(null);
+        teamToEdit={teamToEdit}
+        onOpenChange={(boolean) => {
+          setTeamModalOpen(boolean);
+          if (!boolean) {
+            setTeamToEdit(null);
+          }
         }}
       />
       <Popover open={open} onOpenChange={setOpen}>

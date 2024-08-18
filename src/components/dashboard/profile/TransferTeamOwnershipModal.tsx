@@ -1,15 +1,6 @@
 /* eslint-disable no-unused-vars */
 import LoadingButton from '@/components/shared/LoadingButton';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -23,6 +14,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Team, User } from '@prisma/client';
 import { ChevronsUpDown } from 'lucide-react';
@@ -31,19 +30,21 @@ import { useEffect, useState, useTransition } from 'react';
 
 interface TransferTeamOwnershipModalProps {
   team: (Team & { users: User[] }) | null;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
   onConfirm: (team: Team, newOwnerId: number) => Promise<void>;
 }
 
 export function TransferTeamOwnershipModal({
   team,
-  onClose,
+  onOpenChange,
+  open,
   onConfirm,
 }: TransferTeamOwnershipModalProps) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
   const [newOwner, setNewOwner] = useState<number | null>(null);
-  const [open, setOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const [confirmTimer, setConfirmTimer] = useState(15);
 
   useEffect(() => {
@@ -64,28 +65,28 @@ export function TransferTeamOwnershipModal({
     if (!newOwner) return;
     startTransition(async () => {
       await onConfirm(team, newOwner);
-      onClose();
+      onOpenChange(false);
     });
   };
 
   return (
-    <AlertDialog open={Boolean(team)} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {t('dashboard.profile.transfer_ownership_title')}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {t.rich('dashboard.profile.transfer_ownership_description', {
               teamName: team.name,
               strong: (child) => <strong>{child}</strong>,
             })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <Popover open={open} onOpenChange={setOpen}>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
             <Button
-              aria-expanded={open}
+              aria-expanded={popoverOpen}
               className="w-full justify-between"
               role="combobox"
               variant="outline"
@@ -124,7 +125,7 @@ export function TransferTeamOwnershipModal({
                           value={user.id.toString()}
                           onSelect={() => {
                             setNewOwner(user.id);
-                            setOpen(false);
+                            setPopoverOpen(false);
                           }}
                         >
                           {user.fullName}
@@ -136,28 +137,27 @@ export function TransferTeamOwnershipModal({
             </Command>
           </PopoverContent>
         </Popover>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            onClick={onClose}
+        <ResponsiveDialogFooter>
+          <LoadingButton
+            size="sm"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
           >
             {t('general.cancel')}
-          </AlertDialogCancel>
+          </LoadingButton>
           <LoadingButton
-            className={buttonVariants({
-              variant: 'destructive',
-              size: 'sm',
-            })}
             disabled={!newOwner || confirmTimer > 0}
             pending={pending}
+            size="sm"
+            variant="destructive"
             onClick={handleConfirm}
           >
             {confirmTimer === 0
               ? t('dashboard.profile.transfer_ownership')
               : `${t('dashboard.profile.transfer_ownership')} (${confirmTimer})`}
           </LoadingButton>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

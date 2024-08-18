@@ -4,13 +4,6 @@ import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Form,
   FormControl,
   FormField,
@@ -19,6 +12,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import {
   ChangePasswordSchema,
   changePasswordSchema,
@@ -31,12 +31,13 @@ import { useForm } from 'react-hook-form';
 
 interface ChangePasswordModalProps {
   open: boolean;
-  onClose: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onOpenChange: (open: boolean) => void;
 }
 
 export default function ChangePasswordModal({
   open,
-  onClose,
+  onOpenChange,
 }: ChangePasswordModalProps) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
@@ -65,17 +66,19 @@ export default function ChangePasswordModal({
 
       if (!res.isError) {
         form.reset();
-        onClose();
+        onOpenChange(false);
       }
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{t('dashboard.profile.change_password')}</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-[525px]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            {t('dashboard.profile.change_password')}
+          </ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
@@ -159,10 +162,16 @@ export default function ChangePasswordModal({
             <button className="hidden" type="submit" />
           </form>
         </Form>
-        <DialogFooter>
-          <LoadingButton type="submit" variant="outline" onClick={onClose}>
-            {t('general.close')}
-          </LoadingButton>
+        <ResponsiveDialogFooter>
+          <div>
+            <LoadingButton
+              type="submit"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              {t('general.close')}
+            </LoadingButton>
+          </div>
           <div>
             <LoadingButton
               className="w-full"
@@ -173,8 +182,8 @@ export default function ChangePasswordModal({
               {t('general.save')}
             </LoadingButton>
           </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

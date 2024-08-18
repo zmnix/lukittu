@@ -1,31 +1,31 @@
 /* eslint-disable no-unused-vars */
 import LoadingButton from '@/components/shared/LoadingButton';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 
 interface DeleteTeamConfirmModalProps {
   team: Team | null;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   onConfirm: (team: Team, teamNameConfirmation: string) => Promise<void>;
+  open: boolean;
 }
 
 export function DeleteTeamConfirmModal({
   team,
-  onClose,
+  onOpenChange,
   onConfirm,
+  open,
 }: DeleteTeamConfirmModalProps) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
@@ -36,25 +36,25 @@ export function DeleteTeamConfirmModal({
   const handleConfirm = async () => {
     startTransition(async () => {
       await onConfirm(team, confirmName);
-      onClose();
+      onOpenChange(false);
     });
   };
 
   return (
-    <AlertDialog open={Boolean(team)} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             {t('dashboard.profile.delete_team_confirm_title')}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {t.rich('dashboard.profile.delete_team_confirm_description', {
               teamName: team.name,
               strong: (child) => <strong>{child}</strong>,
             })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <div className="grid w-full gap-1.5">
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <div className="grid w-full gap-1.5 px-4">
           <Label htmlFor="confirmName">
             {t.rich('dashboard.profile.delete_team_confirm_input', {
               teamName: `"${team.name.toUpperCase()}"`,
@@ -68,26 +68,25 @@ export function DeleteTeamConfirmModal({
             onChange={(e) => setConfirmName(e.target.value)}
           />
         </div>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            onClick={onClose}
+        <ResponsiveDialogFooter>
+          <LoadingButton
+            size="sm"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
           >
             {t('general.cancel')}
-          </AlertDialogCancel>
+          </LoadingButton>
           <LoadingButton
-            className={buttonVariants({
-              variant: 'destructive',
-              size: 'sm',
-            })}
             disabled={confirmName !== team.name.toUpperCase()}
             pending={pending}
+            size="sm"
+            variant="destructive"
             onClick={handleConfirm}
           >
             {t('dashboard.profile.delete_team')}
           </LoadingButton>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

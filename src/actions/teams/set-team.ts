@@ -46,7 +46,7 @@ export default async function setTeam({ name, id }: SetTeamSchema) {
 
   const createdTeam = await prisma.team.upsert({
     where: {
-      id: id,
+      id: id || 0,
     },
     create: {
       name,

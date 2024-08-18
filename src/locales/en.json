@@ -39,7 +39,11 @@
     "product_description_max_length": "Product description must be at most 500 characters long!",
     "product_url_invalid": "Product URL is invalid!",
     "product_already_exists": "Team already has a product with this name!",
-    "product_not_found": "Product not found!"
+    "product_not_found": "Product not found!",
+    "license_key_invalid": "License key must contain 5 groups of 5 characters separated by dashes!",
+    "license_expires_at_must_be_future": "License expiration date must be in the future!",
+    "expiration_days_required": "Days are required!",
+    "expiration_date_required": "Expiration date is required!"
   },
   "general": {
     "error": "Error",
@@ -84,7 +88,10 @@
     "url": "URL",
     "created_at": "Created at",
     "page_of": "Page {page} of {pages}",
-    "rows_per_page": "Rows per page"
+    "rows_per_page": "Rows per page",
+    "loading": "Loading...",
+    "no_results": "No results",
+    "retry": "Retry"
   },
   "auth": {
     "oauth": {
@@ -204,6 +211,25 @@
       "delete_product_confirm_description": "You are about to delete product <strong>{productName}</strong>! This will <strong>permanently delete</strong> all the data related to this product <strong>including all licenses</strong>. This action cannot be undone.",
       "delete_product_confirm_input": "Please type <code>{productName}</code> to confirm",
       "add_your_first_product": "Add your first product"
+    },
+    "licenses": {
+      "add_license": "Add license",
+      "edit_license": "Edit license",
+      "search_product": "Search product...",
+      "assigned_products": "Assigned products",
+      "license": "License",
+      "ip_limit": "IP limit",
+      "expiration_date": "Expiration date",
+      "expiration_duration": "Expiration duration",
+      "never": "Never",
+      "expiration_type": "Expiration type",
+      "expiration_start": "Expiration start",
+      "creation": "Creation",
+      "activation": "Activation",
+      "expiration_days": "Days",
+      "expiration_settings": "Expiration settings",
+      "duration": "Duration",
+      "date": "Date"
     }
   }
 }

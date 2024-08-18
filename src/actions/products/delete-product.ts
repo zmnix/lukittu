@@ -17,18 +17,6 @@ export default async function deleteProduct(
     };
   }
 
-  const session = await getSession({
-    user: {
-      include: {
-        teams: {
-          where: {
-            deletedAt: null,
-          },
-        },
-      },
-    },
-  });
-
   const selectedTeam = getSelectedTeam();
 
   if (!selectedTeam) {
@@ -38,7 +26,20 @@ export default async function deleteProduct(
     };
   }
 
-  if (!session.user.teams.find((team) => team.id === selectedTeam)) {
+  const session = await getSession({
+    user: {
+      include: {
+        teams: {
+          where: {
+            deletedAt: null,
+            id: selectedTeam,
+          },
+        },
+      },
+    },
+  });
+
+  if (!session.user.teams.length) {
     return {
       isError: true,
       message: t('validation.team_not_found'),

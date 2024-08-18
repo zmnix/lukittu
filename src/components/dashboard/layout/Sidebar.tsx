@@ -42,12 +42,14 @@ export function Sidebar() {
               className={ctx.open ? '' : 'hidden'}
               height={38}
               src={logo}
+              priority
             />
             <Image
               alt="Lukittu"
               className={ctx.open ? 'hidden' : ''}
               height={33}
               src={logoCircle}
+              priority
             />
           </Link>
         </Button>

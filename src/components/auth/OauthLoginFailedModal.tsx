@@ -1,23 +1,28 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import LoadingButton from '../shared/LoadingButton';
 
 interface OauthLoginFailedModalProps {
   error: string | null;
+  open: boolean;
+  // eslint-disable-next-line no-unused-vars
+  onOpenChange: (boolean: boolean) => void;
   provider: string | null;
 }
 
 export default function OauthLoginFailedccessModal({
   error,
   provider,
+  onOpenChange,
+  open,
 }: OauthLoginFailedModalProps) {
   const t = useTranslations();
 
@@ -30,11 +35,13 @@ export default function OauthLoginFailedccessModal({
   if (!error) return null;
 
   return (
-    <Dialog open={Boolean(error)} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{t('auth.login.login_failed')}</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-[525px]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            {t('auth.login.login_failed')}
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {error === 'wrong_provider' ? (
               <>
                 {t('general.wrong_provider', {
@@ -48,16 +55,16 @@ export default function OauthLoginFailedccessModal({
                 })}
               </>
             )}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
           <form action={handleClose}>
             <LoadingButton className="w-full" type="submit" variant="outline">
               {t('general.close')}
             </LoadingButton>
           </form>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

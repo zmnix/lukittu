@@ -1,13 +1,12 @@
+import LoadingButton from '@/components/shared/LoadingButton';
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
@@ -24,19 +23,22 @@ export const useModal = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState<React.ReactNode | string>('');
 
-  const handleClose = () => {
-    setOpen(false);
-    setTitle('');
-    setDescription('');
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (!open) {
+      setTitle('');
+      setDescription('');
+    }
   };
 
   const [footerElement, setFooterElement] = useState<React.ReactNode>(
-    <AlertDialogCancel
-      className={buttonVariants({ variant: 'outline', size: 'sm' })}
-      onClick={handleClose}
+    <LoadingButton
+      size="sm"
+      variant="outline"
+      onClick={() => handleOpenChange(false)}
     >
       {t('general.cancel')}
-    </AlertDialogCancel>,
+    </LoadingButton>,
   );
 
   const [contentElement, setContentElement] = useState<React.ReactNode | null>(
@@ -64,16 +66,18 @@ export const useModal = () => {
   };
 
   const ConfirmModal = () => (
-    <AlertDialog open={open} onOpenChange={handleClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{title}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
+            {description}
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {contentElement && contentElement}
-        <AlertDialogFooter>{footerElement}</AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        <ResponsiveDialogFooter>{footerElement}</ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 
   return { openConfirmModal, ConfirmModal };
