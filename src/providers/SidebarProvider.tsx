@@ -3,7 +3,6 @@ import { createContext, useState } from 'react';
 
 export const SidebarContext = createContext({
   open: true,
-  // eslint-disable-next-line no-unused-vars
   toggle: () => {},
 });
 
