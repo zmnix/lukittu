@@ -5,24 +5,18 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export interface TeamDeleteRequest {
-  teamNameConfirmation: string;
-}
-
-export type TeamDeleteResponse =
+export type TeamLeaveResponse =
   | ErrorResponse
   | {
       success: boolean;
     };
 
-export async function DELETE(
-  request: NextRequest,
+export async function POST(
+  _: NextRequest,
   { params }: { params: { slug: string } },
-): Promise<NextResponse<TeamDeleteResponse>> {
+): Promise<NextResponse<TeamLeaveResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
-  const body = await request.json();
 
-  const { teamNameConfirmation } = body as TeamDeleteRequest;
   const teamId = parseInt(params.slug);
 
   if (isNaN(teamId) || teamId <= 0) {
@@ -34,7 +28,17 @@ export async function DELETE(
     );
   }
 
-  const session = await getSession({ user: true });
+  const session = await getSession({
+    user: {
+      include: {
+        teams: {
+          where: {
+            deletedAt: null,
+          },
+        },
+      },
+    },
+  });
 
   if (!session) {
     return NextResponse.json(
@@ -45,15 +49,7 @@ export async function DELETE(
     );
   }
 
-  const team = await prisma.team.findFirst({
-    where: {
-      id: teamId,
-      deletedAt: null,
-    },
-    include: {
-      users: true,
-    },
-  });
+  const team = session.user.teams.find((t) => t.id === teamId);
 
   if (!team) {
     return NextResponse.json(
@@ -64,28 +60,10 @@ export async function DELETE(
     );
   }
 
-  if (teamNameConfirmation !== team.name.toUpperCase()) {
+  if (team.ownerId === session.user.id) {
     return NextResponse.json(
       {
-        message: t('validation.bad_request'),
-      },
-      { status: 400 },
-    );
-  }
-
-  if (team.ownerId !== session.user.id) {
-    return NextResponse.json(
-      {
-        message: t('validation.unauthorized'),
-      },
-      { status: 401 },
-    );
-  }
-
-  if (team.users.length > 1) {
-    return NextResponse.json(
-      {
-        message: t('validation.team_has_users'),
+        message: t('validation.team_owner_cannot_leave'),
       },
       { status: 400 },
     );
@@ -96,7 +74,11 @@ export async function DELETE(
       id: teamId,
     },
     data: {
-      deletedAt: new Date(),
+      users: {
+        disconnect: {
+          id: session.user.id,
+        },
+      },
     },
   });
 

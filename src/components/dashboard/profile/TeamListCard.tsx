@@ -1,6 +1,6 @@
 'use client';
-import leaveTeam from '@/actions/profile/leave-team';
 import transferTeamOwnership from '@/actions/profile/transfer-team-ownership';
+import { TeamLeaveResponse } from '@/app/api/teams/[slug]/leave/route';
 import { TeamDeleteResponse } from '@/app/api/teams/[slug]/route';
 import { TeamsGetResponse, TeamWithUsers } from '@/app/api/teams/route';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +25,6 @@ import { AuthContext } from '@/providers/AuthProvider';
 import { Team, User } from '@prisma/client';
 import { EllipsisVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
 import { LeaveTeamConfirmModal } from './TeamLeaveConfirmModal';
@@ -54,7 +53,6 @@ export default function TeamListCard() {
 
   const { ConfirmModal, openConfirmModal } = useModal();
   const t = useTranslations();
-  const router = useRouter();
 
   useEffect(() => {
     const handleTeamGet = async () => {
@@ -68,10 +66,20 @@ export default function TeamListCard() {
     handleTeamGet();
   }, []);
 
-  const handleTeamLeave = async (team: Team) => {
-    const res = await leaveTeam(team.id);
+  const handleLeaveTeam = async (teamId: number) => {
+    const response = await fetch(`/api/teams/${teamId}/leave`, {
+      method: 'POST',
+    });
 
-    if (res.isError) {
+    const data = (await response.json()) as TeamLeaveResponse;
+
+    return data;
+  };
+
+  const handleTeamLeave = async (team: Team) => {
+    const res = await handleLeaveTeam(team.id);
+
+    if ('message' in res) {
       return openConfirmModal({
         title: t('general.error'),
         description: res.message,
@@ -88,7 +96,8 @@ export default function TeamListCard() {
         },
       });
     }
-    router.refresh();
+
+    setTeams((teams) => teams.filter((t) => t.id !== team.id));
   };
 
   const handleDeleteTeam = async (team: Team, teamNameConfirmation: string) => {
@@ -122,7 +131,8 @@ export default function TeamListCard() {
         },
       });
     }
-    router.refresh();
+
+    setTeams((teams) => teams.filter((t) => t.id !== team.id));
   };
 
   const handleTeamDeleteConfirm = (team: Team & { users: User[] }) => {

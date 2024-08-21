@@ -31,7 +31,6 @@ export default function LoginSessionsCard() {
     startTransition(async () => {
       const res = await fetch('/api/session');
       const data = await res.json();
-      console.log(data);
       if (res.ok) {
         setSessions(data.sessions);
       }
