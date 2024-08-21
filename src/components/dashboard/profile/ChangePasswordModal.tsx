@@ -1,5 +1,5 @@
 'use client';
-import changePassword from '@/actions/profile/change-password';
+import { ChangePasswordResponse } from '@/app/api/users/change-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Button } from '@/components/ui/button';
@@ -52,10 +52,24 @@ export default function ChangePasswordModal({
     },
   });
 
+  const handleChangePassword = async (data: ChangePasswordSchema) => {
+    const response = await fetch('/api/users/change-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = (await response.json()) as ChangePasswordResponse;
+
+    return responseData;
+  };
+
   const onSubmit = (data: ChangePasswordSchema) => {
     startTransition(async () => {
-      const res = await changePassword(data);
-      if (res.isError) {
+      const res = await handleChangePassword(data);
+      if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof ChangePasswordSchema, {
             type: 'manual',
@@ -64,10 +78,8 @@ export default function ChangePasswordModal({
         }
       }
 
-      if (!res.isError) {
-        form.reset();
-        onOpenChange(false);
-      }
+      form.reset();
+      onOpenChange(false);
     });
   };
 

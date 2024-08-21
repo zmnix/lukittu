@@ -1,6 +1,7 @@
 'use client';
 import signoutAllSessions from '@/actions/profile/sign-out-all-sessions';
 import signoutSession from '@/actions/profile/sign-out-session';
+import { SessionsGetResponse } from '@/app/api/sessions/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -29,8 +30,14 @@ export default function LoginSessionsCard() {
 
   useEffect(() => {
     startTransition(async () => {
-      const res = await fetch('/api/session');
-      const data = await res.json();
+      const res = await fetch('/api/sessions');
+      const data = (await res.json()) as SessionsGetResponse;
+
+      if ('message' in data) {
+        // TODO: Handle error
+        return;
+      }
+
       if (res.ok) {
         setSessions(data.sessions);
       }

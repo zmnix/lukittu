@@ -6,13 +6,15 @@ import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export type SessionGet =
+export type SessionsGetResponse =
   | ErrorResponse
   | {
       sessions: (Session & { current: boolean })[];
     };
 
-export async function GET(): Promise<NextResponse<SessionGet | undefined>> {
+export async function GET(): Promise<
+  NextResponse<SessionsGetResponse | undefined>
+> {
   const t = await getTranslations({ locale: getLanguage() });
   const sessionId = cookies().get('session')?.value;
   const session = await getSession({

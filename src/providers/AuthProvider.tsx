@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 'use client';
-import { SessionWithUserAndTeams } from '@/app/api/session/current/route';
+import { SessionWithUserAndTeams } from '@/app/api/sessions/current/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useRouter } from 'next/navigation';
 import { createContext, useEffect, useState } from 'react';
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const res = await fetch('/api/session/current');
+        const res = await fetch('/api/sessions/current');
         if (!res.ok && res.status === 401) {
           setSession(null);
           try {
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     fetchSession();
   }, [router]);
 
-  if (loading) {
+  if (loading || !session) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <LoadingSpinner size={38} />
