@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 'use client';
 import { SessionWithUserAndTeams } from '@/app/api/sessions/current/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
@@ -41,8 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const data = await res.json();
         setSession(data.session);
-      } catch (error) {
-        console.error('Error fetching session:', error);
       } finally {
         setLoading(false);
       }

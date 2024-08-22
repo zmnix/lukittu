@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { ProductDeleteResponse } from '@/app/api/products/[slug]/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';

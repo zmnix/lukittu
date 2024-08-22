@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 

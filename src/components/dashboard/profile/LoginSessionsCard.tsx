@@ -70,9 +70,6 @@ export default function LoginSessionsCard() {
           prev.filter((session) => session.sessionId !== sessionId),
         );
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
     } finally {
       setPendingSingleId(null);
     }

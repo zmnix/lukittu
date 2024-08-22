@@ -13,7 +13,6 @@ import LoadingButton from '../shared/LoadingButton';
 interface OauthLoginFailedModalProps {
   error: string | null;
   open: boolean;
-  // eslint-disable-next-line no-unused-vars
   onOpenChange: (boolean: boolean) => void;
   provider: string | null;
 }

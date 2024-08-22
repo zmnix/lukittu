@@ -1,4 +1,4 @@
-import { ResendVerifyEmailResponse } from '@/app/api/auth/resend-verify-email/route';
+import { IResendIVerifyEmailResponse } from '@/app/api/auth/resend-verify-email/route';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -21,7 +21,6 @@ const initialState = {
 
 interface ResendVerifyEmailModalProps {
   open: boolean;
-  // eslint-disable-next-line no-unused-vars
   onOpenChange: (boolean: boolean) => void;
   email: string;
 }
@@ -44,7 +43,7 @@ export default function ResendVerifyEmailModal({
       body: JSON.stringify({ email }),
     });
 
-    const responseData = (await response.json()) as ResendVerifyEmailResponse;
+    const responseData = (await response.json()) as IResendIVerifyEmailResponse;
 
     return responseData;
   };

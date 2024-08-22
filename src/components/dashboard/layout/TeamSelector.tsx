@@ -75,9 +75,6 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
         const firstTeamId = teams[0].id.toString();
         updateSelectedTeam(firstTeamId);
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
     } finally {
       setLoading(false);
     }

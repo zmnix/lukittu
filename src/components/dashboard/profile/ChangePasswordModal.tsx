@@ -31,7 +31,6 @@ import { useForm } from 'react-hook-form';
 
 interface ChangePasswordModalProps {
   open: boolean;
-  // eslint-disable-next-line no-unused-vars
   onOpenChange: (open: boolean) => void;
 }
 

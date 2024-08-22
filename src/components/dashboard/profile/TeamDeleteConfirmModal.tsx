@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

@@ -31,7 +31,6 @@ import { useForm } from 'react-hook-form';
 
 interface SetTeamModalProps {
   open: boolean;
-  // eslint-disable-next-line no-unused-vars
   onOpenChange: (boolean: boolean) => void;
   teamToEdit: Team | null;
 }

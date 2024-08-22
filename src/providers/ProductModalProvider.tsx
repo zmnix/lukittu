@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 'use client';
 import CreateProductModal from '@/components/dashboard/products/CreateProductModal';
 import { DeleteProductConfirmModal } from '@/components/dashboard/products/ProductDeleteConfirmModal';

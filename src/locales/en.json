@@ -91,14 +91,15 @@
     "rows_per_page": "Rows per page",
     "loading": "Loading...",
     "no_results": "No results",
-    "retry": "Retry"
+    "retry": "Retry",
+    "server_error": "Server error"
   },
   "auth": {
     "oauth": {
-      "server_error": "An error occurred while authenticating with the server. Please try again later.",
       "unverified_email": "You have an unverified email attached to your {provider} account. Please verify your email first.",
       "credentials": "email and password",
-      "google": "Google"
+      "google": "Google",
+      "server_error": "Failed to authenticate with {provider}. Please try again later."
     },
     "login": {
       "title": "Sign in to your account",

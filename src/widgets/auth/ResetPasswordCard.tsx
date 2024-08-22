@@ -1,5 +1,5 @@
 'use client';
-import { ResetPasswordResponse } from '@/app/api/auth/reset-password/route';
+import { IResetPasswordResponse } from '@/app/api/auth/reset-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -71,7 +71,7 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
       body: JSON.stringify({ ...data, token }),
     });
 
-    const responseData = (await response.json()) as ResetPasswordResponse;
+    const responseData = (await response.json()) as IResetPasswordResponse;
 
     return responseData;
   };

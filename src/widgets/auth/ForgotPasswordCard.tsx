@@ -1,5 +1,5 @@
 'use client';
-import { ForgotPasswordPostResponse } from '@/app/api/auth/forgot-password/route';
+import { IForgotPasswordResponse } from '@/app/api/auth/forgot-password/route';
 import ForgotPasswordSuccessModal from '@/components/auth/ForgotPasswordSuccessModal';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
-  ForgotPasswordSchema,
+  IForgotPasswordSchema,
   forgotPasswordSchema,
 } from '@/lib/validation/auth/forgot-password-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,7 +37,7 @@ export default function ForgotPasswordCard() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
 
-  const form = useForm<ForgotPasswordSchema>({
+  const form = useForm<IForgotPasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema(t)),
     defaultValues: {
       email: '',
@@ -53,7 +53,7 @@ export default function ForgotPasswordCard() {
     setFormError(null);
   }, [formWatcher]);
 
-  const handleForgotPassword = async (data: ForgotPasswordSchema) => {
+  const handleForgotPassword = async (data: IForgotPasswordSchema) => {
     const response = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: {
@@ -62,17 +62,17 @@ export default function ForgotPasswordCard() {
       body: JSON.stringify(data),
     });
 
-    const responseData = (await response.json()) as ForgotPasswordPostResponse;
+    const responseData = (await response.json()) as IForgotPasswordResponse;
 
     return responseData;
   };
 
-  const onSubmit = (data: ForgotPasswordSchema) => {
+  const onSubmit = (data: IForgotPasswordSchema) => {
     startTransition(async () => {
       const res = await handleForgotPassword(data);
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof ForgotPasswordSchema, {
+          return form.setError(res.field as keyof IForgotPasswordSchema, {
             type: 'manual',
             message: res.message,
           });

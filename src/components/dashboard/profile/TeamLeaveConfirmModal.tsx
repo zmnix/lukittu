@@ -13,10 +13,8 @@ import { useEffect, useState, useTransition } from 'react';
 
 interface LeaveTeamConfirmModalProps {
   team: Team | null;
-  // eslint-disable-next-line no-unused-vars
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  // eslint-disable-next-line no-unused-vars
   onConfirm: (team: Team) => Promise<void>;
 }
 

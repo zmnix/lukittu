@@ -96,7 +96,7 @@ export async function GET(): Promise<NextResponse<LicenseKeyResponse>> {
       attempts++;
     }
 
-    throw new Error(t('auth.oauth.server_error'));
+    throw new Error(t('general.server_error'));
   };
 
   const licenseKey = await findUniqueLicenseKey();

@@ -3,11 +3,12 @@
   "rules": {
     "react/react-in-jsx-scope": "off",
     "spaced-comment": "error",
-    "no-unused-vars": "error",
+    "no-unused-vars": ["error", { "args": "none" }],
     "react/self-closing-comp": ["error", { "component": true, "html": true }],
     "arrow-body-style": ["error", "as-needed"],
     "no-trailing-spaces": "error",
-    "quotes": ["error", "single"],
+    "quotes": [2, "single", { "avoidEscape": true }],
+    "no-console": "error",
     "react/jsx-curly-brace-presence": [
       "error",
       { "props": "never", "children": "never" }

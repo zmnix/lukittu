@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 
-export type ForgotPasswordSchema = z.infer<
+export type IForgotPasswordSchema = z.infer<
   ReturnType<typeof forgotPasswordSchema>
 >;
 

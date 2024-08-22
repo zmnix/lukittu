@@ -1,5 +1,5 @@
 'use client';
-import { LoginPostResponse } from '@/app/api/auth/login/route';
+import { ILoginResponse } from '@/app/api/auth/login/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import OauthLoginFailedccessModal from '@/components/auth/OauthLoginFailedModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
@@ -88,7 +88,7 @@ export default function LoginCard() {
       body: JSON.stringify(data),
     });
 
-    const responseData = (await response.json()) as LoginPostResponse;
+    const responseData = (await response.json()) as ILoginResponse;
 
     return responseData;
   };

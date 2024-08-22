@@ -11,7 +11,6 @@ import LoadingButton from '../shared/LoadingButton';
 
 interface RegisterSuccessModalProps {
   open: boolean;
-  // eslint-disable-next-line no-unused-vars
   onOpenChange: (boolean: boolean) => void;
   email: string;
 }

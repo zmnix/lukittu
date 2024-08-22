@@ -1,5 +1,5 @@
 'use client';
-import { RegisterPostResponse } from '@/app/api/auth/register/route';
+import { IRegisterResponse } from '@/app/api/auth/register/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import RegisterSuccessModal from '@/components/auth/RegisterSuccessModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
@@ -79,7 +79,7 @@ export default function RegisterCard() {
       body: JSON.stringify(data),
     });
 
-    const responseData = (await response.json()) as RegisterPostResponse;
+    const responseData = (await response.json()) as IRegisterResponse;
 
     return responseData;
   };

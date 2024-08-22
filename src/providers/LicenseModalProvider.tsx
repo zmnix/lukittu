@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 'use client';
 import CreateLicenseModal from '@/components/dashboard/licenses/CreateLicenseModal';
 import { createContext, useState } from 'react';

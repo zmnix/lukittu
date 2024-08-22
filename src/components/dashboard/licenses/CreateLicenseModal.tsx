@@ -83,7 +83,7 @@ export default function CreateLicenseModal() {
       const licenseKey = data.licenseKey;
       form.setValue('licenseKey', licenseKey, { shouldValidate: true });
     } catch (error: any) {
-      setError(error.message ?? t('auth.oauth.server_error'));
+      setError(error.message ?? t('general.server_error'));
     } finally {
       setLoading((prev) => ({ ...prev, license: false }));
     }

@@ -82,12 +82,12 @@ export function ProductListTable() {
         }
 
         if (!response.ok) {
-          setError(t('auth.oauth.server_error'));
+          setError(t('general.server_error'));
         }
         setProducts(data.products);
         setTotalProducts(data.totalProducts);
       } catch (error: any) {
-        setError(t('auth.oauth.server_error'));
+        setError(t('general.server_error'));
         console.error(error);
       } finally {
         setLoading(false);

@@ -1,129 +1,141 @@
 import prisma from '@/lib/database/prisma';
 import { getLanguage } from '@/lib/utils/header-helpers';
+import { logger } from '@/lib/utils/logger';
 import {
   verifyEmaiLSchema,
   VerifyEmailSchema,
 } from '@/lib/validation/auth/verify-email-schema';
 import { ErrorResponse } from '@/types/common-api-types';
+import { HttpStatus } from '@/types/http-status';
 import { JwtTypes } from '@/types/jwt-types-enum';
 import { Provider } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export type VerifyEmailResponse =
-  | ErrorResponse
-  | {
-      success: boolean;
-    };
+type IVerifyEmailSuccessResponse = {
+  success: boolean;
+};
+
+export type IVerifyEmailResponse = ErrorResponse | IVerifyEmailSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<VerifyEmailResponse>> {
-  const body = (await request.json()) as VerifyEmailSchema;
-
+): Promise<NextResponse<IVerifyEmailResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
-  const validated = await verifyEmaiLSchema(t).safeParseAsync(body);
-
-  if (!validated.success) {
-    return NextResponse.json(
-      {
-        message: validated.error.errors[0].message,
-        field: validated.error.errors[0].path[0],
-      },
-      { status: 400 },
-    );
-  }
-
-  const { token } = validated.data;
-
-  let decodedToken: {
-    userId: number;
-    type: JwtTypes;
-  };
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    const body = (await request.json()) as VerifyEmailSchema;
+    const validated = await verifyEmaiLSchema(t).safeParseAsync(body);
 
-    if (typeof decoded === 'string') {
+    if (!validated.success) {
       return NextResponse.json(
         {
-          message: t('validation.invalid_token'),
+          message: validated.error.errors[0].message,
+          field: validated.error.errors[0].path[0],
         },
-        { status: 400 },
+        { status: HttpStatus.BAD_REQUEST },
       );
     }
 
-    if (decoded.type !== JwtTypes.NEW_ACCOUNT_EMAIL_VERIFICATION) {
-      return NextResponse.json(
-        {
-          message: t('validation.invalid_token'),
-        },
-        { status: 400 },
-      );
-    }
+    const { token } = validated.data;
 
-    decodedToken = decoded as {
+    let decodedToken: {
       userId: number;
       type: JwtTypes;
     };
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+
+      if (typeof decoded === 'string') {
+        return NextResponse.json(
+          {
+            message: t('validation.invalid_token'),
+          },
+          { status: HttpStatus.BAD_REQUEST },
+        );
+      }
+
+      if (decoded.type !== JwtTypes.NEW_ACCOUNT_EMAIL_VERIFICATION) {
+        return NextResponse.json(
+          {
+            message: t('validation.invalid_token'),
+          },
+          { status: HttpStatus.BAD_REQUEST },
+        );
+      }
+
+      decodedToken = decoded as {
+        userId: number;
+        type: JwtTypes;
+      };
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return NextResponse.json(
+          {
+            message: t('auth.emails.expired_link'),
+          },
+          { status: HttpStatus.GONE },
+        );
+      }
+
       return NextResponse.json(
         {
-          message: t('auth.emails.expired_link'),
+          message: t('validation.invalid_token'),
         },
-        { status: 400 },
+        { status: HttpStatus.UNAUTHORIZED },
       );
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: decodedToken.userId },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          message: t('validation.user_not_found'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (user.provider !== Provider.CREDENTIALS) {
+      return NextResponse.json(
+        {
+          message: t('general.wrong_provider', {
+            provider: t(`auth.oauth.${user.provider.toLowerCase()}` as any),
+          }),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (user.emailVerified) {
+      return NextResponse.json(
+        {
+          message: t('validation.email_already_verified'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error("Error occurred in 'verify-email' route", error);
     return NextResponse.json(
       {
-        message: t('validation.invalid_token'),
+        message: t('general.server_error'),
       },
-      { status: 400 },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
     );
   }
-
-  const user = await prisma.user.findUnique({
-    where: { id: decodedToken.userId },
-  });
-
-  if (!user) {
-    return NextResponse.json(
-      {
-        message: t('validation.user_not_found'),
-      },
-      { status: 400 },
-    );
-  }
-
-  if (user.provider !== Provider.CREDENTIALS) {
-    return NextResponse.json(
-      {
-        message: t('general.wrong_provider', {
-          provider: t(`auth.oauth.${user.provider.toLowerCase()}` as any),
-        }),
-      },
-      { status: 400 },
-    );
-  }
-
-  if (user.emailVerified) {
-    return NextResponse.json(
-      {
-        message: t('validation.email_already_verified'),
-      },
-      { status: 400 },
-    );
-  }
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      emailVerified: true,
-    },
-  });
-
-  return NextResponse.json({ success: true });
 }

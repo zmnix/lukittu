@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
   try {
     const res = await fetch(
@@ -15,6 +17,7 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
 
     return data.success;
   } catch (error) {
+    logger.error('Error verifying Turnstile token', error);
     return false;
   }
 };
