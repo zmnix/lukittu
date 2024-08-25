@@ -1,16 +1,19 @@
 'use client';
-import { SessionWithUserAndTeams } from '@/app/api/sessions/current/route';
+import {
+  ISessionsGetCurrentResponse,
+  ISessionsGetCurrentSuccessResponse,
+} from '@/app/api/sessions/current/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useRouter } from 'next/navigation';
 import { createContext, useEffect, useState } from 'react';
 
 export const AuthContext = createContext({
-  session: null as SessionWithUserAndTeams | null,
+  session: null as ISessionsGetCurrentSuccessResponse['session'] | null,
   loading: true,
   setSession: ((
-    session: SessionWithUserAndTeams | null,
+    session: ISessionsGetCurrentSuccessResponse['session'] | null,
   ) => {}) as React.Dispatch<
-    React.SetStateAction<SessionWithUserAndTeams | null>
+    React.SetStateAction<ISessionsGetCurrentSuccessResponse['session'] | null>
   >,
 });
 
@@ -18,7 +21,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<SessionWithUserAndTeams | null>(null);
+  const [session, setSession] = useState<
+    ISessionsGetCurrentSuccessResponse['session'] | null
+  >(null);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -38,7 +43,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as ISessionsGetCurrentResponse;
+
         setSession(data.session);
       } finally {
         setLoading(false);

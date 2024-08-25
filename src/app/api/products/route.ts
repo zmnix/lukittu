@@ -12,16 +12,16 @@ import { Product } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IGetProductsSuccessResponse = {
+type IProductsGetSuccessResponse = {
   products: Product[];
   totalProducts: number;
 };
 
-export type IGetProductsResponse = ErrorResponse | IGetProductsSuccessResponse;
+export type IProductsGetResponse = ErrorResponse | IProductsGetSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<IGetProductsResponse>> {
+): Promise<NextResponse<IProductsGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

@@ -1,6 +1,6 @@
 'use client';
 import { ILicensesGenerateResponse } from '@/app/api/licenses/route';
-import { IGetProductsResponse } from '@/app/api/products/route';
+import { IProductsGetResponse } from '@/app/api/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
@@ -355,7 +355,7 @@ export default function CreateLicenseModal() {
                       `/api/products?search=${value}`,
                     );
                     const data =
-                      (await response.json()) as IGetProductsResponse;
+                      (await response.json()) as IProductsGetResponse;
 
                     if ('error' in data) {
                       setError(data.error);

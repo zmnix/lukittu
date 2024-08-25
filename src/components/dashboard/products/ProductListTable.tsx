@@ -1,5 +1,5 @@
 'use client';
-import { IGetProductsResponse } from '@/app/api/products/(get)/route';
+import { IProductsGetResponse } from '@/app/api/products/(get)/route';
 import TablePagination from '@/components/shared/table/TablePagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -75,7 +75,7 @@ export function ProductListTable() {
           `/api/products?${searchParams.toString()}`,
         );
 
-        const data = (await response.json()) as IGetProductsResponse;
+        const data = (await response.json()) as IProductsGetResponse;
 
         if ('error' in data) {
           return setError(data.error);

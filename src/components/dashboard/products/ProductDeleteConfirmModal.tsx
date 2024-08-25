@@ -1,4 +1,4 @@
-import { IDeleteProductResponse } from '@/app/api/products/[slug]/route';
+import { IDeleteProductsResponse } from '@/app/api/products/[slug]/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,7 +40,7 @@ export function DeleteProductConfirmModal() {
       body: JSON.stringify({ productNameConfirmation }),
     });
 
-    const responseData = (await response.json()) as IDeleteProductResponse;
+    const responseData = (await response.json()) as IDeleteProductsResponse;
 
     return responseData;
   };
