@@ -15,7 +15,7 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)
       '@prisma/client':
-        specifier: ^5.17.0
+        specifier: ^5.18.0
         version: 5.18.0(prisma@5.18.0)
       '@radix-ui/react-avatar':
         specifier: ^1.1.0
@@ -154,7 +154,7 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5(prettier@3.3.3)
       prisma:
-        specifier: ^5.17.0
+        specifier: ^5.18.0
         version: 5.18.0
       tailwindcss:
         specifier: ^3.4.1

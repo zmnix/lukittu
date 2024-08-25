@@ -1,7 +1,10 @@
 'use client';
 import signoutAllSessions from '@/actions/profile/sign-out-all-sessions';
 import signoutSession from '@/actions/profile/sign-out-session';
-import { SessionsGetResponse } from '@/app/api/sessions/route';
+import {
+  ISessionsGetResponse,
+  ISessionsGetSuccessResponse,
+} from '@/app/api/sessions/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -13,17 +16,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getRelativeTimeString } from '@/lib/utils/date-helpers';
-import { Session } from '@prisma/client';
 import { LogOut } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState, useTransition } from 'react';
 import UAParser from 'ua-parser-js';
 
 export default function LoginSessionsCard() {
-  const [sessions, setSessions] = useState<(Session & { current: boolean })[]>(
-    [],
-  );
-  const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<
+    ISessionsGetSuccessResponse['sessions']
+  >([]);
+  const [pendingSingleId, setPendingSingleId] = useState<number | null>(null);
   const [pending, startTransition] = useTransition();
   const t = useTranslations();
   const locale = useLocale();
@@ -31,7 +33,7 @@ export default function LoginSessionsCard() {
   useEffect(() => {
     startTransition(async () => {
       const res = await fetch('/api/sessions');
-      const data = (await res.json()) as SessionsGetResponse;
+      const data = (await res.json()) as ISessionsGetResponse;
 
       if ('message' in data) {
         // TODO: Handle error
@@ -61,14 +63,12 @@ export default function LoginSessionsCard() {
     (session) => !session.current,
   );
 
-  const handleSessionLogout = async (sessionId: string) => {
-    setPendingSingleId(sessionId);
+  const handleSessionLogout = async (id: number) => {
+    setPendingSingleId(id);
     try {
-      const res = await signoutSession(sessionId);
+      const res = await signoutSession(id);
       if (!res.isError) {
-        setSessions((prev) =>
-          prev.filter((session) => session.sessionId !== sessionId),
-        );
+        setSessions((prev) => prev.filter((session) => session.id !== id));
       }
     } finally {
       setPendingSingleId(null);
@@ -130,10 +130,10 @@ export default function LoginSessionsCard() {
                     t('dashboard.profile.current_session')
                   ) : (
                     <LoadingButton
-                      pending={pendingSingleId === session.sessionId}
+                      pending={pendingSingleId === session.id}
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleSessionLogout(session.sessionId)}
+                      onClick={() => handleSessionLogout(session.id)}
                     >
                       <LogOut size={20} />
                     </LoadingButton>

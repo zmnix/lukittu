@@ -16,19 +16,19 @@ export type ISignOutResponse = ErrorResponse | ISignOutSuccessResponse;
 export async function POST(): Promise<NextResponse<ISignOutResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
+  cookies().set('session', '', {
+    expires: new Date(0),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
   try {
     const sessionId = cookies().get('session')?.value;
 
     if (sessionId) {
       await prisma.session.delete({
         where: { sessionId: sessionId },
-      });
-
-      cookies().set('session', '', {
-        expires: new Date(0),
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
       });
     }
 

@@ -7,15 +7,15 @@ import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export type SessionsGetResponse =
-  | ErrorResponse
-  | {
-      sessions: (Session & { current: boolean })[];
-    };
+export type ISessionsGetSuccessResponse = {
+  sessions: (Omit<Session, 'sessionId'> & { current: boolean })[];
+};
+
+export type ISessionsGetResponse = ErrorResponse | ISessionsGetSuccessResponse;
 
 export type SignOutAllSessionResponse = ErrorResponse | { success: boolean };
 
-export async function GET(): Promise<NextResponse<SessionsGetResponse>> {
+export async function GET(): Promise<NextResponse<ISessionsGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
   const sessionId = cookies().get('session')?.value;
   const session = await getSession({
@@ -24,6 +24,9 @@ export async function GET(): Promise<NextResponse<SessionsGetResponse>> {
         sessions: {
           orderBy: {
             createdAt: 'desc',
+          },
+          omit: {
+            sessionId: false,
           },
         },
       },
@@ -42,6 +45,7 @@ export async function GET(): Promise<NextResponse<SessionsGetResponse>> {
   const sessions = session.user.sessions.map((s) => ({
     ...s,
     current: s.sessionId === sessionId,
+    sessionId: undefined,
   }));
 
   return NextResponse.json({

@@ -1,6 +1,6 @@
 'use client';
-import { LicenseKeyResponse } from '@/app/api/licenses/route';
-import { ProductsGetResponse } from '@/app/api/products/route';
+import { ILicensesGenerateResponse } from '@/app/api/licenses/route';
+import { IGetProductsResponse } from '@/app/api/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
@@ -78,8 +78,8 @@ export default function CreateLicenseModal() {
   const fetchLicenseKey = async () => {
     setLoading((prev) => ({ ...prev, license: true }));
     try {
-      const response = await fetch('/api/licenses');
-      const data = (await response.json()) as LicenseKeyResponse;
+      const response = await fetch('/api/licenses/generate');
+      const data = (await response.json()) as ILicensesGenerateResponse;
       const licenseKey = data.licenseKey;
       form.setValue('licenseKey', licenseKey, { shouldValidate: true });
     } catch (error: any) {
@@ -354,7 +354,8 @@ export default function CreateLicenseModal() {
                     const response = await fetch(
                       `/api/products?search=${value}`,
                     );
-                    const data = (await response.json()) as ProductsGetResponse;
+                    const data =
+                      (await response.json()) as IGetProductsResponse;
 
                     if ('error' in data) {
                       setError(data.error);

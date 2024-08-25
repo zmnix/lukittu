@@ -1,5 +1,5 @@
 'use client';
-import { ProductPostResponse } from '@/app/api/products/route';
+import { ICreateProductResponse } from '@/app/api/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Form,
@@ -56,7 +56,7 @@ export default function CreateProductModal() {
       body: JSON.stringify(data),
     });
 
-    const responseData = (await response.json()) as ProductPostResponse;
+    const responseData = (await response.json()) as ICreateProductResponse;
 
     return responseData;
   };
