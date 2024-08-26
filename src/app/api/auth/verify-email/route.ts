@@ -13,15 +13,17 @@ import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IVerifyEmailSuccessResponse = {
+type IAuthVerifyEmailSuccessResponse = {
   success: boolean;
 };
 
-export type IVerifyEmailResponse = ErrorResponse | IVerifyEmailSuccessResponse;
+export type IAuthVerifyEmailResponse =
+  | ErrorResponse
+  | IAuthVerifyEmailSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IVerifyEmailResponse>> {
+): Promise<NextResponse<IAuthVerifyEmailResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

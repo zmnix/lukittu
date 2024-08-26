@@ -16,15 +16,17 @@ import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IRegisterSuccessResponse = {
+type IAuthRegisterSuccessResponse = {
   success: boolean;
 };
 
-export type IRegisterResponse = ErrorResponse | IRegisterSuccessResponse;
+export type IAuthRegisterResponse =
+  | ErrorResponse
+  | IAuthRegisterSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IRegisterResponse>> {
+): Promise<NextResponse<IAuthRegisterResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

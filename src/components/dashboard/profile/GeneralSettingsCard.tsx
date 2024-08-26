@@ -1,5 +1,5 @@
 'use client';
-import updateProfile from '@/actions/profile/update-profile';
+import { IUsersUpdateResponse } from '@/app/api/users/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,17 +50,31 @@ export default function GeneralSettingsCard() {
     form.reset();
   };
 
+  const handleProfileUpdate = async (payload: UpdateProfileSchema) => {
+    const response = await fetch('/api/users', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as IUsersUpdateResponse;
+
+    return data;
+  };
+
   const onSubmit = (data: UpdateProfileSchema) => {
     startTransition(async () => {
-      const res = await updateProfile(data);
-      if (res.isError) {
+      const res = await handleProfileUpdate(data);
+      if ('message' in res) {
         form.setError(res.field as keyof UpdateProfileSchema, {
           type: 'manual',
           message: res.message,
         });
       }
 
-      if (!res.isError) {
+      if ('success' in res) {
         const session = authCtx.session;
         if (session) {
           authCtx.setSession({

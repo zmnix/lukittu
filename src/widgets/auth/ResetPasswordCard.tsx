@@ -1,5 +1,5 @@
 'use client';
-import { IResetPasswordResponse } from '@/app/api/auth/reset-password/route';
+import { IAuthResetPasswordResponse } from '@/app/api/auth/reset-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -61,19 +61,19 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
   }, [formWatcher]);
 
   const handleResetPassword = async (
-    data: ResetPasswordSchema & { token: string },
+    payload: ResetPasswordSchema & { token: string },
   ) => {
     const response = await fetch('/api/auth/reset-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ...data, token }),
+      body: JSON.stringify({ ...payload, token }),
     });
 
-    const responseData = (await response.json()) as IResetPasswordResponse;
+    const data = (await response.json()) as IAuthResetPasswordResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = async (data: ResetPasswordSchema) => {

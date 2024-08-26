@@ -1,4 +1,4 @@
-import { IResendIVerifyEmailResponse } from '@/app/api/auth/resend-verify-email/route';
+import { IAuthResendVerifyEmailResponse } from '@/app/api/auth/resend-verify-email/route';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -43,9 +43,9 @@ export default function ResendVerifyEmailModal({
       body: JSON.stringify({ email }),
     });
 
-    const responseData = (await response.json()) as IResendIVerifyEmailResponse;
+    const data = (await response.json()) as IAuthResendVerifyEmailResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

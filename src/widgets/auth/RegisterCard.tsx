@@ -1,5 +1,5 @@
 'use client';
-import { IRegisterResponse } from '@/app/api/auth/register/route';
+import { IAuthRegisterResponse } from '@/app/api/auth/register/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import RegisterSuccessModal from '@/components/auth/RegisterSuccessModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
@@ -70,18 +70,18 @@ export default function RegisterCard() {
     setFormError(null);
   }, [formWatcher]);
 
-  const handleCredentialsRegister = async (data: RegisterSchema) => {
+  const handleCredentialsRegister = async (payload: RegisterSchema) => {
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
-    const responseData = (await response.json()) as IRegisterResponse;
+    const data = (await response.json()) as IAuthRegisterResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = async (data: RegisterSchema) => {

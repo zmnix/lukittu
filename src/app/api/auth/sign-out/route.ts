@@ -7,13 +7,13 @@ import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-type ISignOutSuccessResponse = {
+type IAuthSignOutSuccessResponse = {
   success: boolean;
 };
 
-export type ISignOutResponse = ErrorResponse | ISignOutSuccessResponse;
+export type IAuthSignOutResponse = ErrorResponse | IAuthSignOutSuccessResponse;
 
-export async function POST(): Promise<NextResponse<ISignOutResponse>> {
+export async function POST(): Promise<NextResponse<IAuthSignOutResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   cookies().set('session', '', {

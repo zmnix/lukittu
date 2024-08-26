@@ -8,7 +8,6 @@ export const setTeamSchema = (
 ) =>
   z
     .object({
-      id: z.number().positive().optional(),
       name: z
         .string({
           required_error: t('validation.team_name_required'),

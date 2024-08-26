@@ -7,16 +7,18 @@ import { HttpStatus } from '@/types/http-status';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ISignOutSuccessResponse = {
+type ISessionsSignOutSuccessResponse = {
   success: boolean;
 };
 
-export type ISignOutResponse = ErrorResponse | ISignOutSuccessResponse;
+export type ISessionsSignOutResponse =
+  | ErrorResponse
+  | ISessionsSignOutSuccessResponse;
 
 export async function DELETE(
   _: NextRequest,
   { params }: { params: { slug: string } },
-): Promise<NextResponse<ISignOutResponse>> {
+): Promise<NextResponse<ISessionsSignOutResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

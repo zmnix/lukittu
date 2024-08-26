@@ -1,8 +1,11 @@
 'use client';
-import transferTeamOwnership from '@/actions/profile/transfer-team-ownership';
-import { TeamLeaveResponse } from '@/app/api/teams/[slug]/leave/route';
-import { TeamDeleteResponse } from '@/app/api/teams/[slug]/route';
-import { TeamsGetResponse, TeamWithUsers } from '@/app/api/teams/route';
+import { ITeamsLeaveResponse } from '@/app/api/teams/[slug]/leave/route';
+import { ITeamsDeleteResponse } from '@/app/api/teams/[slug]/route';
+import { ITeamsTransferOwnershipResponse } from '@/app/api/teams/[slug]/transfer-ownership/route';
+import {
+  ITeamsGetResponse,
+  ITeamsGetSuccessResponse,
+} from '@/app/api/teams/route';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,14 +36,14 @@ import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
 export default function TeamListCard() {
   const authCtx = useContext(AuthContext);
 
-  const [teams, setTeams] = useState<TeamWithUsers[]>([]);
+  const [teams, setTeams] = useState<ITeamsGetSuccessResponse['teams']>([]);
   const [teamLeaveConfirmation, setTeamLeaveConfirmation] =
     useState<Team | null>(null);
   const [teamTransferConfirmation, setTeamTransferConfirmation] = useState<
-    (Team & { users: User[] }) | null
+    ITeamsGetSuccessResponse['teams'][number] | null
   >(null);
   const [teamDeleteConfirmation, setTeamDeleteConfirmation] = useState<
-    (Team & { users: User[] }) | null
+    ITeamsGetSuccessResponse['teams'][number] | null
   >(null);
   const [teamDeleteConfirmationModalOpen, setTeamDeleteConfirmationModalOpen] =
     useState(false);
@@ -57,7 +60,7 @@ export default function TeamListCard() {
   useEffect(() => {
     const handleTeamGet = async () => {
       const response = await fetch('/api/teams');
-      const data = (await response.json()) as TeamsGetResponse;
+      const data = (await response.json()) as ITeamsGetResponse;
       if ('teams' in data) {
         setTeams(data.teams);
       }
@@ -71,7 +74,7 @@ export default function TeamListCard() {
       method: 'POST',
     });
 
-    const data = (await response.json()) as TeamLeaveResponse;
+    const data = (await response.json()) as ITeamsLeaveResponse;
 
     return data;
   };
@@ -106,9 +109,9 @@ export default function TeamListCard() {
       body: JSON.stringify({ teamNameConfirmation }),
     });
 
-    const responseData = (await response.json()) as TeamDeleteResponse;
+    const data = (await response.json()) as ITeamsDeleteResponse;
 
-    return responseData;
+    return data;
   };
 
   const handleTeamDelete = async (team: Team, teamNameConfirmation: string) => {
@@ -135,31 +138,18 @@ export default function TeamListCard() {
     setTeams((teams) => teams.filter((t) => t.id !== team.id));
   };
 
-  const handleTeamDeleteConfirm = (team: Team & { users: User[] }) => {
-    if (team.users.length > 1) {
-      return openConfirmModal({
-        title: t('dashboard.profile.delete_team_not_empty_title'),
-        description: t.rich(
-          'dashboard.profile.delete_team_not_empty_description',
-          {
-            teamName: team.name,
-            strong: (child) => <strong>{child}</strong>,
-          },
-        ),
-      });
-    }
-
-    setTeamDeleteConfirmation(team);
-    setTeamDeleteConfirmationModalOpen(true);
-  };
-
   const handleTeamTransfer = async (team: Team, newOwnerId: number) => {
-    const res = await transferTeamOwnership(team.id, newOwnerId);
+    const response = await fetch(`/api/teams/${team.id}/transfer-ownership`, {
+      method: 'POST',
+      body: JSON.stringify({ newOwnerId }),
+    });
 
-    if (res.isError) {
+    const data = (await response.json()) as ITeamsTransferOwnershipResponse;
+
+    if ('message' in data) {
       return openConfirmModal({
         title: t('general.error'),
-        description: res.message,
+        description: data.message,
       });
     }
 
@@ -175,6 +165,26 @@ export default function TeamListCard() {
         },
       });
     }
+  };
+
+  const handleTeamDeleteConfirm = (
+    team: Team & { users: Omit<User, 'passwordHash'>[] },
+  ) => {
+    if (team.users.length > 1) {
+      return openConfirmModal({
+        title: t('dashboard.profile.delete_team_not_empty_title'),
+        description: t.rich(
+          'dashboard.profile.delete_team_not_empty_description',
+          {
+            teamName: team.name,
+            strong: (child) => <strong>{child}</strong>,
+          },
+        ),
+      });
+    }
+
+    setTeamDeleteConfirmation(team);
+    setTeamDeleteConfirmationModalOpen(true);
   };
 
   return (

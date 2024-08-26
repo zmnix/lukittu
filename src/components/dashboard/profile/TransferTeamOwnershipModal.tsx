@@ -1,3 +1,4 @@
+import { ITeamsGetSuccessResponse } from '@/app/api/teams/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,13 +23,13 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Team, User } from '@prisma/client';
+import { Team } from '@prisma/client';
 import { ChevronsUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, useTransition } from 'react';
 
 interface TransferTeamOwnershipModalProps {
-  team: (Team & { users: User[] }) | null;
+  team: ITeamsGetSuccessResponse['teams'][number] | null;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   onConfirm: (team: Team, newOwnerId: number) => Promise<void>;

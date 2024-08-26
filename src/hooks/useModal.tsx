@@ -13,8 +13,6 @@ import React, { useState } from 'react';
 interface ModalProps {
   title: string;
   description: string | React.ReactNode;
-  footerElement?: React.ReactNode | null;
-  contentElement?: React.ReactNode | null;
 }
 
 export const useModal = () => {
@@ -31,37 +29,9 @@ export const useModal = () => {
     }
   };
 
-  const [footerElement, setFooterElement] = useState<React.ReactNode>(
-    <LoadingButton
-      size="sm"
-      variant="outline"
-      onClick={() => handleOpenChange(false)}
-    >
-      {t('general.cancel')}
-    </LoadingButton>,
-  );
-
-  const [contentElement, setContentElement] = useState<React.ReactNode | null>(
-    null,
-  );
-
-  const openConfirmModal = ({
-    title,
-    description,
-    footerElement,
-    contentElement,
-  }: ModalProps) => {
+  const openConfirmModal = ({ title, description }: ModalProps) => {
     setTitle(title);
     setDescription(description);
-
-    if (footerElement) {
-      setFooterElement(footerElement);
-    }
-
-    if (contentElement) {
-      setContentElement(contentElement);
-    }
-
     setOpen(true);
   };
 
@@ -74,8 +44,15 @@ export const useModal = () => {
             {description}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
-        {contentElement && contentElement}
-        <ResponsiveDialogFooter>{footerElement}</ResponsiveDialogFooter>
+        <ResponsiveDialogFooter>
+          <LoadingButton
+            size="sm"
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+          >
+            {t('general.cancel')}
+          </LoadingButton>
+        </ResponsiveDialogFooter>
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

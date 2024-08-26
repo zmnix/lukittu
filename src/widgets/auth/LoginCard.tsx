@@ -1,5 +1,5 @@
 'use client';
-import { ILoginResponse } from '@/app/api/auth/login/route';
+import { IAuthLoginResponse } from '@/app/api/auth/login/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import OauthLoginFailedccessModal from '@/components/auth/OauthLoginFailedModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
@@ -78,19 +78,19 @@ export default function LoginCard() {
     }
   }, [error]);
 
-  const handleCredentialsLogin = async (data: LoginSchema) => {
+  const handleCredentialsLogin = async (payload: LoginSchema) => {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
-    const responseData = (await response.json()) as ILoginResponse;
+    const data = (await response.json()) as IAuthLoginResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = (data: LoginSchema) => {

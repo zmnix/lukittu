@@ -1,5 +1,5 @@
 'use client';
-import { ICreateProductResponse } from '@/app/api/products/route';
+import { IProductsCreateResponse } from '@/app/api/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Form,
@@ -47,18 +47,18 @@ export default function CreateProductModal() {
     },
   });
 
-  const handleProductCreate = async (data: SetProductSchema) => {
+  const handleProductCreate = async (payload: SetProductSchema) => {
     const response = await fetch('/api/products', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
-    const responseData = (await response.json()) as ICreateProductResponse;
+    const data = (await response.json()) as IProductsCreateResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = (data: SetProductSchema) => {

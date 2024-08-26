@@ -1,5 +1,5 @@
 'use client';
-import { IForgotPasswordResponse } from '@/app/api/auth/forgot-password/route';
+import { IAuthForgotPasswordResponse } from '@/app/api/auth/forgot-password/route';
 import ForgotPasswordSuccessModal from '@/components/auth/ForgotPasswordSuccessModal';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -53,18 +53,18 @@ export default function ForgotPasswordCard() {
     setFormError(null);
   }, [formWatcher]);
 
-  const handleForgotPassword = async (data: IForgotPasswordSchema) => {
+  const handleForgotPassword = async (payload: IForgotPasswordSchema) => {
     const response = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
-    const responseData = (await response.json()) as IForgotPasswordResponse;
+    const data = (await response.json()) as IAuthForgotPasswordResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = (data: IForgotPasswordSchema) => {

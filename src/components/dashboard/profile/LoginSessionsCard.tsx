@@ -1,9 +1,9 @@
 'use client';
-import signoutAllSessions from '@/actions/profile/sign-out-all-sessions';
-import signoutSession from '@/actions/profile/sign-out-session';
+import { ISessionsSignOutResponse } from '@/app/api/sessions/[slug]/route';
 import {
   ISessionsGetResponse,
   ISessionsGetSuccessResponse,
+  ISessionsSignOutAllResponse,
 } from '@/app/api/sessions/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,13 +63,37 @@ export default function LoginSessionsCard() {
     (session) => !session.current,
   );
 
+  const handleSignOutSingleSession = async (id: number) => {
+    const response = await fetch(`/api/sessions/${id}`, {
+      method: 'DELETE',
+    });
+
+    const data = (await response.json()) as ISessionsSignOutResponse;
+
+    return data;
+  };
+
+  const handleSignOutAllSessions = async () => {
+    const response = await fetch('/api/sessions', {
+      method: 'DELETE',
+    });
+
+    const data = (await response.json()) as ISessionsSignOutAllResponse;
+
+    return data;
+  };
+
   const handleSessionLogout = async (id: number) => {
     setPendingSingleId(id);
     try {
-      const res = await signoutSession(id);
-      if (!res.isError) {
-        setSessions((prev) => prev.filter((session) => session.id !== id));
+      const res = await handleSignOutSingleSession(id);
+
+      if ('message' in res) {
+        // TODO: Handle error
+        return;
       }
+
+      setSessions((prev) => prev.filter((session) => session.id !== id));
     } finally {
       setPendingSingleId(null);
     }
@@ -77,10 +101,13 @@ export default function LoginSessionsCard() {
 
   const handleLogoutAll = async () => {
     startTransition(async () => {
-      const res = await signoutAllSessions();
-      if (!res.isError) {
-        setSessions((prev) => prev.filter((session) => session.current));
+      const res = await handleSignOutAllSessions();
+      if ('message' in res) {
+        // TODO: Handle error
+        return;
       }
+
+      setSessions((prev) => prev.filter((session) => session.current));
     });
   };
 

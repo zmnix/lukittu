@@ -15,14 +15,14 @@ type IProductsDeleteSuccessResponse = {
   success: boolean;
 };
 
-export type IDeleteProductsResponse =
+export type IProductsDeleteResponse =
   | ErrorResponse
   | IProductsDeleteSuccessResponse;
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { slug: string } },
-): Promise<NextResponse<IDeleteProductsResponse>> {
+): Promise<NextResponse<IProductsDeleteResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

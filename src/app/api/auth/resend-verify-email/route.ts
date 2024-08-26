@@ -14,17 +14,17 @@ import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IResendIVerifyEmailSuccessResponse = {
+type IAuthResendVerifyEmailSuccessResponse = {
   success: boolean;
 };
 
-export type IResendIVerifyEmailResponse =
+export type IAuthResendVerifyEmailResponse =
   | ErrorResponse
-  | IResendIVerifyEmailSuccessResponse;
+  | IAuthResendVerifyEmailSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IResendIVerifyEmailResponse>> {
+): Promise<NextResponse<IAuthResendVerifyEmailResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

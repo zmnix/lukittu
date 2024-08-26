@@ -14,17 +14,17 @@ import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IResetPasswordSuccessResponse = {
+type IAuthResetPasswordSuccessResponse = {
   success: boolean;
 };
 
-export type IResetPasswordResponse =
+export type IAuthResetPasswordResponse =
   | ErrorResponse
-  | IResetPasswordSuccessResponse;
+  | IAuthResetPasswordSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IResetPasswordResponse>> {
+): Promise<NextResponse<IAuthResetPasswordResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

@@ -1,5 +1,5 @@
 'use client';
-import { IProductsGetResponse } from '@/app/api/products/(get)/route';
+import { IProductsGetResponse } from '@/app/api/products/route';
 import TablePagination from '@/components/shared/table/TablePagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -88,7 +88,6 @@ export function ProductListTable() {
         setTotalProducts(data.totalProducts);
       } catch (error: any) {
         setError(t('general.server_error'));
-        console.error(error);
       } finally {
         setLoading(false);
       }

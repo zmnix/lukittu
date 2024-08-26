@@ -11,15 +11,15 @@ import { Provider } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ILoginSuccessResponse = {
+type IAuthLoginSuccessResponse = {
   success: boolean;
 };
 
-export type ILoginResponse = ErrorResponse | ILoginSuccessResponse;
+export type IAuthLoginResponse = ErrorResponse | IAuthLoginSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<ILoginResponse>> {
+): Promise<NextResponse<IAuthLoginResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

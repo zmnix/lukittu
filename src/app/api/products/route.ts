@@ -139,17 +139,17 @@ export async function GET(
   }
 }
 
-type ICreateProductSuccessResponse = {
+type IProductsCreateSuccessResponse = {
   product: Product;
 };
 
-export type ICreateProductResponse =
+export type IProductsCreateResponse =
   | ErrorResponse
-  | ICreateProductSuccessResponse;
+  | IProductsCreateSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<ICreateProductResponse>> {
+): Promise<NextResponse<IProductsCreateResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {

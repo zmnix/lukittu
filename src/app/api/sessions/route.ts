@@ -64,16 +64,16 @@ export async function GET(): Promise<NextResponse<ISessionsGetResponse>> {
   }
 }
 
-type ISignOutAllSessionsSuccessResponse = {
+type ISessionsSignOutAllSuccessResponse = {
   success: boolean;
 };
 
-export type ISignOutAllSessionsResponse =
+export type ISessionsSignOutAllResponse =
   | ErrorResponse
-  | ISignOutAllSessionsSuccessResponse;
+  | ISessionsSignOutAllSuccessResponse;
 
 export async function DELETE(): Promise<
-  NextResponse<ISignOutAllSessionsResponse>
+  NextResponse<ISessionsSignOutAllResponse>
 > {
   const t = await getTranslations({ locale: getLanguage() });
 

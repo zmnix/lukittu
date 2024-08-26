@@ -1,5 +1,5 @@
 'use client';
-import { TeamsPostResponse } from '@/app/api/teams/route';
+import { ITeamsCreateResponse } from '@/app/api/teams/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Form,
@@ -51,20 +51,34 @@ export default function SetTeamModal({
     },
   });
 
-  const handleTeamCreate = async (data: SetTeamSchema) => {
+  const handleTeamCreate = async (payload: SetTeamSchema) => {
     const response = await fetch('/api/teams', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
-    const responseData = (await response.json()) as TeamsPostResponse;
+    const data = (await response.json()) as ITeamsCreateResponse;
 
-    return responseData;
+    return data;
+  };
+
+  const handleTeamEdit = async (payload: SetTeamSchema) => {
+    const response = await fetch(`/api/teams/${teamToEdit?.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as ITeamsCreateResponse;
+
+    return data;
   };
 
   const onSubmit = (data: SetTeamSchema) => {
     startTransition(async () => {
-      const res = await handleTeamCreate(data);
+      const res = teamToEdit
+        ? await handleTeamEdit(data)
+        : await handleTeamCreate(data);
+
       if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof SetTeamSchema, {
@@ -102,7 +116,6 @@ export default function SetTeamModal({
 
   useEffect(() => {
     form.reset({
-      id: teamToEdit?.id,
       name: teamToEdit?.name || '',
     });
   }, [form, teamToEdit?.name, teamToEdit?.id]);

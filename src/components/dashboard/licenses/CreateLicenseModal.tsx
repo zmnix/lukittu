@@ -1,5 +1,5 @@
 'use client';
-import { ILicensesGenerateResponse } from '@/app/api/licenses/route';
+import { ILicensesGenerateResponse } from '@/app/api/licenses/generate/route';
 import { IProductsGetResponse } from '@/app/api/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
@@ -108,7 +108,7 @@ export default function CreateLicenseModal() {
 
   const onSubmit = (data: SetLicenseScheama) => {
     startTransition(() => {
-      console.log(data);
+      //
     });
   };
 

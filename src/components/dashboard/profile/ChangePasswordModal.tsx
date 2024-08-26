@@ -1,5 +1,5 @@
 'use client';
-import { ChangePasswordResponse } from '@/app/api/users/change-password/route';
+import { IUsersChangePasswordResponse } from '@/app/api/users/change-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Button } from '@/components/ui/button';
@@ -51,18 +51,18 @@ export default function ChangePasswordModal({
     },
   });
 
-  const handleChangePassword = async (data: ChangePasswordSchema) => {
+  const handleChangePassword = async (payload: ChangePasswordSchema) => {
     const response = await fetch('/api/users/change-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
-    const responseData = (await response.json()) as ChangePasswordResponse;
+    const data = (await response.json()) as IUsersChangePasswordResponse;
 
-    return responseData;
+    return data;
   };
 
   const onSubmit = (data: ChangePasswordSchema) => {
