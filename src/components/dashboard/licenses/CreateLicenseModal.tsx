@@ -39,20 +39,17 @@ import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RefreshCw, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useContext, useState, useTransition } from 'react';
+import { useContext, useTransition } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export default function CreateLicenseModal() {
   const t = useTranslations();
   const locale = useLocale();
   const ctx = useContext(LicenseModalContext);
 
-  const [loading, setLoading] = useState({
-    license: false,
-    customer: false,
-  });
+  const [loadingLicense, startLicenseTransition] = useTransition();
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<SetLicenseScheama>({
     resolver: zodResolver(setLicenseSchema(t)),
@@ -75,18 +72,17 @@ export default function CreateLicenseModal() {
     defaultValue: 'NEVER',
   });
 
-  const fetchLicenseKey = async () => {
-    setLoading((prev) => ({ ...prev, license: true }));
-    try {
-      const response = await fetch('/api/licenses/generate');
-      const data = (await response.json()) as ILicensesGenerateResponse;
-      const licenseKey = data.licenseKey;
-      form.setValue('licenseKey', licenseKey, { shouldValidate: true });
-    } catch (error: any) {
-      setError(error.message ?? t('general.server_error'));
-    } finally {
-      setLoading((prev) => ({ ...prev, license: false }));
-    }
+  const fetchLicenseKey = () => {
+    startLicenseTransition(async () => {
+      try {
+        const response = await fetch('/api/licenses/generate');
+        const data = (await response.json()) as ILicensesGenerateResponse;
+        const licenseKey = data.licenseKey;
+        form.setValue('licenseKey', licenseKey, { shouldValidate: true });
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.server_error'));
+      }
+    });
   };
 
   const handleExpirationTypeChange = (type: 'NEVER' | 'DATE' | 'DURATION') => {
@@ -141,13 +137,13 @@ export default function CreateLicenseModal() {
                     <FormControl>
                       <div className="relative w-full">
                         <Input
-                          disabled={loading.license}
+                          disabled={loadingLicense}
                           placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
                           {...field}
                         />
                         <Button
                           className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                          disabled={loading.license}
+                          disabled={loadingLicense}
                           size="icon"
                           type="button"
                           variant="ghost"
@@ -357,15 +353,17 @@ export default function CreateLicenseModal() {
                     const data =
                       (await response.json()) as IProductsGetResponse;
 
-                    if ('error' in data) {
-                      setError(data.error);
+                    if ('message' in data) {
+                      toast.error(data.message);
                       return [];
                     }
 
-                    return data.products.map((product) => ({
+                    const results = data.products.map((product) => ({
                       label: product.name,
                       value: product.id.toString(),
                     }));
+
+                    return results;
                   }}
                 />
               </FormItem>
@@ -386,7 +384,7 @@ export default function CreateLicenseModal() {
             <div>
               <LoadingButton
                 className="w-full"
-                disabled={loading.license || loading.customer}
+                disabled={loadingLicense}
                 pending={pending}
                 onClick={() => form.handleSubmit(onSubmit)()}
               >

@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import type { Metadata } from 'next';
@@ -40,6 +41,7 @@ export default async function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
+          <Toaster />
           <NextIntlClientProvider messages={messages}>
             {children}
           </NextIntlClientProvider>

@@ -27,7 +27,7 @@ import {
   Search,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useTransition } from 'react';
 import AddProductButton from './AddProductButton';
 import ProductListTableSkeleton from './ProductListTableSkeleton';
 
@@ -36,7 +36,7 @@ export function ProductListTable() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
 
-  const [loading, setLoading] = useState(true);
+  const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [totalProducts, setTotalProducts] = useState(1);
@@ -53,53 +53,54 @@ export function ProductListTable() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
+      startTransition(async () => {
+        try {
+          const searchParams = new URLSearchParams();
+          if (sortColumn) {
+            searchParams.set('sortColumn', sortColumn);
+          }
 
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
+          if (sortDirection) {
+            searchParams.set('sortDirection', sortDirection);
+          }
 
-        if (search) {
-          searchParams.set('search', search);
-        }
+          if (search) {
+            searchParams.set('search', search);
+          }
 
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', pageSize.toString());
+          searchParams.set('page', page.toString());
+          searchParams.set('pageSize', pageSize.toString());
 
-        const response = await fetch(
-          `/api/products?${searchParams.toString()}`,
-        );
+          const response = await fetch(
+            `/api/products?${searchParams.toString()}`,
+          );
 
-        const data = (await response.json()) as IProductsGetResponse;
+          const data = (await response.json()) as IProductsGetResponse;
 
-        if ('error' in data) {
-          return setError(data.error);
-        }
+          if ('error' in data) {
+            return setError(data.error);
+          }
 
-        if (!response.ok) {
+          if (!response.ok) {
+            setError(t('general.server_error'));
+          }
+          setProducts(data.products);
+          setTotalProducts(data.totalProducts);
+        } catch (error: any) {
           setError(t('general.server_error'));
         }
-        setProducts(data.products);
-        setTotalProducts(data.totalProducts);
-      } catch (error: any) {
-        setError(t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
+      });
     })();
   }, [page, pageSize, sortColumn, sortDirection, search, t]);
 
   useEffect(() => {
-    setLoading(true);
-    const timeout = setTimeout(() => {
-      setSearch(debounceSearch);
-      setLoading(false);
-    }, 500);
+    let timeout: NodeJS.Timeout;
+
+    startTransition(() => {
+      timeout = setTimeout(() => {
+        setSearch(debounceSearch);
+      }, 500);
+    });
 
     return () => {
       clearTimeout(timeout);
@@ -181,7 +182,7 @@ export function ProductListTable() {
               </TableHead>
             </TableRow>
           </TableHeader>
-          {loading ? (
+          {pending ? (
             <ProductListTableSkeleton />
           ) : (
             <TableBody>

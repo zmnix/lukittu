@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import 'server-only';
+import { logger } from './logger';
 
 export function hashPassword(password: string) {
   const iterations = 100000;
@@ -17,6 +18,7 @@ export function hashPassword(password: string) {
     );
     return `${iterations}:${keyLength}:${salt.toString('hex')}:${hash.toString('hex')}`;
   } catch (error) {
+    logger.error('Error occurred in hashPassword:', error);
     throw new Error('Hashing failed');
   }
 }
@@ -37,6 +39,7 @@ export function verifyPassword(password: string, storedHash: string) {
       .toString('hex');
     return verifyHash === originalHash;
   } catch (error) {
+    logger.error('Error occurred in verifyPassword:', error);
     throw new Error('Verification failed');
   }
 }

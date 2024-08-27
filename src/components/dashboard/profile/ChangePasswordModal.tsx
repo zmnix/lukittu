@@ -28,6 +28,7 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 interface ChangePasswordModalProps {
   open: boolean;
@@ -67,23 +68,35 @@ export default function ChangePasswordModal({
 
   const onSubmit = (data: ChangePasswordSchema) => {
     startTransition(async () => {
-      const res = await handleChangePassword(data);
-      if ('message' in res) {
-        if (res.field) {
-          return form.setError(res.field as keyof ChangePasswordSchema, {
-            type: 'manual',
-            message: res.message,
-          });
-        }
-      }
+      try {
+        const res = await handleChangePassword(data);
 
-      form.reset();
-      onOpenChange(false);
+        if ('message' in res) {
+          if (res.field) {
+            return form.setError(res.field as keyof ChangePasswordSchema, {
+              type: 'manual',
+              message: res.message,
+            });
+          }
+
+          toast.error(res.message);
+          return;
+        }
+
+        handleOpenChange(false);
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.error_occurred'));
+      }
     });
   };
 
+  const handleOpenChange = (open: boolean) => {
+    form.reset();
+    onOpenChange(open);
+  };
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="sm:max-w-[525px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
@@ -178,7 +191,7 @@ export default function ChangePasswordModal({
             <LoadingButton
               type="submit"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('general.close')}
             </LoadingButton>

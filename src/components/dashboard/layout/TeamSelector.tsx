@@ -21,7 +21,15 @@ import { CommandList } from 'cmdk';
 import { Check, ChevronsUpDown, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
+import { toast } from 'sonner';
 import SetTeamModal from './SetTeamModal';
 
 interface TeamSelectorProps {
@@ -31,9 +39,9 @@ interface TeamSelectorProps {
 export function TeamSelector({ fullWidth }: TeamSelectorProps) {
   const t = useTranslations();
   const authCtx = useContext(AuthContext);
+  const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
-  const [loading, setLoading] = useState(true);
   const [createTeamModalOpen, setTeamModalOpen] = useState(false);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const router = useRouter();
@@ -60,25 +68,27 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
       return selectedTeam ? selectedTeam.split('=')[1] : null;
     };
 
-    try {
-      const teamId = loadSelectedTeam();
+    startTransition(() => {
+      try {
+        const teamId = loadSelectedTeam();
 
-      if (teamId) {
-        const exists = teams.some((team) => team.id.toString() === teamId);
-        if (exists) {
-          setValue(teamId);
-          return;
+        if (teamId) {
+          const exists = teams.some((team) => team.id.toString() === teamId);
+          if (exists) {
+            setValue(teamId);
+            return;
+          }
         }
-      }
 
-      if (teams.length > 0) {
-        const firstTeamId = teams[0].id.toString();
-        updateSelectedTeam(firstTeamId);
+        if (teams.length > 0) {
+          const firstTeamId = teams[0].id.toString();
+          updateSelectedTeam(firstTeamId);
+        }
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.error_occurred'));
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [router, teams, updateSelectedTeam]);
+    });
+  }, [router, teams, updateSelectedTeam, t]);
 
   return (
     <>
@@ -100,7 +110,7 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
             role="combobox"
             variant="ghost"
           >
-            {loading ? (
+            {pending ? (
               <Skeleton className="h-4 w-full" />
             ) : value ? (
               <span className="truncate">
