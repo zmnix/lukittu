@@ -44,8 +44,13 @@ export function DeleteTeamConfirmModal({
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    onOpenChange(open);
+    setConfirmName('');
+  };
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
@@ -77,7 +82,7 @@ export function DeleteTeamConfirmModal({
           <LoadingButton
             size="sm"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
           >
             {t('general.cancel')}
           </LoadingButton>

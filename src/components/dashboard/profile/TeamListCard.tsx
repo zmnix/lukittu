@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -27,6 +28,7 @@ import { AuthContext } from '@/providers/AuthProvider';
 import { Team, User } from '@prisma/client';
 import { EllipsisVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
@@ -36,6 +38,7 @@ import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
 export default function TeamListCard() {
   const authCtx = useContext(AuthContext);
 
+  const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState<ITeamsGetSuccessResponse['teams']>([]);
   const [teamLeaveConfirmation, setTeamLeaveConfirmation] =
     useState<Team | null>(null);
@@ -55,6 +58,7 @@ export default function TeamListCard() {
   ] = useState(false);
 
   const t = useTranslations();
+  const router = useRouter();
 
   useEffect(() => {
     const handleTeamGet = async () => {
@@ -66,6 +70,8 @@ export default function TeamListCard() {
         }
       } catch (error: any) {
         toast.error(error.message ?? t('general.error_occurred'));
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -112,18 +118,7 @@ export default function TeamListCard() {
       return;
     }
 
-    const session = authCtx.session;
-    if (session) {
-      authCtx.setSession({
-        ...session,
-        user: {
-          ...session.user,
-          teams: session.user.teams.filter((t) => t.id !== team.id),
-        },
-      });
-    }
-
-    setTeams((teams) => teams.filter((t) => t.id !== team.id));
+    router.refresh();
   };
 
   const onTeamDeleteSubmit = async (
@@ -137,18 +132,7 @@ export default function TeamListCard() {
       return;
     }
 
-    const session = authCtx.session;
-    if (session) {
-      authCtx.setSession({
-        ...session,
-        user: {
-          ...session.user,
-          teams: session.user.teams.filter((t) => t.id !== team.id),
-        },
-      });
-    }
-
-    setTeams((teams) => teams.filter((t) => t.id !== team.id));
+    router.refresh();
   };
 
   const onTeamTransferSubmit = async (team: Team, newOwnerId: number) => {
@@ -159,18 +143,7 @@ export default function TeamListCard() {
       return;
     }
 
-    const session = authCtx.session;
-    if (session) {
-      authCtx.setSession({
-        ...session,
-        user: {
-          ...session.user,
-          teams: session.user.teams.map((t) =>
-            t.id === team.id ? { ...t, isOwner: false } : t,
-          ),
-        },
-      });
-    }
+    router.refresh();
   };
 
   const handleTeamDeleteConfirm = (
@@ -232,59 +205,76 @@ export default function TeamListCard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {teams.map((team) => (
-                <TableRow key={team.id}>
-                  <TableCell className="truncate">{team.name}</TableCell>
-                  <TableCell className="truncate">
-                    <Badge variant="outline">
-                      {team.ownerId === authCtx.session?.user.id
-                        ? t('general.owner')
-                        : t('general.member')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="truncate py-0 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="ghost">
-                          <EllipsisVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="font-medium"
-                        forceMount
-                      >
-                        <DropdownMenuItem
-                          className="hover:cursor-pointer"
-                          disabled={team.ownerId !== authCtx.session?.user.id}
-                          onClick={() => {
-                            setTeamTransferConfirmation(team);
-                            setTeamTransferConfirmationModalOpen(true);
-                          }}
-                        >
-                          {t('dashboard.profile.transfer_ownership')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive hover:cursor-pointer"
-                          onClick={() => {
-                            if (team.ownerId === authCtx.session?.user.id) {
-                              handleTeamDeleteConfirm(team);
-                            } else {
-                              setTeamLeaveConfirmationModalOpen(true);
-                              setTeamLeaveConfirmation(team);
-                            }
-                          }}
-                        >
+              {!loading
+                ? teams.map((team) => (
+                    <TableRow key={team.id}>
+                      <TableCell className="truncate">{team.name}</TableCell>
+                      <TableCell className="truncate">
+                        <Badge variant="outline">
                           {team.ownerId === authCtx.session?.user.id
-                            ? t('dashboard.profile.delete_team')
-                            : t('dashboard.profile.leave_team')}
-                          ...
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                            ? t('general.owner')
+                            : t('general.member')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="truncate py-0 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="icon" variant="ghost">
+                              <EllipsisVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="font-medium"
+                            forceMount
+                          >
+                            <DropdownMenuItem
+                              className="hover:cursor-pointer"
+                              disabled={
+                                team.ownerId !== authCtx.session?.user.id ||
+                                team.users.length === 1
+                              }
+                              onClick={() => {
+                                setTeamTransferConfirmation(team);
+                                setTeamTransferConfirmationModalOpen(true);
+                              }}
+                            >
+                              {t('dashboard.profile.transfer_ownership')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive hover:cursor-pointer"
+                              onClick={() => {
+                                if (team.ownerId === authCtx.session?.user.id) {
+                                  handleTeamDeleteConfirm(team);
+                                } else {
+                                  setTeamLeaveConfirmationModalOpen(true);
+                                  setTeamLeaveConfirmation(team);
+                                }
+                              }}
+                            >
+                              {team.ownerId === authCtx.session?.user.id
+                                ? t('dashboard.profile.delete_team')
+                                : t('dashboard.profile.leave_team')}
+                              ...
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : [...Array(4)].map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Skeleton className="h-5 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-24" />
+                      </TableCell>
+                      <TableCell className="flex justify-end">
+                        <Skeleton className="h-5 w-24" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
         </CardContent>

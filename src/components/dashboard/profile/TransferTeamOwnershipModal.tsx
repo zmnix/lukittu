@@ -26,7 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Team } from '@prisma/client';
 import { ChevronsUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface TransferTeamOwnershipModalProps {
   team: ITeamsGetSuccessResponse['teams'][number] | null;
@@ -45,19 +45,6 @@ export function TransferTeamOwnershipModal({
   const [loading, setLoading] = useState(false);
   const [newOwner, setNewOwner] = useState<number | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [confirmTimer, setConfirmTimer] = useState(15);
-
-  useEffect(() => {
-    if (confirmTimer === 0) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setConfirmTimer(confirmTimer - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [confirmTimer]);
 
   if (!team) return null;
 
@@ -73,8 +60,14 @@ export function TransferTeamOwnershipModal({
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    onOpenChange(open);
+    setNewOwner(null);
+    setPopoverOpen(false);
+  };
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
@@ -145,20 +138,18 @@ export function TransferTeamOwnershipModal({
           <LoadingButton
             size="sm"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
           >
             {t('general.cancel')}
           </LoadingButton>
           <LoadingButton
-            disabled={!newOwner || confirmTimer > 0}
+            disabled={!newOwner}
             pending={loading}
             size="sm"
             variant="destructive"
             onClick={handleConfirm}
           >
-            {confirmTimer === 0
-              ? t('dashboard.profile.transfer_ownership')
-              : `${t('dashboard.profile.transfer_ownership')} (${confirmTimer})`}
+            {t('dashboard.profile.transfer_ownership')}
           </LoadingButton>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

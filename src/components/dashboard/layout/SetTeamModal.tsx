@@ -26,6 +26,7 @@ import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -43,6 +44,7 @@ export default function SetTeamModal({
 }: SetTeamModalProps) {
   const t = useTranslations();
   const authCtx = useContext(AuthContext);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<SetTeamSchema>({
@@ -93,7 +95,7 @@ export default function SetTeamModal({
         return toast.error(res.message ?? t('general.error_occurred'));
       }
 
-      if ('team' in res && authCtx.session) {
+      if ('team' in res && authCtx.session && !teamToEdit) {
         if (teamToEdit) {
           authCtx.setSession({
             ...authCtx.session,
@@ -115,6 +117,7 @@ export default function SetTeamModal({
         }
       }
 
+      router.refresh();
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
@@ -129,8 +132,13 @@ export default function SetTeamModal({
     });
   }, [form, teamToEdit?.name, teamToEdit?.id]);
 
+  const handleOpenChange = (open: boolean) => {
+    onOpenChange(open);
+    form.reset();
+  };
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="sm:max-w-[525px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
@@ -170,7 +178,7 @@ export default function SetTeamModal({
               className="w-full"
               type="submit"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('general.close')}
             </LoadingButton>

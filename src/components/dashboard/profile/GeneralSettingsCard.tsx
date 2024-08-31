@@ -70,25 +70,23 @@ export default function GeneralSettingsCard() {
     try {
       const res = await handleProfileUpdate(data);
       if ('message' in res) {
-        form.setError(res.field as keyof UpdateProfileSchema, {
+        return form.setError(res.field as keyof UpdateProfileSchema, {
           type: 'manual',
           message: res.message,
         });
       }
 
-      if ('success' in res) {
-        const session = authCtx.session;
-        if (session) {
-          authCtx.setSession({
-            ...session,
-            user: {
-              ...session.user,
-              fullName: data.fullName,
-            },
-          });
-        }
-        setEdit(false);
+      const session = authCtx.session;
+      if (session) {
+        authCtx.setSession({
+          ...session,
+          user: {
+            ...session.user,
+            fullName: data.fullName,
+          },
+        });
       }
+      setEdit(false);
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -151,6 +149,7 @@ export default function GeneralSettingsCard() {
                   <Button
                     disabled={user?.provider !== 'CREDENTIALS'}
                     size="sm"
+                    type="button"
                     variant="secondary"
                     onClick={() => setChangePasswordModalOpen(true)}
                   >
