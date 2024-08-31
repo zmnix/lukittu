@@ -44,7 +44,13 @@ export async function POST(
 
     const { password, newPassword } = body;
 
-    const session = await getSession({ user: true });
+    const session = await getSession({
+      user: {
+        omit: {
+          passwordHash: false,
+        },
+      },
+    });
 
     if (!session) {
       return NextResponse.json(
