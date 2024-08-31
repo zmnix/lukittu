@@ -28,7 +28,7 @@ export async function POST(): Promise<NextResponse<IAuthSignOutResponse>> {
 
     if (sessionId) {
       await prisma.session.delete({
-        where: { sessionId: sessionId },
+        where: { sessionId },
       });
     }
 

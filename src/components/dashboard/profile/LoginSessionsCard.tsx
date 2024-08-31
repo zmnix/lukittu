@@ -18,7 +18,8 @@ import {
 import { getRelativeTimeString } from '@/lib/utils/date-helpers';
 import { LogOut } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import UAParser from 'ua-parser-js';
 
 export default function LoginSessionsCard() {
@@ -26,25 +27,31 @@ export default function LoginSessionsCard() {
     ISessionsGetSuccessResponse['sessions']
   >([]);
   const [pendingSingleId, setPendingSingleId] = useState<number | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(true);
   const t = useTranslations();
   const locale = useLocale();
 
   useEffect(() => {
-    startTransition(async () => {
-      const res = await fetch('/api/sessions');
-      const data = (await res.json()) as ISessionsGetResponse;
+    (async () => {
+      try {
+        const res = await fetch('/api/sessions');
+        const data = (await res.json()) as ISessionsGetResponse;
 
-      if ('message' in data) {
-        // TODO: Handle error
-        return;
-      }
+        if ('message' in data) {
+          toast.error(data.message);
+          return;
+        }
 
-      if (res.ok) {
-        setSessions(data.sessions);
+        if (res.ok) {
+          setSessions(data.sessions);
+        }
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.error_occurred'));
+      } finally {
+        setLoading(false);
       }
-    });
-  }, []);
+    })();
+  }, [t]);
 
   const parseDeviceFromUserAgent = (userAgent: string | null) => {
     if (!userAgent) return null;
@@ -83,32 +90,39 @@ export default function LoginSessionsCard() {
     return data;
   };
 
-  const handleSessionLogout = async (id: number) => {
+  const onSessionLogoutSubmit = async (id: number) => {
     setPendingSingleId(id);
     try {
       const res = await handleSignOutSingleSession(id);
 
       if ('message' in res) {
-        // TODO: Handle error
+        toast.error(res.message);
         return;
       }
 
       setSessions((prev) => prev.filter((session) => session.id !== id));
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
     } finally {
       setPendingSingleId(null);
     }
   };
 
-  const handleLogoutAll = async () => {
-    startTransition(async () => {
+  const onSessionLogoutAllSubmit = async () => {
+    setLoading(true);
+    try {
       const res = await handleSignOutAllSessions();
       if ('message' in res) {
-        // TODO: Handle error
+        toast.error(res.message);
         return;
       }
 
       setSessions((prev) => prev.filter((session) => session.current));
-    });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -160,7 +174,7 @@ export default function LoginSessionsCard() {
                       pending={pendingSingleId === session.id}
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleSessionLogout(session.id)}
+                      onClick={() => onSessionLogoutSubmit(session.id)}
                     >
                       <LogOut size={20} />
                     </LoadingButton>
@@ -173,10 +187,10 @@ export default function LoginSessionsCard() {
         <LoadingButton
           className="mt-4"
           disabled={!hasOtherThanCurrentSession}
-          pending={pending}
+          pending={loading}
           size="sm"
           variant="secondary"
-          onClick={handleLogoutAll}
+          onClick={onSessionLogoutAllSubmit}
         >
           <LogOut className="mr-2 h-4 w-4" />
           {t('dashboard.profile.logout_all_sessions')}

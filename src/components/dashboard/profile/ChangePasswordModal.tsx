@@ -26,7 +26,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -40,7 +40,7 @@ export default function ChangePasswordModal({
   onOpenChange,
 }: ChangePasswordModalProps) {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<ChangePasswordSchema>({
@@ -66,28 +66,29 @@ export default function ChangePasswordModal({
     return data;
   };
 
-  const onSubmit = (data: ChangePasswordSchema) => {
-    startTransition(async () => {
-      try {
-        const res = await handleChangePassword(data);
+  const onSubmit = async (data: ChangePasswordSchema) => {
+    setLoading(true);
+    try {
+      const res = await handleChangePassword(data);
 
-        if ('message' in res) {
-          if (res.field) {
-            return form.setError(res.field as keyof ChangePasswordSchema, {
-              type: 'manual',
-              message: res.message,
-            });
-          }
-
-          toast.error(res.message);
-          return;
+      if ('message' in res) {
+        if (res.field) {
+          return form.setError(res.field as keyof ChangePasswordSchema, {
+            type: 'manual',
+            message: res.message,
+          });
         }
 
-        handleOpenChange(false);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
+        toast.error(res.message);
+        return;
       }
-    });
+
+      handleOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -199,7 +200,7 @@ export default function ChangePasswordModal({
           <div>
             <LoadingButton
               className="w-full"
-              pending={pending}
+              pending={loading}
               type="submit"
               onClick={() => form.handleSubmit(onSubmit)()}
             >

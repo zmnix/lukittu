@@ -9,6 +9,7 @@
     "no-trailing-spaces": "error",
     "quotes": [2, "single", { "avoidEscape": true }],
     "no-console": "error",
+    "object-shorthand": "error",
     "react/jsx-curly-brace-presence": [
       "error",
       { "props": "never", "children": "never" }

@@ -23,12 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useModal } from '@/hooks/useModal';
 import { AuthContext } from '@/providers/AuthProvider';
 import { Team, User } from '@prisma/client';
 import { EllipsisVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
 import { LeaveTeamConfirmModal } from './TeamLeaveConfirmModal';
 import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
@@ -54,20 +54,23 @@ export default function TeamListCard() {
     setTeamTransferConfirmationModalOpen,
   ] = useState(false);
 
-  const { ConfirmModal, openConfirmModal } = useModal();
   const t = useTranslations();
 
   useEffect(() => {
     const handleTeamGet = async () => {
-      const response = await fetch('/api/teams');
-      const data = (await response.json()) as ITeamsGetResponse;
-      if ('teams' in data) {
-        setTeams(data.teams);
+      try {
+        const response = await fetch('/api/teams');
+        const data = (await response.json()) as ITeamsGetResponse;
+        if ('teams' in data) {
+          setTeams(data.teams);
+        }
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.error_occurred'));
       }
     };
 
     handleTeamGet();
-  }, []);
+  }, [t]);
 
   const handleLeaveTeam = async (teamId: number) => {
     const response = await fetch(`/api/teams/${teamId}/leave`, {
@@ -77,30 +80,6 @@ export default function TeamListCard() {
     const data = (await response.json()) as ITeamsLeaveResponse;
 
     return data;
-  };
-
-  const handleTeamLeave = async (team: Team) => {
-    const res = await handleLeaveTeam(team.id);
-
-    if ('message' in res) {
-      return openConfirmModal({
-        title: t('general.error'),
-        description: res.message,
-      });
-    }
-
-    const session = authCtx.session;
-    if (session) {
-      authCtx.setSession({
-        ...session,
-        user: {
-          ...session.user,
-          teams: session.user.teams.filter((t) => t.id !== team.id),
-        },
-      });
-    }
-
-    setTeams((teams) => teams.filter((t) => t.id !== team.id));
   };
 
   const handleDeleteTeam = async (team: Team, teamNameConfirmation: string) => {
@@ -114,14 +93,23 @@ export default function TeamListCard() {
     return data;
   };
 
-  const handleTeamDelete = async (team: Team, teamNameConfirmation: string) => {
-    const res = await handleDeleteTeam(team, teamNameConfirmation);
+  const handleTeamTransfer = async (team: Team, newOwnerId: number) => {
+    const response = await fetch(`/api/teams/${team.id}/transfer-ownership`, {
+      method: 'POST',
+      body: JSON.stringify({ newOwnerId }),
+    });
+
+    const data = (await response.json()) as ITeamsTransferOwnershipResponse;
+
+    return data;
+  };
+
+  const onTeamLeaveSubmit = async (team: Team) => {
+    const res = await handleLeaveTeam(team.id);
 
     if ('message' in res) {
-      return openConfirmModal({
-        title: t('general.error'),
-        description: res.message,
-      });
+      toast.error(res.message);
+      return;
     }
 
     const session = authCtx.session;
@@ -138,19 +126,37 @@ export default function TeamListCard() {
     setTeams((teams) => teams.filter((t) => t.id !== team.id));
   };
 
-  const handleTeamTransfer = async (team: Team, newOwnerId: number) => {
-    const response = await fetch(`/api/teams/${team.id}/transfer-ownership`, {
-      method: 'POST',
-      body: JSON.stringify({ newOwnerId }),
-    });
+  const onTeamDeleteSubmit = async (
+    team: Team,
+    teamNameConfirmation: string,
+  ) => {
+    const res = await handleDeleteTeam(team, teamNameConfirmation);
 
-    const data = (await response.json()) as ITeamsTransferOwnershipResponse;
+    if ('message' in res) {
+      toast.error(res.message);
+      return;
+    }
 
-    if ('message' in data) {
-      return openConfirmModal({
-        title: t('general.error'),
-        description: data.message,
+    const session = authCtx.session;
+    if (session) {
+      authCtx.setSession({
+        ...session,
+        user: {
+          ...session.user,
+          teams: session.user.teams.filter((t) => t.id !== team.id),
+        },
       });
+    }
+
+    setTeams((teams) => teams.filter((t) => t.id !== team.id));
+  };
+
+  const onTeamTransferSubmit = async (team: Team, newOwnerId: number) => {
+    const res = await handleTeamTransfer(team, newOwnerId);
+
+    if ('message' in res) {
+      toast.error(res.message);
+      return;
     }
 
     const session = authCtx.session;
@@ -171,8 +177,7 @@ export default function TeamListCard() {
     team: Team & { users: Omit<User, 'passwordHash'>[] },
   ) => {
     if (team.users.length > 1) {
-      return openConfirmModal({
-        title: t('dashboard.profile.delete_team_not_empty_title'),
+      toast.error(t('dashboard.profile.delete_team_not_empty_title'), {
         description: t.rich(
           'dashboard.profile.delete_team_not_empty_description',
           {
@@ -181,6 +186,8 @@ export default function TeamListCard() {
           },
         ),
       });
+
+      return;
     }
 
     setTeamDeleteConfirmation(team);
@@ -189,23 +196,22 @@ export default function TeamListCard() {
 
   return (
     <>
-      <ConfirmModal />
       <LeaveTeamConfirmModal
         open={teamLEaveConfirmationModalOpen}
         team={teamLeaveConfirmation}
-        onConfirm={handleTeamLeave}
+        onConfirm={onTeamLeaveSubmit}
         onOpenChange={setTeamLeaveConfirmationModalOpen}
       />
       <DeleteTeamConfirmModal
         open={teamDeleteConfirmationModalOpen}
         team={teamDeleteConfirmation}
-        onConfirm={handleTeamDelete}
+        onConfirm={onTeamDeleteSubmit}
         onOpenChange={setTeamDeleteConfirmationModalOpen}
       />
       <TransferTeamOwnershipModal
         open={teamTransferConfirmationModalOpen}
         team={teamTransferConfirmation}
-        onConfirm={handleTeamTransfer}
+        onConfirm={onTeamTransferSubmit}
         onOpenChange={setTeamTransferConfirmationModalOpen}
       />
       <Card>

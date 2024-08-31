@@ -19,7 +19,7 @@ export default async function ProductsPage({
       </h1>
       <Separator className="mt-2" />
       <div className="mt-6 flex flex-col gap-6">
-        <ProductsListCard searchParams={searchParams} />
+        <ProductsListCard />
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 
 interface LeaveTeamConfirmModalProps {
   team: Team | null;
@@ -25,7 +25,7 @@ export function LeaveTeamConfirmModal({
   onConfirm,
 }: LeaveTeamConfirmModalProps) {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [confirmTimer, setConfirmTimer] = useState(15);
 
   useEffect(() => {
@@ -43,10 +43,14 @@ export function LeaveTeamConfirmModal({
   if (!team) return null;
 
   const handleConfirm = async () => {
-    startTransition(async () => {
+    try {
+      setLoading(true);
       await onConfirm(team);
       onOpenChange(false);
-    });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,7 +77,7 @@ export function LeaveTeamConfirmModal({
           </LoadingButton>
           <LoadingButton
             disabled={confirmTimer > 0}
-            pending={pending}
+            pending={loading}
             size="sm"
             variant="destructive"
             onClick={handleConfirm}

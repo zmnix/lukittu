@@ -1,9 +1,10 @@
 'use client';
-import { IAuthLoginResponse } from '@/app/api/auth/login/route';
+import { IAuthRegisterResponse } from '@/app/api/auth/register/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
-import OauthLoginFailedccessModal from '@/components/auth/OauthLoginFailedModal';
+import RegisterSuccessModal from '@/components/auth/RegisterSuccessModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';
 import LoadingButton from '@/components/shared/LoadingButton';
+import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,40 +26,37 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { LoginSchema, loginSchema } from '@/lib/validation/auth/login-schema';
+import {
+  RegisterSchema,
+  registerSchema,
+} from '@/lib/validation/auth/register-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
-export default function LoginCard() {
+export default function RegisterCard() {
   const t = useTranslations();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
   const turnstile = useRef<TurnstileInstance>(null);
-  const [turnstileLoading, setTurnstileLoading] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [resendVerifyEmailModalOpen, setResendVerifyEmailModalOpen] =
     useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [turnstileLoading, setTurnstileLoading] = useState(false);
   const [showTurnstile, setShowTurnstile] = useState(false);
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
 
-  const error = searchParams.get('error');
-  const provider = searchParams.get('provider');
-
-  const form = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema(t)),
+  const form = useForm<RegisterSchema>({
+    resolver: zodResolver(registerSchema(t)),
     defaultValues: {
       email: '',
+      fullName: '',
       password: '',
-      rememberMe: false,
+      terms: false,
       token: '',
     },
   });
@@ -72,49 +70,45 @@ export default function LoginCard() {
     setFormError(null);
   }, [formWatcher]);
 
-  useEffect(() => {
-    if (error) {
-      setErrorModalOpen(true);
-    }
-  }, [error]);
-
-  const handleCredentialsLogin = async (payload: LoginSchema) => {
-    const response = await fetch('/api/auth/login', {
+  const handleCredentialsRegister = async (payload: RegisterSchema) => {
+    const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
       body: JSON.stringify(payload),
     });
 
-    const data = (await response.json()) as IAuthLoginResponse;
+    const data = (await response.json()) as IAuthRegisterResponse;
 
     return data;
   };
 
-  const onSubmit = (data: LoginSchema) => {
-    startTransition(async () => {
-      const res = await handleCredentialsLogin(data);
+  const onSubmit = async (data: RegisterSchema) => {
+    setLoading(true);
+    try {
+      const res = await handleCredentialsRegister(data);
       if ('message' in res) {
         if (res.reverifyEmail) {
           return setResendVerifyEmailModalOpen(true);
         }
 
         if (res.field) {
-          return form.setError(res.field as keyof LoginSchema, {
+          return form.setError(res.field as keyof RegisterSchema, {
             type: 'manual',
             message: res.message,
           });
         }
 
-        // Fallback should never happen
         return setFormError(res.message ?? t('general.error_occurred'));
       }
 
-      // Redirect to dashboard
-      router.push('/dashboard');
-    });
+      setSuccessModalOpen(true);
+    } catch (error: any) {
+      setFormError(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const prepareSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -126,23 +120,22 @@ export default function LoginCard() {
 
   return (
     <>
-      <OauthLoginFailedccessModal
-        error={error}
-        open={errorModalOpen}
-        provider={provider}
-        onOpenChange={setErrorModalOpen}
-      />
       <ResendVerifyEmailModal
         email={formWatcher.email as string}
         open={resendVerifyEmailModalOpen}
         onOpenChange={setResendVerifyEmailModalOpen}
       />
+      <RegisterSuccessModal
+        email={formWatcher.email as string}
+        open={successModalOpen}
+        onOpenChange={setSuccessModalOpen}
+      />
       <Card className="mx-auto w-full max-w-lg p-6 max-md:max-w-md max-md:px-0">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">
-            {t('auth.login.title')}
+            {t('auth.register.title')}
           </CardTitle>
-          <CardDescription>{t('auth.login.description')}</CardDescription>
+          <CardDescription>{t('auth.register.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           {formError && (
@@ -161,7 +154,7 @@ export default function LoginCard() {
                   <FormItem>
                     <FormLabel>{t('general.email')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="support@lukittu.com" {...field} />
+                      <Input placeholder="m@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -169,55 +162,83 @@ export default function LoginCard() {
               />
               <FormField
                 control={form.control}
-                name="password"
+                name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center">
+                    <FormLabel>{t('general.full_name')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormLabel htmlFor="password">
                         {t('general.password')}
                       </FormLabel>
-                      <Link
-                        className="ml-auto inline-block text-sm underline"
-                        href="/auth/forgot-password"
-                      >
-                        {t('auth.login.forgot_password')}
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          placeholder="********"
-                          type={showPassword ? 'text' : 'password'}
-                          {...field}
-                        />
-                        <Button
-                          className="absolute bottom-1 right-1 h-7 w-7"
-                          size="icon"
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            placeholder="********"
+                            type={showPassword ? 'text' : 'password'}
+                            {...field}
+                          />
+                          <Button
+                            className="absolute bottom-1 right-1 h-7 w-7"
+                            size="icon"
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <PasswordIndicator password={form.watch('password')} />
+              </div>
               <FormField
                 control={form.control}
-                name="rememberMe"
+                name="terms"
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>{t('auth.login.stay_signed_in')}</FormLabel>
+                  <FormItem>
+                    <div className="flex items-center gap-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>
+                        {t('auth.register.agree')}{' '}
+                        <Link
+                          className="text-primary"
+                          href="#"
+                          prefetch={false}
+                        >
+                          {t('auth.register.terms_of_service')}
+                        </Link>{' '}
+                        {t('auth.register.and')}{' '}
+                        <Link
+                          className="text-primary"
+                          href="#"
+                          prefetch={false}
+                        >
+                          {t('auth.register.privacy_policy')}
+                        </Link>
+                      </FormLabel>
+                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -237,10 +258,10 @@ export default function LoginCard() {
               )}
               <LoadingButton
                 className="w-full"
-                pending={pending || turnstileLoading}
+                pending={loading || turnstileLoading}
                 type="submit"
               >
-                {t('general.login')}
+                {t('auth.register.button')}
               </LoadingButton>
               <div className="space-y-4">
                 <div className="flex w-full items-center gap-4">
@@ -257,9 +278,9 @@ export default function LoginCard() {
         </CardContent>
         <CardFooter>
           <p className="text-sm">
-            {t('auth.login.new_to_app')}{' '}
-            <Link className="font-semibold text-primary" href="/auth/register">
-              {t('auth.login.create_account')}
+            {t('auth.register.already_have_account')}{' '}
+            <Link className="font-semibold text-primary" href="/auth/login">
+              {t('general.login')}
             </Link>
           </p>
         </CardFooter>

@@ -26,8 +26,9 @@ import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useTransition } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 interface SetTeamModalProps {
   open: boolean;
@@ -42,7 +43,7 @@ export default function SetTeamModal({
 }: SetTeamModalProps) {
   const t = useTranslations();
   const authCtx = useContext(AuthContext);
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<SetTeamSchema>({
     resolver: zodResolver(setTeamSchema(t)),
@@ -73,8 +74,9 @@ export default function SetTeamModal({
     return data;
   };
 
-  const onSubmit = (data: SetTeamSchema) => {
-    startTransition(async () => {
+  const onSubmit = async (data: SetTeamSchema) => {
+    setLoading(true);
+    try {
       const res = teamToEdit
         ? await handleTeamEdit(data)
         : await handleTeamCreate(data);
@@ -86,6 +88,9 @@ export default function SetTeamModal({
             message: res.message,
           });
         }
+
+        onOpenChange(false);
+        return toast.error(res.message ?? t('general.error_occurred'));
       }
 
       if ('team' in res && authCtx.session) {
@@ -111,7 +116,11 @@ export default function SetTeamModal({
       }
 
       onOpenChange(false);
-    });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -169,7 +178,7 @@ export default function SetTeamModal({
           <div>
             <LoadingButton
               className="w-full"
-              pending={pending}
+              pending={loading}
               type="submit"
               onClick={() => form.handleSubmit(onSubmit)()}
             >

@@ -29,16 +29,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
-interface ResetPasswordCardProps {
-  token: string;
-}
-
-export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
+export default function ResetPasswordCard() {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
+  const token = useSearchParams().get('token');
+
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
@@ -77,7 +76,8 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
   };
 
   const onSubmit = async (data: ResetPasswordSchema) => {
-    startTransition(async () => {
+    setLoading(true);
+    try {
       const res = await handleResetPassword({
         ...data,
         token: token as string,
@@ -94,7 +94,11 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
       }
 
       setPasswordResetSuccess(true);
-    });
+    } catch (error: any) {
+      setFormError(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -183,7 +187,7 @@ export default function ResetPasswordCard({ token }: ResetPasswordCardProps) {
                   />
                   <LoadingButton
                     className="w-full"
-                    pending={pending}
+                    pending={loading}
                     type="submit"
                   >
                     {t('auth.reset_password.reset_password')}

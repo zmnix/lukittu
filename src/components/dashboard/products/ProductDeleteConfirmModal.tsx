@@ -10,18 +10,17 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import { useModal } from '@/hooks/useModal';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useState, useTransition } from 'react';
+import { useContext, useState } from 'react';
+import { toast } from 'sonner';
 
 export function DeleteProductConfirmModal() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [productNameConfirmation, setProductNameConfirmation] = useState('');
-  const { ConfirmModal, openConfirmModal } = useModal();
   const router = useRouter();
 
   const product = ctx.productToDelete;
@@ -45,29 +44,30 @@ export function DeleteProductConfirmModal() {
     return data;
   };
 
-  const handleDelete = async () => {
-    startTransition(async () => {
+  const onSubmit = async () => {
+    setLoading(true);
+    try {
       const res = await handleDeleteProduct(
         product.id,
         productNameConfirmation,
       );
 
       if ('message' in res) {
-        return openConfirmModal({
-          title: t('general.error'),
-          description: res.message,
-        });
+        toast.error(res.message);
       }
 
       router.refresh();
       ctx.setProductToDelete(null);
       ctx.setProductToDeleteModalOpen(false);
-    });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      <ConfirmModal />
       <ResponsiveDialog
         open={ctx.productToDeleteModalOpen}
         onOpenChange={ctx.setProductToDeleteModalOpen}
@@ -111,10 +111,10 @@ export function DeleteProductConfirmModal() {
             </LoadingButton>
             <LoadingButton
               disabled={productNameConfirmation !== product.name.toUpperCase()}
-              pending={pending}
+              pending={loading}
               size="sm"
               variant="destructive"
-              onClick={handleDelete}
+              onClick={onSubmit}
             >
               {t('dashboard.products.delete_product')}
             </LoadingButton>

@@ -20,17 +20,18 @@ import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useState, useTransition } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import ChangePasswordModal from './ChangePasswordModal';
 
 export default function GeneralSettingsCard() {
   const t = useTranslations();
   const authCtx = useContext(AuthContext);
   const user = authCtx.session?.user;
-  const [pending, startTransition] = useTransition();
   const [edit, setEdit] = useState(false);
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<UpdateProfileSchema>({
     resolver: zodResolver(updateProfileSchema(t)),
@@ -64,8 +65,9 @@ export default function GeneralSettingsCard() {
     return data;
   };
 
-  const onSubmit = (data: UpdateProfileSchema) => {
-    startTransition(async () => {
+  const onSubmit = async (data: UpdateProfileSchema) => {
+    setLoading(true);
+    try {
       const res = await handleProfileUpdate(data);
       if ('message' in res) {
         form.setError(res.field as keyof UpdateProfileSchema, {
@@ -87,7 +89,11 @@ export default function GeneralSettingsCard() {
         }
         setEdit(false);
       }
-    });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isTouched = form.formState.isDirty || form.formState.isSubmitting;
@@ -179,7 +185,7 @@ export default function GeneralSettingsCard() {
                     </Button>
                     <LoadingButton
                       disabled={!isTouched}
-                      pending={pending}
+                      pending={loading}
                       size="sm"
                       type="submit"
                     >

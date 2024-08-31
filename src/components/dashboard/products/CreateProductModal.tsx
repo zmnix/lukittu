@@ -19,7 +19,6 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useModal } from '@/hooks/useModal';
 import {
   SetProductSchema,
   setProductSchema,
@@ -28,14 +27,14 @@ import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useTransition } from 'react';
+import { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export default function CreateProductModal() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
-  const { ConfirmModal, openConfirmModal } = useModal();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const form = useForm<SetProductSchema>({
@@ -61,8 +60,9 @@ export default function CreateProductModal() {
     return data;
   };
 
-  const onSubmit = (data: SetProductSchema) => {
-    startTransition(async () => {
+  const onSubmit = async (data: SetProductSchema) => {
+    setLoading(true);
+    try {
       const res = await handleProductCreate(data);
       if ('message' in res) {
         if (res.field) {
@@ -73,21 +73,21 @@ export default function CreateProductModal() {
         }
 
         ctx.setProductModalOpen(false);
-        return openConfirmModal({
-          title: t('general.error'),
-          description: res.message,
-        });
+        return toast.error(res.message);
       }
 
       ctx.setProductModalOpen(false);
       form.reset();
       router.refresh();
-    });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      <ConfirmModal />
       <ResponsiveDialog
         open={ctx.productModalOpen}
         onOpenChange={ctx.setProductModalOpen}
@@ -168,7 +168,7 @@ export default function CreateProductModal() {
             <div>
               <LoadingButton
                 className="w-full"
-                pending={pending}
+                pending={loading}
                 type="submit"
                 onClick={() => form.handleSubmit(onSubmit)()}
               >

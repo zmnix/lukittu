@@ -26,7 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Team } from '@prisma/client';
 import { ChevronsUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 
 interface TransferTeamOwnershipModalProps {
   team: ITeamsGetSuccessResponse['teams'][number] | null;
@@ -42,7 +42,7 @@ export function TransferTeamOwnershipModal({
   onConfirm,
 }: TransferTeamOwnershipModalProps) {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [newOwner, setNewOwner] = useState<number | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [confirmTimer, setConfirmTimer] = useState(15);
@@ -63,10 +63,14 @@ export function TransferTeamOwnershipModal({
 
   const handleConfirm = async () => {
     if (!newOwner) return;
-    startTransition(async () => {
+    setLoading(true);
+    try {
       await onConfirm(team, newOwner);
       onOpenChange(false);
-    });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   return (
@@ -147,7 +151,7 @@ export function TransferTeamOwnershipModal({
           </LoadingButton>
           <LoadingButton
             disabled={!newOwner || confirmTimer > 0}
-            pending={pending}
+            pending={loading}
             size="sm"
             variant="destructive"
             onClick={handleConfirm}

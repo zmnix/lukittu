@@ -28,12 +28,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export default function ForgotPasswordCard() {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
 
@@ -67,8 +68,9 @@ export default function ForgotPasswordCard() {
     return data;
   };
 
-  const onSubmit = (data: IForgotPasswordSchema) => {
-    startTransition(async () => {
+  const onSubmit = async (data: IForgotPasswordSchema) => {
+    setLoading(true);
+    try {
       const res = await handleForgotPassword(data);
       if ('message' in res) {
         if (res.field) {
@@ -81,7 +83,11 @@ export default function ForgotPasswordCard() {
       }
 
       setSuccessModalOpen(true);
-    });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.server_error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -123,7 +129,7 @@ export default function ForgotPasswordCard() {
                   </FormItem>
                 )}
               />
-              <LoadingButton className="w-full" pending={pending} type="submit">
+              <LoadingButton className="w-full" pending={loading} type="submit">
                 {t('auth.reset_password.send_reset_email')}
               </LoadingButton>
             </form>

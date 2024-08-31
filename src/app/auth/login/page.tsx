@@ -1,4 +1,4 @@
-import LoginCard from '@/widgets/auth/LoginCard';
+import LoginCard from '@/components/auth/LoginCard';
 
 export default function Login() {
   return <LoginCard />;

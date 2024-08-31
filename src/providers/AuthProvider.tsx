@@ -7,7 +7,7 @@ import {
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { createContext, useEffect, useState, useTransition } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export const AuthContext = createContext({
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const t = useTranslations();
   const router = useRouter();
 
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<
     ISessionsGetCurrentSuccessResponse['session'] | null
   >(null);
@@ -65,10 +65,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    startTransition(async () => await fetchSession());
+    fetchSession().finally(() => setLoading(false));
   }, [router, t]);
 
-  if (pending || !session) {
+  if (loading || !session) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <LoadingSpinner size={38} />
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         session,
-        loading: pending,
+        loading,
         setSession,
       }}
     >

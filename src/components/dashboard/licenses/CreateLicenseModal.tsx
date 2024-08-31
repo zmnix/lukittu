@@ -39,7 +39,7 @@ import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RefreshCw, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useContext, useTransition } from 'react';
+import { useContext, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -48,8 +48,13 @@ export default function CreateLicenseModal() {
   const locale = useLocale();
   const ctx = useContext(LicenseModalContext);
 
-  const [loadingLicense, startLicenseTransition] = useTransition();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState<{
+    license: boolean;
+    product: boolean;
+  }>({
+    license: false,
+    product: false,
+  });
 
   const form = useForm<SetLicenseScheama>({
     resolver: zodResolver(setLicenseSchema(t)),
@@ -72,17 +77,18 @@ export default function CreateLicenseModal() {
     defaultValue: 'NEVER',
   });
 
-  const fetchLicenseKey = () => {
-    startLicenseTransition(async () => {
-      try {
-        const response = await fetch('/api/licenses/generate');
-        const data = (await response.json()) as ILicensesGenerateResponse;
-        const licenseKey = data.licenseKey;
-        form.setValue('licenseKey', licenseKey, { shouldValidate: true });
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      }
-    });
+  const fetchLicenseKey = async () => {
+    setLoading((prev) => ({ ...prev, license: true }));
+    try {
+      const response = await fetch('/api/licenses/generate');
+      const data = (await response.json()) as ILicensesGenerateResponse;
+      const licenseKey = data.licenseKey;
+      form.setValue('licenseKey', licenseKey, { shouldValidate: true });
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.server_error'));
+    } finally {
+      setLoading((prev) => ({ ...prev, license: false }));
+    }
   };
 
   const handleExpirationTypeChange = (type: 'NEVER' | 'DATE' | 'DURATION') => {
@@ -103,9 +109,7 @@ export default function CreateLicenseModal() {
   };
 
   const onSubmit = (data: SetLicenseScheama) => {
-    startTransition(() => {
-      //
-    });
+    //
   };
 
   return (
@@ -137,13 +141,13 @@ export default function CreateLicenseModal() {
                     <FormControl>
                       <div className="relative w-full">
                         <Input
-                          disabled={loadingLicense}
+                          disabled={loading.license}
                           placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
                           {...field}
                         />
                         <Button
                           className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                          disabled={loadingLicense}
+                          disabled={loading.license}
                           size="icon"
                           type="button"
                           variant="ghost"
@@ -384,8 +388,8 @@ export default function CreateLicenseModal() {
             <div>
               <LoadingButton
                 className="w-full"
-                disabled={loadingLicense}
-                pending={pending}
+                disabled={loading.license || loading.product}
+                pending={loading.license || loading.product}
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
                 {t('dashboard.licenses.add_license')}

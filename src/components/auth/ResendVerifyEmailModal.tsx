@@ -8,7 +8,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import LoadingButton from '../shared/LoadingButton';
 
 const initialState = {
@@ -31,8 +31,8 @@ export default function ResendVerifyEmailModal({
   email,
 }: ResendVerifyEmailModalProps) {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
   const [response, setResponse] = useState<typeof initialState | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleResendVerifyEmail = async (email: string) => {
     const response = await fetch('/api/auth/resend-verify-email', {
@@ -50,7 +50,8 @@ export default function ResendVerifyEmailModal({
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    startTransition(async () => {
+    setLoading(true);
+    try {
       const response = await handleResendVerifyEmail(email);
 
       if ('message' in response) {
@@ -63,7 +64,14 @@ export default function ResendVerifyEmailModal({
           isError: false,
         });
       }
-    });
+    } catch (error: any) {
+      setResponse({
+        isError: true,
+        message: error.message ?? t('general.error_occurred'),
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -113,7 +121,7 @@ export default function ResendVerifyEmailModal({
               <form onSubmit={onSubmit}>
                 <LoadingButton
                   className="w-full"
-                  pending={pending}
+                  pending={loading}
                   type="submit"
                 >
                   {t('auth.verify_email.resend_email')}

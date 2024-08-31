@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 interface DeleteTeamConfirmModalProps {
   team: Team | null;
@@ -27,17 +27,21 @@ export function DeleteTeamConfirmModal({
   open,
 }: DeleteTeamConfirmModalProps) {
   const t = useTranslations();
-  const [pending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [confirmName, setConfirmName] = useState('');
 
   if (!team) return null;
 
   const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    startTransition(async () => {
+    try {
+      setLoading(true);
       await onConfirm(team, confirmName);
       onOpenChange(false);
-    });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   return (
@@ -79,7 +83,7 @@ export function DeleteTeamConfirmModal({
           </LoadingButton>
           <LoadingButton
             disabled={confirmName !== team.name.toUpperCase()}
-            pending={pending}
+            pending={loading}
             size="sm"
             variant="destructive"
             onClick={handleConfirm}

@@ -92,7 +92,7 @@ export async function POST(
 
     const { name } = validated.data;
 
-    const session = await getSession();
+    const session = await getSession({ user: true });
 
     if (!session) {
       return NextResponse.json(

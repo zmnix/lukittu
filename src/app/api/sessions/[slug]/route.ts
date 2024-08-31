@@ -22,9 +22,9 @@ export async function DELETE(
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const sessionId = params.slug;
+    const id = parseInt(params.slug);
 
-    if (!sessionId || typeof sessionId !== 'string') {
+    if (isNaN(id) || id <= 0) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -50,9 +50,7 @@ export async function DELETE(
       );
     }
 
-    const sessionToLogout = session.user.sessions.find(
-      (s) => s.sessionId === sessionId,
-    );
+    const sessionToLogout = session.user.sessions.find((s) => s.id === id);
 
     if (!sessionToLogout) {
       return NextResponse.json(
@@ -66,7 +64,7 @@ export async function DELETE(
     await prisma.session.delete({
       where: {
         userId: session.user.id,
-        sessionId,
+        id,
       },
     });
 

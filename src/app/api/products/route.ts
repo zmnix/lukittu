@@ -239,7 +239,7 @@ export async function POST(
 
     const product = await prisma.product.create({
       data: {
-        name: name,
+        name,
         url: url || null,
         description: description || null,
         team: {

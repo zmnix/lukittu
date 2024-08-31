@@ -55,7 +55,7 @@ export default function TablePagination({
       <div>
         <p className="text-sm font-medium">
           {t('general.page_of', {
-            page: page,
+            page,
             pages: totalPages,
           })}
         </p>
