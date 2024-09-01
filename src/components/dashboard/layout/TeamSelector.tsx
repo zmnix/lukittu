@@ -36,7 +36,10 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [createTeamModalOpen, setTeamModalOpen] = useState(false);
-  const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
+  const [teamToEdit, setTeamToEdit] = useState<Omit<
+    Team,
+    'publicKeyRsa' | 'privateKeyRsa'
+  > | null>(null);
   const router = useRouter();
 
   const teams = useMemo(() => authCtx.session?.user.teams || [], [authCtx]);

@@ -1,4 +1,4 @@
-import LicensesListCard from '@/components/dashboard/licenses/LicensesListCard';
+import LicensesListCard from '@/components/dashboard/licenses/list/LicensesListCard';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { getTranslations } from 'next-intl/server';

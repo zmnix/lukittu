@@ -54,7 +54,8 @@
     "metadata_value_max_length": "Metadata value must be at most 255 characters long!",
     "customer_exists": "Customer already exists with given email!",
     "license_key_exists": "License key already exists!",
-    "customer_not_found": "Customer not found!"
+    "customer_not_found": "Customer not found!",
+    "license_not_found": "License not found!"
   },
   "general": {
     "error": "Error",

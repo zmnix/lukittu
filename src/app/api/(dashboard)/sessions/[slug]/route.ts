@@ -17,7 +17,7 @@ export type ISessionsSignOutResponse =
   | ISessionsSignOutSuccessResponse;
 
 export async function DELETE(
-  _: NextRequest,
+  request: NextRequest,
   { params }: { params: { slug: string } },
 ): Promise<NextResponse<ISessionsSignOutResponse>> {
   const t = await getTranslations({ locale: getLanguage() });

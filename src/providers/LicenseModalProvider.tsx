@@ -1,5 +1,5 @@
 'use client';
-import CreateLicenseModal from '@/components/dashboard/licenses/CreateLicenseModal';
+import CreateLicenseModal from '@/components/dashboard/licenses/list/CreateLicenseModal';
 import { createContext, useState } from 'react';
 
 export const LicenseModalContext = createContext({

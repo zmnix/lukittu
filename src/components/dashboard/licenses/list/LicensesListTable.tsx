@@ -32,7 +32,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import ProductListTableSkeleton from '../products/ProductListTableSkeleton';
+import ProductListTableSkeleton from '../../products/ProductListTableSkeleton';
 import AddLicenseButton from './AddLicenseButton';
 
 export function LicensesListTable() {

@@ -78,7 +78,6 @@ export async function GET(
             include: {
               products: {
                 where: {
-                  deletedAt: null,
                   name: search
                     ? {
                         contains: search,
@@ -188,11 +187,7 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              products: {
-                where: {
-                  deletedAt: null,
-                },
-              },
+              products: true,
             },
           },
         },

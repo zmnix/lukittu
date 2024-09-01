@@ -1,3 +1,4 @@
+import LicenseView from '@/components/dashboard/licenses/view/LicenseView';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -5,7 +6,6 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Separator } from '@/components/ui/separator';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
@@ -25,8 +25,7 @@ export default async function LicensePage() {
           <BreadcrumbSeparator />
         </BreadcrumbList>
       </Breadcrumb>
-      <h1 className="text-2xl font-bold">XXXXX-XXXXX-XXXXX-XXXXX-XXXXX</h1>
-      <Separator className="mt-2" />
+      <LicenseView />
     </div>
   );
 }

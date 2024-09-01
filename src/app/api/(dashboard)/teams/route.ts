@@ -67,7 +67,7 @@ export async function GET(): Promise<
 }
 
 type ITeamsCreateSuccessResponse = {
-  team: Team;
+  team: Omit<Team, 'privateKeyRsa' | 'publicKeyRsa'>;
 };
 
 export type ITeamsCreateResponse = ErrorResponse | ITeamsCreateSuccessResponse;

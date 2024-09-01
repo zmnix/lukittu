@@ -1,37 +1,34 @@
 import { regex } from '@/lib/constants/regex';
-import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
+import { decryptLicenseKey } from '@/lib/utils/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { Customer, License, Product, RequestLog } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ProductDeleteRequest = {
-  productNameConfirmation: string;
+export type ILicenseGetSuccessResponse = {
+  license: Omit<License, 'licenseKeyLookup'> & {
+    products: Product[];
+    customers: Customer[];
+    requestLogs: RequestLog[];
+  };
 };
 
-type IProductsDeleteSuccessResponse = {
-  success: boolean;
-};
+export type ILicenseGetResponse = ILicenseGetSuccessResponse | ErrorResponse;
 
-export type IProductsDeleteResponse =
-  | ErrorResponse
-  | IProductsDeleteSuccessResponse;
-
-export async function DELETE(
+export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } },
-): Promise<NextResponse<IProductsDeleteResponse>> {
+): Promise<NextResponse<ILicenseGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const body = await request.json();
-    const { productNameConfirmation } = body as ProductDeleteRequest;
-    const productId = params.slug;
+    const id = params.slug;
 
-    if (!productId || !regex.uuidV4.test(productId)) {
+    if (!id || !regex.uuidV4.test(id)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -56,8 +53,20 @@ export async function DELETE(
         include: {
           teams: {
             where: {
-              deletedAt: null,
               id: selectedTeam,
+              deletedAt: null,
+            },
+            include: {
+              licenses: {
+                where: {
+                  id,
+                },
+                include: {
+                  products: true,
+                  customers: true,
+                  requestLogs: true,
+                },
+              },
             },
           },
         },
@@ -78,46 +87,30 @@ export async function DELETE(
         {
           message: t('validation.team_not_found'),
         },
-        { status: HttpStatus.BAD_REQUEST },
+        { status: HttpStatus.NOT_FOUND },
       );
     }
 
-    const product = await prisma.product.findFirst({
-      where: {
-        id: productId,
-        teamId: selectedTeam,
-      },
-    });
+    const team = session.user.teams[0];
 
-    if (!product) {
+    if (!team.licenses.length) {
       return NextResponse.json(
         {
-          message: t('validation.product_not_found'),
+          message: t('validation.license_not_found'),
         },
         { status: HttpStatus.NOT_FOUND },
       );
     }
 
-    if (productNameConfirmation !== product.name.toUpperCase()) {
-      return NextResponse.json(
-        {
-          message: t('validation.bad_request'),
-        },
-        { status: HttpStatus.BAD_REQUEST },
-      );
-    }
+    const license = team.licenses[0];
 
-    await prisma.product.delete({
-      where: {
-        id: productId,
-      },
-    });
+    license.licenseKey = decryptLicenseKey(license.licenseKey);
 
     return NextResponse.json({
-      success: true,
+      license,
     });
   } catch (error) {
-    logger.error("Error occurred in 'products/[slug]' route:", error);
+    logger.error("Error occurred in 'sessions/[slug]' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

@@ -14,6 +14,10 @@ declare global {
           };
           team: {
             privateKeyRsa: true;
+            publicKeyRsa: true;
+          };
+          license: {
+            licenseKeyLookup: true;
           };
         };
       }>
@@ -32,6 +36,10 @@ const prisma =
       },
       team: {
         privateKeyRsa: true,
+        publicKeyRsa: true,
+      },
+      license: {
+        licenseKeyLookup: true,
       },
     },
   });

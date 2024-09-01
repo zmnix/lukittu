@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 export type ISessionsGetCurrentSuccessResponse = {
   session: Omit<Session, 'sessionId'> & {
     user: User & {
-      teams: Team[];
+      teams: Omit<Team, 'publicKeyRsa' | 'privateKeyRsa'>[];
     };
   };
 };

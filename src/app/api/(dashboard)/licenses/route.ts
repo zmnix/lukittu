@@ -142,11 +142,7 @@ export async function GET(
                   [sortColumn]: sortDirection,
                 },
                 include: {
-                  products: {
-                    where: {
-                      deletedAt: null,
-                    },
-                  },
+                  products: true,
                   customers: true,
                 },
               },

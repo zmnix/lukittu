@@ -70,7 +70,6 @@ model Product {
   createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   licenses        License[]
   requestLogs     RequestLog[]
-  deletedAt       DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 }

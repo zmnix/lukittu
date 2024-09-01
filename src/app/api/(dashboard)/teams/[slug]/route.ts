@@ -124,7 +124,7 @@ export async function DELETE(
 }
 
 type ITeamsEditSuccessResponse = {
-  team: Team;
+  team: Omit<Team, 'privateKeyRsa' | 'publicKeyRsa'>;
 };
 
 export type ITeamsEditResponse = ErrorResponse | ITeamsEditSuccessResponse;
