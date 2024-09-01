@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { Roboto } from 'next/font/google';
+import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 
 const roboto = Roboto({
@@ -35,6 +36,7 @@ export default async function RootLayout({
           roboto.variable,
         )}
       >
+        <NextTopLoader color="#4153af" showSpinner={false} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

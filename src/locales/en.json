@@ -14,6 +14,9 @@
     "full_name_required": "Full name is required!",
     "full_name_min_length": "Full name must be at least 3 characters long!",
     "full_name_max_length": "Full name must be at most 255 characters long!",
+    "username_required": "Name is required!",
+    "username_min_length": "Name must be at least 3 characters long!",
+    "username_max_length": "Name must be at most 255 characters long!",
     "terms_of_service_required": "You must agree to the terms of service and privacy policy!",
     "password_confirmation_required": "Password confirmation is required!",
     "password_mismatch": "Passwords do not match!",
@@ -36,14 +39,22 @@
     "product_name_min_length": "Product name must be at least 3 characters long!",
     "product_name_max_length": "Product name must be at most 255 characters long!",
     "product_name_invalid": "Product name can only contain letters, numbers, spaces, and the following characters: - _",
-    "product_description_max_length": "Product description must be at most 500 characters long!",
+    "description_max_length": "Product description must be at most 500 characters long!",
     "product_url_invalid": "Product URL is invalid!",
     "product_already_exists": "Team already has a product with this name!",
     "product_not_found": "Product not found!",
     "license_key_invalid": "License key must contain 5 groups of 5 characters separated by dashes!",
     "license_expires_at_must_be_future": "License expiration date must be in the future!",
     "expiration_days_required": "Days are required!",
-    "expiration_date_required": "Expiration date is required!"
+    "expiration_date_required": "Expiration date is required!",
+    "email_or_full_name_required": "Email or full name is required!",
+    "metadata_key_min_length": "Metadata key must be at least 1 characters long!",
+    "metadata_key_max_length": "Metadata key must be at most 255 characters long!",
+    "metadata_value_min_length": "Metadata value must be at least 1 characters long!",
+    "metadata_value_max_length": "Metadata value must be at most 255 characters long!",
+    "customer_exists": "Customer already exists with given email!",
+    "license_key_exists": "License key already exists!",
+    "customer_not_found": "Customer not found!"
   },
   "general": {
     "error": "Error",
@@ -60,7 +71,6 @@
     "back_to_login": "Back to login",
     "continue_with_google": "Continue with Google",
     "wrong_provider": "You have an account with a different provider! Please login with {provider}.",
-    "new_license": "New License",
     "select_team": "Select team",
     "search_team": "Search team...",
     "no_team_found": "No teams found",
@@ -87,12 +97,23 @@
     "description": "Description",
     "url": "URL",
     "created_at": "Created at",
+    "updated_at": "Updated at",
     "page_of": "Page {page} of {pages}",
+    "showing_of_results": "Showing {visible} of {total} results",
     "rows_per_page": "Rows per page",
     "loading": "Loading...",
     "no_results": "No results",
     "retry": "Retry",
-    "server_error": "Server error"
+    "server_error": "Server error",
+    "metadata": "Metadata",
+    "key": "Key",
+    "value": "Value",
+    "add_metadata": "Add metadata",
+    "active": "Active",
+    "inactive": "Inactive",
+    "expiring": "Expiring",
+    "expired": "Expired",
+    "suspended": "Suspended"
   },
   "auth": {
     "oauth": {
@@ -218,8 +239,11 @@
       "add_license": "Add license",
       "edit_license": "Edit license",
       "search_product": "Search product...",
+      "search_customer": "Search customer...",
       "assigned_products": "Assigned products",
+      "assigned_customers": "Assigned customers",
       "license": "License",
+      "status": "Status",
       "ip_limit": "IP limit",
       "expiration_date": "Expiration date",
       "expiration_duration": "Expiration duration",
@@ -231,7 +255,14 @@
       "expiration_days": "Days",
       "expiration_settings": "Expiration settings",
       "duration": "Duration",
-      "date": "Date"
+      "date": "Date",
+      "expires_at": "Expires at",
+      "add_your_first_license": "Add your first license",
+      "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage."
+    },
+    "customers": {
+      "add_customer": "Add customer",
+      "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage."
     }
   }
 }

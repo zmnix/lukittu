@@ -98,7 +98,7 @@ export default function ChangePasswordModal({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
-      <ResponsiveDialogContent className="sm:max-w-[525px]">
+      <ResponsiveDialogContent className="sm:max-w-[625px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {t('dashboard.profile.change_password')}

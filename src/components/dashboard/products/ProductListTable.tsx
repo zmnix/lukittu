@@ -19,15 +19,11 @@ import {
 } from '@/components/ui/table';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { Product } from '@prisma/client';
-import {
-  ArrowDownUp,
-  EllipsisVertical,
-  Frown,
-  Package,
-  Search,
-} from 'lucide-react';
+import { ArrowDownUp, EllipsisVertical, Package, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import AddProductButton from './AddProductButton';
 import ProductListTableSkeleton from './ProductListTableSkeleton';
 
@@ -35,9 +31,9 @@ export function ProductListTable() {
   const locale = useLocale();
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [totalProducts, setTotalProducts] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
@@ -52,7 +48,6 @@ export function ProductListTable() {
   );
 
   useEffect(() => {
-    setLoading(true);
     (async () => {
       try {
         const searchParams = new URLSearchParams();
@@ -77,17 +72,14 @@ export function ProductListTable() {
 
         const data = (await response.json()) as IProductsGetResponse;
 
-        if ('error' in data) {
-          return setError(data.error);
+        if ('message' in data) {
+          return toast.error(data.message);
         }
 
-        if (!response.ok) {
-          setError(t('general.server_error'));
-        }
         setProducts(data.products);
         setTotalProducts(data.totalProducts);
       } catch (error: any) {
-        setError(t('general.server_error'));
+        toast.error(error.message ?? t('general.server_error'));
       } finally {
         setLoading(false);
       }
@@ -117,126 +109,109 @@ export function ProductListTable() {
           }}
         />
       </div>
-      {error ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
-            <div className="flex">
-              <span className="rounded-lg bg-secondary p-4">
-                <Frown className="h-6 w-6" />
-              </span>
-            </div>
-            <h3 className="text-lg font-bold">{t('general.error')}</h3>
-            <p className="max-w-sm text-center text-sm text-muted-foreground">
-              {error}
-            </p>
-            <Button
-              onClick={() => {
-                setError(null);
-              }}
-            >
-              {t('general.retry')}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="truncate">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSortColumn('name');
-                    setSortDirection(
-                      sortColumn === 'name' && sortDirection === 'asc'
-                        ? 'desc'
-                        : 'asc',
-                    );
-                  }}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="truncate">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSortColumn('name');
+                  setSortDirection(
+                    sortColumn === 'name' && sortDirection === 'asc'
+                      ? 'desc'
+                      : 'asc',
+                  );
+                }}
+              >
+                {t('general.name')}
+                <ArrowDownUp className="ml-2 h-4 w-4" />
+              </Button>
+            </TableHead>
+            <TableHead className="truncate">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSortColumn('createdAt');
+                  setSortDirection(
+                    sortColumn === 'createdAt' && sortDirection === 'asc'
+                      ? 'desc'
+                      : 'asc',
+                  );
+                }}
+              >
+                {t('general.created_at')}
+                <ArrowDownUp className="ml-2 h-4 w-4" />
+              </Button>
+            </TableHead>
+            <TableHead className="truncate text-right">
+              {t('general.actions')}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        {loading ? (
+          <ProductListTableSkeleton />
+        ) : (
+          <TableBody>
+            {products.map((product) => (
+              <TableRow
+                key={product.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/dashboard/products/${product.id}`)}
+              >
+                <TableCell className="truncate">{product.name}</TableCell>
+                <TableCell
+                  className="truncate"
+                  title={new Date(product.createdAt).toLocaleString(locale)}
                 >
-                  {t('general.name')}
-                  <ArrowDownUp className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead className="truncate">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSortColumn('createdAt');
-                    setSortDirection(
-                      sortColumn === 'createdAt' && sortDirection === 'asc'
-                        ? 'desc'
-                        : 'asc',
-                    );
-                  }}
-                >
-                  {t('general.created_at')}
-                  <ArrowDownUp className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead className="truncate text-right">
-                {t('general.actions')}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          {loading ? (
-            <ProductListTableSkeleton />
-          ) : (
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="truncate">{product.name}</TableCell>
-                  <TableCell
-                    className="truncate"
-                    title={new Date(product.createdAt).toLocaleString(locale)}
-                  >
-                    {new Date(product.createdAt).toLocaleString(locale, {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </TableCell>
-                  <TableCell className="truncate py-0 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="ghost">
-                          <EllipsisVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="font-medium"
-                        forceMount
+                  {new Date(product.createdAt).toLocaleString(locale, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </TableCell>
+                <TableCell className="truncate py-0 text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="ghost">
+                        <EllipsisVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="font-medium"
+                      forceMount
+                    >
+                      <DropdownMenuItem
+                        className="hover:cursor-pointer"
+                        onClick={() => ctx.setProductModalOpen(true)}
                       >
-                        <DropdownMenuItem
-                          className="hover:cursor-pointer"
-                          onClick={() => ctx.setProductModalOpen(true)}
-                        >
-                          {t('dashboard.products.edit_product')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive hover:cursor-pointer"
-                          onClick={() => {
-                            ctx.setProductToDelete(product);
-                            ctx.setProductToDeleteModalOpen(true);
-                          }}
-                        >
-                          {t('dashboard.products.delete_product')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          )}
-        </Table>
-      )}
+                        {t('dashboard.products.edit_product')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive hover:cursor-pointer"
+                        onClick={() => {
+                          ctx.setProductToDelete(product);
+                          ctx.setProductToDeleteModalOpen(true);
+                        }}
+                      >
+                        {t('dashboard.products.delete_product')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        )}
+      </Table>
       <TablePagination
         page={page}
         pageSize={pageSize}
+        results={products.length}
         setPage={setPage}
         setPageSize={setPageSize}
+        totalItems={totalProducts}
         totalPages={Math.ceil(totalProducts / pageSize)}
       />
     </>

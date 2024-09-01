@@ -23,7 +23,7 @@ export default function RegisterSuccessModal({
   const t = useTranslations();
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="sm:max-w-[525px]">
+      <ResponsiveDialogContent className="sm:max-w-[625px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {t('auth.register.email_sent_title')}

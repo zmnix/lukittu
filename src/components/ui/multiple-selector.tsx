@@ -1,7 +1,7 @@
 'use client';
 
 import { Command as CommandPrimitive, useCommandState } from 'cmdk';
-import { X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import * as React from 'react';
 import { forwardRef, useEffect } from 'react';
 
@@ -423,14 +423,14 @@ const MultipleSelector = React.forwardRef<
       // For async search that showing emptyIndicator
       if (onSearch && !creatable && Object.keys(options).length === 0) {
         return (
-          <CommandEmpty className="px-4 py-4 text-sm">
+          <CommandEmpty className="px-4 py-2 pb-0 text-sm">
             {emptyIndicator}
           </CommandEmpty>
         );
       }
 
       return (
-        <CommandEmpty className="px-4 py-4 text-sm">
+        <CommandEmpty className="px-4 py-2 pb-0 text-sm">
           {emptyIndicator}
         </CommandEmpty>
       );
@@ -477,7 +477,7 @@ const MultipleSelector = React.forwardRef<
       >
         <div
           className={cn(
-            'min-h-10 rounded-md border border-input text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+            'flex min-h-10 items-center rounded-md border border-input text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
             {
               'px-3 py-2': selected.length !== 0,
               'cursor-text': !disabled && selected.length !== 0,
@@ -489,7 +489,7 @@ const MultipleSelector = React.forwardRef<
             inputRef.current?.focus();
           }}
         >
-          <div className="relative flex flex-wrap gap-1">
+          <div className="relative flex w-full flex-wrap gap-1">
             {selected.map((option) => (
               <Badge
                 key={option.value}
@@ -559,9 +559,14 @@ const MultipleSelector = React.forwardRef<
                 inputProps?.onValueChange?.(value);
               }}
             />
+            {selected.length === 0 && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 transform text-muted-foreground">
+                <ChevronDown />
+              </div>
+            )}
             <button
               className={cn(
-                'absolute right-0 h-6 w-6 p-0',
+                'absolute right-0 h-6 w-6 p-0 text-muted-foreground',
                 (hideClearAllButton ||
                   disabled ||
                   selected.length < 1 ||

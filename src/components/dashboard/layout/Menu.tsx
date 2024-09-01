@@ -18,9 +18,10 @@ import { CollapseMenuButton } from './CollapseMenuButton';
 interface MenuProps {
   isOpen: boolean | undefined;
   topSpacing?: boolean;
+  onClose?: () => void;
 }
 
-export function Menu({ isOpen, topSpacing = true }: MenuProps) {
+export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
@@ -69,6 +70,7 @@ export function Menu({ isOpen, topSpacing = true }: MenuProps) {
                               className="mb-1 h-10 w-full justify-start"
                               variant={active ? 'secondary' : 'ghost'}
                               asChild
+                              onClick={onClose}
                             >
                               <Link href={href}>
                                 <span
@@ -128,13 +130,13 @@ export function Menu({ isOpen, topSpacing = true }: MenuProps) {
                         isOpen === false ? 'hidden opacity-0' : 'opacity-100',
                       )}
                     >
-                      {t('general.new_license')}
+                      {t('dashboard.licenses.add_license')}
                     </p>
                   </Button>
                 </TooltipTrigger>
                 {isOpen === false && (
                   <TooltipContent side="right">
-                    {t('general.new_license')}
+                    {t('dashboard.licenses.add_license')}
                   </TooltipContent>
                 )}
               </Tooltip>

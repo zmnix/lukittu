@@ -35,7 +35,7 @@ export default function OauthLoginFailedccessModal({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="sm:max-w-[525px]">
+      <ResponsiveDialogContent className="sm:max-w-[625px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {t('auth.login.login_failed')}

@@ -60,8 +60,8 @@ model Team {
 model Product {
   id              Int       @id @default(autoincrement())
   name            String
-  description     String?
   url             String?
+  metadata        Json
   teamId          Int
   team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
   createdByUserId Int?
@@ -75,9 +75,8 @@ model Product {
 model Customer {
   id              Int       @id @default(autoincrement())
   email           String?
-  firstName       String?
-  lastName        String?
-  description     String?
+  fullName        String?
+  metadata        Json
   teamId          Int
   team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
   licenses        License[]
@@ -90,26 +89,27 @@ model Customer {
 }
 
 model License {
-  id              Int                    @id @default(autoincrement())
-  licenseKey      String
-  ipLimit         Int?
-  expirationType  LicenseExpirationType  @default(NEVER)
-  expirationStart LicenseExpirationStart @default(CREATION)
-  expirationDate  DateTime?
-  expirationDays  Int?
-  suspended       Boolean                @default(false)
-  teamId          Int
-  team            Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  products        Product[]
-  customerId      Int?
-  customer        Customer?              @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  createdByUserId Int?
-  createdBy       User?                  @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  requestLogs     RequestLog[]
+  id               Int                    @id @default(autoincrement())
+  licenseKey       String
+  licenseKeyLookup String
+  ipLimit          Int?
+  metadata         Json
+  expirationType   LicenseExpirationType  @default(NEVER)
+  expirationStart  LicenseExpirationStart @default(CREATION)
+  expirationDate   DateTime?
+  expirationDays   Int?
+  suspended        Boolean                @default(false)
+  teamId           Int
+  team             Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  products         Product[]
+  customers        Customer[]
+  createdByUserId  Int?
+  createdBy        User?                  @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  requestLogs      RequestLog[]
 
-  @@index([teamId, licenseKey])
+  @@unique([teamId, licenseKeyLookup])
 }
 
 model RequestLog {

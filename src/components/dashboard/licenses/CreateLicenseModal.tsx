@@ -1,8 +1,9 @@
 'use client';
 import { ILicensesGenerateResponse } from '@/app/api/licenses/generate/route';
-import { IProductsGetResponse } from '@/app/api/products/route';
+import { ILicensesCreateResponse } from '@/app/api/licenses/route';
+import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
+import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
 import LoadingButton from '@/components/shared/LoadingButton';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import {
@@ -14,7 +15,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import MultipleSelector from '@/components/ui/multiple-selector';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -39,15 +39,18 @@ import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RefreshCw, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export default function CreateLicenseModal() {
   const t = useTranslations();
   const locale = useLocale();
   const ctx = useContext(LicenseModalContext);
+  const router = useRouter();
 
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState<{
     license: boolean;
     product: boolean;
@@ -68,7 +71,13 @@ export default function CreateLicenseModal() {
       expirationStart: null,
       ipLimit: null,
       expirationType: 'NEVER',
+      metadata: [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'metadata',
   });
 
   const expirationType = useWatch({
@@ -77,7 +86,7 @@ export default function CreateLicenseModal() {
     defaultValue: 'NEVER',
   });
 
-  const fetchLicenseKey = async () => {
+  const handleLicenseGenerate = async () => {
     setLoading((prev) => ({ ...prev, license: true }));
     try {
       const response = await fetch('/api/licenses/generate');
@@ -89,6 +98,20 @@ export default function CreateLicenseModal() {
     } finally {
       setLoading((prev) => ({ ...prev, license: false }));
     }
+  };
+
+  const handleLicenseCreate = async (payload: SetLicenseScheama) => {
+    const response = await fetch('/api/licenses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as ILicensesCreateResponse;
+
+    return data;
   };
 
   const handleExpirationTypeChange = (type: 'NEVER' | 'DATE' | 'DURATION') => {
@@ -108,17 +131,47 @@ export default function CreateLicenseModal() {
     }
   };
 
-  const onSubmit = (data: SetLicenseScheama) => {
-    //
+  const onSubmit = async (data: SetLicenseScheama) => {
+    setSubmitting(true);
+    try {
+      const res = await handleLicenseCreate(data);
+      if ('message' in res) {
+        if (res.field) {
+          return form.setError(res.field as keyof SetLicenseScheama, {
+            type: 'manual',
+            message: res.message,
+          });
+        }
+
+        handleOpenChange(false);
+        return toast.error(res.message);
+      }
+
+      router.refresh();
+      handleOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddMetadata = () => {
+    append({ key: '', value: '' });
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    ctx.setLicenseModalOpen(open);
+    form.reset();
   };
 
   return (
     <>
       <ResponsiveDialog
         open={ctx.licenseModalOpen}
-        onOpenChange={ctx.setLicenseModalOpen}
+        onOpenChange={handleOpenChange}
       >
-        <ResponsiveDialogContent className="sm:max-w-[525px]">
+        <ResponsiveDialogContent className="sm:max-w-[625px]">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>
               {t('dashboard.licenses.add_license')}
@@ -129,7 +182,7 @@ export default function CreateLicenseModal() {
           </ResponsiveDialogHeader>
           <Form {...form}>
             <form
-              className="space-y-4 px-4"
+              className="space-y-4 max-md:px-4"
               onSubmit={form.handleSubmit(onSubmit)}
             >
               <FormField
@@ -151,7 +204,7 @@ export default function CreateLicenseModal() {
                           size="icon"
                           type="button"
                           variant="ghost"
-                          onClick={fetchLicenseKey}
+                          onClick={handleLicenseGenerate}
                         >
                           <RefreshCw className="h-4 w-4" />
                         </Button>
@@ -219,7 +272,12 @@ export default function CreateLicenseModal() {
                               'dashboard.licenses.expiration_date',
                             )}
                             value={field.value ?? undefined}
-                            onChange={field.onChange}
+                            onChange={(date) => {
+                              if (!date) {
+                                return form.setValue('expirationDate', null);
+                              }
+                              form.setValue('expirationDate', date);
+                            }}
                           />
                           <Button
                             className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
@@ -332,45 +390,77 @@ export default function CreateLicenseModal() {
                 <FormLabel>
                   {t('dashboard.licenses.assigned_products')}
                 </FormLabel>
-                <MultipleSelector
-                  defaultOptions={[]}
-                  emptyIndicator={
-                    <div className="flex">{t('general.no_results')}</div>
+                <ProductsAutocomplete
+                  setProductIds={(productIds) =>
+                    form.setValue('productIds', productIds)
                   }
-                  loadingIndicator={
-                    <div className="flex items-center justify-center py-2">
-                      <LoadingSpinner />
-                    </div>
-                  }
-                  placeholder={t('dashboard.licenses.search_product')}
-                  triggerSearchOnFocus
-                  onChange={(value) => {
-                    form.setValue(
-                      'productIds',
-                      value.map((product) => parseInt(product.value)),
-                    );
-                  }}
-                  onSearch={async (value) => {
-                    const response = await fetch(
-                      `/api/products?search=${value}`,
-                    );
-                    const data =
-                      (await response.json()) as IProductsGetResponse;
-
-                    if ('message' in data) {
-                      toast.error(data.message);
-                      return [];
-                    }
-
-                    const results = data.products.map((product) => ({
-                      label: product.name,
-                      value: product.id.toString(),
-                    }));
-
-                    return results;
-                  }}
                 />
               </FormItem>
+
+              <FormItem>
+                <FormLabel>
+                  {t('dashboard.licenses.assigned_customers')}
+                </FormLabel>
+                <CustomersAutocomplete
+                  setCustomerIds={(customerIds) =>
+                    form.setValue('customerIds', customerIds)
+                  }
+                />
+              </FormItem>
+              {fields.map((field, index) => (
+                <div key={field.id} className="flex items-start gap-2">
+                  <FormField
+                    control={form.control}
+                    name={`metadata.${index}.key`}
+                    render={({ field }) => (
+                      <FormItem className="w-[calc(100%-90px)]">
+                        <FormLabel>
+                          {t('general.key')} {index + 1}
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`metadata.${index}.value`}
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <FormLabel>
+                          {t('general.value')} {index + 1}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-2">
+                            <Input {...field} />
+                            <Button
+                              className="shrink-0 pl-0"
+                              size="icon"
+                              type="button"
+                              variant="secondary"
+                              onClick={() => remove(index)}
+                            >
+                              <X size={24} />
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))}
+              <Button
+                className="pl-0"
+                size="sm"
+                type="button"
+                variant="link"
+                onClick={handleAddMetadata}
+              >
+                {t('general.add_metadata')}
+              </Button>
               <button className="hidden" type="submit" />
             </form>
           </Form>
@@ -380,7 +470,7 @@ export default function CreateLicenseModal() {
                 className="w-full"
                 type="submit"
                 variant="outline"
-                onClick={() => ctx.setLicenseModalOpen(false)}
+                onClick={() => handleOpenChange(false)}
               >
                 {t('general.close')}
               </LoadingButton>
@@ -389,7 +479,7 @@ export default function CreateLicenseModal() {
               <LoadingButton
                 className="w-full"
                 disabled={loading.license || loading.product}
-                pending={loading.license || loading.product}
+                pending={submitting}
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
                 {t('dashboard.licenses.add_license')}

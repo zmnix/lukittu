@@ -18,12 +18,32 @@ export const setLicenseSchema = (
         ),
       expirationType: z.enum(['DATE', 'DURATION', 'NEVER']),
       expirationStart: z.enum(['CREATION', 'ACTIVATION']).nullable(),
-      expirationDate: z.date().nullable(),
+      expirationDate: z.coerce.date().nullable(),
       expirationDays: z.number().positive().nullable(),
       suspended: z.boolean(),
       productIds: z.array(z.number().positive()),
       customerIds: z.array(z.number().positive()),
       ipLimit: z.number().positive().nullable(),
+      metadata: z.array(
+        z.object({
+          key: z
+            .string()
+            .min(1, {
+              message: t('validation.metadata_key_min_length'),
+            })
+            .max(255, {
+              message: t('validation.metadata_key_max_length'),
+            }),
+          value: z
+            .string()
+            .min(1, {
+              message: t('validation.metadata_value_min_length'),
+            })
+            .max(255, {
+              message: t('validation.metadata_value_max_length'),
+            }),
+        }),
+      ),
     })
     .strict()
     .refine(

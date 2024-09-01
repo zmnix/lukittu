@@ -1,31 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
+import { CustomerModalProvider } from '@/providers/CustomerModalProvider';
 import { getTranslations } from 'next-intl/server';
-import AddLicenseButton from './AddLicenseButton';
+import AddCustomerButton from './AddCustomerButton';
 
-interface LicenseListCardProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default async function LicenseListCard({
-  searchParams,
-}: LicenseListCardProps) {
+export default async function CustomersListCard() {
   const t = await getTranslations({ locale: getLanguage() });
 
   return (
-    <LicenseModalProvider>
+    <CustomerModalProvider>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-bold">
-            {t('dashboard.navigation.licenses')}
-            <AddLicenseButton />
+            {t('dashboard.navigation.customers')}
+            <AddCustomerButton />
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>s</p>
+          <p>ssss</p>
         </CardContent>
       </Card>
-    </LicenseModalProvider>
+    </CustomerModalProvider>
   );
 }

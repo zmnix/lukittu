@@ -132,7 +132,7 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
           >
             <CommandInput placeholder={t('general.search_team')} />
             <CommandList>
-              <CommandEmpty className="px-4 py-4 text-sm">
+              <CommandEmpty className="py-4 text-sm max-md:px-4">
                 {t('general.no_team_found')}
               </CommandEmpty>
               {Boolean(teams.length) && (

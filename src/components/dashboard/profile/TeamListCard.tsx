@@ -210,7 +210,7 @@ export default function TeamListCard() {
                     <TableRow key={team.id}>
                       <TableCell className="truncate">{team.name}</TableCell>
                       <TableCell className="truncate">
-                        <Badge variant="outline">
+                        <Badge className="text-xs" variant="outline">
                           {team.ownerId === authCtx.session?.user.id
                             ? t('general.owner')
                             : t('general.member')}

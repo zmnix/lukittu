@@ -1,0 +1,106 @@
+import { badgeVariants } from '@/components/ui/badge';
+import { License } from '@prisma/client';
+import { VariantProps } from 'class-variance-authority';
+
+type LicenseStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'EXPIRING'
+  | 'EXPIRED'
+  | 'SUSPENDED';
+
+export const getLicenseStatus = (
+  license: Omit<License, 'licenseKeyLookup'>,
+): LicenseStatus => {
+  // ACTIVE, INACTIVE, EXPIRING, EXPIRED, SUSPENDED
+  const currentDate = new Date();
+
+  if (license.suspended) {
+    return 'SUSPENDED';
+  }
+
+  // TODO: Activity logs
+  const lastActiveDate = new Date(license.updatedAt);
+
+  if (license.expirationType === 'NEVER') {
+    // Inactive if over 30 days since last activity
+    if (
+      currentDate.getTime() - lastActiveDate.getTime() >
+      30 * 24 * 60 * 60 * 1000
+    ) {
+      return 'INACTIVE';
+    }
+
+    return 'ACTIVE';
+  }
+
+  if (license.expirationType === 'DATE') {
+    if (currentDate.getTime() > new Date(license.expirationDate!).getTime()) {
+      return 'EXPIRED';
+    }
+
+    if (
+      currentDate.getTime() >
+      new Date(license.expirationDate!).getTime() - 30 * 24 * 60 * 60 * 1000
+    ) {
+      return 'EXPIRING';
+    }
+
+    if (
+      currentDate.getTime() - lastActiveDate.getTime() >
+      30 * 24 * 60 * 60 * 1000
+    ) {
+      return 'INACTIVE';
+    }
+
+    return 'ACTIVE';
+  }
+
+  if (license.expirationType === 'DURATION') {
+    const hasStartedExpiring = Boolean(license.expirationDate);
+
+    if (hasStartedExpiring) {
+      if (
+        currentDate.getTime() >
+        new Date(license.expirationDate!).getTime() - 30 * 24 * 60 * 60 * 1000
+      ) {
+        return 'EXPIRING';
+      }
+
+      if (currentDate.getTime() > new Date(license.expirationDate!).getTime()) {
+        return 'EXPIRED';
+      }
+    }
+
+    if (
+      currentDate.getTime() - lastActiveDate.getTime() >
+      30 * 24 * 60 * 60 * 1000
+    ) {
+      return 'INACTIVE';
+    }
+
+    return 'ACTIVE';
+  }
+
+  // Should never reach this point
+  return 'ACTIVE';
+};
+
+type Variant = VariantProps<typeof badgeVariants>['variant'];
+
+export const getLicenseStatusBadgeVariant = (
+  status: LicenseStatus,
+): Variant => {
+  switch (status) {
+    case 'ACTIVE':
+      return 'default';
+    case 'INACTIVE':
+      return 'secondary';
+    case 'EXPIRING':
+      return 'destructive';
+    case 'EXPIRED':
+      return 'destructive';
+    case 'SUSPENDED':
+      return 'destructive';
+  }
+};

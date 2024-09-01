@@ -1,13 +1,9 @@
-import LicenseListCard from '@/components/dashboard/licenses/LicenseListCard';
+import LicensesListCard from '@/components/dashboard/licenses/LicensesListCard';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { getTranslations } from 'next-intl/server';
 
-interface LicensePageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default async function LicensesPage({ searchParams }: LicensePageProps) {
+export default async function LicensesPage() {
   const t = await getTranslations({ locale: getLanguage() });
 
   return (
@@ -17,7 +13,7 @@ export default async function LicensesPage({ searchParams }: LicensePageProps) {
       </h1>
       <Separator className="mt-2" />
       <div className="mt-6 flex flex-col gap-6">
-        <LicenseListCard searchParams={searchParams} />
+        <LicensesListCard />
       </div>
     </div>
   );

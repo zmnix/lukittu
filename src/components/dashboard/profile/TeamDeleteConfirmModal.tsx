@@ -63,7 +63,10 @@ export function DeleteTeamConfirmModal({
             })}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
-        <form className="grid w-full gap-1.5 px-4" onSubmit={handleConfirm}>
+        <form
+          className="grid w-full gap-1.5 max-md:px-4"
+          onSubmit={handleConfirm}
+        >
           <Label htmlFor="confirmName">
             {t.rich('dashboard.profile.delete_team_confirm_input', {
               teamName: `"${team.name.toUpperCase()}"`,

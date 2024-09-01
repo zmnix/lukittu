@@ -19,6 +19,7 @@ import { TeamSelector } from './TeamSelector';
 
 export function SheetMenu() {
   const [logo, setLogo] = useState(logoTextDark);
+  const [open, setOpen] = useState(false);
   const theme = useTheme();
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function SheetMenu() {
   }, [theme.theme]);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button className="h-8" size="icon" variant="ghost">
           <MenuIcon />
@@ -37,7 +38,6 @@ export function SheetMenu() {
           <Button
             className="flex items-center justify-center pb-2 pt-1"
             variant="link"
-            asChild
           >
             <Link className="flex items-center gap-2" href="/dashboard">
               <Image alt="Lukittu" height={38} src={logo} priority />
@@ -46,7 +46,7 @@ export function SheetMenu() {
         </SheetHeader>
         <TeamSelector fullWidth />
         <Separator />
-        <Menu topSpacing={false} isOpen />
+        <Menu topSpacing={false} isOpen onClose={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );

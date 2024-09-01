@@ -23,7 +23,7 @@ export default function ForgotPasswordSuccessModal({
   const t = useTranslations();
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="sm:max-w-[525px]">
+      <ResponsiveDialogContent className="sm:max-w-[625px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {t('auth.forgot_password.email_sent_title')}

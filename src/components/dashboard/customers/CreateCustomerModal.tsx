@@ -1,5 +1,5 @@
 'use client';
-import { IProductsCreateResponse } from '@/app/api/products/route';
+import { ICustomersCreateResponse } from '@/app/api/customers/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,10 +20,10 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import {
-  SetProductSchema,
-  setProductSchema,
-} from '@/lib/validation/products/set-product-schema';
-import { ProductModalContext } from '@/providers/ProductModalProvider';
+  SetCustomerSchema,
+  setCustomerSchema,
+} from '@/lib/validation/customers/set-customer-schema';
+import { CustomerModalContext } from '@/providers/CustomerModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -32,17 +32,17 @@ import { useContext, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export default function CreateProductModal() {
+export default function CreateCustomerModal() {
   const t = useTranslations();
-  const ctx = useContext(ProductModalContext);
+  const ctx = useContext(CustomerModalContext);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const form = useForm<SetProductSchema>({
-    resolver: zodResolver(setProductSchema(t)),
+  const form = useForm<SetCustomerSchema>({
+    resolver: zodResolver(setCustomerSchema(t)),
     defaultValues: {
-      name: '',
-      url: '',
+      email: null,
+      fullName: null,
       metadata: [],
     },
   });
@@ -52,8 +52,8 @@ export default function CreateProductModal() {
     name: 'metadata',
   });
 
-  const handleProductCreate = async (payload: SetProductSchema) => {
-    const response = await fetch('/api/products', {
+  const handleCustomerCreate = async (payload: SetCustomerSchema) => {
+    const response = await fetch('/api/customers', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,18 +61,18 @@ export default function CreateProductModal() {
       body: JSON.stringify(payload),
     });
 
-    const data = (await response.json()) as IProductsCreateResponse;
+    const data = (await response.json()) as ICustomersCreateResponse;
 
     return data;
   };
 
-  const onSubmit = async (data: SetProductSchema) => {
+  const onSubmit = async (data: SetCustomerSchema) => {
     setLoading(true);
     try {
-      const res = await handleProductCreate(data);
+      const res = await handleCustomerCreate(data);
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetProductSchema, {
+          return form.setError(res.field as keyof SetCustomerSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -96,23 +96,23 @@ export default function CreateProductModal() {
   };
 
   const handleOpenChange = (open: boolean) => {
-    ctx.setProductModalOpen(open);
+    ctx.setCustomerModalOpen(open);
     form.reset();
   };
 
   return (
     <>
       <ResponsiveDialog
-        open={ctx.productModalOpen}
+        open={ctx.customerModalOpen}
         onOpenChange={handleOpenChange}
       >
         <ResponsiveDialogContent className="sm:max-w-[625px]">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>
-              {t('dashboard.products.add_product')}
+              {t('dashboard.customers.add_customer')}
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription>
-              {t('dashboard.products.product_description')}
+              {t('dashboard.customers.customer_description')}
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
           <Form {...form}>
@@ -122,17 +122,21 @@ export default function CreateProductModal() {
             >
               <FormField
                 control={form.control}
-                name="name"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('general.name')} *</FormLabel>
+                    <FormLabel>{t('general.email')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t(
-                          'dashboard.products.my_first_product_placeholder',
-                        )}
-                        required
+                        placeholder="support@lukittu.com"
                         {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          if (!e.target.value) {
+                            return form.setValue('email', null);
+                          }
+                          return form.setValue('email', e.target.value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -141,12 +145,21 @@ export default function CreateProductModal() {
               />
               <FormField
                 control={form.control}
-                name="url"
+                name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('general.url')}</FormLabel>
+                    <FormLabel>{t('general.full_name')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com" {...field} />
+                      <Input
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          if (!e.target.value) {
+                            return form.setValue('fullName', null);
+                          }
+                          return form.setValue('fullName', e.target.value);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,7 +240,7 @@ export default function CreateProductModal() {
                 type="submit"
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
-                {t('dashboard.products.add_product')}
+                {t('dashboard.customers.add_customer')}
               </LoadingButton>
             </div>
           </ResponsiveDialogFooter>

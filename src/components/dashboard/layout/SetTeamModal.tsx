@@ -139,7 +139,7 @@ export default function SetTeamModal({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
-      <ResponsiveDialogContent className="sm:max-w-[525px]">
+      <ResponsiveDialogContent className="sm:max-w-[625px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>
             {Boolean(teamToEdit)
@@ -151,7 +151,7 @@ export default function SetTeamModal({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
         <Form {...form}>
-          <form className="px-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="max-md:px-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="name"

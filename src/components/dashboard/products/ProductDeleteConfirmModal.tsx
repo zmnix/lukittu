@@ -58,7 +58,7 @@ export function DeleteProductConfirmModal() {
 
       router.refresh();
       ctx.setProductToDelete(null);
-      ctx.setProductToDeleteModalOpen(false);
+      handleOpenChange(false);
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -66,11 +66,16 @@ export function DeleteProductConfirmModal() {
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    ctx.setProductToDeleteModalOpen(open);
+    setProductNameConfirmation('');
+  };
+
   return (
     <>
       <ResponsiveDialog
         open={ctx.productToDeleteModalOpen}
-        onOpenChange={ctx.setProductToDeleteModalOpen}
+        onOpenChange={handleOpenChange}
       >
         <ResponsiveDialogContent>
           <ResponsiveDialogHeader>
@@ -84,7 +89,7 @@ export function DeleteProductConfirmModal() {
               })}
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
-          <div className="grid w-full gap-1.5 px-4">
+          <div className="grid w-full gap-1.5 max-md:px-4">
             <Label htmlFor="productNameConfirmation">
               {t.rich('dashboard.products.delete_product_confirm_input', {
                 productName: `"${product.name.toUpperCase()}"`,
@@ -103,7 +108,7 @@ export function DeleteProductConfirmModal() {
               size="sm"
               variant="outline"
               onClick={() => {
-                ctx.setProductToDeleteModalOpen(false);
+                handleOpenChange(false);
                 ctx.setProductToDelete(null);
               }}
             >

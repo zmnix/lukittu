@@ -3,25 +3,27 @@ import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import {
-  setProductSchema,
-  SetProductSchema,
-} from '@/lib/validation/products/set-product-schema';
+  setCustomerSchema,
+  SetCustomerSchema,
+} from '@/lib/validation/customers/set-customer-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Product } from '@prisma/client';
+import { Customer } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IProductsGetSuccessResponse = {
-  products: Product[];
-  totalProducts: number;
+type ICustomersGetSuccessResponse = {
+  customers: Customer[];
+  totalCustomers: number;
 };
 
-export type IProductsGetResponse = ErrorResponse | IProductsGetSuccessResponse;
+export type ICustomersGetResponse =
+  | ErrorResponse
+  | ICustomersGetSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<IProductsGetResponse>> {
+): Promise<NextResponse<ICustomersGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
@@ -39,7 +41,7 @@ export async function GET(
 
     const allowedPageSizes = [25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
-    const allowedSortColumns = ['name', 'createdAt'];
+    const allowedSortColumns = ['fullName', 'createdAt'];
 
     const search = (searchParams.get('search') as string) || '';
 
@@ -76,21 +78,28 @@ export async function GET(
               id: selectedTeam,
             },
             include: {
-              products: {
+              customers: {
                 where: {
-                  deletedAt: null,
-                  name: search
-                    ? {
+                  OR: [
+                    {
+                      email: {
                         contains: search,
                         mode: 'insensitive',
-                      }
-                    : undefined,
+                      },
+                    },
+                    {
+                      fullName: {
+                        contains: search,
+                        mode: 'insensitive',
+                      },
+                    },
+                  ],
                 },
-                skip,
-                take,
                 orderBy: {
                   [sortColumn]: sortDirection,
                 },
+                skip,
+                take,
               },
             },
           },
@@ -116,17 +125,17 @@ export async function GET(
       );
     }
 
-    const totalProducts = await prisma.product.count({
+    const totalCustomers = await prisma.customer.count({
       where: {
         teamId: selectedTeam,
       },
     });
 
-    const products = session.user.teams[0].products;
+    const customers = session.user.teams[0].customers;
 
     return NextResponse.json({
-      products,
-      totalProducts,
+      customers,
+      totalCustomers,
     });
   } catch (error) {
     logger.error("Error occurred in 'products' route", error);
@@ -139,22 +148,21 @@ export async function GET(
   }
 }
 
-type IProductsCreateSuccessResponse = {
-  product: Product;
+type ICustomersCreateSuccessResponse = {
+  customer: Customer;
 };
-
-export type IProductsCreateResponse =
+export type ICustomersCreateResponse =
   | ErrorResponse
-  | IProductsCreateSuccessResponse;
+  | ICustomersCreateSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IProductsCreateResponse>> {
+): Promise<NextResponse<ICustomersCreateResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const body = (await request.json()) as SetProductSchema;
-    const validated = await setProductSchema(t).safeParseAsync(body);
+    const body = (await request.json()) as SetCustomerSchema;
+    const validated = await setCustomerSchema(t).safeParseAsync(body);
 
     if (!validated.success) {
       return NextResponse.json(
@@ -166,7 +174,7 @@ export async function POST(
       );
     }
 
-    const { name, url, metadata } = validated.data;
+    const { email, fullName, metadata } = validated.data;
 
     const selectedTeam = getSelectedTeam();
 
@@ -188,11 +196,7 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              products: {
-                where: {
-                  deletedAt: null,
-                },
-              },
+              customers: true,
             },
           },
         },
@@ -202,9 +206,9 @@ export async function POST(
     if (!session) {
       return NextResponse.json(
         {
-          message: t('validation.unauthorized'),
+          message: t('validation.team_not_found'),
         },
-        { status: HttpStatus.UNAUTHORIZED },
+        { status: HttpStatus.NOT_FOUND },
       );
     }
 
@@ -219,34 +223,44 @@ export async function POST(
 
     const team = session.user.teams[0];
 
-    if (team.products.find((product) => product.name === name)) {
+    const existingCustomer = team.customers.find(
+      (customer) =>
+        customer.email &&
+        email &&
+        customer.email.toLowerCase() === email.toLowerCase(),
+    );
+
+    if (existingCustomer) {
       return NextResponse.json(
         {
-          message: t('validation.product_already_exists'),
-          field: 'name',
+          message: t('validation.customer_exists'),
+          field: 'email',
         },
-        { status: HttpStatus.BAD_REQUEST },
+        { status: HttpStatus.CONFLICT },
       );
     }
 
-    const product = await prisma.product.create({
+    const customer = await prisma.customer.create({
       data: {
-        name,
-        url: url || null,
+        email,
+        fullName,
         metadata,
         team: {
           connect: {
-            id: selectedTeam,
+            id: team.id,
           },
         },
       },
     });
 
-    return NextResponse.json({
-      product,
-    });
+    return NextResponse.json(
+      {
+        customer,
+      },
+      { status: HttpStatus.CREATED },
+    );
   } catch (error) {
-    logger.error("Error occurred in 'products' route", error);
+    logger.error("Error occurred in 'customers' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
