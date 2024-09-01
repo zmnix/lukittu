@@ -28,7 +28,7 @@ export function DeleteProductConfirmModal() {
   if (!product) return null;
 
   const handleDeleteProduct = async (
-    productId: number,
+    productId: string,
     productNameConfirmation: string,
   ) => {
     const response = await fetch(`/api/products/${productId}`, {

@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id               Int        @id @default(autoincrement())
+  id               String     @id @default(uuid())
   email            String     @unique
   emailVerified    Boolean    @default(false)
   fullName         String
@@ -32,9 +32,9 @@ model User {
 }
 
 model Session {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   sessionId String   @unique
-  userId    Int
+  userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   ipAddress String?
   userAgent String?
@@ -44,52 +44,56 @@ model Session {
 }
 
 model Team {
-  id        Int        @id @default(autoincrement())
-  name      String
-  ownerId   Int
-  owner     User       @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  users     User[]     @relation("TeamUsers")
-  products  Product[]
-  licenses  License[]
-  customers Customer[]
-  deletedAt DateTime?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id            String     @id @default(uuid())
+  name          String
+  ownerId       String
+  owner         User       @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  users         User[]     @relation("TeamUsers")
+  products      Product[]
+  licenses      License[]
+  customers     Customer[]
+  publicKeyRsa  String
+  privateKeyRsa String
+  deletedAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 model Product {
-  id              Int       @id @default(autoincrement())
+  id              String       @id @default(uuid())
   name            String
   url             String?
   metadata        Json
-  teamId          Int
-  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  createdByUserId Int?
-  createdBy       User?     @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  teamId          String
+  team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdByUserId String?
+  createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   licenses        License[]
+  requestLogs     RequestLog[]
   deletedAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model Customer {
-  id              Int       @id @default(autoincrement())
+  id              String       @id @default(uuid())
   email           String?
   fullName        String?
   metadata        Json
-  teamId          Int
-  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId          String
+  team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
   licenses        License[]
-  createdByUserId Int?
-  createdBy       User?     @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  requests        RequestLog[]
+  createdByUserId String?
+  createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@unique([email, teamId])
 }
 
 model License {
-  id               Int                    @id @default(autoincrement())
+  id               String                 @id @default(uuid())
   licenseKey       String
   licenseKeyLookup String
   ipLimit          Int?
@@ -99,11 +103,11 @@ model License {
   expirationDate   DateTime?
   expirationDays   Int?
   suspended        Boolean                @default(false)
-  teamId           Int
+  teamId           String
   team             Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   products         Product[]
   customers        Customer[]
-  createdByUserId  Int?
+  createdByUserId  String?
   createdBy        User?                  @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
@@ -113,11 +117,18 @@ model License {
 }
 
 model RequestLog {
-  id        Int      @id @default(autoincrement())
-  ipAddress String?
-  licenseId Int
-  license   License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id           String        @id @default(uuid())
+  responseTime Int
+  ipAddress    String?
+  country      String?
+  status       RequestStatus
+  licenseId    String?
+  license      License?      @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  productId    String?
+  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  customerId   String?
+  customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
 }
 
 enum Provider {
@@ -134,4 +145,16 @@ enum LicenseExpirationType {
 enum LicenseExpirationStart {
   ACTIVATION
   CREATION
+}
+
+enum RequestStatus {
+  INTERNAL_SERVER_ERROR
+  BAD_REQUEST
+  LICENSE_NOT_FOUND
+  VALID
+  IP_LIMIT_REACHED
+  PRODUCT_NOT_FOUND
+  CUSTOMER_NOT_FOUND
+  LICENSE_EXPIRED
+  LICENSE_SUSPENDED
 }

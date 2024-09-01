@@ -78,7 +78,7 @@ export default function TeamListCard() {
     handleTeamGet();
   }, [t]);
 
-  const handleLeaveTeam = async (teamId: number) => {
+  const handleLeaveTeam = async (teamId: string) => {
     const response = await fetch(`/api/teams/${teamId}/leave`, {
       method: 'POST',
     });
@@ -99,7 +99,7 @@ export default function TeamListCard() {
     return data;
   };
 
-  const handleTeamTransfer = async (team: Team, newOwnerId: number) => {
+  const handleTeamTransfer = async (team: Team, newOwnerId: string) => {
     const response = await fetch(`/api/teams/${team.id}/transfer-ownership`, {
       method: 'POST',
       body: JSON.stringify({ newOwnerId }),
@@ -135,7 +135,7 @@ export default function TeamListCard() {
     router.refresh();
   };
 
-  const onTeamTransferSubmit = async (team: Team, newOwnerId: number) => {
+  const onTeamTransferSubmit = async (team: Team, newOwnerId: string) => {
     const res = await handleTeamTransfer(team, newOwnerId);
 
     if ('message' in res) {

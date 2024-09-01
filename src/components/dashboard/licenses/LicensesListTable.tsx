@@ -47,8 +47,8 @@ export function LicensesListTable() {
   const [totalLicenses, setTotalLicenses] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
-  const [productIds, setProductIds] = useState<number[]>([]);
-  const [customerIds, setCustomerIds] = useState<number[]>([]);
+  const [productIds, setProductIds] = useState<string[]>([]);
+  const [customerIds, setCustomerIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortColumn, setSortColumn] = useState<

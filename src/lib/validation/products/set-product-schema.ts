@@ -8,7 +8,7 @@ export const setProductSchema = (
 ) =>
   z
     .object({
-      id: z.number().positive().optional(),
+      id: z.string().uuid().optional(),
       name: z
         .string({
           required_error: t('validation.product_name_required'),

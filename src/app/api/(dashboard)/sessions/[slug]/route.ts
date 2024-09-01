@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
@@ -22,9 +23,9 @@ export async function DELETE(
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const id = parseInt(params.slug);
+    const id = params.slug;
 
-    if (isNaN(id) || id <= 0) {
+    if (!id || !regex.uuidV4.test(id)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),

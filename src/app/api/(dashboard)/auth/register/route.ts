@@ -1,6 +1,6 @@
 import prisma from '@/lib/database/prisma';
 import { verifyTurnstileToken } from '@/lib/utils/cloudflare-helpers';
-import { hashPassword } from '@/lib/utils/crypto';
+import { generateKeyPair, hashPassword } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { sendEmail } from '@/lib/utils/nodemailer';
@@ -103,10 +103,14 @@ export async function POST(
         },
       });
 
+      const { privateKey, publicKey } = generateKeyPair();
+
       await prisma.team.create({
         data: {
           name: 'My first team',
           ownerId: user.id,
+          privateKeyRsa: privateKey,
+          publicKeyRsa: publicKey,
           users: {
             connect: {
               id: user.id,

@@ -21,8 +21,8 @@ export const setLicenseSchema = (
       expirationDate: z.coerce.date().nullable(),
       expirationDays: z.number().positive().nullable(),
       suspended: z.boolean(),
-      productIds: z.array(z.number().positive()),
-      customerIds: z.array(z.number().positive()),
+      productIds: z.array(z.string().uuid()),
+      customerIds: z.array(z.string().uuid()),
       ipLimit: z.number().positive().nullable(),
       metadata: z.array(
         z.object({

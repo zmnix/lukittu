@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
@@ -28,9 +29,9 @@ export async function DELETE(
   try {
     const body = await request.json();
     const { productNameConfirmation } = body as ProductDeleteRequest;
-    const productId = parseInt(params.slug);
+    const productId = params.slug;
 
-    if (isNaN(productId) || productId <= 0) {
+    if (!productId || !regex.uuidV4.test(productId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),

@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
@@ -20,9 +21,9 @@ export async function POST(
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const teamId = parseInt(params.slug);
+    const teamId = params.slug;
 
-    if (isNaN(teamId) || teamId <= 0) {
+    if (!teamId || !regex.uuidV4.test(teamId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),

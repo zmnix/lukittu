@@ -43,7 +43,7 @@ export async function POST(
     const { token } = validated.data;
 
     let decodedToken: {
-      userId: number;
+      userId: string;
       type: JwtTypes;
     };
 
@@ -69,7 +69,7 @@ export async function POST(
       }
 
       decodedToken = decoded as {
-        userId: number;
+        userId: string;
         type: JwtTypes;
       };
     } catch (error) {

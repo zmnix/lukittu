@@ -8,7 +8,7 @@ export const setCustomerSchema = (
 ) =>
   z
     .object({
-      id: z.number().positive().optional(),
+      id: z.string().uuid().optional(),
       email: z
         .string({
           required_error: t('validation.email_required'),

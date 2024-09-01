@@ -105,7 +105,7 @@ const generateLicenseKey = (): string => {
 };
 
 const findUniqueLicenseKey = async (
-  selectedTeamId: number,
+  selectedTeamId: string,
 ): Promise<string | null> => {
   const MAX_ATTEMPTS = 10;
   let attempts = 0;

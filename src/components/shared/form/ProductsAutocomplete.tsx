@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface ProductsAutocompleteProps {
-  setProductIds: (productIds: number[]) => void;
+  setProductIds: (productIds: string[]) => void;
 }
 
 export function ProductsAutocomplete({
@@ -25,7 +25,7 @@ export function ProductsAutocomplete({
       placeholder={t('dashboard.licenses.search_product')}
       triggerSearchOnFocus
       onChange={(value) => {
-        setProductIds(value.map((v) => parseInt(v.value)));
+        setProductIds(value.map((v) => v.value));
       }}
       onSearch={async (value) => {
         const response = await fetch(`/api/products?search=${value}`);

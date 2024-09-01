@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import {
@@ -58,8 +59,8 @@ export async function GET(
     let productIds = (searchParams.get('productIds') as string) || '';
     let customerIds = (searchParams.get('customerIds') as string) || '';
 
-    const productIdsFormatted: number[] = [];
-    const customerIdsFormatted: number[] = [];
+    const productIdsFormatted: string[] = [];
+    const customerIdsFormatted: string[] = [];
 
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
@@ -79,18 +80,16 @@ export async function GET(
 
     if (productIds) {
       productIds.split(',').forEach((id) => {
-        const parsedId = parseInt(id);
-        if (!isNaN(parsedId) && parsedId > 0) {
-          productIdsFormatted.push(parsedId);
+        if (regex.uuidV4.test(id)) {
+          productIdsFormatted.push(id);
         }
       });
     }
 
     if (customerIds) {
       customerIds.split(',').forEach((id) => {
-        const parsedId = parseInt(id);
-        if (!isNaN(parsedId) && parsedId > 0) {
-          customerIdsFormatted.push(parsedId);
+        if (regex.uuidV4.test(id)) {
+          customerIdsFormatted.push(id);
         }
       });
     }

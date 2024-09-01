@@ -32,7 +32,7 @@ interface TransferTeamOwnershipModalProps {
   team: ITeamsGetSuccessResponse['teams'][number] | null;
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  onConfirm: (team: Team, newOwnerId: number) => Promise<void>;
+  onConfirm: (team: Team, newOwnerId: string) => Promise<void>;
 }
 
 export function TransferTeamOwnershipModal({
@@ -43,7 +43,7 @@ export function TransferTeamOwnershipModal({
 }: TransferTeamOwnershipModalProps) {
   const t = useTranslations();
   const [loading, setLoading] = useState(false);
-  const [newOwner, setNewOwner] = useState<number | null>(null);
+  const [newOwner, setNewOwner] = useState<string | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   if (!team) return null;
@@ -98,9 +98,7 @@ export function TransferTeamOwnershipModal({
             <PopoverContent className="popover-content-width-full w-full p-0">
               <Command
                 filter={(value, search) => {
-                  const item = team.users.find(
-                    (user) => user.id === parseInt(value),
-                  );
+                  const item = team.users.find((user) => user.id === value);
                   return item?.fullName
                     .toLowerCase()
                     .includes(search.toLowerCase())

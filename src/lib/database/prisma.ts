@@ -12,6 +12,9 @@ declare global {
           session: {
             sessionId: true;
           };
+          team: {
+            privateKeyRsa: true;
+          };
         };
       }>
     | undefined;
@@ -26,6 +29,9 @@ const prisma =
       },
       session: {
         sessionId: true,
+      },
+      team: {
+        privateKeyRsa: true,
       },
     },
   });

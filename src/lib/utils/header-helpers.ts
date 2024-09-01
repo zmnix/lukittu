@@ -49,8 +49,9 @@ export const getSelectedTeam = () => {
 
   if (!selectedTeamCookie) return null;
 
-  if (isNaN(parseInt(selectedTeamCookie)) || parseInt(selectedTeamCookie) < 1)
-    return null;
+  const validUuid =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  if (!validUuid.test(selectedTeamCookie)) return null;
 
-  return parseInt(selectedTeamCookie);
+  return selectedTeamCookie;
 };

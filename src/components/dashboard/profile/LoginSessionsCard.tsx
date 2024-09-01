@@ -27,7 +27,7 @@ export default function LoginSessionsCard() {
   const t = useTranslations();
   const locale = useLocale();
 
-  const [pendingSingleId, setPendingSingleId] = useState<number | null>(null);
+  const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sessions, setSessions] = useState<
@@ -73,7 +73,7 @@ export default function LoginSessionsCard() {
     (session) => !session.current,
   );
 
-  const handleSignOutSingleSession = async (id: number) => {
+  const handleSignOutSingleSession = async (id: string) => {
     const response = await fetch(`/api/sessions/${id}`, {
       method: 'DELETE',
     });
@@ -93,7 +93,7 @@ export default function LoginSessionsCard() {
     return data;
   };
 
-  const onSessionLogoutSubmit = async (id: number) => {
+  const onSessionLogoutSubmit = async (id: string) => {
     setPendingSingleId(id);
     try {
       const res = await handleSignOutSingleSession(id);

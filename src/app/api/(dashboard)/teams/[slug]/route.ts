@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
@@ -31,9 +32,9 @@ export async function DELETE(
   try {
     const body = await request.json();
     const { teamNameConfirmation } = body as ITeamsDeleteRequest;
-    const teamId = parseInt(params.slug);
+    const teamId = params.slug;
 
-    if (isNaN(teamId) || teamId <= 0) {
+    if (!teamId || !regex.uuidV4.test(teamId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -135,7 +136,7 @@ export async function PUT(
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const teamId = parseInt(params.slug);
+    const teamId = params.slug;
     const body = (await request.json()) as SetTeamSchema;
     const validated = await setTeamSchema(t).safeParseAsync(body);
 
@@ -149,7 +150,7 @@ export async function PUT(
       );
     }
 
-    if (isNaN(teamId) || teamId <= 0) {
+    if (!teamId || !regex.uuidV4.test(teamId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),

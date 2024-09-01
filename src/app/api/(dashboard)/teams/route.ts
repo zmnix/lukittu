@@ -1,5 +1,6 @@
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
+import { generateKeyPair } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import {
@@ -103,10 +104,14 @@ export async function POST(
       );
     }
 
+    const { privateKey, publicKey } = generateKeyPair();
+
     const createdTeam = await prisma.team.create({
       data: {
         name,
         ownerId: session.user.id,
+        privateKeyRsa: privateKey,
+        publicKeyRsa: publicKey,
         users: {
           connect: {
             id: session.user.id,

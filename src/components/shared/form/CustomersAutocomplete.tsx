@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface CustomersAutocompleteProps {
-  setCustomerIds: (customerIds: number[]) => void;
+  setCustomerIds: (customerIds: string[]) => void;
 }
 
 export function CustomersAutocomplete({
@@ -25,7 +25,7 @@ export function CustomersAutocomplete({
       placeholder={t('dashboard.licenses.search_customer')}
       triggerSearchOnFocus
       onChange={(value) => {
-        setCustomerIds(value.map((v) => parseInt(v.value)));
+        setCustomerIds(value.map((v) => v.value));
       }}
       onSearch={async (value) => {
         const response = await fetch(`/api/customers?search=${value}`);

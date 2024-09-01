@@ -7,7 +7,7 @@ import 'server-only';
 import { getIp, getUserAgent } from './header-helpers';
 import { logger } from './logger';
 
-export async function createSession(userId: number, rememberMe: boolean) {
+export async function createSession(userId: string, rememberMe: boolean) {
   try {
     const ipAddress = getIp();
     const userAgent = getUserAgent();

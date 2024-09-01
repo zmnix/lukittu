@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
@@ -8,7 +9,7 @@ import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 type ITeamsTransferOwnershipRequest = {
-  newOwnerId: number;
+  newOwnerId: string;
 };
 
 type ITeamsTransferOwnershipSuccessResponse = {
@@ -27,9 +28,9 @@ export async function POST(
 
   try {
     const body = (await request.json()) as ITeamsTransferOwnershipRequest;
-    const teamId = parseInt(params.slug);
+    const teamId = params.slug;
 
-    if (isNaN(teamId) || teamId <= 0) {
+    if (!teamId || !regex.uuidV4.test(teamId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -40,7 +41,7 @@ export async function POST(
 
     const newOwnerId = body.newOwnerId;
 
-    if (isNaN(newOwnerId) || newOwnerId <= 0) {
+    if (!newOwnerId || !regex.uuidV4.test(newOwnerId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),

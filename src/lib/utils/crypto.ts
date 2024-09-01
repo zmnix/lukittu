@@ -102,3 +102,33 @@ export function generateHMAC(licenseKey: string): string {
     throw new Error('HMAC generation failed');
   }
 }
+
+export function generateKeyPair() {
+  try {
+    return crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: {
+        type: 'pkcs1',
+        format: 'pem',
+      },
+      privateKeyEncoding: {
+        type: 'pkcs1',
+        format: 'pem',
+      },
+    });
+  } catch (error) {
+    logger.error('Error occurred in generateKeyPair:', error);
+    throw new Error('Key pair generation failed');
+  }
+}
+
+export function signChallenge(challenge: string, privateKey: string) {
+  try {
+    const sign = crypto.createSign('RSA-SHA256');
+    sign.update(challenge);
+    return sign.sign(privateKey, 'hex');
+  } catch (error) {
+    logger.error('Error occurred in signChallenge:', error);
+    throw new Error('Signing failed');
+  }
+}
