@@ -1,5 +1,5 @@
 'use client';
-import { IAuthForgotPasswordResponse } from '@/app/api/auth/forgot-password/route';
+import { IAuthForgotPasswordResponse } from '@/app/api/(dashboard)/auth/forgot-password/route';
 import ForgotPasswordSuccessModal from '@/components/auth/ForgotPasswordSuccessModal';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

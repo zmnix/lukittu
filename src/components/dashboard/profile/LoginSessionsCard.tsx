@@ -1,10 +1,10 @@
 'use client';
-import { ISessionsSignOutResponse } from '@/app/api/sessions/[slug]/route';
+import { ISessionsSignOutResponse } from '@/app/api/(dashboard)/sessions/[slug]/route';
 import {
   ISessionsGetResponse,
   ISessionsGetSuccessResponse,
   ISessionsSignOutAllResponse,
-} from '@/app/api/sessions/route';
+} from '@/app/api/(dashboard)/sessions/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

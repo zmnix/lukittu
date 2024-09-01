@@ -1,5 +1,5 @@
 'use client';
-import { IAuthVerifyEmailResponse } from '@/app/api/auth/verify-email/route';
+import { IAuthVerifyEmailResponse } from '@/app/api/(dashboard)/auth/verify-email/route';
 import { Button } from '@/components/ui/button';
 import {
   Card,

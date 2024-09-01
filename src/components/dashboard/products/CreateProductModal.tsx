@@ -1,5 +1,5 @@
 'use client';
-import { IProductsCreateResponse } from '@/app/api/products/route';
+import { IProductsCreateResponse } from '@/app/api/(dashboard)/products/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import {

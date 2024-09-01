@@ -1,5 +1,5 @@
 'use client';
-import { IUsersChangePasswordResponse } from '@/app/api/users/change-password/route';
+import { IUsersChangePasswordResponse } from '@/app/api/(dashboard)/users/change-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Button } from '@/components/ui/button';

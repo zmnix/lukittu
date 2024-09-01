@@ -1,5 +1,5 @@
 'use client';
-import { IAuthResetPasswordResponse } from '@/app/api/auth/reset-password/route';
+import { IAuthResetPasswordResponse } from '@/app/api/(dashboard)/auth/reset-password/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import PasswordIndicator from '@/components/shared/PasswordIndicator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

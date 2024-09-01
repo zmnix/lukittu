@@ -1,4 +1,4 @@
-import { IAuthResendVerifyEmailResponse } from '@/app/api/auth/resend-verify-email/route';
+import { IAuthResendVerifyEmailResponse } from '@/app/api/(dashboard)/auth/resend-verify-email/route';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,

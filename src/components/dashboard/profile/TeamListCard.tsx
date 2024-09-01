@@ -1,11 +1,11 @@
 'use client';
-import { ITeamsLeaveResponse } from '@/app/api/teams/[slug]/leave/route';
-import { ITeamsDeleteResponse } from '@/app/api/teams/[slug]/route';
-import { ITeamsTransferOwnershipResponse } from '@/app/api/teams/[slug]/transfer-ownership/route';
+import { ITeamsLeaveResponse } from '@/app/api/(dashboard)/teams/[slug]/leave/route';
+import { ITeamsDeleteResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
+import { ITeamsTransferOwnershipResponse } from '@/app/api/(dashboard)/teams/[slug]/transfer-ownership/route';
 import {
   ITeamsGetResponse,
   ITeamsGetSuccessResponse,
-} from '@/app/api/teams/route';
+} from '@/app/api/(dashboard)/teams/route';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,5 +1,5 @@
 'use client';
-import { IAuthLoginResponse } from '@/app/api/auth/login/route';
+import { IAuthLoginResponse } from '@/app/api/(dashboard)/auth/login/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import OauthLoginFailedccessModal from '@/components/auth/OauthLoginFailedModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';

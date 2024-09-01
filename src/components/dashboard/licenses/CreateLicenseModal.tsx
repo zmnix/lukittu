@@ -1,6 +1,6 @@
 'use client';
-import { ILicensesGenerateResponse } from '@/app/api/licenses/generate/route';
-import { ILicensesCreateResponse } from '@/app/api/licenses/route';
+import { ILicensesGenerateResponse } from '@/app/api/(dashboard)/licenses/generate/route';
+import { ILicensesCreateResponse } from '@/app/api/(dashboard)/licenses/route';
 import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
 import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
 import LoadingButton from '@/components/shared/LoadingButton';

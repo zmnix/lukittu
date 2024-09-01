@@ -2,7 +2,7 @@
 import {
   ILicensesGetResponse,
   ILicensesGetSuccessResponse,
-} from '@/app/api/licenses/route';
+} from '@/app/api/(dashboard)/licenses/route';
 import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
 import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
 import TablePagination from '@/components/shared/table/TablePagination';

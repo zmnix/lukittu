@@ -1,4 +1,4 @@
-import { IProductsDeleteResponse } from '@/app/api/products/[slug]/route';
+import { IProductsDeleteResponse } from '@/app/api/(dashboard)/products/[slug]/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

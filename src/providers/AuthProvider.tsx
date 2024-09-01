@@ -1,9 +1,9 @@
 'use client';
-import { IAuthSignOutResponse } from '@/app/api/auth/sign-out/route';
+import { IAuthSignOutResponse } from '@/app/api/(dashboard)/auth/sign-out/route';
 import {
   ISessionsGetCurrentResponse,
   ISessionsGetCurrentSuccessResponse,
-} from '@/app/api/sessions/current/route';
+} from '@/app/api/(dashboard)/sessions/current/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';

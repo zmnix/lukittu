@@ -1,5 +1,5 @@
 'use client';
-import { IAuthRegisterResponse } from '@/app/api/auth/register/route';
+import { IAuthRegisterResponse } from '@/app/api/(dashboard)/auth/register/route';
 import LoginWithGoogleButton from '@/components/auth/LoginWithGoogleButton';
 import RegisterSuccessModal from '@/components/auth/RegisterSuccessModal';
 import ResendVerifyEmailModal from '@/components/auth/ResendVerifyEmailModal';

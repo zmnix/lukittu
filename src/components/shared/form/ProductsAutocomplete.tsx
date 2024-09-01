@@ -1,5 +1,5 @@
 'use client';
-import { IProductsGetResponse } from '@/app/api/products/route';
+import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
 import MultipleSelector from '@/components/ui/multiple-selector';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';

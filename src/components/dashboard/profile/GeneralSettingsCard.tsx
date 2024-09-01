@@ -1,5 +1,5 @@
 'use client';
-import { IUsersUpdateResponse } from '@/app/api/users/route';
+import { IUsersUpdateResponse } from '@/app/api/(dashboard)/users/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

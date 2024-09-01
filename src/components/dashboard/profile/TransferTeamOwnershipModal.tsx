@@ -1,4 +1,4 @@
-import { ITeamsGetSuccessResponse } from '@/app/api/teams/route';
+import { ITeamsGetSuccessResponse } from '@/app/api/(dashboard)/teams/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import {
