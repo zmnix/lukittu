@@ -114,7 +114,13 @@
     "inactive": "Inactive",
     "expiring": "Expiring",
     "expired": "Expired",
-    "suspended": "Suspended"
+    "suspended": "Suspended",
+    "no_name": "No name",
+    "no_email": "No email",
+    "show_more": "Show more",
+    "show_less": "Show less",
+    "created_by": "Created by",
+    "unknown": "Unknown"
   },
   "auth": {
     "oauth": {
@@ -259,7 +265,11 @@
       "date": "Date",
       "expires_at": "Expires at",
       "add_your_first_license": "Add your first license",
-      "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage."
+      "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage.",
+      "details": "Details",
+      "no_products_assigned": "No products assigned",
+      "no_customers_assigned": "No customers assigned",
+      "not_yet_activated": "Not yet activated"
     },
     "customers": {
       "add_customer": "Add customer",

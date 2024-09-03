@@ -1,5 +1,4 @@
 'use client';
-
 import {
   ILicenseGetResponse,
   ILicenseGetSuccessResponse,
@@ -49,17 +48,20 @@ export default function LicenseView() {
       {loading ? (
         <Skeleton className="h-8 w-96" />
       ) : (
-        <h1 className="text-2xl font-bold">{license?.licenseKey}</h1>
+        <h1 className="truncate text-2xl font-bold">{license?.licenseKey}</h1>
       )}
       <Separator className="mt-2" />
       <div className="mt-6">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-8 w-96" />
-          ))
-        ) : (
-          <LicenseDetails license={license!} />
-        )}
+        <div className="flex">
+          <div className="flex-1" />
+          {loading ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-8 w-96" />
+            ))
+          ) : (
+            <LicenseDetails license={license!} />
+          )}
+        </div>
       </div>
     </>
   );

@@ -5,7 +5,7 @@ import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Customer, License, Product, RequestLog } from '@prisma/client';
+import { Customer, License, Product, RequestLog, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -14,6 +14,7 @@ export type ILicenseGetSuccessResponse = {
     products: Product[];
     customers: Customer[];
     requestLogs: RequestLog[];
+    createdBy: Omit<User, 'passwordHash'> | null;
   };
 };
 
@@ -65,6 +66,7 @@ export async function GET(
                   products: true,
                   customers: true,
                   requestLogs: true,
+                  createdBy: true,
                 },
               },
             },
