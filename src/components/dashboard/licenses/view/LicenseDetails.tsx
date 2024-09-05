@@ -7,7 +7,7 @@ import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
-import { IdCard, Infinity, User } from 'lucide-react';
+import { Infinity, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -34,7 +34,9 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
       <CardContent className="mt-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">{t('dashboard.licenses.status')}</h3>
+            <h3 className="text-sm font-semibold">
+              {t('dashboard.licenses.status')}
+            </h3>
             <p className="text-sm text-muted-foreground">
               <Badge
                 className="text-xs"
@@ -47,7 +49,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
             </p>
           </div>
           <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">
+            <h3 className="text-sm font-semibold">
               {t('dashboard.licenses.expiration_type')}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -58,7 +60,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
           </div>
           {license.expirationType === 'DATE' && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold">
+              <h3 className="text-sm font-semibold">
                 {t('dashboard.licenses.expiration_date')}
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -75,7 +77,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
           {license.expirationType === 'DURATION' && (
             <>
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">
+                <h3 className="text-sm font-semibold">
                   {t('dashboard.licenses.expiration_start')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -85,7 +87,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">
+                <h3 className="text-sm font-semibold">
                   {t('dashboard.licenses.expiration_days')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -93,7 +95,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">
+                <h3 className="text-sm font-semibold">
                   {t('dashboard.licenses.expiration_start')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -115,89 +117,19 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
             </>
           )}
           <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">
+            <h3 className="text-sm font-semibold">
               {t('dashboard.licenses.ip_limit')}
             </h3>
             <p className="text-sm text-muted-foreground">
               {license.ipLimit ?? <Infinity className="h-4 w-4 shrink-0" />}
             </p>
           </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">
-              {t('dashboard.navigation.customers')}
-            </h3>
-            {license.customers.length ? (
-              <div className="flex flex-col gap-3">
-                {license.customers.map((customer) => (
-                  <div key={customer.id}>
-                    <div className="flex items-center gap-2">
-                      <IdCard className="h-4 w-4 shrink-0" />
-                      <Link
-                        className="truncate text-sm font-semibold text-primary hover:underline"
-                        href={`/dashboard/customers/${customer.id}`}
-                        title={customer.id}
-                      >
-                        {customer.id}
-                      </Link>
-                    </div>
-                    <p
-                      className="text-sm font-semibold text-muted-foreground"
-                      title={customer.email ?? t('general.no_email')}
-                    >
-                      {customer.email ?? t('general.no_email')}
-                    </p>
-                    <p
-                      className="text-sm text-muted-foreground"
-                      title={customer.fullName ?? t('general.no_name')}
-                    >
-                      {customer.fullName ?? t('general.no_name')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {t('dashboard.licenses.no_customers_assigned')}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="font-semibold">
-              {t('dashboard.navigation.products')}
-            </h3>
-            {license.products.length ? (
-              <div className="flex flex-col gap-3">
-                {license.products.map((product) => (
-                  <div key={product.id}>
-                    <div className="flex items-center gap-2">
-                      <IdCard className="h-4 w-4 shrink-0" />
-                      <Link
-                        className="truncate text-sm font-semibold text-primary hover:underline"
-                        href={`/dashboard/products/${product.id}`}
-                        title={product.id}
-                      >
-                        {product.id}
-                      </Link>
-                    </div>
-                    <p
-                      className="text-sm text-muted-foreground"
-                      title={product.name}
-                    >
-                      {product.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {t('dashboard.licenses.no_products_assigned')}
-              </p>
-            )}
-          </div>
           {showMore && (
             <>
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">{t('general.created_at')}</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('general.created_at')}
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   {new Date(license.createdAt).toLocaleString(locale, {
                     day: '2-digit',
@@ -209,7 +141,9 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">{t('general.updated_at')}</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('general.updated_at')}
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   {new Date(license.updatedAt).toLocaleString(locale, {
                     day: '2-digit',
@@ -221,7 +155,9 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">{t('general.created_by')}</h3>
+                <h3 className="text-sm font-semibold">
+                  {t('general.created_by')}
+                </h3>
                 <p className="text-sm font-semibold">
                   {license.createdBy ? (
                     <div className="flex items-center gap-2">

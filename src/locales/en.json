@@ -120,7 +120,8 @@
     "show_more": "Show more",
     "show_less": "Show less",
     "created_by": "Created by",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "no_metadata": "No metadata"
   },
   "auth": {
     "oauth": {

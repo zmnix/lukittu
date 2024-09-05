@@ -3,6 +3,7 @@ import {
   ILicenseGetResponse,
   ILicenseGetSuccessResponse,
 } from '@/app/api/(dashboard)/licenses/[slug]/route';
+import MetadataAside from '@/components/shared/misc/MetadataAside';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslations } from 'next-intl';
@@ -59,7 +60,10 @@ export default function LicenseView() {
               <Skeleton key={index} className="h-8 w-96" />
             ))
           ) : (
-            <LicenseDetails license={license!} />
+            <div className="flex flex-col gap-4">
+              <LicenseDetails license={license!} />
+              <MetadataAside metadata={license!.metadata} />
+            </div>
           )}
         </div>
       </div>
