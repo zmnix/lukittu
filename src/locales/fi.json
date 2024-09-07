@@ -54,7 +54,8 @@
     "metadata_value_max_length": "Metadata value must be at most 255 characters long!",
     "customer_exists": "Customer already exists with given email!",
     "license_key_exists": "License key already exists!",
-    "customer_not_found": "Customer not found!"
+    "customer_not_found": "Customer not found!",
+    "license_not_found": "License not found!"
   },
   "general": {
     "error": "Error",
@@ -99,7 +100,7 @@
     "created_at": "Created at",
     "updated_at": "Updated at",
     "page_of": "Page {page} of {pages}",
-    "showing_of_results": "Showing {from} to {to} of {total} results",
+    "showing_of_results": "Showing {visible} of {total} results",
     "rows_per_page": "Rows per page",
     "loading": "Loading...",
     "no_results": "No results",
@@ -108,7 +109,20 @@
     "metadata": "Metadata",
     "key": "Key",
     "value": "Value",
-    "add_metadata": "Add metadata"
+    "add_metadata": "Add metadata",
+    "active": "Active",
+    "inactive": "Inactive",
+    "expiring": "Expiring",
+    "expired": "Expired",
+    "suspended": "Suspended",
+    "no_name": "No name",
+    "no_email": "No email",
+    "show_more": "Show more",
+    "show_less": "Show less",
+    "created_by": "Created by",
+    "unknown": "Unknown",
+    "no_metadata": "No metadata",
+    "click_to_copy": "Click to copy"
   },
   "auth": {
     "oauth": {
@@ -178,6 +192,16 @@
     }
   },
   "dashboard": {
+    "dashboard": {
+      "requests": "Requests",
+      "requests_description": "Showing license verifyrequests divided by status.",
+      "last_24_hours": "Last 24 hours",
+      "last_7_days": "Last 7 days",
+      "last_30_days": "Last 30 days",
+      "success": "Success",
+      "failed": "Failed",
+      "total": "Total"
+    },
     "navigation": {
       "dashboard": "Dashboard",
       "licenses": "Licenses",
@@ -189,7 +213,7 @@
       "external_links": "External Links",
       "documentation": "Documentation",
       "discord": "Discord",
-      "injector": "Injector"
+      "logs": "Logs"
     },
     "teams": {
       "create_team": "Create a team",
@@ -251,7 +275,17 @@
       "expiration_settings": "Expiration settings",
       "duration": "Duration",
       "date": "Date",
-      "expires_at": "Expires at"
+      "expires_at": "Expires at",
+      "add_your_first_license": "Add your first license",
+      "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage.",
+      "details": "Details",
+      "no_products_assigned": "No products assigned",
+      "no_customers_assigned": "No customers assigned",
+      "not_yet_activated": "Not yet activated"
+    },
+    "logs": {
+      "logs": "Logs",
+      "no_logs": "No logs"
     },
     "customers": {
       "add_customer": "Add customer",

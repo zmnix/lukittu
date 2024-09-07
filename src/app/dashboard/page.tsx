@@ -1,3 +1,4 @@
+import { RequestsAreaChart } from '@/components/dashboard/dashboard/RequestsAreaChart';
 import { Separator } from '@/components/ui/separator';
 import { useTranslations } from 'next-intl';
 
@@ -9,6 +10,9 @@ export default function Dashboard() {
         {t('dashboard.navigation.dashboard')}
       </h1>
       <Separator className="mt-2" />
+      <div className="mt-6 flex flex-col gap-6">
+        <RequestsAreaChart />
+      </div>
     </div>
   );
 }

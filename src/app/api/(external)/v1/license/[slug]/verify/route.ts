@@ -100,10 +100,16 @@ export async function POST(
       },
     });
 
+    const hasCustomer = Boolean(license?.customers?.[0]);
+    const hasProduct = Boolean(license?.products?.[0]);
+
     if (!license) {
       return await handleResponse({
         request,
         requestTime,
+        teamId,
+        customerId: hasCustomer ? customerId : undefined,
+        productId: hasProduct ? productId : undefined,
         status: RequestStatus.LICENSE_NOT_FOUND,
         response: {
           data: null,
@@ -116,9 +122,6 @@ export async function POST(
         httpStatus: HttpStatus.NOT_FOUND,
       });
     }
-
-    const hasCustomer = Boolean(license.customers?.[0]);
-    const hasProduct = Boolean(license.products?.[0]);
 
     if (license.suspended) {
       return await handleResponse({
@@ -369,6 +372,7 @@ async function logRequest({
         status,
         ipAddress,
         country,
+        team: { connect: { id: teamId } },
         customer: customerId ? { connect: { id: customerId } } : undefined,
         product: productId ? { connect: { id: productId } } : undefined,
         license:

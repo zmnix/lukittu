@@ -192,6 +192,16 @@
     }
   },
   "dashboard": {
+    "dashboard": {
+      "requests": "Requests",
+      "requests_description": "Showing license verifyrequests divided by status.",
+      "last_24_hours": "Last 24 hours",
+      "last_7_days": "Last 7 days",
+      "last_30_days": "Last 30 days",
+      "success": "Success",
+      "failed": "Failed",
+      "total": "Total"
+    },
     "navigation": {
       "dashboard": "Dashboard",
       "licenses": "Licenses",
