@@ -21,27 +21,109 @@ export type IDashboardRequestsGetResponse =
   | ErrorResponse
   | IDashboardRequestsGetSuccessResponse;
 
+const allowedTimeRanges = ['1h', '24h', '7d', '30d'] as const;
+
+const getStartDate = (timeRange: '1h' | '24h' | '7d' | '30d') => {
+  const now = new Date();
+  switch (timeRange) {
+    case '1h':
+      return new Date(now.setHours(now.getHours() - 1));
+    case '24h':
+      return new Date(now.setHours(now.getHours() - 24));
+    case '7d':
+      return new Date(now.setDate(now.getDate() - 7));
+    case '30d':
+      return new Date(now.setDate(now.getDate() - 30));
+    default:
+      return new Date(now.setHours(now.getHours() - 24));
+  }
+};
+
+const groupByDateOrHour = (
+  data: any[],
+  timeRange: '1h' | '24h' | '7d' | '30d',
+) => {
+  if (timeRange === '1h') {
+    return data.reduce(
+      (acc, item) => {
+        const date = new Date(item.createdAt);
+        const minute = date.getUTCMinutes();
+
+        if (!acc[minute]) {
+          acc[minute] = { total: 0, success: 0, failed: 0 };
+        }
+
+        acc[minute].total += 1;
+        if (item.status === 'VALID') {
+          acc[minute].success += 1;
+        } else {
+          acc[minute].failed += 1;
+        }
+
+        return acc;
+      },
+      {} as Record<number, { total: number; success: number; failed: number }>,
+    );
+  } else if (timeRange === '24h') {
+    return data.reduce(
+      (acc, item) => {
+        const date = new Date(item.createdAt);
+        const hour = date.getUTCHours();
+
+        if (!acc[hour]) {
+          acc[hour] = { total: 0, success: 0, failed: 0 };
+        }
+
+        acc[hour].total += 1;
+        if (item.status === 'VALID') {
+          acc[hour].success += 1;
+        } else {
+          acc[hour].failed += 1;
+        }
+
+        return acc;
+      },
+      {} as Record<number, { total: number; success: number; failed: number }>,
+    );
+  } else {
+    return data.reduce(
+      (acc, item) => {
+        const date = new Date(item.createdAt).toISOString().split('T')[0];
+
+        if (!acc[date]) {
+          acc[date] = { total: 0, success: 0, failed: 0 };
+        }
+
+        acc[date].total += 1;
+        if (item.status === 'VALID') {
+          acc[date].success += 1;
+        } else {
+          acc[date].failed += 1;
+        }
+
+        return acc;
+      },
+      {} as Record<string, { total: number; success: number; failed: number }>,
+    );
+  }
+};
+
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<IDashboardRequestsGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
   const searchParams = request.nextUrl.searchParams;
 
-  const allowedTimeRanges = ['24h', '7d', '30d'];
-  let timeRange = searchParams.get('timeRange') as '24h' | '7d' | '30d';
-
+  let timeRange = searchParams.get('timeRange') as '1h' | '24h' | '7d' | '30d';
   if (!timeRange || !allowedTimeRanges.includes(timeRange)) {
     timeRange = '24h';
   }
 
   try {
     const selectedTeam = getSelectedTeam();
-
     if (!selectedTeam) {
       return NextResponse.json(
-        {
-          message: t('validation.team_not_found'),
-        },
+        { message: t('validation.team_not_found') },
         { status: HttpStatus.NOT_FOUND },
       );
     }
@@ -58,13 +140,7 @@ export async function GET(
               requestLogs: {
                 where: {
                   createdAt: {
-                    gte: new Date(
-                      timeRange === '7d'
-                        ? new Date().setDate(new Date().getDate() - 7)
-                        : timeRange === '30d'
-                          ? new Date().setDate(new Date().getDate() - 30)
-                          : new Date().setHours(new Date().getHours() - 24),
-                    ),
+                    gte: getStartDate(timeRange),
                   },
                 },
                 select: {
@@ -80,72 +156,66 @@ export async function GET(
 
     if (!session) {
       return NextResponse.json(
-        {
-          message: t('validation.unauthorized'),
-        },
+        { message: t('validation.unauthorized') },
         { status: HttpStatus.UNAUTHORIZED },
       );
     }
 
     if (!session.user.teams.length) {
       return NextResponse.json(
-        {
-          message: t('validation.team_not_found'),
-        },
+        { message: t('validation.team_not_found') },
         { status: HttpStatus.NOT_FOUND },
       );
     }
 
     const requestLogs = session.user.teams[0].requestLogs;
 
-    const filteredData = requestLogs
-      .filter((item) => {
-        const date = new Date(item.createdAt);
-        if (timeRange === '7d') {
-          return date > new Date(new Date().setDate(new Date().getDate() - 7));
-        }
+    const filteredData = requestLogs.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
 
-        if (timeRange === '30d') {
-          return date > new Date(new Date().setDate(new Date().getDate() - 30));
-        }
+    const groupedData = groupByDateOrHour(filteredData, timeRange);
 
-        return true;
-      })
-      .sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return dateA.getTime() - dateB.getTime();
-      });
+    const data = [];
 
-    if (timeRange !== '24h') {
-      const groupedData = filteredData.reduce(
-        (acc, item) => {
-          const date = new Date(item.createdAt).toISOString().split('T')[0];
-
-          if (!acc[date]) {
-            acc[date] = {
-              total: 0,
-              success: 0,
-              failed: 0,
-            };
-          }
-
-          acc[date].total += 1;
-
-          if (item.status === 'VALID') {
-            acc[date].success += 1;
-          } else {
-            acc[date].failed += 1;
-          }
-
-          return acc;
-        },
-        {} as Record<
-          string,
-          { total: number; success: number; failed: number }
-        >,
+    if (timeRange === '1h') {
+      const currentMinute = new Date().getMinutes();
+      const startDate = new Date(
+        new Date().setMinutes(currentMinute - (60 - 1), 0, 0),
       );
 
+      for (let m = 0; m < 60; m++) {
+        const date = new Date(startDate);
+        date.setMinutes(date.getMinutes() + m);
+        const minuteKey = date.getUTCMinutes();
+
+        data.push({
+          date: date.toISOString(),
+          total: groupedData[minuteKey]?.total || 0,
+          success: groupedData[minuteKey]?.success || 0,
+          failed: groupedData[minuteKey]?.failed || 0,
+        });
+      }
+    } else if (timeRange === '24h') {
+      const currentHour = new Date().getHours();
+      const startDate = new Date(
+        new Date().setHours(currentHour - (24 - 1), 0, 0, 0),
+      );
+
+      for (let h = 0; h < 24; h++) {
+        const date = new Date(startDate);
+        date.setHours(date.getHours() + h);
+        const hourKey = date.getUTCHours();
+
+        data.push({
+          date: date.toISOString(),
+          total: groupedData[hourKey]?.total || 0,
+          success: groupedData[hourKey]?.success || 0,
+          failed: groupedData[hourKey]?.failed || 0,
+        });
+      }
+    } else {
       const startDate = new Date(
         new Date().setDate(
           new Date().getDate() - (timeRange === '7d' ? 7 : 30),
@@ -153,7 +223,6 @@ export async function GET(
       );
       const endDate = new Date();
 
-      const data = [];
       for (
         let d = new Date(startDate);
         d <= endDate;
@@ -167,66 +236,13 @@ export async function GET(
           failed: groupedData[date]?.failed || 0,
         });
       }
-
-      return NextResponse.json({
-        data,
-      });
-    }
-    const groupedData = filteredData.reduce(
-      (acc, item) => {
-        const date = new Date(item.createdAt);
-        const hour = date.getUTCHours();
-
-        if (!acc[hour]) {
-          acc[hour] = {
-            total: 0,
-            success: 0,
-            failed: 0,
-          };
-        }
-
-        acc[hour].total += 1;
-
-        if (item.status === 'VALID') {
-          acc[hour].success += 1;
-        } else {
-          acc[hour].failed += 1;
-        }
-
-        return acc;
-      },
-      {} as Record<number, { total: number; success: number; failed: number }>,
-    );
-
-    const currentHour = new Date().getHours();
-
-    const startDate = new Date(new Date().setHours(currentHour - 23, 0, 0, 0));
-
-    const data = [];
-
-    for (let h = 0; h < 24; h++) {
-      const date = new Date(startDate);
-      date.setHours(date.getHours() + h);
-
-      const hourKey = date.getUTCHours();
-
-      data.push({
-        date: date.toISOString(),
-        total: groupedData[hourKey]?.total || 0,
-        success: groupedData[hourKey]?.success || 0,
-        failed: groupedData[hourKey]?.failed || 0,
-      });
     }
 
-    return NextResponse.json({
-      data,
-    });
+    return NextResponse.json({ data });
   } catch (error) {
     logger.error("Error occurred in 'dashboard/requests' route", error);
     return NextResponse.json(
-      {
-        message: t('general.server_error'),
-      },
+      { message: t('general.server_error') },
       { status: HttpStatus.INTERNAL_SERVER_ERROR },
     );
   }

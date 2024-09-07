@@ -51,7 +51,7 @@ export function RequestsAreaChart() {
     useState<IDashboardRequestsGetSuccessResponse['data']>(initialData);
 
   useEffect(() => {
-    (async () => {
+    const fetchData = async () => {
       try {
         const res = await fetch(
           `/api/dashboard/requests?timeRange=${timeRange}`,
@@ -69,7 +69,14 @@ export function RequestsAreaChart() {
       } catch (error: any) {
         toast.error(error.message ?? t('general.error_occurred'));
       }
-    })();
+    };
+
+    fetchData();
+
+    // Fetch data every 90 seconds (1.5 minutes)
+    const intervalId = setInterval(fetchData, 90000);
+
+    return () => clearInterval(intervalId);
   }, [t, timeRange]);
 
   const chartConfig = {
@@ -103,6 +110,9 @@ export function RequestsAreaChart() {
             <SelectValue placeholder={t('dashboard.dashboard.last_24_hours')} />
           </SelectTrigger>
           <SelectContent className="rounded-xl">
+            <SelectItem className="rounded-lg" value="1h">
+              {t('dashboard.dashboard.last_hour')}
+            </SelectItem>
             <SelectItem className="rounded-lg" value="24h">
               {t('dashboard.dashboard.last_24_hours')}
             </SelectItem>
@@ -153,15 +163,23 @@ export function RequestsAreaChart() {
               dataKey="date"
               minTickGap={32}
               tickFormatter={(value) => {
+                if (timeRange === '1h') {
+                  const date = new Date(new Date(value).setSeconds(0, 0));
+                  return date.toLocaleTimeString(locale, {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  });
+                }
+
                 if (timeRange !== '24h') {
-                  const date = new Date(value);
+                  const date = new Date(new Date(value).setHours(0, 0, 0, 0));
                   return date.toLocaleDateString(locale, {
                     month: 'short',
                     day: 'numeric',
                   });
                 }
 
-                const date = new Date(value);
+                const date = new Date(new Date(value).setMinutes(0, 0, 0));
                 return date.toLocaleTimeString(locale, {
                   hour: 'numeric',
                   minute: 'numeric',
@@ -175,7 +193,15 @@ export function RequestsAreaChart() {
                 <ChartTooltipContent
                   indicator="dot"
                   labelFormatter={(value) => {
-                    if (timeRange !== '24h') {
+                    if (timeRange === '1h') {
+                      const date = new Date(value);
+                      return date.toLocaleTimeString(locale, {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                      });
+                    }
+
+                    if (timeRange === '24h' || timeRange === '7d') {
                       const date = new Date(value);
                       return date.toLocaleDateString(locale, {
                         month: 'short',
@@ -194,18 +220,18 @@ export function RequestsAreaChart() {
               cursor={false}
             />
             <Area
+              dataKey="success"
+              fill="url(#fillSuccess)"
+              stackId="b"
+              stroke="var(--color-success)"
+              type="monotone"
+            />
+            <Area
               dataKey="failed"
               fill="url(#fillFailed)"
               stackId="a"
               stroke="var(--color-failed)"
-              type="natural"
-            />
-            <Area
-              dataKey="success"
-              fill="url(#fillSuccess)"
-              stackId="a"
-              stroke="var(--color-success)"
-              type="natural"
+              type="monotone"
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
