@@ -15,6 +15,7 @@ type RequestData = {
 
 export type IDashboardRequestsGetSuccessResponse = {
   data: RequestData[];
+  comparedToPrevious: string;
 };
 
 export type IDashboardRequestsGetResponse =
@@ -27,15 +28,15 @@ const getStartDate = (timeRange: '1h' | '24h' | '7d' | '30d') => {
   const now = new Date();
   switch (timeRange) {
     case '1h':
-      return new Date(now.setHours(now.getHours() - 1));
+      return new Date(now.setHours(now.getHours() - 1 * 2));
     case '24h':
-      return new Date(now.setHours(now.getHours() - 24));
+      return new Date(now.setHours(now.getHours() - 24 * 2));
     case '7d':
-      return new Date(now.setDate(now.getDate() - 7));
+      return new Date(now.setDate(now.getDate() - 7 * 2));
     case '30d':
-      return new Date(now.setDate(now.getDate() - 30));
+      return new Date(now.setDate(now.getDate() - 30 * 2));
     default:
-      return new Date(now.setHours(now.getHours() - 24));
+      return new Date(now.setHours(now.getHours() - 24 * 2));
   }
 };
 
@@ -43,69 +44,35 @@ const groupByDateOrHour = (
   data: any[],
   timeRange: '1h' | '24h' | '7d' | '30d',
 ) => {
-  if (timeRange === '1h') {
-    return data.reduce(
-      (acc, item) => {
-        const date = new Date(item.createdAt);
-        const minute = date.getUTCMinutes();
+  const getKey = (date: Date) => {
+    if (timeRange === '1h') return date.getUTCMinutes();
+    if (timeRange === '24h') return date.getUTCHours();
+    return date.toISOString().split('T')[0];
+  };
 
-        if (!acc[minute]) {
-          acc[minute] = { total: 0, success: 0, failed: 0 };
-        }
+  return data.reduce(
+    (acc, item) => {
+      const date = new Date(item.createdAt);
+      const key = getKey(date);
 
-        acc[minute].total += 1;
-        if (item.status === 'VALID') {
-          acc[minute].success += 1;
-        } else {
-          acc[minute].failed += 1;
-        }
+      if (!acc[key]) {
+        acc[key] = { total: 0, success: 0, failed: 0 };
+      }
 
-        return acc;
-      },
-      {} as Record<number, { total: number; success: number; failed: number }>,
-    );
-  } else if (timeRange === '24h') {
-    return data.reduce(
-      (acc, item) => {
-        const date = new Date(item.createdAt);
-        const hour = date.getUTCHours();
+      acc[key].total += 1;
+      if (item.status === 'VALID') {
+        acc[key].success += 1;
+      } else {
+        acc[key].failed += 1;
+      }
 
-        if (!acc[hour]) {
-          acc[hour] = { total: 0, success: 0, failed: 0 };
-        }
-
-        acc[hour].total += 1;
-        if (item.status === 'VALID') {
-          acc[hour].success += 1;
-        } else {
-          acc[hour].failed += 1;
-        }
-
-        return acc;
-      },
-      {} as Record<number, { total: number; success: number; failed: number }>,
-    );
-  } else {
-    return data.reduce(
-      (acc, item) => {
-        const date = new Date(item.createdAt).toISOString().split('T')[0];
-
-        if (!acc[date]) {
-          acc[date] = { total: 0, success: 0, failed: 0 };
-        }
-
-        acc[date].total += 1;
-        if (item.status === 'VALID') {
-          acc[date].success += 1;
-        } else {
-          acc[date].failed += 1;
-        }
-
-        return acc;
-      },
-      {} as Record<string, { total: number; success: number; failed: number }>,
-    );
-  }
+      return acc;
+    },
+    {} as Record<
+      string | number,
+      { total: number; success: number; failed: number }
+    >,
+  );
 };
 
 export async function GET(
@@ -121,6 +88,7 @@ export async function GET(
 
   try {
     const selectedTeam = getSelectedTeam();
+
     if (!selectedTeam) {
       return NextResponse.json(
         { message: t('validation.team_not_found') },
@@ -170,10 +138,50 @@ export async function GET(
 
     const requestLogs = session.user.teams[0].requestLogs;
 
-    const filteredData = requestLogs.sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    );
+    const filteredData = requestLogs
+      .filter((log) => {
+        if (timeRange === '1h') {
+          return (
+            new Date(log.createdAt).getTime() >
+            new Date().setHours(new Date().getHours() - 1)
+          );
+        }
+
+        if (timeRange === '24h') {
+          return (
+            new Date(log.createdAt).getTime() >
+            new Date().setHours(new Date().getHours() - 24)
+          );
+        }
+
+        if (timeRange === '7d') {
+          return (
+            new Date(log.createdAt).getTime() >
+            new Date().setDate(new Date().getDate() - 7)
+          );
+        }
+
+        if (timeRange === '30d') {
+          return (
+            new Date(log.createdAt).getTime() >
+            new Date().setDate(new Date().getDate() - 30)
+          );
+        }
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+
+    const currentDayTotal = filteredData.length;
+    const previousDayTotal = requestLogs.length - currentDayTotal;
+
+    const comparedToPrevious =
+      previousDayTotal === 0
+        ? '0%'
+        : `${Math.round(
+            ((currentDayTotal - previousDayTotal) / previousDayTotal) * 100,
+          )}%`;
 
     const groupedData = groupByDateOrHour(filteredData, timeRange);
 
@@ -238,7 +246,10 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({
+      data,
+      comparedToPrevious,
+    });
   } catch (error) {
     logger.error("Error occurred in 'dashboard/requests' route", error);
     return NextResponse.json(

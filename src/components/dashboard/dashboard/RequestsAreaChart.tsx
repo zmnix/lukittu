@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -25,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
@@ -47,6 +55,7 @@ export function RequestsAreaChart() {
   const locale = useLocale();
 
   const [timeRange, setTimeRange] = useState('24h');
+  const [comparedToPrevious, setComparedToPrevious] = useState('0%');
   const [data, setData] =
     useState<IDashboardRequestsGetSuccessResponse['data']>(initialData);
 
@@ -65,6 +74,7 @@ export function RequestsAreaChart() {
 
         if (res.ok) {
           setData(data.data);
+          setComparedToPrevious(data.comparedToPrevious);
         }
       } catch (error: any) {
         toast.error(error.message ?? t('general.error_occurred'));
@@ -201,7 +211,7 @@ export function RequestsAreaChart() {
                       });
                     }
 
-                    if (timeRange === '24h' || timeRange === '7d') {
+                    if (timeRange === '30d' || timeRange === '7d') {
                       const date = new Date(value);
                       return date.toLocaleDateString(locale, {
                         month: 'short',
@@ -237,6 +247,40 @@ export function RequestsAreaChart() {
           </AreaChart>
         </ChartContainer>
       </CardContent>
+      <CardFooter>
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2 font-medium leading-none">
+                    {comparedToPrevious.includes('-') ? (
+                      <>
+                        {t('dashboard.dashboard.trending_down')}{' '}
+                        {comparedToPrevious}{' '}
+                        {t('dashboard.dashboard.compared_to_last_period')}
+                        <TrendingDown className="h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        {t('dashboard.dashboard.trending_up')}{' '}
+                        {comparedToPrevious}{' '}
+                        {t('dashboard.dashboard.compared_to_last_period')}
+                        <TrendingUp className="h-4 w-4" />
+                      </>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="flex max-w-sm">
+                    {t('dashboard.dashboard.last_period_description')}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

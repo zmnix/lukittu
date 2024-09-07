@@ -201,7 +201,13 @@
       "last_30_days": "Last 30 days",
       "success": "Success",
       "failed": "Failed",
-      "total": "Total"
+      "total": "Total",
+      "trending_up": "Trending up",
+      "trending_down": "Trending down",
+      "compared_to_last_period": "compared to the last period",
+      "last_period_description": "\"Last period\" refers to the same length of time immediately before the current one. For example, if viewing the last 24 hours, the previous period would be the 24 hours prior.",
+      "product_division": "Product division",
+      "product_division_description": "Showing how licenses are divided between products."
     },
     "navigation": {
       "dashboard": "Dashboard",
