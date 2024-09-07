@@ -137,6 +137,16 @@ export async function PUT(
 
   try {
     const teamId = params.slug;
+
+    if (!teamId || !regex.uuidV4.test(teamId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
     const body = (await request.json()) as SetTeamSchema;
     const validated = await setTeamSchema(t).safeParseAsync(body);
 
@@ -145,15 +155,6 @@ export async function PUT(
         {
           message: validated.error.errors[0].message,
           field: validated.error.errors[0].path[0],
-        },
-        { status: HttpStatus.BAD_REQUEST },
-      );
-    }
-
-    if (!teamId || !regex.uuidV4.test(teamId)) {
-      return NextResponse.json(
-        {
-          message: t('validation.bad_request'),
         },
         { status: HttpStatus.BAD_REQUEST },
       );

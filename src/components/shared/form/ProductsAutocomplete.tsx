@@ -1,21 +1,31 @@
 'use client';
 import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
 import MultipleSelector from '@/components/ui/multiple-selector';
+import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface ProductsAutocompleteProps {
   setProductIds: (productIds: string[]) => void;
+  productIds: string[];
+  initialProducts?: Product[];
 }
 
 export function ProductsAutocomplete({
   setProductIds,
+  initialProducts,
+  productIds,
 }: ProductsAutocompleteProps) {
   const t = useTranslations();
+
+  const selectedProducts = productIds.map((id) => ({
+    label: initialProducts?.find((p) => p.id === id)?.name ?? '',
+    value: id,
+  }));
+
   return (
     <MultipleSelector
-      defaultOptions={[]}
       emptyIndicator={<div className="flex">{t('general.no_results')}</div>}
       loadingIndicator={
         <div className="flex items-center justify-center py-2">
@@ -23,6 +33,7 @@ export function ProductsAutocomplete({
         </div>
       }
       placeholder={t('dashboard.licenses.search_product')}
+      value={selectedProducts}
       triggerSearchOnFocus
       onChange={(value) => {
         setProductIds(value.map((v) => v.value));

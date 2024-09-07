@@ -7,10 +7,11 @@ import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
+import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { Infinity, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 interface LicenseDetailsProps {
   license: ILicenseGetSuccessResponse['license'];
@@ -20,13 +21,25 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
   const [showMore, setShowMore] = useState(false);
   const t = useTranslations();
   const locale = useLocale();
+  const ctx = useContext(LicenseModalContext);
+
+  const handleLicenseEdit = () => {
+    ctx.setLicenseToEdit(license);
+    ctx.setLicenseModalOpen(true);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-1 py-2">
         <CardTitle className="text-xl font-bold">
           {t('dashboard.licenses.details')}
         </CardTitle>
-        <Button className="mt-0" size="sm" variant="outline">
+        <Button
+          className="mt-0"
+          size="sm"
+          variant="outline"
+          onClick={handleLicenseEdit}
+        >
           {t('general.edit')}
         </Button>
       </CardHeader>

@@ -138,8 +138,14 @@ export function LicensesListTable() {
             }}
           />
         </div>
-        <ProductsAutocomplete setProductIds={setProductIds} />
-        <CustomersAutocomplete setCustomerIds={setCustomerIds} />
+        <ProductsAutocomplete
+          productIds={productIds}
+          setProductIds={setProductIds}
+        />
+        <CustomersAutocomplete
+          customerIds={customerIds}
+          setCustomerIds={setCustomerIds}
+        />
       </div>
       <Table>
         <TableHeader>

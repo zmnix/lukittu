@@ -2,10 +2,12 @@
 import {
   ILicenseGetResponse,
   ILicenseGetSuccessResponse,
+  ILicensesUpdateResponse,
 } from '@/app/api/(dashboard)/licenses/[slug]/route';
 import MetadataAside from '@/components/shared/misc/MetadataAside';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -47,6 +49,49 @@ export default function LicenseView() {
     })();
   }, [t, licenseId, router]);
 
+  const handleMetadataEdit = async ({
+    metadata,
+  }: {
+    metadata: { key: string; value: string }[];
+  }) => {
+    const body = {
+      suspended: license?.suspended,
+      licenseKey: license?.licenseKey,
+      productIds: license?.products.map((product) => product.id),
+      customerIds: license?.customers.map((customer) => customer.id),
+      expirationDate: license?.expirationDate,
+      expirationDays: license?.expirationDays,
+      expirationStart: null,
+      ipLimit: license?.ipLimit,
+      expirationType: license?.expirationType,
+      metadata,
+    } as Record<string, unknown>;
+
+    if (license?.expirationType === 'DURATION') {
+      body.expirationStart = license?.expirationStart;
+    }
+
+    const response = await fetch(`/api/licenses/${licenseId}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+
+    const data = (await response.json()) as ILicensesUpdateResponse;
+
+    if ('message' in data) {
+      toast.error(data.message);
+      return;
+    }
+
+    setLicense(
+      (prev) =>
+        ({
+          ...prev,
+          metadata: data.license.metadata,
+        }) as ILicenseGetSuccessResponse['license'],
+    );
+  };
+
   return (
     <>
       {loading ? (
@@ -57,22 +102,27 @@ export default function LicenseView() {
       <Separator className="mt-2" />
       <div className="mt-6">
         <div className="flex">
-          {loading ? (
+          {loading || !license ? (
             Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-8 w-96" />
             ))
           ) : (
-            <div className="flex w-full gap-4 max-xl:flex-col">
-              <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-                <ProductsPreviewTable license={license!} />
-                <CustomersPreviewTable license={license!} />
-                <RequestLogsPreviewTable license={license!} />
+            <LicenseModalProvider>
+              <div className="flex w-full gap-4 max-xl:flex-col">
+                <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
+                  <ProductsPreviewTable license={license} />
+                  <CustomersPreviewTable license={license} />
+                  <RequestLogsPreviewTable license={license} />
+                </div>
+                <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
+                  <LicenseDetails license={license} />
+                  <MetadataAside
+                    handleMetadataEdit={handleMetadataEdit}
+                    metadata={license.metadata}
+                  />
+                </aside>
               </div>
-              <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
-                <LicenseDetails license={license!} />
-                <MetadataAside metadata={license!.metadata} />
-              </aside>
-            </div>
+            </LicenseModalProvider>
           )}
         </div>
       </div>

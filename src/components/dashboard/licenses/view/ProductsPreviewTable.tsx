@@ -9,8 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 
 interface ProductsPreviewTableProps {
   license: ILicenseGetSuccessResponse['license'];
@@ -21,13 +23,24 @@ export default function ProductsPreviewTable({
   const t = useTranslations();
   const router = useRouter();
   const locale = useLocale();
+  const ctx = useContext(LicenseModalContext);
+
+  const handleAddProduct = () => {
+    ctx.setLicenseToEdit(license);
+    ctx.setLicenseModalOpen(true);
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-xl font-bold">
           {t('dashboard.navigation.products')}
-          <Button className="ml-auto" size="sm" variant="outline">
+          <Button
+            className="ml-auto"
+            size="sm"
+            variant="outline"
+            onClick={handleAddProduct}
+          >
             {t('dashboard.products.add_product')}
           </Button>
         </CardTitle>
@@ -37,10 +50,7 @@ export default function ProductsPreviewTable({
           <>
             <Table>
               <TableHeader>
-                <TableHead className="truncate">{t('general.email')}</TableHead>
-                <TableHead className="truncate">
-                  {t('general.full_name')}
-                </TableHead>
+                <TableHead className="truncate">{t('general.name')}</TableHead>
                 <TableHead className="truncate">
                   {t('general.created_at')}
                 </TableHead>

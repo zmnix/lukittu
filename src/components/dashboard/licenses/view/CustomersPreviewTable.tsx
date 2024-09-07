@@ -9,8 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 
 interface CustomersPreviewTableProps {
   license: ILicenseGetSuccessResponse['license'];
@@ -21,13 +23,24 @@ export default function CustomersPreviewTable({
   const t = useTranslations();
   const router = useRouter();
   const locale = useLocale();
+  const ctx = useContext(LicenseModalContext);
+
+  const handleAddCustomer = () => {
+    ctx.setLicenseToEdit(license);
+    ctx.setLicenseModalOpen(true);
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-xl font-bold">
           {t('dashboard.navigation.customers')}
-          <Button className="ml-auto" size="sm" variant="outline">
+          <Button
+            className="ml-auto"
+            size="sm"
+            variant="outline"
+            onClick={handleAddCustomer}
+          >
             {t('dashboard.customers.add_customer')}
           </Button>
         </CardTitle>
@@ -54,9 +67,11 @@ export default function CustomersPreviewTable({
                       router.push(`/dashboard/customers/${customer.id}`)
                     }
                   >
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.fullName}</TableCell>
-                    <TableCell>
+                    <TableCell className="truncate">{customer.email}</TableCell>
+                    <TableCell className="truncate">
+                      {customer.fullName}
+                    </TableCell>
+                    <TableCell className="truncate">
                       {new Date(customer.createdAt).toLocaleString(locale, {
                         day: 'numeric',
                         month: 'short',

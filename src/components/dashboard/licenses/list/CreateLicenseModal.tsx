@@ -1,4 +1,5 @@
 'use client';
+import { ILicensesUpdateResponse } from '@/app/api/(dashboard)/licenses/[slug]/route';
 import { ILicensesGenerateResponse } from '@/app/api/(dashboard)/licenses/generate/route';
 import { ILicensesCreateResponse } from '@/app/api/(dashboard)/licenses/route';
 import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
@@ -30,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import {
   SetLicenseScheama,
@@ -40,7 +42,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { RefreshCw, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -86,6 +88,45 @@ export default function CreateLicenseModal() {
     defaultValue: 'NEVER',
   });
 
+  useEffect(() => {
+    if (ctx.licenseToEdit) {
+      form.setValue('suspended', ctx.licenseToEdit.suspended);
+      form.setValue('licenseKey', ctx.licenseToEdit.licenseKey);
+      form.setValue(
+        'productIds',
+        ctx.licenseToEdit.products.map((p) => p.id),
+      );
+      form.setValue(
+        'customerIds',
+        ctx.licenseToEdit.customers.map((c) => c.id),
+      );
+      form.setValue('expirationType', ctx.licenseToEdit.expirationType);
+
+      if (ctx.licenseToEdit.expirationType === 'DATE') {
+        form.setValue('expirationDate', ctx.licenseToEdit.expirationDate);
+      }
+
+      if (ctx.licenseToEdit.expirationType === 'DURATION') {
+        form.setValue('expirationStart', ctx.licenseToEdit.expirationStart);
+        form.setValue('expirationDays', ctx.licenseToEdit.expirationDays);
+      }
+
+      form.setValue('ipLimit', ctx.licenseToEdit.ipLimit);
+      form.setValue(
+        'metadata',
+        (
+          ctx.licenseToEdit.metadata as {
+            key: string;
+            value: string;
+          }[]
+        ).map((m) => ({
+          key: m.key,
+          value: m.value,
+        })),
+      );
+    }
+  }, [ctx.licenseToEdit, form]);
+
   const handleLicenseGenerate = async () => {
     setLoading((prev) => ({ ...prev, license: true }));
     try {
@@ -114,6 +155,20 @@ export default function CreateLicenseModal() {
     return data;
   };
 
+  const handleLicenseEdit = async (payload: SetLicenseScheama) => {
+    const response = await fetch(`/api/licenses/${ctx.licenseToEdit?.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as ILicensesUpdateResponse;
+
+    return data;
+  };
+
   const handleExpirationTypeChange = (type: 'NEVER' | 'DATE' | 'DURATION') => {
     form.setValue('expirationType', type);
     if (type === 'NEVER') {
@@ -134,7 +189,10 @@ export default function CreateLicenseModal() {
   const onSubmit = async (data: SetLicenseScheama) => {
     setSubmitting(true);
     try {
-      const res = await handleLicenseCreate(data);
+      const res = ctx.licenseToEdit
+        ? await handleLicenseEdit(data)
+        : await handleLicenseCreate(data);
+
       if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof SetLicenseScheama, {
@@ -163,6 +221,9 @@ export default function CreateLicenseModal() {
   const handleOpenChange = (open: boolean) => {
     ctx.setLicenseModalOpen(open);
     form.reset();
+    if (!open) {
+      ctx.setLicenseToEdit(null);
+    }
   };
 
   return (
@@ -215,9 +276,7 @@ export default function CreateLicenseModal() {
                 )}
               />
               <div className="space-y-2">
-                {/* Label */}
                 <FormLabel>{t('dashboard.licenses.expiration_type')}</FormLabel>
-                {/* Buttons */}
                 <div className="flex gap-2">
                   <Button
                     className={cn(
@@ -391,6 +450,8 @@ export default function CreateLicenseModal() {
                   {t('dashboard.licenses.assigned_products')}
                 </FormLabel>
                 <ProductsAutocomplete
+                  initialProducts={ctx.licenseToEdit?.products}
+                  productIds={form.getValues('productIds')}
                   setProductIds={(productIds) =>
                     form.setValue('productIds', productIds)
                   }
@@ -402,11 +463,28 @@ export default function CreateLicenseModal() {
                   {t('dashboard.licenses.assigned_customers')}
                 </FormLabel>
                 <CustomersAutocomplete
+                  customerIds={form.getValues('customerIds')}
+                  initialCustomers={ctx.licenseToEdit?.customers}
                   setCustomerIds={(customerIds) =>
                     form.setValue('customerIds', customerIds)
                   }
                 />
               </FormItem>
+              <FormField
+                control={form.control}
+                name="suspended"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>{t('general.suspended')}</FormLabel>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               {fields.map((field, index) => (
                 <div key={field.id} className="flex items-start gap-2">
                   <FormField
@@ -482,7 +560,9 @@ export default function CreateLicenseModal() {
                 pending={submitting}
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
-                {t('dashboard.licenses.add_license')}
+                {ctx.licenseToEdit
+                  ? t('dashboard.licenses.edit_license')
+                  : t('dashboard.licenses.add_license')}
               </LoadingButton>
             </div>
           </ResponsiveDialogFooter>
