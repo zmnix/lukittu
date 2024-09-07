@@ -103,9 +103,17 @@ export default function LicenseView() {
       <div className="mt-6">
         <div className="flex">
           {loading || !license ? (
-            Array.from({ length: 5 }).map((_, index) => (
-              <Skeleton key={index} className="h-8 w-96" />
-            ))
+            <div className="flex w-full gap-4 max-xl:flex-col">
+              <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
+                <Skeleton className="h-44 w-full" />
+                <Skeleton className="h-44 w-full" />
+                <Skeleton className="h-44 w-full" />
+              </div>
+              <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full max-md:hidden">
+                <Skeleton className="h-80 w-full" />
+                <Skeleton className="h-44 w-full" />
+              </aside>
+            </div>
           ) : (
             <LicenseModalProvider>
               <div className="flex w-full gap-4 max-xl:flex-col">
