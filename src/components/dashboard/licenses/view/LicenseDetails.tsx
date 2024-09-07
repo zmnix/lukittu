@@ -50,7 +50,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
             <h3 className="text-sm font-semibold">
               {t('dashboard.licenses.status')}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               <Badge
                 className="text-xs"
                 variant={getLicenseStatusBadgeVariant(
@@ -59,7 +59,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
               >
                 {t(`general.${getLicenseStatus(license).toLowerCase()}` as any)}
               </Badge>
-            </p>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold">
@@ -171,9 +171,9 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 <h3 className="text-sm font-semibold">
                   {t('general.created_by')}
                 </h3>
-                <p className="text-sm font-semibold">
+                <div className="text-sm font-semibold">
                   {license.createdBy ? (
-                    <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-2">
                       <User className="h-4 w-4 shrink-0" />
                       <Link
                         className="text-primary hover:underline"
@@ -181,11 +181,11 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                       >
                         {license.createdBy.fullName}
                       </Link>
-                    </div>
+                    </span>
                   ) : (
                     t('general.unknown')
                   )}
-                </p>
+                </div>
               </div>
             </>
           )}

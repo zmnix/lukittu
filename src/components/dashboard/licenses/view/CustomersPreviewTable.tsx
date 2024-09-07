@@ -50,13 +50,17 @@ export default function CustomersPreviewTable({
           <>
             <Table>
               <TableHeader>
-                <TableHead className="truncate">{t('general.email')}</TableHead>
-                <TableHead className="truncate">
-                  {t('general.full_name')}
-                </TableHead>
-                <TableHead className="truncate">
-                  {t('general.created_at')}
-                </TableHead>
+                <TableRow>
+                  <TableHead className="truncate">
+                    {t('general.email')}
+                  </TableHead>
+                  <TableHead className="truncate">
+                    {t('general.full_name')}
+                  </TableHead>
+                  <TableHead className="truncate">
+                    {t('general.created_at')}
+                  </TableHead>
+                </TableRow>
               </TableHeader>
               <TableBody>
                 {license.customers.map((customer) => (

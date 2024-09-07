@@ -50,10 +50,14 @@ export default function ProductsPreviewTable({
           <>
             <Table>
               <TableHeader>
-                <TableHead className="truncate">{t('general.name')}</TableHead>
-                <TableHead className="truncate">
-                  {t('general.created_at')}
-                </TableHead>
+                <TableRow>
+                  <TableHead className="truncate">
+                    {t('general.name')}
+                  </TableHead>
+                  <TableHead className="truncate">
+                    {t('general.created_at')}
+                  </TableHead>
+                </TableRow>
               </TableHeader>
               <TableBody>
                 {license.products.map((product) => (
