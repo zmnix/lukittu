@@ -19,10 +19,14 @@ export function CustomersAutocomplete({
 }: CustomersAutocompleteProps) {
   const t = useTranslations();
 
-  const selectedCustomers = customerIds.map((id) => ({
-    label: initialCustomers?.find((p) => p.id === id)?.fullName ?? '',
-    value: id,
-  }));
+  const selectedCustomers = customerIds.map((id) => {
+    const match = initialCustomers?.find((p) => p.id === id);
+
+    return {
+      label: match?.fullName || match?.email || '',
+      value: id,
+    };
+  });
 
   return (
     <MultipleSelector

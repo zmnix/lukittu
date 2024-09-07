@@ -19,10 +19,14 @@ export function ProductsAutocomplete({
 }: ProductsAutocompleteProps) {
   const t = useTranslations();
 
-  const selectedProducts = productIds.map((id) => ({
-    label: initialProducts?.find((p) => p.id === id)?.name ?? '',
-    value: id,
-  }));
+  const selectedProducts = productIds.map((id) => {
+    const match = initialProducts?.find((p) => p.id === id);
+
+    return {
+      label: match?.name ?? '',
+      value: id,
+    };
+  });
 
   return (
     <MultipleSelector
