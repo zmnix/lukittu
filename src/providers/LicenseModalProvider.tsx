@@ -1,5 +1,5 @@
 'use client';
-import CreateLicenseModal from '@/components/dashboard/licenses/list/CreateLicenseModal';
+import SetLicenseModal from '@/components/dashboard/licenses/list/SetLicenseModal';
 import { Customer, License, Product } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { createContext, useState } from 'react';
@@ -36,7 +36,7 @@ export const LicenseModalProvider = ({
         licenseModalOpen,
       }}
     >
-      <CreateLicenseModal />
+      <SetLicenseModal />
       {children}
     </LicenseModalContext.Provider>
   );

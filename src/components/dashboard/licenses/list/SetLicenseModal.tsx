@@ -46,7 +46,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export default function CreateLicenseModal() {
+export default function SetLicenseModal() {
   const t = useTranslations();
   const locale = useLocale();
   const ctx = useContext(LicenseModalContext);

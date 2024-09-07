@@ -3,10 +3,10 @@ import {
   BookOpenText,
   KeyRound,
   LayoutGrid,
+  Logs,
   LucideIcon,
   Shield,
   ShoppingCart,
-  Syringe,
   Users,
 } from 'lucide-react';
 import { Messages } from '../../../global';
@@ -84,10 +84,10 @@ export function getMenuList(pathname: string): Group[] {
       groupTranslation: '',
       menus: [
         {
-          href: '/dashboard/injector',
-          translation: 'injector',
-          active: pathname === '/dashboard/injector',
-          icon: Syringe,
+          href: '/dashboard/logs',
+          translation: 'logs',
+          active: pathname === '/dashboard/logs',
+          icon: Logs,
           submenus: [],
         },
       ],

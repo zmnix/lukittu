@@ -4,11 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
-import { Infinity, User } from 'lucide-react';
+import { Copy, Infinity, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useContext, useState } from 'react';
@@ -46,6 +52,36 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
       <Separator />
       <CardContent className="mt-4">
         <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">ID</h3>
+            <div className="text-sm font-semibold">
+              {license.createdBy ? (
+                <span className="flex items-center gap-2">
+                  <Copy className="h-4 w-4 shrink-0" />
+                  <TooltipProvider>
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <span
+                          className="truncate text-primary hover:underline"
+                          role="button"
+                          onClick={() =>
+                            navigator.clipboard.writeText(license.id)
+                          }
+                        >
+                          {license.id}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('general.click_to_copy')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </span>
+              ) : (
+                t('general.unknown')
+              )}
+            </div>
+          </div>
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold">
               {t('dashboard.licenses.status')}

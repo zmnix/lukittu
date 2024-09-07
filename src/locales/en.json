@@ -121,7 +121,8 @@
     "show_less": "Show less",
     "created_by": "Created by",
     "unknown": "Unknown",
-    "no_metadata": "No metadata"
+    "no_metadata": "No metadata",
+    "click_to_copy": "Click to copy"
   },
   "auth": {
     "oauth": {
@@ -202,7 +203,7 @@
       "external_links": "External Links",
       "documentation": "Documentation",
       "discord": "Discord",
-      "injector": "Injector"
+      "logs": "Logs"
     },
     "teams": {
       "create_team": "Create a team",
