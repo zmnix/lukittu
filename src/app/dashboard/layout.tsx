@@ -16,7 +16,7 @@ export default async function DashboardLayout({
       <SidebarProvider>
         <div className="relative mx-auto flex w-full max-w-[1680px] border-r max-[1680px]:border-r-0">
           <Sidebar />
-          <div className="max-w-full flex-1 bg-background">
+          <div className="max-w-full flex-1 overflow-auto bg-background">
             <MainArea>
               <Header />
               <div className="p-10 max-md:p-6">{children}</div>

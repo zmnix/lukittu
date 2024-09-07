@@ -272,6 +272,10 @@
       "no_customers_assigned": "No customers assigned",
       "not_yet_activated": "Not yet activated"
     },
+    "logs": {
+      "logs": "Logs",
+      "no_logs": "No logs"
+    },
     "customers": {
       "add_customer": "Add customer",
       "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage."

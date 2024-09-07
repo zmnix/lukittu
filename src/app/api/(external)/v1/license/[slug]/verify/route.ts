@@ -117,11 +117,17 @@ export async function POST(
       });
     }
 
+    const hasCustomer = Boolean(license.customers?.[0]);
+    const hasProduct = Boolean(license.products?.[0]);
+
     if (license.suspended) {
       return await handleResponse({
         request,
         requestTime,
         teamId,
+        licenseKeyLookup,
+        customerId: hasCustomer ? customerId : undefined,
+        productId: hasProduct ? productId : undefined,
         status: RequestStatus.LICENSE_SUSPENDED,
         response: {
           data: null,
@@ -144,6 +150,9 @@ export async function POST(
           request,
           requestTime,
           teamId,
+          licenseKeyLookup,
+          customerId: hasCustomer ? customerId : undefined,
+          productId: hasProduct ? productId : undefined,
           status: RequestStatus.LICENSE_EXPIRED,
           response: {
             data: null,
@@ -182,6 +191,9 @@ export async function POST(
             request,
             requestTime,
             teamId,
+            licenseKeyLookup,
+            customerId: hasCustomer ? customerId : undefined,
+            productId: hasProduct ? productId : undefined,
             status: RequestStatus.LICENSE_EXPIRED,
             response: {
               data: null,
@@ -197,14 +209,13 @@ export async function POST(
       }
     }
 
-    const hasCustomer = Boolean(license.customers?.[0]);
-    const hasProduct = Boolean(license.products?.[0]);
-
     if (customerId && !hasCustomer) {
       return await handleResponse({
         request,
         requestTime,
         teamId,
+        licenseKeyLookup,
+        customerId: hasCustomer ? customerId : undefined,
         productId: hasProduct ? productId : undefined,
         status: RequestStatus.CUSTOMER_NOT_FOUND,
         response: {
@@ -224,7 +235,9 @@ export async function POST(
         request,
         requestTime,
         teamId,
+        licenseKeyLookup,
         customerId: hasCustomer ? customerId : undefined,
+        productId: hasProduct ? productId : undefined,
         status: RequestStatus.PRODUCT_NOT_FOUND,
         response: {
           data: null,
@@ -249,6 +262,9 @@ export async function POST(
           request,
           requestTime,
           teamId,
+          licenseKeyLookup,
+          customerId: hasCustomer ? customerId : undefined,
+          productId: hasProduct ? productId : undefined,
           status: RequestStatus.IP_LIMIT_REACHED,
           response: {
             data: null,
@@ -271,6 +287,9 @@ export async function POST(
       request,
       requestTime,
       teamId,
+      licenseKeyLookup,
+      customerId: hasCustomer ? customerId : undefined,
+      productId: hasProduct ? productId : undefined,
       status: RequestStatus.VALID,
       response: {
         data: null,

@@ -63,9 +63,22 @@ export async function GET(
                   id,
                 },
                 include: {
-                  products: true,
-                  customers: true,
-                  requestLogs: true,
+                  products: {
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                  },
+                  customers: {
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                  },
+                  requestLogs: {
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                    take: 7,
+                  },
                   createdBy: true,
                 },
               },

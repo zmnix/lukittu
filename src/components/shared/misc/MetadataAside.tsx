@@ -13,7 +13,7 @@ export default function MetadataAside({ metadata }: MetadataAsideProps) {
   const metadataCasted = metadata as { key: string; value: string }[];
 
   return (
-    <Card className="w-96">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-1 py-2">
         <CardTitle className="text-xl font-bold">
           {t('general.metadata')}

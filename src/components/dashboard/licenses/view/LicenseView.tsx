@@ -10,7 +10,10 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import CustomersPreviewTable from './CustomersPreviewTable';
 import { LicenseDetails } from './LicenseDetails';
+import ProductsPreviewTable from './ProductsPreviewTable';
+import RequestLogsPreviewTable from './RequestLogsPreviewTable';
 
 export default function LicenseView() {
   const params = useParams();
@@ -54,15 +57,21 @@ export default function LicenseView() {
       <Separator className="mt-2" />
       <div className="mt-6">
         <div className="flex">
-          <div className="flex-1" />
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-8 w-96" />
             ))
           ) : (
-            <div className="flex flex-col gap-4">
-              <LicenseDetails license={license!} />
-              <MetadataAside metadata={license!.metadata} />
+            <div className="flex w-full gap-4 max-xl:flex-col">
+              <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
+                <ProductsPreviewTable license={license!} />
+                <CustomersPreviewTable license={license!} />
+                <RequestLogsPreviewTable license={license!} />
+              </div>
+              <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
+                <LicenseDetails license={license!} />
+                <MetadataAside metadata={license!.metadata} />
+              </aside>
             </div>
           )}
         </div>
