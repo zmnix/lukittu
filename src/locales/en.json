@@ -58,6 +58,8 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "apply": "Apply",
+    "filters": "Filters",
     "error": "Error",
     "email": "Email",
     "full_name": "Full Name",

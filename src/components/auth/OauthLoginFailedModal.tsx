@@ -57,11 +57,14 @@ export default function OauthLoginFailedccessModal({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
         <ResponsiveDialogFooter>
-          <form action={handleClose}>
-            <LoadingButton className="w-full" type="submit" variant="outline">
-              {t('general.close')}
-            </LoadingButton>
-          </form>
+          <LoadingButton
+            className="w-full"
+            type="submit"
+            variant="outline"
+            onClick={handleClose}
+          >
+            {t('general.close')}
+          </LoadingButton>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>
     </ResponsiveDialog>
