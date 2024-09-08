@@ -1,5 +1,6 @@
 import DataCards from '@/components/dashboard/dashboard/DataCards';
 import { ProductDivisionPieChart } from '@/components/dashboard/dashboard/ProductDivisionPieChart';
+import RecentlyActiveCard from '@/components/dashboard/dashboard/RecentlyActiveCard';
 import { RequestsAreaChart } from '@/components/dashboard/dashboard/RequestsAreaChart';
 import WorldMapChart from '@/components/dashboard/dashboard/WorldMapChart';
 import { Separator } from '@/components/ui/separator';
@@ -23,8 +24,11 @@ export default function Dashboard() {
         <div className="col-span-12 xl:col-span-4">
           <ProductDivisionPieChart />
         </div>
-        <div className="col-span-12 xl:col-span-8">
+        <div className="col-span-12 xl:col-span-6">
           <WorldMapChart />
+        </div>
+        <div className="col-span-12 xl:col-span-6">
+          <RecentlyActiveCard />
         </div>
       </div>
     </div>

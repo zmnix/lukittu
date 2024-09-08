@@ -122,7 +122,9 @@
     "created_by": "Created by",
     "unknown": "Unknown",
     "no_metadata": "No metadata",
-    "click_to_copy": "Click to copy"
+    "click_to_copy": "Click to copy",
+    "other": "Other",
+    "copied_to_clipboard": "Copied to clipboard"
   },
   "auth": {
     "oauth": {
@@ -194,13 +196,28 @@
   "dashboard": {
     "dashboard": {
       "requests": "Requests",
-      "requests_description": "Showing license verifyrequests divided by status.",
+      "requests_description": "Showing license verify requests divided by status.",
+      "last_hour": "Last hour",
       "last_24_hours": "Last 24 hours",
       "last_7_days": "Last 7 days",
       "last_30_days": "Last 30 days",
       "success": "Success",
       "failed": "Failed",
-      "total": "Total"
+      "total": "Total",
+      "trending_up": "Trending up",
+      "trending_down": "Trending down",
+      "compared_to_last_period": "compared to the last period",
+      "last_period_description": "\"Last period\" refers to the same length of time immediately before the current one. For example, if viewing the last 24 hours, the previous period would be the 24 hours prior.",
+      "product_division": "Product division",
+      "product_division_description": "Showing how licenses are divided between products.",
+      "requests_by_country": "Requests by country",
+      "requests_by_country_description": "Showing license verify requests in a map view.",
+      "total_licenses": "Total licenses",
+      "total_customers": "Total customers",
+      "total_products": "Total products",
+      "requests_24h": "Requests last 24h",
+      "recently_activity": "Recent activity",
+      "recently_activity_description": "Showing recent license verify requests."
     },
     "navigation": {
       "dashboard": "Dashboard",
@@ -252,9 +269,13 @@
       "delete_product_confirm_title": "Are you absolutely sure?",
       "delete_product_confirm_description": "You are about to delete product <strong>{productName}</strong>! This will <strong>permanently delete</strong> all the data related to this product <strong>including all licenses</strong>. This action cannot be undone.",
       "delete_product_confirm_input": "Please type <code>{productName}</code> to confirm",
-      "add_your_first_product": "Add your first product"
+      "add_your_first_product": "Add your first product",
+      "product_updated": "Product updated",
+      "product_deleted": "Product deleted",
+      "product_created": "Product created"
     },
     "licenses": {
+      "delete_license": "Delete license",
       "add_license": "Add license",
       "edit_license": "Edit license",
       "search_product": "Search product...",
@@ -281,7 +302,10 @@
       "details": "Details",
       "no_products_assigned": "No products assigned",
       "no_customers_assigned": "No customers assigned",
-      "not_yet_activated": "Not yet activated"
+      "not_yet_activated": "Not yet activated",
+      "license_updated": "License updated",
+      "license_deleted": "License deleted",
+      "license_created": "License created"
     },
     "logs": {
       "logs": "Logs",

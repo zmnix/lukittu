@@ -150,7 +150,7 @@ export async function GET(
         if (timeRange === '24h') {
           return (
             new Date(log.createdAt).getTime() >
-            new Date().setHours(new Date().getHours() - 24)
+            new Date().setHours(new Date().getHours() - 23)
           );
         }
 

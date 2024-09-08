@@ -111,7 +111,9 @@ export function ProductDivisionPieChart() {
     <Card className="flex h-full flex-col">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1 text-center sm:text-left">
-          <CardTitle>{t('dashboard.dashboard.product_division')}</CardTitle>
+          <CardTitle className="text-xl">
+            {t('dashboard.dashboard.product_division')}
+          </CardTitle>
           <CardDescription>
             {t('dashboard.dashboard.product_division_description')}
           </CardDescription>

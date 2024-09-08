@@ -1,28 +1,31 @@
 import { getSession } from '@/lib/utils/auth';
+import { decryptLicenseKey } from '@/lib/utils/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { randomUUID } from 'crypto';
+import { RequestStatus } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
-type DivisonData = {
+type RecentActivityData = {
   id: string;
-  name: string;
-  licenses: number;
+  license: string;
+  ipAddress: string;
+  status: RequestStatus;
+  createdAt: Date;
 };
 
-export type IDashboardProductDivisionGetSuccessResponse = {
-  data: DivisonData[];
+export type IDashboardRecentActivityGetSuccessResponse = {
+  data: RecentActivityData[];
 };
 
-export type IDashboardProductDivisionGetResponse =
+export type IDashboardRecentActivityGetResponse =
   | ErrorResponse
-  | IDashboardProductDivisionGetSuccessResponse;
+  | IDashboardRecentActivityGetSuccessResponse;
 
 export async function GET(): Promise<
-  NextResponse<IDashboardProductDivisionGetResponse>
+  NextResponse<IDashboardRecentActivityGetResponse>
 > {
   const t = await getTranslations({ locale: getLanguage() });
 
@@ -45,14 +48,19 @@ export async function GET(): Promise<
               deletedAt: null,
             },
             include: {
-              products: {
-                include: {
-                  _count: {
-                    select: {
-                      licenses: true,
-                    },
+              requestLogs: {
+                where: {
+                  licenseId: {
+                    not: null,
                   },
                 },
+                include: {
+                  license: true,
+                },
+                orderBy: {
+                  createdAt: 'desc',
+                },
+                take: 5,
               },
             },
           },
@@ -74,34 +82,21 @@ export async function GET(): Promise<
       );
     }
 
-    const products = session.user.teams[0].products;
+    const team = session.user.teams[0];
 
-    let data = products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      licenses: product._count.licenses,
+    const data: RecentActivityData[] = team.requestLogs.map((log) => ({
+      id: log.id,
+      license: decryptLicenseKey(log.license!.licenseKey),
+      ipAddress: log.ipAddress || '',
+      status: log.status,
+      createdAt: log.createdAt,
     }));
-
-    if (data.length > 5) {
-      const firstFiveItems = data.slice(0, 5);
-      const otherLicensesCount = data
-        .slice(5)
-        .reduce((acc, product) => acc + product.licenses, 0);
-
-      firstFiveItems.push({
-        id: randomUUID(),
-        name: t('general.other'),
-        licenses: otherLicensesCount,
-      });
-
-      data = firstFiveItems;
-    }
 
     return NextResponse.json({
       data,
     });
   } catch (error) {
-    logger.error("Error occurred in 'dashboard/product-division' route", error);
+    logger.error("Error occurred in 'dashboard/recent-activity' route", error);
     return NextResponse.json(
       { message: t('general.server_error') },
       { status: HttpStatus.INTERNAL_SERVER_ERROR },

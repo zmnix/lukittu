@@ -143,7 +143,7 @@ export async function GET(): Promise<
 
     return NextResponse.json({ data });
   } catch (error) {
-    logger.error("Error occurred in 'dashboard/requests' route", error);
+    logger.error("Error occurred in 'dashboard/card-data' route", error);
     return NextResponse.json(
       { message: t('general.server_error') },
       { status: HttpStatus.INTERNAL_SERVER_ERROR },

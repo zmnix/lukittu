@@ -215,7 +215,9 @@
       "total_licenses": "Total licenses",
       "total_customers": "Total customers",
       "total_products": "Total products",
-      "requests_24h": "Requests last 24h"
+      "requests_24h": "Requests last 24h",
+      "recently_activity": "Recent activity",
+      "recently_activity_description": "Showing recent license verify requests."
     },
     "navigation": {
       "dashboard": "Dashboard",

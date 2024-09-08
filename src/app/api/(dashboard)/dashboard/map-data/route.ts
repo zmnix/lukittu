@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: mapData });
   } catch (error) {
-    logger.error("Error occurred in 'dashboard/requests' route", error);
+    logger.error("Error occurred in 'dashboard/map-data' route", error);
     return NextResponse.json(
       { message: t('general.server_error') },
       { status: HttpStatus.INTERNAL_SERVER_ERROR },
