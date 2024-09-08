@@ -75,7 +75,7 @@ export default function DataCards() {
               {t('dashboard.dashboard.total_licenses')}
             </CardTitle>
             <span className="rounded-full bg-primary p-2">
-              <Key className="text-background" size={22} />
+              <Key className="text-white" size={22} />
             </span>
           </CardHeader>
           <CardContent>
@@ -105,7 +105,7 @@ export default function DataCards() {
               {t('dashboard.dashboard.total_products')}
             </CardTitle>
             <span className="rounded-full bg-primary p-2">
-              <ShoppingCart className="text-background" size={22} />
+              <ShoppingCart className="text-white" size={22} />
             </span>
           </CardHeader>
           <CardContent>
@@ -135,7 +135,7 @@ export default function DataCards() {
               {t('dashboard.dashboard.total_customers')}
             </CardTitle>
             <span className="rounded-full bg-primary p-2">
-              <Users className="text-background" size={22} />
+              <Users className="text-white" size={22} />
             </span>
           </CardHeader>
           <CardContent>
@@ -165,7 +165,7 @@ export default function DataCards() {
               {t('dashboard.dashboard.requests_24h')}
             </CardTitle>
             <span className="rounded-full bg-primary p-2">
-              <Logs className="text-background" size={22} />
+              <Logs className="text-white" size={22} />
             </span>
           </CardHeader>
           <CardContent>
