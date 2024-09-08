@@ -123,7 +123,8 @@
     "unknown": "Unknown",
     "no_metadata": "No metadata",
     "click_to_copy": "Click to copy",
-    "other": "Other"
+    "other": "Other",
+    "copied_to_clipboard": "Copied to clipboard"
   },
   "auth": {
     "oauth": {
@@ -266,9 +267,13 @@
       "delete_product_confirm_title": "Are you absolutely sure?",
       "delete_product_confirm_description": "You are about to delete product <strong>{productName}</strong>! This will <strong>permanently delete</strong> all the data related to this product <strong>including all licenses</strong>. This action cannot be undone.",
       "delete_product_confirm_input": "Please type <code>{productName}</code> to confirm",
-      "add_your_first_product": "Add your first product"
+      "add_your_first_product": "Add your first product",
+      "product_updated": "Product updated",
+      "product_deleted": "Product deleted",
+      "product_created": "Product created"
     },
     "licenses": {
+      "delete_license": "Delete license",
       "add_license": "Add license",
       "edit_license": "Edit license",
       "search_product": "Search product...",
@@ -295,7 +300,10 @@
       "details": "Details",
       "no_products_assigned": "No products assigned",
       "no_customers_assigned": "No customers assigned",
-      "not_yet_activated": "Not yet activated"
+      "not_yet_activated": "Not yet activated",
+      "license_updated": "License updated",
+      "license_deleted": "License deleted",
+      "license_created": "License created"
     },
     "logs": {
       "logs": "Logs",

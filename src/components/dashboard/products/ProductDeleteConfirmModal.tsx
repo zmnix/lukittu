@@ -54,6 +54,8 @@ export function DeleteProductConfirmModal() {
 
       if ('message' in res) {
         toast.error(res.message);
+      } else {
+        toast.success(t('dashboard.products.product_deleted'));
       }
 
       router.refresh();

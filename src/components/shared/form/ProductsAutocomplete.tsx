@@ -3,6 +3,7 @@ import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
 import MultipleSelector from '@/components/ui/multiple-selector';
 import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
@@ -19,11 +20,19 @@ export function ProductsAutocomplete({
 }: ProductsAutocompleteProps) {
   const t = useTranslations();
 
+  const [searchResults, setSearchResults] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
+  >([]);
+
   const selectedProducts = productIds.map((id) => {
-    const match = initialProducts?.find((p) => p.id === id);
+    const initialProductsMatch = initialProducts?.find((p) => p.id === id);
+    const searchResultsMatch = searchResults.find((r) => r.value === id);
 
     return {
-      label: match?.name ?? '',
+      label: initialProductsMatch?.name ?? searchResultsMatch?.label ?? '',
       value: id,
     };
   });
@@ -55,6 +64,14 @@ export function ProductsAutocomplete({
           label: product.name,
           value: product.id.toString(),
         }));
+
+        setSearchResults((prev) => {
+          const newResults = results.filter(
+            (r) => !prev.some((p) => p.value === r.value),
+          );
+
+          return [...prev, ...newResults];
+        });
 
         return results;
       }}

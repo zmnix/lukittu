@@ -40,9 +40,9 @@ export function ProductListTable() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [sortColumn, setSortColumn] = useState<'createdAt' | 'name' | null>(
-    null,
-  );
+  const [sortColumn, setSortColumn] = useState<
+    'createdAt' | 'updatedAt' | 'name' | null
+  >(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
@@ -144,6 +144,22 @@ export function ProductListTable() {
                 <ArrowDownUp className="ml-2 h-4 w-4" />
               </Button>
             </TableHead>
+            <TableHead className="truncate">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSortColumn('updatedAt');
+                  setSortDirection(
+                    sortColumn === 'updatedAt' && sortDirection === 'asc'
+                      ? 'desc'
+                      : 'asc',
+                  );
+                }}
+              >
+                {t('general.updated_at')}
+                <ArrowDownUp className="ml-2 h-4 w-4" />
+              </Button>
+            </TableHead>
             <TableHead className="truncate text-right">
               {t('general.actions')}
             </TableHead>
@@ -166,8 +182,22 @@ export function ProductListTable() {
                 >
                   {new Date(product.createdAt).toLocaleString(locale, {
                     day: 'numeric',
-                    month: 'long',
+                    month: 'short',
                     year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  })}
+                </TableCell>
+                <TableCell
+                  className="truncate"
+                  title={new Date(product.updatedAt).toLocaleString(locale)}
+                >
+                  {new Date(product.updatedAt).toLocaleString(locale, {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
                   })}
                 </TableCell>
                 <TableCell className="truncate py-0 text-right">
@@ -184,13 +214,18 @@ export function ProductListTable() {
                     >
                       <DropdownMenuItem
                         className="hover:cursor-pointer"
-                        onClick={() => ctx.setProductModalOpen(true)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          ctx.setProductToEdit(product);
+                          ctx.setProductModalOpen(true);
+                        }}
                       >
                         {t('dashboard.products.edit_product')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive hover:cursor-pointer"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           ctx.setProductToDelete(product);
                           ctx.setProductToDeleteModalOpen(true);
                         }}

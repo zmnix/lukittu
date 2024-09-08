@@ -28,11 +28,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export default function CreateProductModal() {
+export default function SetProductModal() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
   const [loading, setLoading] = useState(false);
@@ -52,6 +52,18 @@ export default function CreateProductModal() {
     name: 'metadata',
   });
 
+  useEffect(() => {
+    if (ctx.productToEdit) {
+      form.reset({
+        name: ctx.productToEdit.name,
+        url: ctx.productToEdit.url ?? '',
+        metadata:
+          (ctx.productToEdit.metadata as { key: string; value: string }[]) ??
+          [],
+      });
+    }
+  }, [ctx.productToEdit, form]);
+
   const handleProductCreate = async (payload: SetProductSchema) => {
     const response = await fetch('/api/products', {
       method: 'POST',
@@ -66,10 +78,27 @@ export default function CreateProductModal() {
     return data;
   };
 
+  const handleProductEdit = async (payload: SetProductSchema) => {
+    const response = await fetch(`/api/products/${ctx.productToEdit?.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as IProductsCreateResponse;
+
+    return data;
+  };
+
   const onSubmit = async (data: SetProductSchema) => {
     setLoading(true);
     try {
-      const res = await handleProductCreate(data);
+      const res = ctx.productToEdit
+        ? await handleProductEdit(data)
+        : await handleProductCreate(data);
+
       if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof SetProductSchema, {
@@ -84,6 +113,11 @@ export default function CreateProductModal() {
 
       router.refresh();
       handleOpenChange(false);
+      toast.success(
+        ctx.productToEdit
+          ? t('dashboard.products.product_updated')
+          : t('dashboard.products.product_created'),
+      );
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -227,7 +261,9 @@ export default function CreateProductModal() {
                 type="submit"
                 onClick={() => form.handleSubmit(onSubmit)()}
               >
-                {t('dashboard.products.add_product')}
+                {ctx.productToEdit
+                  ? t('dashboard.products.edit_product')
+                  : t('dashboard.products.add_product')}
               </LoadingButton>
             </div>
           </ResponsiveDialogFooter>

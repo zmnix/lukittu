@@ -18,6 +18,7 @@ import { Copy, Infinity, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useContext, useState } from 'react';
+import { toast } from 'sonner';
 
 interface LicenseDetailsProps {
   license: ILicenseGetSuccessResponse['license'];
@@ -64,9 +65,10 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                         <span
                           className="truncate text-primary hover:underline"
                           role="button"
-                          onClick={() =>
-                            navigator.clipboard.writeText(license.id)
-                          }
+                          onClick={() => {
+                            navigator.clipboard.writeText(license.id);
+                            toast.success(t('general.copied_to_clipboard'));
+                          }}
                         >
                           {license.id}
                         </span>

@@ -3,6 +3,7 @@ import { ICustomersGetResponse } from '@/app/api/(dashboard)/customers/route';
 import MultipleSelector from '@/components/ui/multiple-selector';
 import { Customer } from '@prisma/client';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
@@ -19,11 +20,23 @@ export function CustomersAutocomplete({
 }: CustomersAutocompleteProps) {
   const t = useTranslations();
 
+  const [searchResults, setSearchResults] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
+  >([]);
+
   const selectedCustomers = customerIds.map((id) => {
-    const match = initialCustomers?.find((p) => p.id === id);
+    const initialCustomersMatch = initialCustomers?.find((p) => p.id === id);
+    const searchResultsMatch = searchResults.find((r) => r.value === id);
+
+    const initialName =
+      initialCustomersMatch?.fullName ?? initialCustomersMatch?.email;
+    const searchResultsName = searchResultsMatch?.label;
 
     return {
-      label: match?.fullName || match?.email || '',
+      label: initialName || searchResultsName || '',
       value: id,
     };
   });
@@ -55,6 +68,14 @@ export function CustomersAutocomplete({
           label: customer.fullName ?? customer.email!,
           value: customer.id.toString(),
         }));
+
+        setSearchResults((prev) => {
+          const newResults = results.filter(
+            (r) => !prev.some((p) => p.value === r.value),
+          );
+
+          return [...prev, ...newResults];
+        });
 
         return results;
       }}

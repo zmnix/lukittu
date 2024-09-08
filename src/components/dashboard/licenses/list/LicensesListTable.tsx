@@ -27,10 +27,19 @@ import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
-import { ArrowDownUp, EllipsisVertical, Key, Search } from 'lucide-react';
+import { LicenseModalContext } from '@/providers/LicenseModalProvider';
+import {
+  ArrowDownUp,
+  Copy,
+  Edit,
+  EllipsisVertical,
+  Key,
+  Search,
+  Trash,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ProductListTableSkeleton from '../../products/ProductListTableSkeleton';
 import AddLicenseButton from './AddLicenseButton';
@@ -39,6 +48,7 @@ export function LicensesListTable() {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
+  const ctx = useContext(LicenseModalContext);
 
   const [loading, setLoading] = useState(true);
   const [licenses, setLicenses] = useState<
@@ -123,6 +133,11 @@ export function LicensesListTable() {
       clearTimeout(timeout);
     };
   }, [debounceSearch]);
+
+  const handleCopy = (licenseKey: string) => {
+    navigator.clipboard.writeText(licenseKey);
+    toast.success(t('general.copied_to_clipboard'));
+  };
 
   return totalLicenses ? (
     <>
@@ -253,8 +268,10 @@ export function LicensesListTable() {
                 >
                   {new Date(license.createdAt).toLocaleString(locale, {
                     day: 'numeric',
-                    month: 'long',
+                    month: 'short',
                     year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
                   })}
                 </TableCell>
                 <TableCell
@@ -263,8 +280,10 @@ export function LicensesListTable() {
                 >
                   {new Date(license.updatedAt).toLocaleString(locale, {
                     day: 'numeric',
-                    month: 'long',
+                    month: 'short',
                     year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
                   })}
                 </TableCell>
                 <TableCell className="truncate py-0 text-right">
@@ -279,11 +298,33 @@ export function LicensesListTable() {
                       className="font-medium"
                       forceMount
                     >
-                      <DropdownMenuItem className="hover:cursor-pointer">
-                        {t('dashboard.products.edit_product')}
+                      <DropdownMenuItem
+                        className="hover:cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopy(license.licenseKey);
+                        }}
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        {t('general.click_to_copy')}
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive hover:cursor-pointer">
-                        {t('dashboard.products.delete_product')}
+                      <DropdownMenuItem
+                        className="hover:cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          ctx.setLicenseToEdit(license);
+                          ctx.setLicenseModalOpen(true);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        {t('dashboard.licenses.edit_license')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive hover:cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        {t('dashboard.licenses.delete_license')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

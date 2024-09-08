@@ -3,8 +3,13 @@ import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
+import {
+  setProductSchema,
+  SetProductSchema,
+} from '@/lib/validation/products/set-product-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { Product } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -115,6 +120,142 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
+    });
+  } catch (error) {
+    logger.error("Error occurred in 'products/[slug]' route:", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
+
+export type IProductsUpdateSuccessResponse = {
+  product: Product;
+};
+
+export type IProductsUpdateResponse =
+  | ErrorResponse
+  | IProductsUpdateSuccessResponse;
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { slug: string } },
+): Promise<NextResponse<IProductsUpdateResponse>> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  try {
+    const productId = params.slug;
+
+    if (!productId || !regex.uuidV4.test(productId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const body = (await request.json()) as SetProductSchema;
+    const validated = await setProductSchema(t).safeParseAsync(body);
+
+    if (!validated.success) {
+      return NextResponse.json(
+        {
+          field: validated.error.errors[0].path[0],
+          message: validated.error.errors[0].message,
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const { name, url, metadata } = validated.data;
+
+    const selectedTeam = getSelectedTeam();
+
+    if (!selectedTeam) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              deletedAt: null,
+              id: selectedTeam,
+            },
+            include: {
+              products: true,
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const team = session.user.teams[0];
+
+    if (!team.products.find((product) => product.id === productId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.product_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (
+      team.products.find(
+        (product) => product.name === name && product.id !== productId,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          message: t('validation.product_already_exists'),
+          field: 'name',
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const product = await prisma.product.update({
+      where: {
+        id: productId,
+      },
+      data: {
+        name,
+        url,
+        metadata,
+      },
+    });
+
+    return NextResponse.json({
+      product,
     });
   } catch (error) {
     logger.error("Error occurred in 'products/[slug]' route:", error);

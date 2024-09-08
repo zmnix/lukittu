@@ -39,7 +39,7 @@ export async function GET(
 
     const allowedPageSizes = [25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
-    const allowedSortColumns = ['name', 'createdAt'];
+    const allowedSortColumns = ['name', 'createdAt', 'updatedAt'];
 
     const search = (searchParams.get('search') as string) || '';
 

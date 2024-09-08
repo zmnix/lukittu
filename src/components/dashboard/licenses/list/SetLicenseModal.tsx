@@ -207,6 +207,11 @@ export default function SetLicenseModal() {
 
       router.refresh();
       handleOpenChange(false);
+      toast.success(
+        ctx.licenseToEdit
+          ? t('dashboard.licenses.license_updated')
+          : t('dashboard.licenses.license_created'),
+      );
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
