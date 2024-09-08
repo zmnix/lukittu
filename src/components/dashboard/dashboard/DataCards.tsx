@@ -89,8 +89,9 @@ export default function DataCards() {
                 {data?.totalLicenses.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {data?.trends.licensesLastWeek}{' '}
-                {t('dashboard.dashboard.last_7_days').toLowerCase()}
+                {t('dashboard.dashboard.new_in_last_7_days', {
+                  count: data?.trends.licensesLastWeek,
+                }).toLowerCase()}
               </p>
             </>
           )}
@@ -117,8 +118,9 @@ export default function DataCards() {
                 {data?.totalProducts.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {data?.trends.productsLastWeek}{' '}
-                {t('dashboard.dashboard.last_7_days').toLowerCase()}
+                {t('dashboard.dashboard.new_in_last_7_days', {
+                  count: data?.trends.productsLastWeek,
+                }).toLowerCase()}
               </p>
             </>
           )}
@@ -145,8 +147,9 @@ export default function DataCards() {
                 {data?.totalCustomers.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {data?.trends.customersLastWeek}{' '}
-                {t('dashboard.dashboard.last_7_days').toLowerCase()}
+                {t('dashboard.dashboard.new_in_last_7_days', {
+                  count: data?.trends.customersLastWeek,
+                }).toLowerCase()}
               </p>
             </>
           )}
@@ -211,9 +214,11 @@ export default function DataCards() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                {(data?.requestsLast24h.failed ?? 0) +
-                  (data?.requestsLast24h.success ?? 0)}{' '}
-                {t('dashboard.dashboard.last_24_hours').toLowerCase()}
+                {t('dashboard.dashboard.requests_in_last_24_hours', {
+                  count:
+                    (data?.requestsLast24h.failed ?? 0) +
+                    (data?.requestsLast24h.success ?? 0),
+                }).toLowerCase()}
               </p>
             </>
           )}
