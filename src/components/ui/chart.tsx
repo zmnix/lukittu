@@ -287,6 +287,7 @@ const ChartLegendContent = React.forwardRef<
       >
         {payload.map((item) => {
           const key = `${nameKey || item.dataKey || 'value'}`;
+
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
           return (
@@ -306,7 +307,7 @@ const ChartLegendContent = React.forwardRef<
                   }}
                 />
               )}
-              {itemConfig?.label}
+              <span className="line-clamp-1">{itemConfig?.label}</span>
             </div>
           );
         })}

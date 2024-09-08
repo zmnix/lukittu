@@ -3,6 +3,7 @@ import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { randomUUID } from 'crypto';
 import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
@@ -75,11 +76,26 @@ export async function GET(): Promise<
 
     const products = session.user.teams[0].products;
 
-    const data = products.map((product) => ({
+    let data = products.map((product) => ({
       id: product.id,
       name: product.name,
       licenses: product._count.licenses,
     }));
+
+    if (data.length > 5) {
+      const firstFiveItems = data.slice(0, 5);
+      const otherLicensesCount = data
+        .slice(5)
+        .reduce((acc, product) => acc + product.licenses, 0);
+
+      firstFiveItems.push({
+        id: randomUUID(),
+        name: t('general.other'),
+        licenses: otherLicensesCount,
+      });
+
+      data = firstFiveItems;
+    }
 
     return NextResponse.json({
       data,

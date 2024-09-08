@@ -122,7 +122,8 @@
     "created_by": "Created by",
     "unknown": "Unknown",
     "no_metadata": "No metadata",
-    "click_to_copy": "Click to copy"
+    "click_to_copy": "Click to copy",
+    "other": "Other"
   },
   "auth": {
     "oauth": {
@@ -194,7 +195,7 @@
   "dashboard": {
     "dashboard": {
       "requests": "Requests",
-      "requests_description": "Showing license verifyrequests divided by status.",
+      "requests_description": "Showing license verify requests divided by status.",
       "last_hour": "Last hour",
       "last_24_hours": "Last 24 hours",
       "last_7_days": "Last 7 days",
@@ -207,7 +208,13 @@
       "compared_to_last_period": "compared to the last period",
       "last_period_description": "\"Last period\" refers to the same length of time immediately before the current one. For example, if viewing the last 24 hours, the previous period would be the 24 hours prior.",
       "product_division": "Product division",
-      "product_division_description": "Showing how licenses are divided between products."
+      "product_division_description": "Showing how licenses are divided between products.",
+      "requests_by_country": "Requests by country",
+      "requests_by_country_description": "Showing license verify requests in a map view.",
+      "total_licenses": "Total licenses",
+      "total_customers": "Total customers",
+      "total_products": "Total products",
+      "requests_24h": "Requests last 24h"
     },
     "navigation": {
       "dashboard": "Dashboard",

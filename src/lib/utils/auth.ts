@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import 'server-only';
+import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
 import { getIp, getUserAgent } from './header-helpers';
 import { logger } from './logger';
 
@@ -14,7 +15,9 @@ export async function createSession(userId: string, rememberMe: boolean) {
 
     const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
     const geoDataJson = geoData.ok ? await geoData.json() : null;
-    const country: string | null = geoDataJson ? geoDataJson.country : null;
+    const countryAlpha3: string | null = geoDataJson?.countryCode
+      ? iso2ToIso3Map[geoDataJson.countryCode]
+      : null;
 
     const sessionId = randomBytes(16).toString('hex');
 
@@ -28,7 +31,7 @@ export async function createSession(userId: string, rememberMe: boolean) {
         userId,
         expiresAt,
         ipAddress,
-        country,
+        country: countryAlpha3,
         userAgent,
       },
     });

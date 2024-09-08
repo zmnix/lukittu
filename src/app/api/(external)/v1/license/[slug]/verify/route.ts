@@ -1,4 +1,5 @@
 /* eslint-disable lines-around-comment */
+import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { generateHMAC, signChallenge } from '@/lib/utils/crypto';
@@ -364,14 +365,16 @@ async function logRequest({
     const ipAddress = getIp();
     const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
     const geoDataJson = geoData.ok ? await geoData.json() : null;
-    const country: string | null = geoDataJson ? geoDataJson.country : null;
+    const countryAlpha3: string | null = geoDataJson?.countryCode
+      ? iso2ToIso3Map[geoDataJson.countryCode]
+      : null;
 
     await prisma.requestLog.create({
       data: {
         responseTime: new Date().getTime() - requestTime.getTime(),
         status,
         ipAddress,
-        country,
+        country: countryAlpha3,
         team: { connect: { id: teamId } },
         customer: customerId ? { connect: { id: customerId } } : undefined,
         product: productId ? { connect: { id: productId } } : undefined,

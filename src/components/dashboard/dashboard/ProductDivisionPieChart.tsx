@@ -10,6 +10,8 @@ import {
 import {
   ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
@@ -17,6 +19,42 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Label, Pie, PieChart } from 'recharts';
 import { toast } from 'sonner';
+
+interface RenderLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+  index: number;
+}
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+}: RenderLabelProps) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.2;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text
+      dominantBaseline="central"
+      fill="white"
+      textAnchor={x > cx ? 'start' : 'end'}
+      x={x}
+      y={y}
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
 export function ProductDivisionPieChart() {
   const t = useTranslations();
@@ -93,6 +131,8 @@ export function ProductDivisionPieChart() {
               data={data}
               dataKey="licenses"
               innerRadius={70}
+              label={renderCustomizedLabel}
+              labelLine={false}
               nameKey="name"
               strokeWidth={5}
             >
@@ -126,6 +166,10 @@ export function ProductDivisionPieChart() {
                 }}
               />
             </Pie>
+            <ChartLegend
+              className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+              content={<ChartLegendContent nameKey="id" />}
+            />
           </PieChart>
         </ChartContainer>
       </CardContent>
