@@ -1,6 +1,7 @@
 'use client';
 import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
 import TablePagination from '@/components/shared/table/TablePagination';
+import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,7 +26,6 @@ import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddProductButton from './AddProductButton';
-import ProductListTableSkeleton from './ProductListTableSkeleton';
 
 export function ProductListTable() {
   const locale = useLocale();
@@ -166,7 +166,7 @@ export function ProductListTable() {
           </TableRow>
         </TableHeader>
         {loading ? (
-          <ProductListTableSkeleton />
+          <TableSkeleton columns={4} rows={6} />
         ) : (
           <TableBody>
             {products.map((product) => (

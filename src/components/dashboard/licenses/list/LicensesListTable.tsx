@@ -6,6 +6,7 @@ import {
 import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
 import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
 import TablePagination from '@/components/shared/table/TablePagination';
+import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +44,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import ProductListTableSkeleton from '../../products/ProductListTableSkeleton';
 import AddLicenseButton from './AddLicenseButton';
 import MobileFiltersModal from './MobileFiltersModal';
 
@@ -254,7 +254,7 @@ export function LicensesListTable() {
                   </TableRow>
                 </TableHeader>
                 {loading ? (
-                  <ProductListTableSkeleton />
+                  <TableSkeleton columns={8} rows={7} />
                 ) : (
                   <TableBody>
                     {licenses.map((license) => (
