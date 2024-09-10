@@ -1,5 +1,3 @@
-import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
-import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,32 +11,22 @@ import { Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-interface LicensesMobileFiltersModalProps {
-  productIds: string[];
-  customerIds: string[];
+interface CustomersMobileFiltersModalProps {
   search: string;
-  setProductIds: React.Dispatch<React.SetStateAction<string[]>>;
-  setCustomerIds: React.Dispatch<React.SetStateAction<string[]>>;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
   open: boolean;
   onOpenChange: (boolean: boolean) => void;
 }
 
-export default function LicensesMobileFiltersModal({
-  customerIds,
-  productIds,
+export default function CustomersMobileFiltersModal({
   open,
   search,
   setSearch,
-  setCustomerIds,
-  setProductIds,
   onOpenChange,
-}: LicensesMobileFiltersModalProps) {
+}: CustomersMobileFiltersModalProps) {
   const t = useTranslations();
 
   const [tempSearch, setTempSearch] = useState(search);
-  const [tempProductIds, setTempProductIds] = useState<string[]>(productIds);
-  const [tempCustomerIds, setTempCustomerIds] = useState<string[]>(customerIds);
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
@@ -46,8 +34,6 @@ export default function LicensesMobileFiltersModal({
 
   const handleApply = () => {
     setSearch(tempSearch);
-    setProductIds(tempProductIds);
-    setCustomerIds(tempCustomerIds);
     handleOpenChange(false);
   };
 
@@ -62,21 +48,13 @@ export default function LicensesMobileFiltersModal({
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               className="wf pl-8"
-              placeholder={t('dashboard.licenses.search_license')}
+              placeholder={t('dashboard.customers.search_customer')}
               value={tempSearch}
               onChange={(e) => {
                 setTempSearch(e.target.value);
               }}
             />
           </div>
-          <ProductsAutocomplete
-            productIds={tempProductIds}
-            setProductIds={setTempProductIds}
-          />
-          <CustomersAutocomplete
-            customerIds={tempCustomerIds}
-            setCustomerIds={setTempCustomerIds}
-          />
         </div>
         <ResponsiveDialogFooter>
           <div>

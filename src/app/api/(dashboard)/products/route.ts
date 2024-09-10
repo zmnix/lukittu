@@ -12,7 +12,7 @@ import { Product } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IProductsGetSuccessResponse = {
+export type IProductsGetSuccessResponse = {
   products: Product[];
   totalProducts: number;
 };

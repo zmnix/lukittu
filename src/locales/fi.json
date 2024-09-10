@@ -58,6 +58,8 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "apply": "Apply",
+    "filters": "Filters",
     "error": "Error",
     "email": "Email",
     "full_name": "Full Name",
@@ -202,6 +204,7 @@
       "last_7_days": "Last 7 days",
       "last_30_days": "Last 30 days",
       "new_in_last_7_days": "{count} new in the last 7 days",
+      "requests_in_last_24_hours": "{count} requests in the last 24 hours",
       "success": "Success",
       "failed": "Failed",
       "total": "Total",
@@ -280,7 +283,6 @@
       "add_license": "Add license",
       "edit_license": "Edit license",
       "search_product": "Search product...",
-      "search_customer": "Search customer...",
       "assigned_products": "Assigned products",
       "assigned_customers": "Assigned customers",
       "license": "License",
@@ -306,7 +308,8 @@
       "not_yet_activated": "Not yet activated",
       "license_updated": "License updated",
       "license_deleted": "License deleted",
-      "license_created": "License created"
+      "license_created": "License created",
+      "search_license": "Search license..."
     },
     "logs": {
       "logs": "Logs",
@@ -314,7 +317,11 @@
     },
     "customers": {
       "add_customer": "Add customer",
-      "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage."
+      "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage.",
+      "add_your_first_customer": "Add your first customer",
+      "edit_customer": "Edit customer",
+      "delete_customer": "Delete customer",
+      "search_customer": "Search customer..."
     }
   }
 }

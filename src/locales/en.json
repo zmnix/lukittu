@@ -283,7 +283,6 @@
       "add_license": "Add license",
       "edit_license": "Edit license",
       "search_product": "Search product...",
-      "search_customer": "Search customer...",
       "assigned_products": "Assigned products",
       "assigned_customers": "Assigned customers",
       "license": "License",
@@ -309,7 +308,8 @@
       "not_yet_activated": "Not yet activated",
       "license_updated": "License updated",
       "license_deleted": "License deleted",
-      "license_created": "License created"
+      "license_created": "License created",
+      "search_license": "Search license..."
     },
     "logs": {
       "logs": "Logs",
@@ -317,7 +317,11 @@
     },
     "customers": {
       "add_customer": "Add customer",
-      "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage."
+      "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage.",
+      "add_your_first_customer": "Add your first customer",
+      "edit_customer": "Edit customer",
+      "delete_customer": "Delete customer",
+      "search_customer": "Search customer..."
     }
   }
 }

@@ -12,7 +12,7 @@ import { Customer } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ICustomersGetSuccessResponse = {
+export type ICustomersGetSuccessResponse = {
   customers: Customer[];
   totalCustomers: number;
 };
@@ -41,7 +41,7 @@ export async function GET(
 
     const allowedPageSizes = [25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
-    const allowedSortColumns = ['fullName', 'createdAt'];
+    const allowedSortColumns = ['fullName', 'createdAt', 'updatedAt', 'email'];
 
     const search = (searchParams.get('search') as string) || '';
 

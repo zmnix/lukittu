@@ -1,5 +1,8 @@
 'use client';
-import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
+import {
+  IProductsGetResponse,
+  IProductsGetSuccessResponse,
+} from '@/app/api/(dashboard)/products/route';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -20,7 +23,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
-import { Product } from '@prisma/client';
 import {
   ArrowDownUp,
   EllipsisVertical,
@@ -43,7 +45,9 @@ export function ProductListTable() {
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<
+    IProductsGetSuccessResponse['products']
+  >([]);
   const [totalProducts, setTotalProducts] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
@@ -110,7 +114,7 @@ export function ProductListTable() {
       <ProductsMobileFiltersModal
         open={mobileFiltersOpen}
         search={debounceSearch}
-        setSearch={setDebounceSearch}
+        setSearch={setSearch}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>

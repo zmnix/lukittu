@@ -49,7 +49,7 @@ export function CustomersAutocomplete({
           <LoadingSpinner />
         </div>
       }
-      placeholder={t('dashboard.licenses.search_customer')}
+      placeholder={t('dashboard.customers.search_customer')}
       value={selectedCustomers}
       triggerSearchOnFocus
       onChange={(value) => {

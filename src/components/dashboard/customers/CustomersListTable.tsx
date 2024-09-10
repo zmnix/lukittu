@@ -1,13 +1,10 @@
 'use client';
 import {
-  ILicensesGetResponse,
-  ILicensesGetSuccessResponse,
-} from '@/app/api/(dashboard)/licenses/route';
-import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
-import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
+  ICustomersGetResponse,
+  ICustomersGetSuccessResponse,
+} from '@/app/api/(dashboard)/customers/route';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -26,47 +23,36 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  getLicenseStatus,
-  getLicenseStatusBadgeVariant,
-} from '@/lib/utils/license-helpers';
-import { LicenseModalContext } from '@/providers/LicenseModalProvider';
-import {
   ArrowDownUp,
-  Copy,
-  Edit,
   EllipsisVertical,
   Filter,
-  Key,
   Search,
-  Trash,
+  Users,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import AddLicenseButton from './AddLicenseButton';
-import MobileFiltersModal from './LicensesMobileFiltersModal';
+import AddCustomerButton from './AddCustomerButton';
+import CustomersMobileFiltersModal from './CustomersMobileFilters';
 
-export function LicensesListTable() {
+export function CustomersListTable() {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
-  const ctx = useContext(LicenseModalContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [licenses, setLicenses] = useState<
-    ILicensesGetSuccessResponse['licenses']
+  const [customers, setCustomers] = useState<
+    ICustomersGetSuccessResponse['customers']
   >([]);
-  const [totalLicenses, setTotalLicenses] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
-  const [productIds, setProductIds] = useState<string[]>([]);
-  const [customerIds, setCustomerIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortColumn, setSortColumn] = useState<
-    'createdAt' | 'updatedAt' | null
+    'createdAt' | 'updatedAt' | 'name' | 'email' | null
   >(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
@@ -88,45 +74,28 @@ export function LicensesListTable() {
           searchParams.set('search', search);
         }
 
-        if (productIds.length) {
-          searchParams.set('productIds', productIds.join(','));
-        }
-
-        if (customerIds.length) {
-          searchParams.set('customerIds', customerIds.join(','));
-        }
-
         searchParams.set('page', page.toString());
         searchParams.set('pageSize', pageSize.toString());
 
         const response = await fetch(
-          `/api/licenses?${searchParams.toString()}`,
+          `/api/customers?${searchParams.toString()}`,
         );
 
-        const data = (await response.json()) as ILicensesGetResponse;
+        const data = (await response.json()) as ICustomersGetResponse;
 
         if ('message' in data) {
           return toast.error(data.message);
         }
 
-        setLicenses(data.licenses);
-        setTotalLicenses(data.totalLicenses);
+        setCustomers(data.customers);
+        setTotalCustomers(data.totalCustomers);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {
         setLoading(false);
       }
     })();
-  }, [
-    page,
-    pageSize,
-    sortColumn,
-    sortDirection,
-    search,
-    t,
-    productIds,
-    customerIds,
-  ]);
+  }, [page, pageSize, sortColumn, sortDirection, search, t]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -138,29 +107,20 @@ export function LicensesListTable() {
     };
   }, [debounceSearch]);
 
-  const handleCopy = (licenseKey: string) => {
-    navigator.clipboard.writeText(licenseKey);
-    toast.success(t('general.copied_to_clipboard'));
-  };
-
   return (
     <>
-      <MobileFiltersModal
-        customerIds={customerIds}
+      <CustomersMobileFiltersModal
         open={mobileFiltersOpen}
-        productIds={productIds}
-        search={search}
-        setCustomerIds={setCustomerIds}
-        setProductIds={setProductIds}
+        search={debounceSearch}
         setSearch={setSearch}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-bold">
-            {t('dashboard.navigation.licenses')}
+            {t('dashboard.navigation.customers')}
             <div className="ml-auto flex gap-2">
-              <AddLicenseButton />
+              <AddCustomerButton />
               <Button
                 className="lg:hidden"
                 size="sm"
@@ -173,46 +133,53 @@ export function LicensesListTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {totalLicenses ? (
+          {totalCustomers ? (
             <>
-              <div className="mb-4 flex items-center gap-4 max-lg:hidden max-lg:flex-col">
-                <div className="relative flex w-full items-center">
-                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
-                  <Input
-                    className="wf pl-8"
-                    placeholder={t('dashboard.licenses.search_license')}
-                    value={debounceSearch}
-                    onChange={(e) => {
-                      setDebounceSearch(e.target.value);
-                    }}
-                  />
-                </div>
-                <ProductsAutocomplete
-                  productIds={productIds}
-                  setProductIds={setProductIds}
-                />
-                <CustomersAutocomplete
-                  customerIds={customerIds}
-                  setCustomerIds={setCustomerIds}
+              <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
+                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+                <Input
+                  className="pl-8"
+                  placeholder={t('dashboard.customers.search_customer')}
+                  value={debounceSearch}
+                  onChange={(e) => {
+                    setDebounceSearch(e.target.value);
+                  }}
                 />
               </div>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
-                      {t('dashboard.licenses.license')}
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('name');
+                          setSortDirection(
+                            sortColumn === 'name' && sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.name')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
                     </TableHead>
                     <TableHead className="truncate">
-                      {t('dashboard.licenses.status')}
-                    </TableHead>
-                    <TableHead className="truncate">
-                      {t('dashboard.licenses.expires_at')}
-                    </TableHead>
-                    <TableHead className="truncate">
-                      {t('dashboard.navigation.customers')}
-                    </TableHead>
-                    <TableHead className="truncate">
-                      {t('dashboard.navigation.products')}
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('email');
+                          setSortDirection(
+                            sortColumn === 'email' && sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.email')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
                     </TableHead>
                     <TableHead className="truncate">
                       <Button
@@ -254,66 +221,30 @@ export function LicensesListTable() {
                   </TableRow>
                 </TableHeader>
                 {loading ? (
-                  <TableSkeleton columns={8} rows={7} />
+                  <TableSkeleton columns={4} rows={6} />
                 ) : (
                   <TableBody>
-                    {licenses.map((license) => (
+                    {customers.map((customer) => (
                       <TableRow
-                        key={license.id}
+                        key={customer.id}
                         className="cursor-pointer"
                         onClick={() =>
-                          router.push(`/dashboard/licenses/${license.id}`)
+                          router.push(`/dashboard/customers/${customer.id}`)
                         }
                       >
                         <TableCell className="truncate">
-                          {license.licenseKey}
+                          {customer.fullName ?? 'N/A'}
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge
-                            className="text-xs"
-                            variant={getLicenseStatusBadgeVariant(
-                              getLicenseStatus(license),
-                            )}
-                          >
-                            {t(
-                              `general.${getLicenseStatus(license).toLowerCase()}` as any,
-                            )}
-                          </Badge>
+                          {customer.email ?? 'N/A'}
                         </TableCell>
                         <TableCell
                           className="truncate"
-                          title={
-                            license.expirationDate
-                              ? new Date(license.expirationDate).toLocaleString(
-                                  locale,
-                                )
-                              : 'Never'
-                          }
-                        >
-                          {license.expirationDate
-                            ? new Date(license.expirationDate).toLocaleString(
-                                locale,
-                                {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric',
-                                },
-                              )
-                            : 'Never'}
-                        </TableCell>
-                        <TableCell className="truncate">
-                          {license.customers.length}
-                        </TableCell>
-                        <TableCell className="truncate">
-                          {license.products.length}
-                        </TableCell>
-                        <TableCell
-                          className="truncate"
-                          title={new Date(license.createdAt).toLocaleString(
+                          title={new Date(customer.createdAt).toLocaleString(
                             locale,
                           )}
                         >
-                          {new Date(license.createdAt).toLocaleString(locale, {
+                          {new Date(customer.createdAt).toLocaleString(locale, {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric',
@@ -323,11 +254,11 @@ export function LicensesListTable() {
                         </TableCell>
                         <TableCell
                           className="truncate"
-                          title={new Date(license.updatedAt).toLocaleString(
+                          title={new Date(customer.updatedAt).toLocaleString(
                             locale,
                           )}
                         >
-                          {new Date(license.updatedAt).toLocaleString(locale, {
+                          {new Date(customer.updatedAt).toLocaleString(locale, {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric',
@@ -351,29 +282,17 @@ export function LicensesListTable() {
                                 className="hover:cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleCopy(license.licenseKey);
                                 }}
                               >
-                                <Copy className="mr-2 h-4 w-4" />
-                                {t('general.click_to_copy')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setLicenseToEdit(license);
-                                  ctx.setLicenseModalOpen(true);
-                                }}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t('dashboard.licenses.edit_license')}
+                                {t('dashboard.customers.edit_customer')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="text-destructive hover:cursor-pointer"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
                               >
-                                <Trash className="mr-2 h-4 w-4" />
-                                {t('dashboard.licenses.delete_license')}
+                                {t('dashboard.customers.delete_customer')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -386,11 +305,11 @@ export function LicensesListTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={licenses.length}
+                results={customers.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
-                totalItems={totalLicenses}
-                totalPages={Math.ceil(totalLicenses / pageSize)}
+                totalItems={totalCustomers}
+                totalPages={Math.ceil(totalCustomers / pageSize)}
               />
             </>
           ) : (
@@ -398,17 +317,17 @@ export function LicensesListTable() {
               <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
                 <div className="flex">
                   <span className="rounded-lg bg-secondary p-4">
-                    <Key className="h-6 w-6" />
+                    <Users className="h-6 w-6" />
                   </span>
                 </div>
                 <h3 className="text-lg font-bold">
-                  {t('dashboard.licenses.add_your_first_license')}
+                  {t('dashboard.customers.add_your_first_customer')}
                 </h3>
                 <p className="max-w-sm text-center text-sm text-muted-foreground">
-                  {t('dashboard.licenses.license_description')}
+                  {t('dashboard.customers.customer_description')}
                 </p>
                 <div>
-                  <AddLicenseButton />
+                  <AddCustomerButton />
                 </div>
               </div>
             </div>

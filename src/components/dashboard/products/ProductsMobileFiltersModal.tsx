@@ -48,7 +48,7 @@ export default function ProductsMobileFiltersModal({
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               className="wf pl-8"
-              placeholder="Search Products"
+              placeholder={t('dashboard.licenses.search_product')}
               value={tempSearch}
               onChange={(e) => {
                 setTempSearch(e.target.value);
