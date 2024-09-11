@@ -22,7 +22,7 @@ export default function LicenseView() {
   const t = useTranslations();
   const router = useRouter();
 
-  const licenseId = params.slug;
+  const licenseId = params.slug as string;
   const [license, setLicense] = useState<
     ILicenseGetSuccessResponse['license'] | null
   >(null);
@@ -102,36 +102,22 @@ export default function LicenseView() {
       <Separator className="mt-2" />
       <div className="mt-6">
         <div className="flex">
-          {loading || !license ? (
+          <LicenseModalProvider>
             <div className="flex w-full gap-4 max-xl:flex-col">
               <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-                <Skeleton className="h-44 w-full" />
-                <Skeleton className="h-44 w-full" />
-                <Skeleton className="h-44 w-full" />
+                <ProductsPreviewTable licenseId={licenseId} />
+                <CustomersPreviewTable licenseId={licenseId} />
+                <RequestLogsPreviewTable licenseId={licenseId} />
               </div>
-              <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full max-md:hidden">
-                <Skeleton className="h-80 w-full" />
-                <Skeleton className="h-44 w-full" />
+              <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
+                <LicenseDetails license={license} />
+                <MetadataAside
+                  handleMetadataEdit={handleMetadataEdit}
+                  metadata={license?.metadata ?? null}
+                />
               </aside>
             </div>
-          ) : (
-            <LicenseModalProvider>
-              <div className="flex w-full gap-4 max-xl:flex-col">
-                <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-                  <ProductsPreviewTable license={license} />
-                  <CustomersPreviewTable license={license} />
-                  <RequestLogsPreviewTable license={license} />
-                </div>
-                <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
-                  <LicenseDetails license={license} />
-                  <MetadataAside
-                    handleMetadataEdit={handleMetadataEdit}
-                    metadata={license.metadata}
-                  />
-                </aside>
-              </div>
-            </LicenseModalProvider>
-          )}
+          </LicenseModalProvider>
         </div>
       </div>
     </>

@@ -163,6 +163,9 @@ export async function GET(
         createdAt: {
           gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
         },
+        licenseId: licenseId ? licenseId : undefined,
+        productId: productId ? productId : undefined,
+        customerId: customerId ? customerId : undefined,
       },
     });
 

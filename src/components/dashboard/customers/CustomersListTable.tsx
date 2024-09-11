@@ -52,7 +52,7 @@ export function CustomersListTable() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortColumn, setSortColumn] = useState<
-    'createdAt' | 'updatedAt' | 'name' | 'email' | null
+    'createdAt' | 'updatedAt' | 'fullName' | 'email' | null
   >(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
@@ -153,9 +153,9 @@ export function CustomersListTable() {
                       <Button
                         variant="ghost"
                         onClick={() => {
-                          setSortColumn('name');
+                          setSortColumn('fullName');
                           setSortDirection(
-                            sortColumn === 'name' && sortDirection === 'asc'
+                            sortColumn === 'fullName' && sortDirection === 'asc'
                               ? 'desc'
                               : 'asc',
                           );

@@ -45,7 +45,7 @@ export default function RequestLogsPreviewTable({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
-  const [totalLogs, setTotalLogs] = useState(0);
+  const [totalLogs, setTotalLogs] = useState(1);
 
   const t = useTranslations();
   const router = useRouter();
@@ -120,39 +120,41 @@ export default function RequestLogsPreviewTable({
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {totalLogs ? (
           <>
             <Table>
               <TableHeader>
-                <TableHead className="truncate">
-                  {t('general.ip_address')}
-                </TableHead>
-                <TableHead className="truncate">
-                  {t('general.country')}
-                </TableHead>
-                <TableHead className="truncate">
-                  {t('dashboard.licenses.status')}
-                </TableHead>
-                <TableHead className="truncate">
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setSortColumn('createdAt');
-                      setSortDirection(
-                        sortColumn === 'createdAt' && sortDirection === 'asc'
-                          ? 'desc'
-                          : 'asc',
-                      );
-                    }}
-                  >
-                    {t('general.created_at')}
-                    <ArrowDownUp className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
+                <TableRow>
+                  <TableHead className="truncate">
+                    {t('general.ip_address')}
+                  </TableHead>
+                  <TableHead className="truncate">
+                    {t('general.country')}
+                  </TableHead>
+                  <TableHead className="truncate">
+                    {t('dashboard.licenses.status')}
+                  </TableHead>
+                  <TableHead className="truncate">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setSortColumn('createdAt');
+                        setSortDirection(
+                          sortColumn === 'createdAt' && sortDirection === 'asc'
+                            ? 'desc'
+                            : 'asc',
+                        );
+                      }}
+                    >
+                      {t('general.created_at')}
+                      <ArrowDownUp className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                </TableRow>
               </TableHeader>
               {loading ? (
-                <TableSkeleton columns={4} rows={10} />
+                <TableSkeleton columns={4} rows={3} />
               ) : (
                 <TableBody>
                   {logs.map((log) => (

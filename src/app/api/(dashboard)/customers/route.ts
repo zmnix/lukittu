@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
@@ -45,10 +46,20 @@ export async function GET(
 
     const search = (searchParams.get('search') as string) || '';
 
+    let licenseId = searchParams.get('licenseId') as string;
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
+
+    if (licenseId && !regex.uuidV4.test(licenseId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
@@ -80,20 +91,29 @@ export async function GET(
             include: {
               customers: {
                 where: {
-                  OR: [
-                    {
-                      email: {
-                        contains: search,
-                        mode: 'insensitive',
-                      },
-                    },
-                    {
-                      fullName: {
-                        contains: search,
-                        mode: 'insensitive',
-                      },
-                    },
-                  ],
+                  licenses: licenseId
+                    ? {
+                        some: {
+                          id: licenseId,
+                        },
+                      }
+                    : undefined,
+                  OR: search
+                    ? [
+                        {
+                          email: {
+                            contains: search,
+                            mode: 'insensitive',
+                          },
+                        },
+                        {
+                          fullName: {
+                            contains: search,
+                            mode: 'insensitive',
+                          },
+                        },
+                      ]
+                    : undefined,
                 },
                 orderBy: {
                   [sortColumn]: sortDirection,
@@ -128,6 +148,13 @@ export async function GET(
     const totalCustomers = await prisma.customer.count({
       where: {
         teamId: selectedTeam,
+        licenses: licenseId
+          ? {
+              some: {
+                id: licenseId,
+              },
+            }
+          : undefined,
       },
     });
 

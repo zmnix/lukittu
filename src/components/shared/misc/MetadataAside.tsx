@@ -1,13 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import MetadataEditModal from './MetadataEditModal';
 
 interface MetadataAsideProps {
-  metadata: JsonValue;
+  metadata: JsonValue | null;
   handleMetadataEdit: ({
     metadata,
   }: {
@@ -21,16 +22,18 @@ export default function MetadataAside({
 }: MetadataAsideProps) {
   const [open, setOpen] = useState(false);
   const t = useTranslations();
-  const metadataCasted = metadata as { key: string; value: string }[];
+  const metadataCasted = metadata as { key: string; value: string }[] | null;
 
   return (
     <>
-      <MetadataEditModal
-        handleMetadataEdit={handleMetadataEdit}
-        metadata={metadata}
-        open={open}
-        onOpenChange={setOpen}
-      />
+      {metadata && (
+        <MetadataEditModal
+          handleMetadataEdit={handleMetadataEdit}
+          metadata={metadata}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-1 py-2">
           <CardTitle className="text-xl font-bold">
@@ -48,21 +51,25 @@ export default function MetadataAside({
         <Separator />
         <CardContent className="mt-4">
           <div className="flex flex-col gap-4">
-            {metadataCasted.length ? (
-              metadataCasted.map((item, index) => (
-                <div key={index} className="flex flex-col gap-2">
-                  <h3 className="break-all text-sm font-semibold">
-                    {item.key}
-                  </h3>
-                  <p className="break-all text-sm text-muted-foreground">
-                    {item.value}
-                  </p>
+            {metadataCasted ? (
+              metadataCasted.length ? (
+                metadataCasted.map((item, index) => (
+                  <div key={index} className="flex flex-col gap-2">
+                    <h3 className="break-all text-sm font-semibold">
+                      {item.key}
+                    </h3>
+                    <p className="break-all text-sm text-muted-foreground">
+                      {item.value}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="flex h-24 flex-col items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
+                  {t('general.no_metadata')}
                 </div>
-              ))
+              )
             ) : (
-              <div className="flex h-24 flex-col items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
-                {t('general.no_metadata')}
-              </div>
+              <Skeleton className="h-8 w-full" />
             )}
           </div>
         </CardContent>

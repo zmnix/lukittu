@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
@@ -37,16 +38,26 @@ export async function GET(
       );
     }
 
-    const allowedPageSizes = [25, 50, 100];
+    const allowedPageSizes = [10, 25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
     const allowedSortColumns = ['name', 'createdAt', 'updatedAt'];
 
     const search = (searchParams.get('search') as string) || '';
 
+    let licenseId = searchParams.get('licenseId') as string;
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
+
+    if (licenseId && !regex.uuidV4.test(licenseId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
@@ -78,6 +89,13 @@ export async function GET(
             include: {
               products: {
                 where: {
+                  licenses: licenseId
+                    ? {
+                        some: {
+                          id: licenseId,
+                        },
+                      }
+                    : undefined,
                   name: search
                     ? {
                         contains: search,
@@ -118,6 +136,13 @@ export async function GET(
     const totalProducts = await prisma.product.count({
       where: {
         teamId: selectedTeam,
+        licenses: licenseId
+          ? {
+              some: {
+                id: licenseId,
+              },
+            }
+          : undefined,
       },
     });
 
