@@ -58,6 +58,7 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "no_data": "No data",
     "country": "Country",
     "apply": "Apply",
     "filters": "Filters",
