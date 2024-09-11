@@ -46,7 +46,7 @@ export async function GET(
       );
     }
 
-    const allowedPageSizes = [25, 50, 100];
+    const allowedPageSizes = [10, 25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
     const allowedSortColumns = ['createdAt', 'updatedAt'];
 

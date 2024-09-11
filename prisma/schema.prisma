@@ -83,7 +83,7 @@ model Customer {
   teamId          String
   team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
   licenses        License[]
-  requests        RequestLog[]
+  requestLogs     RequestLog[]
   createdByUserId String?
   createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime     @default(now())

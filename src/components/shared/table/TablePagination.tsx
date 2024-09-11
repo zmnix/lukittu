@@ -22,7 +22,7 @@ interface TablePaginationProps {
   results: number;
   totalPages: number;
   totalItems: number;
-  setPageSize: React.Dispatch<React.SetStateAction<number>>;
+  setPageSize?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function TablePagination({
@@ -41,30 +41,33 @@ export default function TablePagination({
       <div className="flex items-center gap-4">
         <p className="text-sm font-medium">
           {t('general.showing_of_results', {
-            visible: results > pageSize ? pageSize : results,
+            start: (page - 1) * pageSize + 1,
+            end: Math.min(page * pageSize, totalItems),
             total: totalItems,
           })}
         </p>
       </div>
       <div className="flex items-center justify-end gap-4">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium">{t('general.rows_per_page')}:</p>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => {
-              setPageSize(parseInt(value));
-            }}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {setPageSize && (
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium">{t('general.rows_per_page')}:</p>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => {
+                setPageSize(parseInt(value));
+              }}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div>
           <p className="text-sm font-medium">
             {t('general.page_of', {

@@ -14,7 +14,7 @@ import {
 } from '@/lib/validation/licenses/set-license-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Customer, License, Product, RequestLog, User } from '@prisma/client';
+import { Customer, License, Product, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -22,7 +22,6 @@ export type ILicenseGetSuccessResponse = {
   license: Omit<License, 'licenseKeyLookup'> & {
     products: Product[];
     customers: Customer[];
-    requestLogs: RequestLog[];
     createdBy: Omit<User, 'passwordHash'> | null;
   };
 };
@@ -81,12 +80,6 @@ export async function GET(
                     orderBy: {
                       createdAt: 'desc',
                     },
-                  },
-                  requestLogs: {
-                    orderBy: {
-                      createdAt: 'desc',
-                    },
-                    take: 7,
                   },
                   createdBy: true,
                 },

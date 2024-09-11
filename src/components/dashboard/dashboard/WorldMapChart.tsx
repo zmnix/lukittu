@@ -130,8 +130,8 @@ export default function WorldMapChart() {
 
   return (
     <Card>
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-        <div className="grid flex-1 gap-1 text-center sm:text-left">
+      <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
+        <div className="grid flex-1 gap-1">
           <CardTitle className="text-xl">
             {t('dashboard.dashboard.requests_by_country')}
           </CardTitle>
@@ -140,10 +140,7 @@ export default function WorldMapChart() {
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger
-            aria-label="Select a value"
-            className="w-[160px] rounded-lg sm:ml-auto"
-          >
+          <SelectTrigger className="w-[160px] rounded-lg sm:ml-auto">
             <SelectValue placeholder={t('dashboard.dashboard.last_24_hours')} />
           </SelectTrigger>
           <SelectContent className="rounded-xl">

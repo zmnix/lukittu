@@ -58,6 +58,7 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "country": "Country",
     "apply": "Apply",
     "filters": "Filters",
     "error": "Error",
@@ -102,7 +103,7 @@
     "created_at": "Created at",
     "updated_at": "Updated at",
     "page_of": "Page {page} of {pages}",
-    "showing_of_results": "Showing {visible} of {total} results",
+    "showing_of_results": "Showing {start}-{end} of {total} results",
     "rows_per_page": "Rows per page",
     "loading": "Loading...",
     "no_results": "No results",
@@ -203,6 +204,7 @@
       "last_24_hours": "Last 24 hours",
       "last_7_days": "Last 7 days",
       "last_30_days": "Last 30 days",
+      "last_6_months": "Last 6 months",
       "new_in_last_7_days": "{count} new in the last 7 days",
       "requests_in_last_24_hours": "{count} requests in the last 24 hours",
       "success": "Success",
