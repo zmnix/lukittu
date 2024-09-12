@@ -56,8 +56,8 @@ export async function GET(
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
-    let productIds = (searchParams.get('productIds') as string) || '';
-    let customerIds = (searchParams.get('customerIds') as string) || '';
+    const productIds = (searchParams.get('productIds') as string) || '';
+    const customerIds = (searchParams.get('customerIds') as string) || '';
 
     const productIdsFormatted: string[] = [];
     const customerIdsFormatted: string[] = [];

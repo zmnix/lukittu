@@ -1,9 +1,16 @@
 {
   "extends": "next/core-web-vitals",
   "rules": {
+    "prefer-const": "error",
     "react/react-in-jsx-scope": "off",
     "spaced-comment": "error",
     "no-unused-vars": ["error", { "args": "none" }],
+    "no-unused-expressions": "error",
+    "no-unneeded-ternary": "error",
+    "no-useless-return": "error",
+    "no-useless-concat": "error",
+    "no-useless-catch": "error",
+    "no-useless-call": "error",
     "react/self-closing-comp": ["error", { "component": true, "html": true }],
     "arrow-body-style": ["error", "as-needed"],
     "no-trailing-spaces": "error",

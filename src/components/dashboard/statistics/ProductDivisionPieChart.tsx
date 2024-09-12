@@ -1,5 +1,5 @@
 'use client';
-import { IDashboardProductDivisionGetResponse } from '@/app/api/(dashboard)/dashboard/product-division/route';
+import { IStatisticsProductDivisionGetResponse } from '@/app/api/(dashboard)/statistics/product-division/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Card,
@@ -74,8 +74,9 @@ export function ProductDivisionPieChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/dashboard/product-division');
-        const data = (await res.json()) as IDashboardProductDivisionGetResponse;
+        const res = await fetch('/api/statistics/product-division');
+        const data =
+          (await res.json()) as IStatisticsProductDivisionGetResponse;
 
         if ('message' in data) {
           toast.error(data.message);

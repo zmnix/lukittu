@@ -1,8 +1,8 @@
 'use client';
 import {
-  IDashboardRequestsGetResponse,
-  IDashboardRequestsGetSuccessResponse,
-} from '@/app/api/(dashboard)/dashboard/requests/route';
+  IStatisticsRequestsGetResponse,
+  IStatisticsRequestsGetSuccessResponse,
+} from '@/app/api/(dashboard)/statistics/requests/route';
 import {
   Card,
   CardContent,
@@ -50,22 +50,28 @@ const initialData = Array.from({ length: 24 }, (_, index) => {
   };
 });
 
-export function RequestsAreaChart() {
+interface RequestsAreaChartProps {
+  licenseId?: string;
+}
+
+export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
   const t = useTranslations();
   const locale = useLocale();
 
   const [timeRange, setTimeRange] = useState('24h');
   const [comparedToPrevious, setComparedToPrevious] = useState('0%');
   const [data, setData] =
-    useState<IDashboardRequestsGetSuccessResponse['data']>(initialData);
+    useState<IStatisticsRequestsGetSuccessResponse['data']>(initialData);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `/api/dashboard/requests?timeRange=${timeRange}`,
+          `/api/statistics/requests?timeRange=${timeRange}${
+            licenseId ? `&licenseId=${licenseId}` : ''
+          }`,
         );
-        const data = (await res.json()) as IDashboardRequestsGetResponse;
+        const data = (await res.json()) as IStatisticsRequestsGetResponse;
 
         if ('message' in data) {
           toast.error(data.message);
@@ -87,7 +93,7 @@ export function RequestsAreaChart() {
     const intervalId = setInterval(fetchData, 90000);
 
     return () => clearInterval(intervalId);
-  }, [t, timeRange]);
+  }, [t, timeRange, licenseId]);
 
   const chartConfig = {
     total: {

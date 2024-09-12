@@ -1,8 +1,8 @@
-import DataCards from '@/components/dashboard/dashboard/DataCards';
-import { ProductDivisionPieChart } from '@/components/dashboard/dashboard/ProductDivisionPieChart';
-import RecentlyActiveCard from '@/components/dashboard/dashboard/RecentlyActiveCard';
-import { RequestsAreaChart } from '@/components/dashboard/dashboard/RequestsAreaChart';
-import WorldMapChart from '@/components/dashboard/dashboard/WorldMapChart';
+import DataCards from '@/components/dashboard/statistics/DataCards';
+import { ProductDivisionPieChart } from '@/components/dashboard/statistics/ProductDivisionPieChart';
+import RecentlyActiveCard from '@/components/dashboard/statistics/RecentlyActiveCard';
+import { RequestsAreaChart } from '@/components/dashboard/statistics/RequestsAreaChart';
+import WorldMapChart from '@/components/dashboard/statistics/WorldMapChart';
 import { Separator } from '@/components/ui/separator';
 import { useTranslations } from 'next-intl';
 

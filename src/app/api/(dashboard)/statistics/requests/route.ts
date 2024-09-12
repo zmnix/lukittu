@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -13,14 +14,14 @@ type RequestData = {
   failed: number;
 };
 
-export type IDashboardRequestsGetSuccessResponse = {
+export type IStatisticsRequestsGetSuccessResponse = {
   data: RequestData[];
   comparedToPrevious: string;
 };
 
-export type IDashboardRequestsGetResponse =
+export type IStatisticsRequestsGetResponse =
   | ErrorResponse
-  | IDashboardRequestsGetSuccessResponse;
+  | IStatisticsRequestsGetSuccessResponse;
 
 const allowedTimeRanges = ['1h', '24h', '7d', '30d'] as const;
 
@@ -77,13 +78,23 @@ const groupByDateOrHour = (
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<IDashboardRequestsGetResponse>> {
+): Promise<NextResponse<IStatisticsRequestsGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
   const searchParams = request.nextUrl.searchParams;
 
+  const licenseId = searchParams.get('licenseId');
   let timeRange = searchParams.get('timeRange') as '1h' | '24h' | '7d' | '30d';
   if (!timeRange || !allowedTimeRanges.includes(timeRange)) {
     timeRange = '24h';
+  }
+
+  if (licenseId && !regex.uuidV4.test(licenseId)) {
+    return NextResponse.json(
+      {
+        message: t('validation.bad_request'),
+      },
+      { status: HttpStatus.BAD_REQUEST },
+    );
   }
 
   try {
@@ -107,6 +118,7 @@ export async function GET(
             include: {
               requestLogs: {
                 where: {
+                  licenseId: licenseId ? licenseId : undefined,
                   createdAt: {
                     gte: getStartDate(timeRange),
                   },

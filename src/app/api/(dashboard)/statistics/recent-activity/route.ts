@@ -16,16 +16,16 @@ type RecentActivityData = {
   createdAt: Date;
 };
 
-export type IDashboardRecentActivityGetSuccessResponse = {
+export type IStatisticsRecentActivityGetSuccessResponse = {
   data: RecentActivityData[];
 };
 
-export type IDashboardRecentActivityGetResponse =
+export type IStatisticsRecentActivityGetResponse =
   | ErrorResponse
-  | IDashboardRecentActivityGetSuccessResponse;
+  | IStatisticsRecentActivityGetSuccessResponse;
 
 export async function GET(): Promise<
-  NextResponse<IDashboardRecentActivityGetResponse>
+  NextResponse<IStatisticsRecentActivityGetResponse>
 > {
   const t = await getTranslations({ locale: getLanguage() });
 

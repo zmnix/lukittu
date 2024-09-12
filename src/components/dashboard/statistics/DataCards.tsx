@@ -1,8 +1,8 @@
 'use client';
 import {
-  IDashboardCardDataGetResponse,
-  IDashboardCardDataGetSuccessResponse,
-} from '@/app/api/(dashboard)/dashboard/card-data/route';
+  IStatisticsCardDataGetResponse,
+  IStatisticsCardDataGetSuccessResponse,
+} from '@/app/api/(dashboard)/statistics/card-data/route';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -21,14 +21,14 @@ export default function DataCards() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<
-    IDashboardCardDataGetSuccessResponse['data'] | null
+    IStatisticsCardDataGetSuccessResponse['data'] | null
   >(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/dashboard/card-data');
-        const data = (await res.json()) as IDashboardCardDataGetResponse;
+        const res = await fetch('/api/statistics/card-data');
+        const data = (await res.json()) as IStatisticsCardDataGetResponse;
 
         if ('message' in data) {
           toast.error(data.message);

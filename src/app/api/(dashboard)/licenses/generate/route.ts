@@ -111,7 +111,7 @@ const findUniqueLicenseKey = async (
   let attempts = 0;
 
   while (attempts < MAX_ATTEMPTS) {
-    let licenseKey = generateLicenseKey();
+    const licenseKey = generateLicenseKey();
 
     const license = await prisma.license.findFirst({
       where: {

@@ -1,8 +1,8 @@
 'use client';
 import {
-  IDashboardRecentActivityGetResponse,
-  IDashboardRecentActivityGetSuccessResponse,
-} from '@/app/api/(dashboard)/dashboard/recent-activity/route';
+  IStatisticsRecentActivityGetResponse,
+  IStatisticsRecentActivityGetSuccessResponse,
+} from '@/app/api/(dashboard)/statistics/recent-activity/route';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -30,14 +30,14 @@ export default function RecentlyActiveCard() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<
-    IDashboardRecentActivityGetSuccessResponse['data']
+    IStatisticsRecentActivityGetSuccessResponse['data']
   >([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/dashboard/recent-activity');
-        const data = (await res.json()) as IDashboardRecentActivityGetResponse;
+        const res = await fetch('/api/statistics/recent-activity');
+        const data = (await res.json()) as IStatisticsRecentActivityGetResponse;
 
         if ('message' in data) {
           toast.error(data.message);

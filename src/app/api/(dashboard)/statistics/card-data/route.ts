@@ -22,16 +22,16 @@ type CardData = {
   };
 };
 
-export type IDashboardCardDataGetSuccessResponse = {
+export type IStatisticsCardDataGetSuccessResponse = {
   data: CardData;
 };
 
-export type IDashboardCardDataGetResponse =
+export type IStatisticsCardDataGetResponse =
   | ErrorResponse
-  | IDashboardCardDataGetSuccessResponse;
+  | IStatisticsCardDataGetSuccessResponse;
 
 export async function GET(): Promise<
-  NextResponse<IDashboardCardDataGetResponse>
+  NextResponse<IStatisticsCardDataGetResponse>
 > {
   const t = await getTranslations({ locale: getLanguage() });
 

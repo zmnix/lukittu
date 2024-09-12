@@ -12,6 +12,8 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { RequestsAreaChart } from '../../statistics/RequestsAreaChart';
+import WorldMapChart from '../../statistics/WorldMapChart';
 import CustomersPreviewTable from './CustomersPreviewTable';
 import { LicenseDetails } from './LicenseDetails';
 import ProductsPreviewTable from './ProductsPreviewTable';
@@ -103,11 +105,13 @@ export default function LicenseView() {
       <div className="mt-6">
         <div className="flex">
           <LicenseModalProvider>
-            <div className="flex w-full gap-4 max-xl:flex-col">
+            <div className="flex w-full gap-4 max-xl:flex-col-reverse">
               <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
                 <ProductsPreviewTable licenseId={licenseId} />
                 <CustomersPreviewTable licenseId={licenseId} />
                 <RequestLogsPreviewTable licenseId={licenseId} />
+                <RequestsAreaChart licenseId={licenseId} />
+                <WorldMapChart licenseId={licenseId} />
               </div>
               <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
                 <LicenseDetails license={license} />

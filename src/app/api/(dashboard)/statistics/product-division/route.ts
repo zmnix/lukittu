@@ -13,16 +13,16 @@ type DivisonData = {
   licenses: number;
 };
 
-export type IDashboardProductDivisionGetSuccessResponse = {
+export type IStatisticsProductDivisionGetSuccessResponse = {
   data: DivisonData[];
 };
 
-export type IDashboardProductDivisionGetResponse =
+export type IStatisticsProductDivisionGetResponse =
   | ErrorResponse
-  | IDashboardProductDivisionGetSuccessResponse;
+  | IStatisticsProductDivisionGetSuccessResponse;
 
 export async function GET(): Promise<
-  NextResponse<IDashboardProductDivisionGetResponse>
+  NextResponse<IStatisticsProductDivisionGetResponse>
 > {
   const t = await getTranslations({ locale: getLanguage() });
 

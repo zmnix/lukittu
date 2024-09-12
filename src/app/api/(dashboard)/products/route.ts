@@ -44,7 +44,7 @@ export async function GET(
 
     const search = (searchParams.get('search') as string) || '';
 
-    let licenseId = searchParams.get('licenseId') as string;
+    const licenseId = searchParams.get('licenseId') as string;
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;

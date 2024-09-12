@@ -1,8 +1,8 @@
 'use client';
 import {
-  IDashboardMapDataGetResponse,
-  IDashboardMapDataGetSuccessResponse,
-} from '@/app/api/(dashboard)/dashboard/map-data/route';
+  IStatisticsMapDataGetResponse,
+  IStatisticsMapDataGetSuccessResponse,
+} from '@/app/api/(dashboard)/statistics/map-data/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Card,
@@ -39,13 +39,17 @@ type CountryData = {
 
 type WorldJsonCountryData = { properties: { name: string; a3: string } };
 
-export default function WorldMapChart() {
+interface WorldMapChartProps {
+  licenseId?: string;
+}
+
+export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
   const t = useTranslations();
 
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
   const [data, setData] = useState<
-    IDashboardMapDataGetSuccessResponse['data'] | null
+    IStatisticsMapDataGetSuccessResponse['data'] | null
   >(null);
   const [tooltip, setTooltip] = useState<{
     x: number;
@@ -73,9 +77,11 @@ export default function WorldMapChart() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `/api/dashboard/map-data?timeRange=${timeRange}`,
+          `/api/statistics/map-data?timeRange=${timeRange}${
+            licenseId ? `&licenseId=${licenseId}` : ''
+          }`,
         );
-        const data = (await res.json()) as IDashboardMapDataGetResponse;
+        const data = (await res.json()) as IStatisticsMapDataGetResponse;
 
         if ('message' in data) {
           toast.error(data.message);
@@ -93,7 +99,7 @@ export default function WorldMapChart() {
     };
 
     fetchData();
-  }, [t, timeRange]);
+  }, [t, timeRange, licenseId]);
 
   useEffect(() => {
     if (!svgRef.current) {
