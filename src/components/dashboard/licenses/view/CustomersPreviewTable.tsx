@@ -158,10 +158,10 @@ export default function CustomersPreviewTable({
                       }
                     >
                       <TableCell className="truncate">
-                        {customer.fullName}
+                        {customer.fullName ?? 'N/A'}
                       </TableCell>
                       <TableCell className="truncate">
-                        {customer.email}
+                        {customer.email ?? 'N/A'}
                       </TableCell>
                       <TableCell className="truncate">
                         {new Date(customer.createdAt).toLocaleString(locale, {
