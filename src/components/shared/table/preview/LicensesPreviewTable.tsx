@@ -19,6 +19,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { DateConverter } from '../../DateConverter';
 
 interface LicensesPreviewTableProps {
   productId?: string;
@@ -134,13 +135,7 @@ export default function LicensesPreviewTable({
                     >
                       <TableCell>{license.licenseKey}</TableCell>
                       <TableCell>
-                        {new Date(license.createdAt).toLocaleString(locale, {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: 'numeric',
-                        })}
+                        <DateConverter date={license.createdAt} />
                       </TableCell>
                     </TableRow>
                   ))}

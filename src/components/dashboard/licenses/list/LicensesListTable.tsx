@@ -3,6 +3,7 @@ import {
   ILicensesGetResponse,
   ILicensesGetSuccessResponse,
 } from '@/app/api/(dashboard)/licenses/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
 import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
 import TablePagination from '@/components/shared/table/TablePagination';
@@ -287,19 +288,14 @@ export function LicensesListTable() {
                               ? new Date(license.expirationDate).toLocaleString(
                                   locale,
                                 )
-                              : 'Never'
+                              : t('dashboard.licenses.never')
                           }
                         >
-                          {license.expirationDate
-                            ? new Date(license.expirationDate).toLocaleString(
-                                locale,
-                                {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric',
-                                },
-                              )
-                            : 'Never'}
+                          {license.expirationDate ? (
+                            <DateConverter date={license.expirationDate} />
+                          ) : (
+                            t('dashboard.licenses.never')
+                          )}
                         </TableCell>
                         <TableCell className="truncate">
                           {license.customers.length}
@@ -313,13 +309,7 @@ export function LicensesListTable() {
                             locale,
                           )}
                         >
-                          {new Date(license.createdAt).toLocaleString(locale, {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: 'numeric',
-                            minute: 'numeric',
-                          })}
+                          <DateConverter date={license.createdAt} />
                         </TableCell>
                         <TableCell
                           className="truncate"
@@ -327,13 +317,7 @@ export function LicensesListTable() {
                             locale,
                           )}
                         >
-                          {new Date(license.updatedAt).toLocaleString(locale, {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: 'numeric',
-                            minute: 'numeric',
-                          })}
+                          <DateConverter date={license.updatedAt} />
                         </TableCell>
                         <TableCell className="truncate py-0 text-right">
                           <DropdownMenu>

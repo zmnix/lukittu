@@ -58,6 +58,7 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "time_conversion": "Time conversion",
     "details": "Details",
     "no_data": "No data",
     "apply": "Apply",

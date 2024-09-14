@@ -19,6 +19,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { DateConverter } from '../../DateConverter';
 
 interface CustomersPreviewTableProps {
   licenseId: string;
@@ -164,13 +165,7 @@ export default function CustomersPreviewTable({
                         {customer.email ?? 'N/A'}
                       </TableCell>
                       <TableCell className="truncate">
-                        {new Date(customer.createdAt).toLocaleString(locale, {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: 'numeric',
-                        })}
+                        <DateConverter date={customer.createdAt} />
                       </TableCell>
                     </TableRow>
                   ))}

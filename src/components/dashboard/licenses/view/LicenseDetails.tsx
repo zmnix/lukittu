@@ -1,4 +1,5 @@
 import { ILicenseGetSuccessResponse } from '@/app/api/(dashboard)/licenses/[slug]/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,13 +111,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                   {t('dashboard.licenses.expiration_date')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(license.expirationDate!).toLocaleString(locale, {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  <DateConverter date={license.expirationDate!} />
                 </p>
               </div>
             )
@@ -189,13 +184,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </h3>
                 <div className="text-sm text-muted-foreground">
                   {license ? (
-                    new Date(license.createdAt).toLocaleString(locale, {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                    <DateConverter date={license.createdAt} />
                   ) : (
                     <Skeleton className="h-4 w-full" />
                   )}
@@ -207,13 +196,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </h3>
                 <div className="text-sm text-muted-foreground">
                   {license ? (
-                    new Date(license.updatedAt).toLocaleString(locale, {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                    <DateConverter date={license.updatedAt} />
                   ) : (
                     <Skeleton className="h-4 w-full" />
                   )}

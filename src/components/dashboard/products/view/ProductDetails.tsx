@@ -1,4 +1,5 @@
 import { IProductGetSuccessResponse } from '@/app/api/(dashboard)/products/[slug]/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -82,13 +83,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 </h3>
                 <div className="text-sm text-muted-foreground">
                   {product ? (
-                    new Date(product.createdAt).toLocaleString(locale, {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                    <DateConverter date={product.createdAt} />
                   ) : (
                     <Skeleton className="h-4 w-full" />
                   )}
@@ -100,13 +95,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 </h3>
                 <div className="text-sm text-muted-foreground">
                   {product ? (
-                    new Date(product.updatedAt).toLocaleString(locale, {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                    <DateConverter date={product.updatedAt} />
                   ) : (
                     <Skeleton className="h-4 w-full" />
                   )}

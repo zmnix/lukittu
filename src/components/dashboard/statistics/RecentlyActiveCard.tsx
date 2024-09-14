@@ -3,6 +3,7 @@ import {
   IStatisticsRecentActivityGetResponse,
   IStatisticsRecentActivityGetSuccessResponse,
 } from '@/app/api/(dashboard)/statistics/recent-activity/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -86,13 +87,7 @@ export default function RecentlyActiveCard() {
                 <TableRow key={row.id}>
                   <TableCell>{row.license}</TableCell>
                   <TableCell>
-                    {new Date(row.createdAt).toLocaleString(locale, {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    })}
+                    <DateConverter date={row.createdAt} />
                   </TableCell>
                   <TableCell>
                     <Badge className="text-xs" variant="secondary">

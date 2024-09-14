@@ -3,6 +3,7 @@ import {
   IProductsGetResponse,
   IProductsGetSuccessResponse,
 } from '@/app/api/(dashboard)/products/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -229,13 +230,7 @@ export function ProductListTable() {
                             locale,
                           )}
                         >
-                          {new Date(product.createdAt).toLocaleString(locale, {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: 'numeric',
-                            minute: 'numeric',
-                          })}
+                          <DateConverter date={product.createdAt} />
                         </TableCell>
                         <TableCell
                           className="truncate"
@@ -243,13 +238,7 @@ export function ProductListTable() {
                             locale,
                           )}
                         >
-                          {new Date(product.updatedAt).toLocaleString(locale, {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: 'numeric',
-                            minute: 'numeric',
-                          })}
+                          <DateConverter date={product.updatedAt} />
                         </TableCell>
                         <TableCell className="truncate py-0 text-right">
                           <DropdownMenu>

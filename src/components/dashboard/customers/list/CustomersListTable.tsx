@@ -3,6 +3,7 @@ import {
   ICustomersGetResponse,
   ICustomersGetSuccessResponse,
 } from '@/app/api/(dashboard)/customers/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -248,13 +249,7 @@ export function CustomersListTable() {
                             locale,
                           )}
                         >
-                          {new Date(customer.createdAt).toLocaleString(locale, {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: 'numeric',
-                            minute: 'numeric',
-                          })}
+                          <DateConverter date={customer.createdAt} />
                         </TableCell>
                         <TableCell
                           className="truncate"
@@ -262,13 +257,7 @@ export function CustomersListTable() {
                             locale,
                           )}
                         >
-                          {new Date(customer.updatedAt).toLocaleString(locale, {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: 'numeric',
-                            minute: 'numeric',
-                          })}
+                          <DateConverter date={customer.updatedAt} />
                         </TableCell>
                         <TableCell className="truncate py-0 text-right">
                           <DropdownMenu>

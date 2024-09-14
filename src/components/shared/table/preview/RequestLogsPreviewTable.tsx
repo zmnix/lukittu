@@ -29,6 +29,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { DateConverter } from '../../DateConverter';
 
 interface RequestLogsPreviewTableProps {
   licenseId: string;
@@ -178,13 +179,7 @@ export default function RequestLogsPreviewTable({
                         </Badge>
                       </TableCell>
                       <TableCell className="truncate">
-                        {new Date(log.createdAt).toLocaleString(locale, {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: 'numeric',
-                        })}
+                        <DateConverter date={log.createdAt} />
                       </TableCell>
                     </TableRow>
                   ))}
