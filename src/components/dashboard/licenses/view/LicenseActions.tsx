@@ -25,6 +25,11 @@ export default function LicenseActions({ license }: LicenseActionsProps) {
     ctx.setLicenseModalOpen(true);
   };
 
+  const handleLicenseDelete = () => {
+    ctx.setLicenseToDelete(license);
+    ctx.setLicenseToDeleteModalOpen(true);
+  };
+
   const handleCopy = (licenseKey: string) => {
     navigator.clipboard.writeText(licenseKey);
     toast.success(t('general.copied_to_clipboard'));
@@ -54,7 +59,7 @@ export default function LicenseActions({ license }: LicenseActionsProps) {
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleLicenseDelete}
         >
           <Trash className="mr-2 h-4 w-4" />
           {t('dashboard.licenses.delete_license')}

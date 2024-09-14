@@ -22,7 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowDownUp, Ellipsis, Filter, Search, Users } from 'lucide-react';
+import {
+  ArrowDownUp,
+  Edit,
+  Ellipsis,
+  Filter,
+  Search,
+  Trash,
+  Users,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -278,6 +286,7 @@ export function CustomersListTable() {
                                   e.stopPropagation();
                                 }}
                               >
+                                <Edit className="mr-2 h-4 w-4" />
                                 {t('dashboard.customers.edit_customer')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
@@ -286,6 +295,7 @@ export function CustomersListTable() {
                                   e.stopPropagation();
                                 }}
                               >
+                                <Trash className="mr-2 h-4 w-4" />
                                 {t('dashboard.customers.delete_customer')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>

@@ -370,7 +370,11 @@ export function LicensesListTable() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="text-destructive hover:cursor-pointer"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  ctx.setLicenseToDelete(license);
+                                  ctx.setLicenseToDeleteModalOpen(true);
+                                }}
                               >
                                 <Trash className="mr-2 h-4 w-4" />
                                 {t('dashboard.licenses.delete_license')}

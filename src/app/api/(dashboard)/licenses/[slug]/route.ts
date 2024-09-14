@@ -349,3 +349,107 @@ export async function PUT(
     );
   }
 }
+
+type ILicensesDeleteSuccessResponse = {
+  success: boolean;
+};
+
+export type ILicensesDeleteResponse =
+  | ErrorResponse
+  | ILicensesDeleteSuccessResponse;
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { slug: string } },
+): Promise<NextResponse<ILicensesDeleteResponse>> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  try {
+    const licenseId = params.slug;
+
+    if (!licenseId || !regex.uuidV4.test(licenseId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const selectedTeam = getSelectedTeam();
+
+    if (!selectedTeam) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              deletedAt: null,
+              id: selectedTeam,
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const license = await prisma.license.findFirst({
+      where: {
+        id: licenseId,
+        teamId: selectedTeam,
+      },
+    });
+
+    if (!license) {
+      return NextResponse.json(
+        {
+          message: t('validation.license_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    await prisma.license.delete({
+      where: {
+        id: licenseId,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    logger.error("Error occurred in 'licenses/[slug]' route:", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}

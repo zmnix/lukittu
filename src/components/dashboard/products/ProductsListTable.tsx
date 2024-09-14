@@ -23,7 +23,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
-import { ArrowDownUp, Ellipsis, Filter, Package, Search } from 'lucide-react';
+import {
+  ArrowDownUp,
+  Edit,
+  Ellipsis,
+  Filter,
+  Package,
+  Search,
+  Trash,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -263,6 +271,7 @@ export function ProductListTable() {
                                   ctx.setProductModalOpen(true);
                                 }}
                               >
+                                <Edit className="mr-2 h-4 w-4" />
                                 {t('dashboard.products.edit_product')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
@@ -273,6 +282,7 @@ export function ProductListTable() {
                                   ctx.setProductToDeleteModalOpen(true);
                                 }}
                               >
+                                <Trash className="mr-2 h-4 w-4" />
                                 {t('dashboard.products.delete_product')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
