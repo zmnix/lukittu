@@ -3,6 +3,7 @@ import {
   IStatisticsRecentActivityGetResponse,
   IStatisticsRecentActivityGetSuccessResponse,
 } from '@/app/api/(dashboard)/statistics/recent-activity/route';
+import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -11,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -78,41 +78,31 @@ export default function RecentlyActiveCard() {
               <TableHead>{t('dashboard.licenses.status')}</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {loading
-              ? Array.from({ length: 6 }).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              : data.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.license}</TableCell>
-                    <TableCell>
-                      {new Date(row.createdAt).toLocaleString(locale, {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: 'numeric',
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="text-xs" variant="secondary">
-                        {row.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
+          {loading ? (
+            <TableSkeleton columns={3} rows={4} />
+          ) : (
+            <TableBody>
+              {data.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.license}</TableCell>
+                  <TableCell>
+                    {new Date(row.createdAt).toLocaleString(locale, {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className="text-xs" variant="secondary">
+                      {row.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
         </Table>
       </CardContent>
     </Card>

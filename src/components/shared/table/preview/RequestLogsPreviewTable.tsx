@@ -130,9 +130,6 @@ export default function RequestLogsPreviewTable({
                     {t('general.ip_address')}
                   </TableHead>
                   <TableHead className="truncate">
-                    {t('general.country')}
-                  </TableHead>
-                  <TableHead className="truncate">
                     {t('dashboard.licenses.status')}
                   </TableHead>
                   <TableHead className="truncate">
@@ -163,11 +160,7 @@ export default function RequestLogsPreviewTable({
                       className="cursor-pointer"
                       onClick={() => router.push(`/dashboard/logs/${log.id}`)}
                     >
-                      <TableCell className="truncate">
-                        {log.ipAddress}
-                      </TableCell>
                       <TableCell className="flex items-center gap-2 truncate">
-                        <span>{log.country ?? t('general.unknown')}</span>
                         {log.alpha2 && (
                           <Image
                             alt={log.alpha3 ?? t('general.unknown')}
@@ -177,6 +170,7 @@ export default function RequestLogsPreviewTable({
                             width={20}
                           />
                         )}
+                        {log.ipAddress}
                       </TableCell>
                       <TableCell className="truncate">
                         <Badge className="text-xs" variant="secondary">

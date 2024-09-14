@@ -6,8 +6,8 @@ import {
   ISessionsSignOutAllResponse,
 } from '@/app/api/(dashboard)/sessions/route';
 import LoadingButton from '@/components/shared/LoadingButton';
+import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -19,6 +19,7 @@ import {
 import { getRelativeTimeString } from '@/lib/utils/date-helpers';
 import { LogOut } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import UAParser from 'ua-parser-js';
@@ -139,9 +140,6 @@ export default function LoginSessionsCard() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="truncate">
-                {t('general.location')}
-              </TableHead>
               <TableHead className="truncate">{t('general.device')}</TableHead>
               <TableHead className="truncate">
                 {t('general.ip_address')}
@@ -152,60 +150,50 @@ export default function LoginSessionsCard() {
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {!loading
-              ? sessions?.map((session) => (
-                  <TableRow key={session.id}>
-                    <TableCell className="truncate">
-                      {session.country ?? 'N/A'}
-                    </TableCell>
-                    <TableCell className="truncate">
-                      {parseDeviceFromUserAgent(session.userAgent) ?? 'N/A'}
-                    </TableCell>
-                    <TableCell className="truncate">
-                      {session.ipAddress === '::1'
-                        ? '127.0.0.1'
-                        : session.ipAddress}
-                    </TableCell>
-                    <TableCell className="truncate">
-                      {getRelativeTimeString(session.createdAt, locale)}
-                    </TableCell>
-                    <TableCell className="py-0 text-right">
-                      {session.current ? (
-                        t('dashboard.profile.current_session')
-                      ) : (
-                        <LoadingButton
-                          pending={pendingSingleId === session.id}
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onSessionLogoutSubmit(session.id)}
-                        >
-                          <LogOut size={20} />
-                        </LoadingButton>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              : [...Array(4)].map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                    <TableCell className="flex justify-end">
-                      <Skeleton className="h-5 w-24 text-right" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
+          {loading ? (
+            <TableSkeleton columns={4} rows={4} />
+          ) : (
+            <TableBody>
+              {sessions?.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell className="truncate">
+                    {parseDeviceFromUserAgent(session.userAgent) ?? 'N/A'}
+                  </TableCell>
+                  <TableCell className="flex items-center gap-2 truncate">
+                    {session.alpha2 && (
+                      <Image
+                        alt={session.alpha3 ?? t('general.unknown')}
+                        className="rounded-[2px]"
+                        height={20}
+                        src={`/countries/${session.alpha2.toLowerCase()}.svg`}
+                        width={20}
+                      />
+                    )}
+                    {session.ipAddress === '::1'
+                      ? '127.0.0.1'
+                      : session.ipAddress}
+                  </TableCell>
+                  <TableCell className="truncate">
+                    {getRelativeTimeString(session.createdAt, locale)}
+                  </TableCell>
+                  <TableCell className="py-0 text-right">
+                    {session.current ? (
+                      t('dashboard.profile.current_session')
+                    ) : (
+                      <LoadingButton
+                        pending={pendingSingleId === session.id}
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onSessionLogoutSubmit(session.id)}
+                      >
+                        <LogOut size={20} />
+                      </LoadingButton>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
         </Table>
         <LoadingButton
           className="mt-4"
