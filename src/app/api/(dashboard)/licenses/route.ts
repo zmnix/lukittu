@@ -173,6 +173,12 @@ export async function GET(
     const totalLicenses = await prisma.license.count({
       where: {
         teamId: selectedTeam,
+        products: productIdsFormatted.length
+          ? { some: { id: { in: productIdsFormatted } } }
+          : undefined,
+        customers: customerIdsFormatted.length
+          ? { some: { id: { in: customerIdsFormatted } } }
+          : undefined,
       },
     });
 

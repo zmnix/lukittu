@@ -272,6 +272,11 @@ export async function POST(
         email,
         fullName,
         metadata,
+        createdBy: {
+          connect: {
+            id: session.user.id,
+          },
+        },
         team: {
           connect: {
             id: team.id,

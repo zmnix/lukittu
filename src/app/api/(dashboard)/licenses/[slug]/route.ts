@@ -35,9 +35,9 @@ export async function GET(
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const id = params.slug;
+    const licenseId = params.slug;
 
-    if (!id || !regex.uuidV4.test(id)) {
+    if (!licenseId || !regex.uuidV4.test(licenseId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -68,7 +68,7 @@ export async function GET(
             include: {
               licenses: {
                 where: {
-                  id,
+                  id: licenseId,
                 },
                 include: {
                   products: {

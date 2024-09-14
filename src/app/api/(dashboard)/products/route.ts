@@ -254,6 +254,11 @@ export async function POST(
         name,
         url: url || null,
         metadata,
+        createdBy: {
+          connect: {
+            id: session.user.id,
+          },
+        },
         team: {
           connect: {
             id: selectedTeam,

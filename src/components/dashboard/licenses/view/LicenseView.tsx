@@ -11,13 +11,13 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import CustomersPreviewTable from '../../../shared/table/preview/CustomersPreviewTable';
+import ProductsPreviewTable from '../../../shared/table/preview/ProductsPreviewTable';
+import RequestLogsPreviewTable from '../../../shared/table/preview/RequestLogsPreviewTable';
 import { RequestsAreaChart } from '../../statistics/RequestsAreaChart';
 import WorldMapChart from '../../statistics/WorldMapChart';
-import CustomersPreviewTable from './CustomersPreviewTable';
 import LicenseActions from './LicenseActions';
 import { LicenseDetails } from './LicenseDetails';
-import ProductsPreviewTable from './ProductsPreviewTable';
-import RequestLogsPreviewTable from './RequestLogsPreviewTable';
 
 export default function LicenseView() {
   const params = useParams();

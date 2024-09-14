@@ -58,6 +58,7 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "details": "Details",
     "no_data": "No data",
     "country": "Country",
     "apply": "Apply",
@@ -280,7 +281,8 @@
       "add_your_first_product": "Add your first product",
       "product_updated": "Product updated",
       "product_deleted": "Product deleted",
-      "product_created": "Product created"
+      "product_created": "Product created",
+      "no_licenses_assigned": "No licenses assigned"
     },
     "licenses": {
       "delete_license": "Delete license",
@@ -306,7 +308,6 @@
       "expires_at": "Expires at",
       "add_your_first_license": "Add your first license",
       "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage.",
-      "details": "Details",
       "no_products_assigned": "No products assigned",
       "no_customers_assigned": "No customers assigned",
       "not_yet_activated": "Not yet activated",

@@ -1,6 +1,6 @@
 'use client';
 import { DeleteProductConfirmModal } from '@/components/dashboard/products/ProductDeleteConfirmModal';
-import SetProductModal from '@/components/dashboard/products/SetProductModal';
+import SetProductModal from '@/components/dashboard/products/list/SetProductModal';
 import { Product } from '@prisma/client';
 import { createContext, useState } from 'react';
 

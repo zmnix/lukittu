@@ -2,13 +2,11 @@
 import { DeleteLicenseConfirmModal } from '@/components/dashboard/licenses/LicenseDeleteConfirmModal';
 import SetLicenseModal from '@/components/dashboard/licenses/list/SetLicenseModal';
 import { Customer, License, Product } from '@prisma/client';
-import { JsonValue } from '@prisma/client/runtime/library';
 import { createContext, useState } from 'react';
 
-type LicenseToEdit = Omit<License, 'licenseKeyLookup' | 'metadata'> & {
+type LicenseToEdit = Omit<License, 'licenseKeyLookup'> & {
   products: Product[];
   customers: Customer[];
-  metadata: JsonValue;
 };
 
 export const LicenseModalContext = createContext({

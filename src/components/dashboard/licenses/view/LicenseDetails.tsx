@@ -32,7 +32,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
         <CardTitle className="flex items-center text-xl font-bold">
-          {t('dashboard.licenses.details')}
+          {t('general.details')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
@@ -41,32 +41,28 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
             <h3 className="text-sm font-semibold">ID</h3>
             <div className="text-sm font-semibold">
               {license ? (
-                license.createdBy ? (
-                  <span className="flex items-center gap-2">
-                    <Copy className="h-4 w-4 shrink-0" />
-                    <TooltipProvider>
-                      <Tooltip delayDuration={0}>
-                        <TooltipTrigger asChild>
-                          <span
-                            className="truncate text-primary hover:underline"
-                            role="button"
-                            onClick={() => {
-                              navigator.clipboard.writeText(license.id);
-                              toast.success(t('general.copied_to_clipboard'));
-                            }}
-                          >
-                            {license.id}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t('general.click_to_copy')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </span>
-                ) : (
-                  t('general.unknown')
-                )
+                <span className="flex items-center gap-2">
+                  <Copy className="h-4 w-4 shrink-0" />
+                  <TooltipProvider>
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <span
+                          className="truncate text-primary hover:underline"
+                          role="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(license.id);
+                            toast.success(t('general.copied_to_clipboard'));
+                          }}
+                        >
+                          {license.id}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('general.click_to_copy')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </span>
               ) : (
                 <Skeleton className="h-4 w-full" />
               )}

@@ -1,4 +1,4 @@
-import ProductsListCard from '@/components/dashboard/products/ProductsListCard';
+import ProductsListCard from '@/components/dashboard/products/list/ProductsListCard';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { getTranslations } from 'next-intl/server';
