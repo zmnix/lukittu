@@ -3,8 +3,7 @@ import { createSession } from '@/lib/utils/auth';
 import { generateKeyPair } from '@/lib/utils/crypto';
 import { logger } from '@/lib/utils/logger';
 import { Provider } from '@prisma/client';
-import { redirect } from 'next/navigation';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 interface IGoogleAuthenticationResponse {
   access_token: string;
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
     const code = request.nextUrl.searchParams.get('code');
 
     if (!code || typeof code !== 'string') {
-      redirect('/auth/login');
+      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
     const params = new URLSearchParams({
@@ -54,14 +53,18 @@ export async function GET(request: NextRequest) {
     });
 
     if (!accessTokenRes.ok) {
-      redirect('/auth/login&error=server_error&provider=google');
+      return NextResponse.redirect(
+        new URL('/auth/login&error=server_error&provider=google', request.url),
+      );
     }
 
     const accessTokenData: IGoogleAuthenticationResponse =
       (await accessTokenRes.json()) as any;
 
     if (!accessTokenData?.access_token) {
-      redirect('/auth/login&error=server_error&provider=google');
+      return NextResponse.redirect(
+        new URL('/auth/login&error=server_error&provider=google', request.url),
+      );
     }
 
     const userRes = await fetch(
@@ -76,13 +79,20 @@ export async function GET(request: NextRequest) {
     );
 
     if (!userRes.ok) {
-      redirect('/auth/login&error=server_error&provider=google');
+      return NextResponse.redirect(
+        new URL('/auth/login&error=server_error&provider=google', request.url),
+      );
     }
 
     const user = (await userRes.json()) as IGoogleUserResponse;
 
     if (!user.email_verified) {
-      redirect('/auth/login?error=unverified_email&provider=google');
+      return NextResponse.redirect(
+        new URL(
+          '/auth/login?error=unverified_email&provider=google',
+          request.url,
+        ),
+      );
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -91,18 +101,26 @@ export async function GET(request: NextRequest) {
 
     if (existingUser) {
       if (existingUser.provider !== Provider.GOOGLE) {
-        redirect(
-          `/auth/login?error=wrong_provider&provider=${existingUser.provider.toLowerCase()}`,
+        return NextResponse.redirect(
+          new URL(
+            `/auth/login?error=wrong_provider&provider=${existingUser.provider.toLowerCase()}`,
+            request.url,
+          ),
         );
       }
 
       const createdSession = await createSession(existingUser.id, true);
 
       if (!createdSession) {
-        redirect('/auth/login?error=server_error&provider=google');
+        return NextResponse.redirect(
+          new URL(
+            '/auth/login?error=server_error&provider=google',
+            request.url,
+          ),
+        );
       }
 
-      redirect('/dashboard');
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     const newUser = await prisma.$transaction(async (prisma) => {
@@ -137,12 +155,16 @@ export async function GET(request: NextRequest) {
     const createdSession = await createSession(newUser.id, true);
 
     if (!createdSession) {
-      redirect('/auth/login?error=server_error&provider=google');
+      return NextResponse.redirect(
+        new URL('/auth/login?error=server_error&provider=google', request.url),
+      );
     }
 
-    redirect('/dashboard');
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   } catch (error) {
     logger.error("Error occurred in 'google' route", error);
-    redirect('/auth/login?error=server_error&provider=google');
+    return NextResponse.redirect(
+      new URL('/auth/login?error=server_error&provider=google', request.url),
+    );
   }
 }
