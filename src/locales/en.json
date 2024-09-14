@@ -323,12 +323,17 @@
       "no_logs": "No logs"
     },
     "customers": {
+      "customer_deleted": "Customer deleted",
+      "customer_created": "Customer created",
+      "customer_updated": "Customer updated",
       "add_customer": "Add customer",
       "customer_description": "Customers are the people who buy your products. You can assign licenses to them and track their usage.",
       "add_your_first_customer": "Add your first customer",
       "edit_customer": "Edit customer",
       "delete_customer": "Delete customer",
-      "search_customer": "Search customer..."
+      "search_customer": "Search customer...",
+      "delete_customer_confirm_title": "Are you absolutely sure?",
+      "delete_customer_confirm_description": "You are about to delete customer <strong>{name}</strong>! This will <strong>permanently delete</strong> this customer. This action cannot be undone."
     }
   }
 }

@@ -127,7 +127,7 @@ export async function GET(
       license,
     });
   } catch (error) {
-    logger.error("Error occurred in 'sessions/[slug]' route", error);
+    logger.error("Error occurred in 'licenses/[slug]' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
@@ -340,7 +340,7 @@ export async function PUT(
       },
     });
   } catch (error) {
-    logger.error("Error occurred in 'update license' route", error);
+    logger.error("Error occurred in 'licenses/[slug]' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

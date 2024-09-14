@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { CustomerModalContext } from '@/providers/CustomerModalProvider';
 import {
   ArrowDownUp,
   Edit,
@@ -33,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddCustomerButton from './AddCustomerButton';
 import CustomersMobileFiltersModal from './CustomersMobileFilters';
@@ -42,6 +43,7 @@ export function CustomersListTable() {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
+  const ctx = useContext(CustomerModalContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -284,6 +286,8 @@ export function CustomersListTable() {
                                 className="hover:cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  ctx.setCustomerToEdit(customer);
+                                  ctx.setCustomerModalOpen(true);
                                 }}
                               >
                                 <Edit className="mr-2 h-4 w-4" />
@@ -293,6 +297,8 @@ export function CustomersListTable() {
                                 className="text-destructive hover:cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  ctx.setCustomerToDelete(customer);
+                                  ctx.setCustomerToDeleteModalOpen(true);
                                 }}
                               >
                                 <Trash className="mr-2 h-4 w-4" />

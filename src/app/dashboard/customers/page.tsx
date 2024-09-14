@@ -1,4 +1,4 @@
-import CustomersListCard from '@/components/dashboard/customers/CustomersListCard';
+import CustomersListCard from '@/components/dashboard/customers/list/CustomersListCard';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { getTranslations } from 'next-intl/server';

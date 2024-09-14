@@ -1,4 +1,5 @@
 'use client';
+import { ICustomersUpdateResponse } from '@/app/api/(dashboard)/customers/[slug]/route';
 import { ICustomersCreateResponse } from '@/app/api/(dashboard)/customers/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
@@ -28,11 +29,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export default function CreateCustomerModal() {
+export default function SetCustomerModal() {
   const t = useTranslations();
   const ctx = useContext(CustomerModalContext);
   const [loading, setLoading] = useState(false);
@@ -52,6 +53,25 @@ export default function CreateCustomerModal() {
     name: 'metadata',
   });
 
+  useEffect(() => {
+    if (ctx.customerToEdit) {
+      form.setValue('email', ctx.customerToEdit.email);
+      form.setValue('fullName', ctx.customerToEdit.fullName);
+      form.setValue(
+        'metadata',
+        (
+          ctx.customerToEdit.metadata as {
+            key: string;
+            value: string;
+          }[]
+        ).map((m) => ({
+          key: m.key,
+          value: m.value,
+        })),
+      );
+    }
+  }, [ctx.customerToEdit, form]);
+
   const handleCustomerCreate = async (payload: SetCustomerSchema) => {
     const response = await fetch('/api/customers', {
       method: 'POST',
@@ -66,10 +86,27 @@ export default function CreateCustomerModal() {
     return data;
   };
 
+  const handleCustomerEdit = async (payload: SetCustomerSchema) => {
+    const response = await fetch(`/api/customers/${ctx.customerToEdit?.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as ICustomersUpdateResponse;
+
+    return data;
+  };
+
   const onSubmit = async (data: SetCustomerSchema) => {
     setLoading(true);
     try {
-      const res = await handleCustomerCreate(data);
+      const res = ctx.customerToEdit
+        ? await handleCustomerEdit(data)
+        : await handleCustomerCreate(data);
+
       if ('message' in res) {
         if (res.field) {
           return form.setError(res.field as keyof SetCustomerSchema, {
@@ -84,6 +121,11 @@ export default function CreateCustomerModal() {
 
       router.refresh();
       handleOpenChange(false);
+      toast.success(
+        ctx.customerToEdit
+          ? t('dashboard.customers.customer_updated')
+          : t('dashboard.customers.customer_created'),
+      );
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -98,6 +140,9 @@ export default function CreateCustomerModal() {
   const handleOpenChange = (open: boolean) => {
     ctx.setCustomerModalOpen(open);
     form.reset();
+    if (!open) {
+      ctx.setCustomerToEdit(null);
+    }
   };
 
   return (

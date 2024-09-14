@@ -223,7 +223,11 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              customers: true,
+              customers: {
+                where: {
+                  email,
+                },
+              },
             },
           },
         },
@@ -250,13 +254,7 @@ export async function POST(
 
     const team = session.user.teams[0];
 
-    const existingCustomer = team.customers.find(
-      (customer) =>
-        customer.email &&
-        email &&
-        customer.email.toLowerCase() === email.toLowerCase(),
-    );
-
+    const existingCustomer = team.customers.length;
     if (existingCustomer) {
       return NextResponse.json(
         {
