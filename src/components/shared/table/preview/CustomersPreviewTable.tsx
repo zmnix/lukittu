@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowDownUp } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -29,7 +29,6 @@ export default function CustomersPreviewTable({
 }: CustomersPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
-  const locale = useLocale();
 
   const [customers, SetCustomers] = useState<
     ICustomersGetSuccessResponse['customers']

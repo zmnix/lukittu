@@ -24,7 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowDownUp } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,6 @@ export default function RequestLogsPreviewTable({
 
   const t = useTranslations();
   const router = useRouter();
-  const locale = useLocale();
 
   useEffect(() => {
     (async () => {

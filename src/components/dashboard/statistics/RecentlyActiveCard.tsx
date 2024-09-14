@@ -21,13 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function RecentlyActiveCard() {
   const t = useTranslations();
-  const locale = useLocale();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<
