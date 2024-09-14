@@ -22,13 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  ArrowDownUp,
-  EllipsisVertical,
-  Filter,
-  Search,
-  Users,
-} from 'lucide-react';
+import { ArrowDownUp, Ellipsis, Filter, Search, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -270,7 +264,7 @@ export function CustomersListTable() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button size="icon" variant="ghost">
-                                <EllipsisVertical className="h-4 w-4" />
+                                <Ellipsis className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent

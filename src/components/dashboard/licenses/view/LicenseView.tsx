@@ -2,7 +2,6 @@
 import {
   ILicenseGetResponse,
   ILicenseGetSuccessResponse,
-  ILicensesUpdateResponse,
 } from '@/app/api/(dashboard)/licenses/[slug]/route';
 import MetadataAside from '@/components/shared/misc/MetadataAside';
 import { Separator } from '@/components/ui/separator';
@@ -15,6 +14,7 @@ import { toast } from 'sonner';
 import { RequestsAreaChart } from '../../statistics/RequestsAreaChart';
 import WorldMapChart from '../../statistics/WorldMapChart';
 import CustomersPreviewTable from './CustomersPreviewTable';
+import LicenseActions from './LicenseActions';
 import { LicenseDetails } from './LicenseDetails';
 import ProductsPreviewTable from './ProductsPreviewTable';
 import RequestLogsPreviewTable from './RequestLogsPreviewTable';
@@ -51,79 +51,34 @@ export default function LicenseView() {
     })();
   }, [t, licenseId, router]);
 
-  const handleMetadataEdit = async ({
-    metadata,
-  }: {
-    metadata: { key: string; value: string }[];
-  }) => {
-    const body = {
-      suspended: license?.suspended,
-      licenseKey: license?.licenseKey,
-      productIds: license?.products.map((product) => product.id),
-      customerIds: license?.customers.map((customer) => customer.id),
-      expirationDate: license?.expirationDate,
-      expirationDays: license?.expirationDays,
-      expirationStart: null,
-      ipLimit: license?.ipLimit,
-      expirationType: license?.expirationType,
-      metadata,
-    } as Record<string, unknown>;
-
-    if (license?.expirationType === 'DURATION') {
-      body.expirationStart = license?.expirationStart;
-    }
-
-    const response = await fetch(`/api/licenses/${licenseId}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
-
-    const data = (await response.json()) as ILicensesUpdateResponse;
-
-    if ('message' in data) {
-      toast.error(data.message);
-      return;
-    }
-
-    setLicense(
-      (prev) =>
-        ({
-          ...prev,
-          metadata: data.license.metadata,
-        }) as ILicenseGetSuccessResponse['license'],
-    );
-  };
-
   return (
-    <>
-      {loading ? (
-        <Skeleton className="h-8 w-96" />
-      ) : (
-        <h1 className="truncate text-2xl font-bold">{license?.licenseKey}</h1>
-      )}
+    <LicenseModalProvider>
+      <div className="flex justify-between gap-2 max-sm:flex-col">
+        {loading ? (
+          <Skeleton className="h-8 w-96" />
+        ) : (
+          <h1 className="truncate text-2xl font-bold">{license?.licenseKey}</h1>
+        )}
+        <LicenseActions license={license} />
+      </div>
       <Separator className="mt-2" />
       <div className="mt-6">
         <div className="flex">
-          <LicenseModalProvider>
-            <div className="flex w-full gap-4 max-xl:flex-col-reverse">
-              <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-                <ProductsPreviewTable licenseId={licenseId} />
-                <CustomersPreviewTable licenseId={licenseId} />
-                <RequestLogsPreviewTable licenseId={licenseId} />
-                <RequestsAreaChart licenseId={licenseId} />
-                <WorldMapChart licenseId={licenseId} />
-              </div>
-              <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
-                <LicenseDetails license={license} />
-                <MetadataAside
-                  handleMetadataEdit={handleMetadataEdit}
-                  metadata={license?.metadata ?? null}
-                />
-              </aside>
+          <div className="flex w-full gap-4 max-xl:flex-col-reverse">
+            <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
+              <ProductsPreviewTable licenseId={licenseId} />
+              <CustomersPreviewTable licenseId={licenseId} />
+              <RequestLogsPreviewTable licenseId={licenseId} />
+              <RequestsAreaChart licenseId={licenseId} />
+              <WorldMapChart licenseId={licenseId} />
             </div>
-          </LicenseModalProvider>
+            <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
+              <LicenseDetails license={license} />
+              <MetadataAside metadata={license?.metadata ?? null} />
+            </aside>
+          </div>
         </div>
       </div>
-    </>
+    </LicenseModalProvider>
   );
 }

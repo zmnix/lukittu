@@ -1,54 +1,24 @@
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import MetadataEditModal from './MetadataEditModal';
 
 interface MetadataAsideProps {
   metadata: JsonValue | null;
-  handleMetadataEdit: ({
-    metadata,
-  }: {
-    metadata: { key: string; value: string }[];
-  }) => Promise<void>;
 }
 
-export default function MetadataAside({
-  metadata,
-  handleMetadataEdit,
-}: MetadataAsideProps) {
-  const [open, setOpen] = useState(false);
+export default function MetadataAside({ metadata }: MetadataAsideProps) {
   const t = useTranslations();
   const metadataCasted = metadata as { key: string; value: string }[] | null;
 
   return (
     <>
-      {metadata && (
-        <MetadataEditModal
-          handleMetadataEdit={handleMetadataEdit}
-          metadata={metadata}
-          open={open}
-          onOpenChange={setOpen}
-        />
-      )}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-1 py-2">
+        <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
           <CardTitle className="text-xl font-bold">
             {t('general.metadata')}
           </CardTitle>
-          <Button
-            className="mt-0"
-            size="sm"
-            variant="outline"
-            onClick={() => setOpen(true)}
-          >
-            {t('general.edit')}
-          </Button>
         </CardHeader>
-        <Separator />
         <CardContent className="mt-4">
           <div className="flex flex-col gap-4">
             {metadataCasted ? (

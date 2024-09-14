@@ -34,7 +34,7 @@ import {
   ArrowDownUp,
   Copy,
   Edit,
-  EllipsisVertical,
+  Ellipsis,
   Filter,
   Key,
   Search,
@@ -339,7 +339,7 @@ export function LicensesListTable() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button size="icon" variant="ghost">
-                                <EllipsisVertical className="h-4 w-4" />
+                                <Ellipsis className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent

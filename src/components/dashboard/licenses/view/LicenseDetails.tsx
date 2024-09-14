@@ -2,7 +2,6 @@ import { ILicenseGetSuccessResponse } from '@/app/api/(dashboard)/licenses/[slug
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tooltip,
@@ -14,11 +13,10 @@ import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
-import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { Copy, Infinity, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface LicenseDetailsProps {
@@ -29,30 +27,15 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
   const [showMore, setShowMore] = useState(false);
   const t = useTranslations();
   const locale = useLocale();
-  const ctx = useContext(LicenseModalContext);
-
-  const handleLicenseEdit = () => {
-    ctx.setLicenseToEdit(license);
-    ctx.setLicenseModalOpen(true);
-  };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-1 py-2">
-        <CardTitle className="text-xl font-bold">
+      <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
+        <CardTitle className="flex items-center text-xl font-bold">
           {t('dashboard.licenses.details')}
         </CardTitle>
-        <Button
-          className="mt-0"
-          size="sm"
-          variant="outline"
-          onClick={handleLicenseEdit}
-        >
-          {t('general.edit')}
-        </Button>
       </CardHeader>
-      <Separator />
-      <CardContent className="mt-4">
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold">ID</h3>

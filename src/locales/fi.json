@@ -128,7 +128,8 @@
     "no_metadata": "No metadata",
     "click_to_copy": "Click to copy",
     "other": "Other",
-    "copied_to_clipboard": "Copied to clipboard"
+    "copied_to_clipboard": "Copied to clipboard",
+    "metadata_updated": "Metadata updated"
   },
   "auth": {
     "oauth": {

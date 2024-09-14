@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/table';
 import { AuthContext } from '@/providers/AuthProvider';
 import { Team, User } from '@prisma/client';
-import { EllipsisVertical } from 'lucide-react';
+import { Ellipsis } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -220,7 +220,7 @@ export default function TeamListCard() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button size="icon" variant="ghost">
-                              <EllipsisVertical className="h-4 w-4" />
+                              <Ellipsis className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent

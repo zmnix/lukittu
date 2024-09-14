@@ -331,6 +331,7 @@ export default function SetLicenseModal() {
                       <FormControl>
                         <div className="relative w-full">
                           <DateTimePicker
+                            granularity="minute"
                             hourCycle={locale === 'en' ? 12 : 24}
                             placeholder={t(
                               'dashboard.licenses.expiration_date',
