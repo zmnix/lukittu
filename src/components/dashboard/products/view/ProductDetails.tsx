@@ -68,7 +68,16 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             <h3 className="text-sm font-semibold">URL</h3>
             <div className="text-sm text-muted-foreground">
               {product ? (
-                (product.url ?? t('general.unknown'))
+                product.url ? (
+                  <Link
+                    className="text-primary hover:underline"
+                    href={product.url}
+                  >
+                    {product.url}
+                  </Link>
+                ) : (
+                  t('general.unknown')
+                )
               ) : (
                 <Skeleton className="h-4 w-full" />
               )}
