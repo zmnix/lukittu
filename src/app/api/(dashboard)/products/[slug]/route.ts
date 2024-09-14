@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -9,7 +10,12 @@ import {
 } from '@/lib/validation/products/set-product-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Product, User } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Product,
+  User,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -223,9 +229,21 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json({
+    const response = {
       success: true,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: selectedTeam,
+      action: AuditLogAction.DELETE_PRODUCT,
+      targetId: product.id,
+      targetType: AuditLogTargetType.PRODUCT,
+      requestBody: body,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'products/[slug]' route:", error);
     return NextResponse.json(
@@ -359,9 +377,21 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({
+    const response = {
       product,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: selectedTeam,
+      action: AuditLogAction.UPDATE_PRODUCT,
+      targetId: product.id,
+      targetType: AuditLogTargetType.PRODUCT,
+      requestBody: body,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'products/[slug]' route:", error);
     return NextResponse.json(

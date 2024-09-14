@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -9,7 +10,7 @@ import {
 } from '@/lib/validation/customers/set-customer-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Customer } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Customer } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -146,12 +147,21 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(
-      {
-        customer: updatedCustomer,
-      },
-      { status: HttpStatus.OK },
-    );
+    const response = {
+      customer: updatedCustomer,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.UPDATE_CUSTOMER,
+      targetId: customerId,
+      targetType: AuditLogTargetType.CUSTOMER,
+      requestBody: body,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {
     logger.error("Error occurred in 'customers/[slug]' route", error);
     return NextResponse.json(
@@ -255,12 +265,21 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-      },
-      { status: HttpStatus.OK },
-    );
+    const response = {
+      success: true,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.DELETE_CUSTOMER,
+      targetId: customerId,
+      targetType: AuditLogTargetType.CUSTOMER,
+      requestBody: null,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {
     logger.error("Error occurred in 'customers/[slug]' route", error);
     return NextResponse.json(

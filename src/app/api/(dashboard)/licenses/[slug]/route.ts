@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import {
   decryptLicenseKey,
@@ -14,7 +15,14 @@ import {
 } from '@/lib/validation/licenses/set-license-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Customer, License, Product, User } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Customer,
+  License,
+  Product,
+  User,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -332,13 +340,25 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({
+    const response = {
       license: {
         ...updatedLicense,
         licenseKey,
         licenseKeyLookup: undefined,
       },
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.UPDATE_LICENSE,
+      targetId: updatedLicense.id,
+      targetType: AuditLogTargetType.LICENSE,
+      requestBody: body,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'licenses/[slug]' route", error);
     return NextResponse.json(
@@ -440,9 +460,21 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json({
+    const response = {
       success: true,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: selectedTeam,
+      action: AuditLogAction.DELETE_LICENSE,
+      targetId: licenseId,
+      targetType: AuditLogTargetType.LICENSE,
+      requestBody: null,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'licenses/[slug]' route:", error);
     return NextResponse.json(

@@ -1,10 +1,12 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -112,9 +114,21 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({
+    const response = {
       success: true,
+    };
+
+    createAuditLog({
+      action: AuditLogAction.TRANSFER_TEAM_OWNERSHIP,
+      userId: session.user.id,
+      teamId,
+      targetType: AuditLogTargetType.TEAM,
+      targetId: teamId,
+      requestBody: body,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error(
       "Error occurred in 'teams/[slug]/transfer-ownership' route",

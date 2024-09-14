@@ -25,6 +25,7 @@ model User {
   provider         Provider   @default(CREDENTIALS)
   sessions         Session[]
   createdProducts  Product[]
+  auditLogs        AuditLog[]
   ownedTeams       Team[]     @relation("TeamOwner")
   teams            Team[]     @relation("TeamUsers")
   createdLicenses  License[]
@@ -53,6 +54,7 @@ model Team {
   licenses      License[]
   customers     Customer[]
   requestLogs   RequestLog[]
+  auditLogs     AuditLog[]
   publicKeyRsa  String
   privateKeyRsa String
   deletedAt     DateTime?
@@ -73,6 +75,8 @@ model Product {
   requestLogs     RequestLog[]
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+
+  @@index([teamId])
 }
 
 model Customer {
@@ -116,12 +120,33 @@ model License {
   @@unique([teamId, licenseKeyLookup])
 }
 
+model AuditLog {
+  id           String             @id @default(uuid())
+  ipAddress    String?
+  userAgent    String?
+  country      String?
+  requestBody  Json?
+  responseBody Json?
+  userId       String?
+  user         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  targetId     String
+  targetType   AuditLogTargetType
+  teamId       String
+  team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  action       AuditLogAction
+  createdAt    DateTime           @default(now())
+
+  @@index([teamId])
+}
+
 model RequestLog {
   id           String        @id @default(uuid())
   responseTime Int
   ipAddress    String?
   country      String?
   status       RequestStatus
+  requestBody  Json?
+  responseBody Json?
   teamId       String
   team         Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
   licenseId    String?
@@ -131,6 +156,32 @@ model RequestLog {
   customerId   String?
   customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt    DateTime      @default(now())
+
+  @@index([teamId])
+}
+
+enum AuditLogAction {
+  LEAVE_TEAM
+  CREATE_TEAM
+  UPDATE_TEAM
+  DELETE_TEAM
+  TRANSFER_TEAM_OWNERSHIP
+  CREATE_LICENSE
+  UPDATE_LICENSE
+  DELETE_LICENSE
+  CREATE_CUSTOMER
+  UPDATE_CUSTOMER
+  DELETE_CUSTOMER
+  CREATE_PRODUCT
+  UPDATE_PRODUCT
+  DELETE_PRODUCT
+}
+
+enum AuditLogTargetType {
+  LICENSE
+  CUSTOMER
+  PRODUCT
+  TEAM
 }
 
 enum Provider {

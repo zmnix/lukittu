@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -9,7 +10,7 @@ import {
 } from '@/lib/validation/customers/set-customer-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Customer } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Customer } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -283,12 +284,21 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(
-      {
-        customer,
-      },
-      { status: HttpStatus.CREATED },
-    );
+    const response = {
+      customer,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.CREATE_CUSTOMER,
+      targetId: customer.id,
+      targetType: AuditLogTargetType.CUSTOMER,
+      requestBody: body,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.CREATED });
   } catch (error) {
     logger.error("Error occurred in 'customers' route", error);
     return NextResponse.json(

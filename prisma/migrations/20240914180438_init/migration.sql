@@ -1,4 +1,10 @@
 -- CreateEnum
+CREATE TYPE "AuditLogAction" AS ENUM ('LEAVE_TEAM', 'CREATE_TEAM', 'UPDATE_TEAM', 'DELETE_TEAM', 'TRANSFER_TEAM_OWNERSHIP', 'CREATE_LICENSE', 'UPDATE_LICENSE', 'DELETE_LICENSE', 'CREATE_CUSTOMER', 'UPDATE_CUSTOMER', 'DELETE_CUSTOMER', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT');
+
+-- CreateEnum
+CREATE TYPE "AuditLogTargetType" AS ENUM ('LICENSE', 'CUSTOMER', 'PRODUCT', 'TEAM');
+
+-- CreateEnum
 CREATE TYPE "Provider" AS ENUM ('CREDENTIALS', 'GOOGLE');
 
 -- CreateEnum
@@ -60,7 +66,6 @@ CREATE TABLE "Product" (
     "metadata" JSONB NOT NULL,
     "teamId" TEXT NOT NULL,
     "createdByUserId" TEXT,
-    "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -102,12 +107,33 @@ CREATE TABLE "License" (
 );
 
 -- CreateTable
+CREATE TABLE "AuditLog" (
+    "id" TEXT NOT NULL,
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "country" TEXT,
+    "requestBody" JSONB,
+    "responseBody" JSONB,
+    "userId" TEXT,
+    "targetId" TEXT NOT NULL,
+    "targetType" "AuditLogTargetType" NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "action" "AuditLogAction" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "RequestLog" (
     "id" TEXT NOT NULL,
     "responseTime" INTEGER NOT NULL,
     "ipAddress" TEXT,
     "country" TEXT,
     "status" "RequestStatus" NOT NULL,
+    "requestBody" JSONB,
+    "responseBody" JSONB,
+    "teamId" TEXT NOT NULL,
     "licenseId" TEXT,
     "productId" TEXT,
     "customerId" TEXT,
@@ -141,10 +167,19 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Session_sessionId_key" ON "Session"("sessionId");
 
 -- CreateIndex
+CREATE INDEX "Product_teamId_idx" ON "Product"("teamId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Customer_email_teamId_key" ON "Customer"("email", "teamId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "License_teamId_licenseKeyLookup_key" ON "License"("teamId", "licenseKeyLookup");
+
+-- CreateIndex
+CREATE INDEX "AuditLog_teamId_idx" ON "AuditLog"("teamId");
+
+-- CreateIndex
+CREATE INDEX "RequestLog_teamId_idx" ON "RequestLog"("teamId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_TeamUsers_AB_unique" ON "_TeamUsers"("A", "B");
@@ -187,6 +222,15 @@ ALTER TABLE "License" ADD CONSTRAINT "License_teamId_fkey" FOREIGN KEY ("teamId"
 
 -- AddForeignKey
 ALTER TABLE "License" ADD CONSTRAINT "License_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RequestLog" ADD CONSTRAINT "RequestLog_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RequestLog" ADD CONSTRAINT "RequestLog_licenseId_fkey" FOREIGN KEY ("licenseId") REFERENCES "License"("id") ON DELETE CASCADE ON UPDATE CASCADE;

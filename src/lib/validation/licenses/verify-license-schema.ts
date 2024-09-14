@@ -28,6 +28,9 @@ export const verifyLicenseSchema = () =>
           message: 'Product UUID must be a valid UUID',
         })
         .optional(),
-      challenge: z.string({ message: 'Challenge must be a string' }).optional(),
+      challenge: z
+        .string({ message: 'Challenge must be a string' })
+        .max(1000, { message: 'Challenge must be less than 1000 characters' })
+        .optional(),
     })
     .strict({ message: 'Invalid payload' });

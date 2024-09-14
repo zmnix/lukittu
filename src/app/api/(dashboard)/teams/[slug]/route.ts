@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -9,7 +10,7 @@ import {
 } from '@/lib/validation/team/set-team-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Team } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Team } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -109,6 +110,20 @@ export async function DELETE(
       },
     });
 
+    const response = {
+      success: true,
+    };
+
+    createAuditLog({
+      action: AuditLogAction.DELETE_TEAM,
+      userId: session.user.id,
+      teamId: team.id,
+      targetType: AuditLogTargetType.TEAM,
+      targetId: team.id,
+      requestBody: body,
+      responseBody: response,
+    });
+
     return NextResponse.json({
       success: true,
     });
@@ -198,9 +213,21 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({
+    const response = {
       team: updatedTeam,
+    };
+
+    createAuditLog({
+      action: AuditLogAction.UPDATE_TEAM,
+      userId: session.user.id,
+      teamId,
+      targetType: AuditLogTargetType.TEAM,
+      targetId: teamId,
+      requestBody: body,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'teams' route", error);
     return NextResponse.json(

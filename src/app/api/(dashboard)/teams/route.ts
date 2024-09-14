@@ -1,4 +1,5 @@
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { generateKeyPair } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
@@ -9,7 +10,7 @@ import {
 } from '@/lib/validation/team/set-team-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Team, User } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Team, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
@@ -124,9 +125,21 @@ export async function POST(
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 5),
     });
 
-    return NextResponse.json({
+    const response = {
       team: createdTeam,
+    };
+
+    createAuditLog({
+      action: AuditLogAction.CREATE_TEAM,
+      userId: session.user.id,
+      teamId: createdTeam.id,
+      targetType: AuditLogTargetType.TEAM,
+      targetId: createdTeam.id,
+      requestBody: body,
+      responseBody: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'teams' route", error);
     return NextResponse.json(

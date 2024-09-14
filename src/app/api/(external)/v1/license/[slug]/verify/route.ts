@@ -35,6 +35,7 @@ export async function POST(
   try {
     if (!teamId || !regex.uuidV4.test(teamId)) {
       return await handleResponse({
+        body: null,
         request,
         requestTime,
         status: RequestStatus.BAD_REQUEST,
@@ -55,6 +56,7 @@ export async function POST(
 
     if (!validated.success) {
       return await handleResponse({
+        body,
         request,
         requestTime,
         status: RequestStatus.BAD_REQUEST,
@@ -106,6 +108,7 @@ export async function POST(
 
     if (!license) {
       return await handleResponse({
+        body,
         request,
         requestTime,
         teamId,
@@ -126,6 +129,7 @@ export async function POST(
 
     if (license.suspended) {
       return await handleResponse({
+        body,
         request,
         requestTime,
         teamId,
@@ -151,6 +155,7 @@ export async function POST(
 
       if (currentDate.getTime() > expirationDate.getTime()) {
         return await handleResponse({
+          body,
           request,
           requestTime,
           teamId,
@@ -192,6 +197,7 @@ export async function POST(
 
         if (currentDate.getTime() > expirationDate.getTime()) {
           return await handleResponse({
+            body,
             request,
             requestTime,
             teamId,
@@ -215,6 +221,7 @@ export async function POST(
 
     if (customerId && !hasCustomer) {
       return await handleResponse({
+        body,
         request,
         requestTime,
         teamId,
@@ -236,6 +243,7 @@ export async function POST(
 
     if (productId && !hasProduct) {
       return await handleResponse({
+        body,
         request,
         requestTime,
         teamId,
@@ -263,6 +271,7 @@ export async function POST(
       // TODO: @KasperiP: Maybe add separate table for storing IP addresses because user's probably want to also remove old IP addresses
       if (!existingIps.includes(ipAddress) && ipLimitReached) {
         return await handleResponse({
+          body,
           request,
           requestTime,
           teamId,
@@ -288,6 +297,7 @@ export async function POST(
       : undefined;
 
     return await handleResponse({
+      body,
       request,
       requestTime,
       teamId,
@@ -311,6 +321,7 @@ export async function POST(
 
     if (error instanceof SyntaxError) {
       return await handleResponse({
+        body: null,
         request,
         requestTime,
         status: RequestStatus.BAD_REQUEST,
@@ -327,6 +338,7 @@ export async function POST(
     }
 
     return await handleResponse({
+      body: null,
       request,
       requestTime,
       status: RequestStatus.INTERNAL_SERVER_ERROR,
@@ -344,7 +356,8 @@ export async function POST(
 }
 
 interface LogRequestProps {
-  request: NextRequest;
+  requestBody: any;
+  responseBody: any;
   requestTime: Date;
   status: RequestStatus;
   customerId?: string;
@@ -354,6 +367,8 @@ interface LogRequestProps {
 }
 
 async function logRequest({
+  requestBody,
+  responseBody,
   requestTime,
   status,
   customerId,
@@ -373,6 +388,8 @@ async function logRequest({
       data: {
         responseTime: new Date().getTime() - requestTime.getTime(),
         status,
+        requestBody,
+        responseBody,
         ipAddress,
         country: countryAlpha3,
         team: { connect: { id: teamId } },
@@ -397,6 +414,7 @@ async function logRequest({
 }
 
 interface HandleResponseProps {
+  body: any;
   request: NextRequest;
   requestTime: Date;
   status: RequestStatus;
@@ -417,6 +435,7 @@ interface HandleResponseProps {
 }
 
 async function handleResponse({
+  body,
   request,
   requestTime,
   status,
@@ -427,8 +446,20 @@ async function handleResponse({
   productId,
   licenseKeyLookup,
 }: HandleResponseProps): Promise<NextResponse<IExternalLicenseVerifyResponse>> {
+  const responseBody = {
+    data: response.data,
+    result: {
+      timestamp: response.result.timestamp,
+      valid: response.result.valid,
+      details: response.result.details,
+      code: status,
+      challengeResponse: response.result.challengeResponse,
+    },
+  };
+
   await logRequest({
-    request,
+    requestBody: body,
+    responseBody,
     requestTime,
     status,
     customerId,
@@ -437,17 +468,5 @@ async function handleResponse({
     teamId,
   });
 
-  return NextResponse.json(
-    {
-      data: response.data,
-      result: {
-        timestamp: response.result.timestamp,
-        valid: response.result.valid,
-        details: response.result.details,
-        code: status,
-        challengeResponse: response.result.challengeResponse,
-      },
-    },
-    { status: httpStatus },
-  );
+  return NextResponse.json(responseBody, { status: httpStatus });
 }
