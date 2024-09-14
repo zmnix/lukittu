@@ -5,8 +5,8 @@ import {
   LayoutGrid,
   Logs,
   LucideIcon,
+  Package,
   Shield,
-  ShoppingCart,
   Users,
 } from 'lucide-react';
 import { Messages } from '../../../global';
@@ -63,7 +63,7 @@ export function getMenuList(pathname: string): Group[] {
           href: '/dashboard/products',
           translation: 'products',
           active: pathname === '/dashboard/products',
-          icon: ShoppingCart,
+          icon: Package,
           submenus: [],
         },
       ],

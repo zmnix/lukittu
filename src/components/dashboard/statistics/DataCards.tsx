@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Key, Logs, ShoppingCart, Users } from 'lucide-react';
+import { Key, Logs, Package, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -103,7 +103,7 @@ export default function DataCards() {
             {t('dashboard.dashboard.total_products')}
           </CardTitle>
           <span className="rounded-full bg-primary p-2">
-            <ShoppingCart className="text-white" size={22} />
+            <Package className="text-white" size={22} />
           </span>
         </CardHeader>
         <CardContent>
