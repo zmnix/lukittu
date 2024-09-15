@@ -11,6 +11,7 @@ export type ISessionsGetCurrentSuccessResponse = {
   session: Omit<Session, 'sessionId'> & {
     user: User & {
       teams: Omit<Team, 'publicKeyRsa' | 'privateKeyRsa'>[];
+      avatarUrl: string;
     };
   };
 };
@@ -46,9 +47,34 @@ export async function GET(): Promise<
       );
     }
 
-    return NextResponse.json({
-      session,
-    });
+    if (!session.user) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    const getGravatarUrl = (email: string) => {
+      const hash = require('crypto')
+        .createHash('md5')
+        .update(email)
+        .digest('hex');
+      return `https://www.gravatar.com/avatar/${hash}?d=404&s=200`;
+    };
+
+    const response = {
+      session: {
+        ...session,
+        user: {
+          ...session.user,
+          avatarUrl: getGravatarUrl(session.user.email),
+        },
+      },
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'sessions/current' route", error);
     return NextResponse.json(

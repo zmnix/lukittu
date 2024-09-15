@@ -58,6 +58,7 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "avatar": "Avatar",
     "code": "Code",
     "origin": "Origin",
     "load_more": "Load more",
@@ -205,6 +206,9 @@
     }
   },
   "dashboard": {
+    "gravatar": {
+      "description": "Avatar is managed by <link>Gravatar</link>. If you don't have a Gravatar account, your avatar will be a default image."
+    },
     "dashboard": {
       "requests": "Requests",
       "requests_description": "Showing license verify requests divided by status.",

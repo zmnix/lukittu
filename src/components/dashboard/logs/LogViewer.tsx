@@ -15,9 +15,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { ChevronLeft, Copy } from 'lucide-react';
+import { ChevronLeft, Copy, ExternalLink } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -286,6 +287,22 @@ export default function LogViewer() {
                   {selectedLog.statusCode ?? t('general.unknown')}
                 </p>
               </div>
+            </div>
+            <div className="mt-2">
+              <Button
+                className="p-0"
+                disabled={!selectedLog.licenseId}
+                variant="link"
+                asChild
+              >
+                <Link
+                  className="flex items-center gap-2"
+                  href={`/dashboard/licenses/${selectedLog.licenseId}`}
+                >
+                  {t('dashboard.licenses.license')}
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
             <Separator className="my-4" />
             <h3 className="mb-2 font-semibold">

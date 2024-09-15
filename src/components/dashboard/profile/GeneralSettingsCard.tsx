@@ -1,6 +1,7 @@
 'use client';
 import { IUsersUpdateResponse } from '@/app/api/(dashboard)/users/route';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -18,8 +19,10 @@ import {
 } from '@/lib/validation/profile/update-profile-schema';
 import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Edit } from 'lucide-react';
+import { Edit, ExternalLink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -49,6 +52,16 @@ export default function GeneralSettingsCard() {
   const handleCancel = () => {
     setEdit(false);
     form.reset();
+  };
+
+  const getInitials = (fullName: string) => {
+    const initials = fullName
+      .split(' ')
+      .slice(0, 2)
+      .map((name) => name.charAt(0))
+      .join('');
+
+    return initials;
   };
 
   const handleProfileUpdate = async (payload: UpdateProfileSchema) => {
@@ -111,9 +124,42 @@ export default function GeneralSettingsCard() {
         <CardContent>
           <Form {...form}>
             <form
-              className="flex max-w-lg flex-col gap-6"
+              className="flex max-w-md flex-1 flex-col gap-6"
               onSubmit={form.handleSubmit(onSubmit)}
             >
+              <div>
+                <div className="relative">
+                  <div className="mb-1 text-sm font-semibold">
+                    {t('general.avatar')}
+                  </div>
+                  <Avatar className="h-32 w-32 border">
+                    <AvatarImage src={user?.avatarUrl} asChild>
+                      {user?.avatarUrl && (
+                        <Image alt="Avatar" src={user.avatarUrl} fill />
+                      )}
+                    </AvatarImage>
+                    <AvatarFallback className="bg-primary text-2xl text-white">
+                      {getInitials(user?.fullName ?? '??')}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="max-w-md text-sm text-muted-foreground">
+                  {t.rich('dashboard.gravatar.description', {
+                    link: (children) => (
+                      <Button className="p-0" size="sm" variant="link" asChild>
+                        <Link
+                          href="https://gravatar.com"
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {children}
+                          <ExternalLink className="ml-1 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    ),
+                  })}
+                </div>
+              </div>
               <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">
                 <div className="w-1/3 font-semibold">{t('general.email')}</div>
                 <div className="w-2/3">{user?.email}</div>

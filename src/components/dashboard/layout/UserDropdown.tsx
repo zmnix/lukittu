@@ -19,6 +19,7 @@ import {
 import { AuthContext } from '@/providers/AuthProvider';
 import { LogOut, UserIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useContext, useMemo } from 'react';
@@ -63,7 +64,11 @@ export function UserDropdown() {
                 variant="default"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage alt="Avatar" src="#" />
+                  <AvatarImage src={user?.avatarUrl} asChild>
+                    {user?.avatarUrl && (
+                      <Image alt="Avatar" src={user.avatarUrl} fill />
+                    )}
+                  </AvatarImage>
                   <AvatarFallback className="bg-transparent">
                     {getInitials(user?.fullName ?? '??')}
                   </AvatarFallback>
