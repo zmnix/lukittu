@@ -226,7 +226,7 @@ export function CustomersListTable() {
                   </TableRow>
                 </TableHeader>
                 {loading ? (
-                  <TableSkeleton columns={4} rows={6} />
+                  <TableSkeleton columns={5} rows={6} />
                 ) : (
                   <TableBody>
                     {customers.map((customer) => (
