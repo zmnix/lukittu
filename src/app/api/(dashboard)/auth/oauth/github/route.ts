@@ -5,25 +5,6 @@ import { logger } from '@/lib/utils/logger';
 import { Provider } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-interface IGoogleAuthenticationResponse {
-  access_token: string;
-  expires_in: number;
-  scope: string;
-  token_type: string;
-  id_token: string;
-}
-
-interface IGoogleUserResponse {
-  sub: string;
-  name: string;
-  given_name: string;
-  family_name: string;
-  picture: string;
-  email: string;
-  email_verified: boolean;
-  locale: string;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get('code');
@@ -32,66 +13,55 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
-    const params = new URLSearchParams({
-      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      code,
-      redirect_uri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!,
-      grant_type: 'authorization_code',
-    });
-
-    const formattedUrl =
-      'https://oauth2.googleapis.com/token?' + params.toString();
+    const formattedUrl = 'https://github.com/login/oauth/access_token';
 
     const accessTokenRes = await fetch(formattedUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID!,
+        client_secret: process.env.GITHUB_CLIENT_SECRET!,
+        redirect_uri: process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URI!,
+        code,
+      }),
+    });
+
+    if (!accessTokenRes.ok) {
+      return NextResponse.redirect(
+        new URL('/auth/login?error=server_error&provider=github', request.url),
+      );
+    }
+
+    const accessTokenData = (await accessTokenRes.json()) as any;
+
+    if (!accessTokenData?.access_token) {
+      return NextResponse.redirect(
+        new URL('/auth/login?error=server_error&provider=github', request.url),
+      );
+    }
+
+    const userRes = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: 'Bearer ' + accessTokenData.access_token,
         Accept: 'application/json; charset=utf-8',
         'Accept-Encoding': 'application/json; charset=utf-8',
       },
     });
 
-    if (!accessTokenRes.ok) {
-      return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=google', request.url),
-      );
-    }
-
-    const accessTokenData: IGoogleAuthenticationResponse =
-      (await accessTokenRes.json()) as any;
-
-    if (!accessTokenData?.access_token) {
-      return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=google', request.url),
-      );
-    }
-
-    const userRes = await fetch(
-      'https://www.googleapis.com/oauth2/v3/userinfo',
-      {
-        headers: {
-          Authorization: 'Bearer ' + accessTokenData.access_token,
-          Accept: 'application/json; charset=utf-8',
-          'Accept-Encoding': 'application/json; charset=utf-8',
-        },
-      },
-    );
-
     if (!userRes.ok) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=google', request.url),
+        new URL('/auth/login?error=server_error&provider=github', request.url),
       );
     }
 
-    const user = (await userRes.json()) as IGoogleUserResponse;
+    const user = (await userRes.json()) as any;
 
-    if (!user.email_verified) {
+    if (!user?.id || !user?.email) {
       return NextResponse.redirect(
-        new URL(
-          '/auth/login?error=unverified_email&provider=google',
-          request.url,
-        ),
+        new URL('/auth/login?error=server_error&provider=github', request.url),
       );
     }
 
@@ -100,7 +70,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (existingUser) {
-      if (existingUser.provider !== Provider.GOOGLE) {
+      if (existingUser.provider !== Provider.GITHUB) {
         return NextResponse.redirect(
           new URL(
             `/auth/login?error=wrong_provider&provider=${existingUser.provider.toLowerCase()}`,
@@ -114,7 +84,7 @@ export async function GET(request: NextRequest) {
       if (!createdSession) {
         return NextResponse.redirect(
           new URL(
-            '/auth/login?error=server_error&provider=google',
+            '/auth/login?error=server_error&provider=github',
             request.url,
           ),
         );
@@ -128,7 +98,7 @@ export async function GET(request: NextRequest) {
         data: {
           email: user.email,
           fullName: user.name,
-          provider: Provider.GOOGLE,
+          provider: Provider.GITHUB,
           emailVerified: true,
         },
       });
@@ -156,15 +126,15 @@ export async function GET(request: NextRequest) {
 
     if (!createdSession) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=google', request.url),
+        new URL('/auth/login?error=server_error&provider=github', request.url),
       );
     }
 
     return NextResponse.redirect(new URL('/dashboard', request.url));
   } catch (error) {
-    logger.error("Error occurred in 'auth/oauth/google' route", error);
+    logger.error("Error occurred in 'auth/oauth/github' route", error);
     return NextResponse.redirect(
-      new URL('/auth/login?error=server_error&provider=google', request.url),
+      new URL('/auth/login?error=server_error&provider=github', request.url),
     );
   }
 }

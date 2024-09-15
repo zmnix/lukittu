@@ -76,6 +76,7 @@
     "system": "System",
     "back_to_login": "Back to login",
     "continue_with_google": "Continue with Google",
+    "continue_with_github": "Continue with GitHub",
     "wrong_provider": "You have an account with a different provider! Please login with {provider}.",
     "select_team": "Select team",
     "search_team": "Search team...",
@@ -134,10 +135,11 @@
   },
   "auth": {
     "oauth": {
-      "unverified_email": "You have an unverified email attached to your {provider} account. Please verify your email first.",
+      "unverified_email": "You have an unverified email attached to your <strong>{provider}</strong> account. Please verify your email first.",
       "credentials": "email and password",
       "google": "Google",
-      "server_error": "Failed to authenticate with {provider}. Please try again later."
+      "github": "GitHub",
+      "server_error": "Failed to authenticate with <strong>{provider}</strong>. Please try again later."
     },
     "login": {
       "title": "Sign in to your account",

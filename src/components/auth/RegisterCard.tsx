@@ -37,6 +37,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import LoginWithGithubButton from './LoginWithGithubButton';
 
 export default function RegisterCard() {
   const t = useTranslations();
@@ -272,6 +273,7 @@ export default function RegisterCard() {
                   <Separator className="w-auto flex-grow" />
                 </div>
                 <LoginWithGoogleButton />
+                <LoginWithGithubButton />
               </div>
             </form>
           </Form>

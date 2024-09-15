@@ -187,6 +187,7 @@ enum AuditLogTargetType {
 enum Provider {
   CREDENTIALS
   GOOGLE
+  GITHUB
 }
 
 enum LicenseExpirationType {

@@ -34,6 +34,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import LoginWithGithubButton from './LoginWithGithubButton';
 
 export default function LoginCard() {
   const t = useTranslations();
@@ -256,6 +257,7 @@ export default function LoginCard() {
                   <Separator className="w-auto flex-grow" />
                 </div>
                 <LoginWithGoogleButton />
+                <LoginWithGithubButton />
               </div>
             </form>
           </Form>

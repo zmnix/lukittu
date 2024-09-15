@@ -43,14 +43,16 @@ export default function OauthLoginFailedccessModal({
           <ResponsiveDialogDescription>
             {error === 'wrong_provider' ? (
               <>
-                {t('general.wrong_provider', {
+                {t.rich('general.wrong_provider', {
                   provider: t(`auth.oauth.${provider}` as any),
+                  strong: (children) => <strong>{children}</strong>,
                 })}
               </>
             ) : (
               <>
-                {t(`auth.oauth.${error}` as any, {
+                {t.rich(`auth.oauth.${error}` as any, {
                   provider: t(`auth.oauth.${provider}` as any),
+                  strong: (children) => <strong>{children}</strong>,
                 })}
               </>
             )}
