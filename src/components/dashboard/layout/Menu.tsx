@@ -1,4 +1,5 @@
 'use client';
+import ConfettiButton from '@/components/shared/ConfettiButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,8 +25,6 @@ import {
   CreditCard,
   Ellipsis,
   Rocket,
-  StarIcon,
-  ZapIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -43,7 +42,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
-  const isPremium = false;
+  const isPro = false;
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -147,14 +146,16 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                 >
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-bold">
-                      {isPremium ? 'Premium' : 'Free'} Plan
+                      {isPro
+                        ? t('dashboard.subscriptions.pro_plan')
+                        : t('dashboard.subscriptions.free_plan')}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                       <Badge
                         className="uppercase"
-                        variant={isPremium ? 'default' : 'secondary'}
+                        variant={isPro ? 'default' : 'secondary'}
                       >
-                        {isPremium ? 'Active' : 'Basic'}
+                        {isPro ? t('general.active') : t('general.basic')}
                       </Badge>
                       {isExpanded ? (
                         <ChevronUpIcon className="h-5 w-5" />
@@ -167,34 +168,28 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                 <div
                   className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-96' : 'max-h-0'}`}
                 >
-                  <CardContent className="px-4 pt-0">
+                  <CardContent className="px-4 pb-0 pt-0">
                     <CardDescription className="mb-4">
-                      {isPremium
-                        ? 'Unlock all premium features'
-                        : 'Basic features for getting started'}
+                      {isPro
+                        ? t('dashboard.subscriptions.using_pro_description')
+                        : t('dashboard.subscriptions.using_free_description')}
                     </CardDescription>
-                    <div className="flex items-center space-x-2 text-sm">
-                      {isPremium ? (
-                        <StarIcon className="h-5 w-5 text-yellow-500" />
-                      ) : (
-                        <ZapIcon className="h-5 w-5 text-primary" />
-                      )}
-                      <span>
-                        {isPremium
-                          ? 'Full access to all premium features'
-                          : 'Limited access to basic features'}
-                      </span>
-                    </div>
                   </CardContent>
                   <CardFooter className="px-4">
-                    <Button className="flex w-full items-center gap-2">
-                      {isPremium ? (
-                        <CreditCard className="h-5 w-5" />
-                      ) : (
+                    {!isPro ? (
+                      <ConfettiButton className="flex w-full items-center gap-2">
                         <Rocket className="h-5 w-5" />
-                      )}
-                      {isPremium ? 'Manage Subscription' : 'Upgrade to Premium'}
-                    </Button>
+                        {t('dashboard.subscriptions.upgrade_to_premium')}
+                      </ConfettiButton>
+                    ) : (
+                      <Button
+                        className="flex w-full items-center gap-2"
+                        size="sm"
+                      >
+                        <CreditCard className="h-5 w-5" />
+                        {t('dashboard.subscriptions.manage_subscription')}
+                      </Button>
+                    )}
                   </CardFooter>
                 </div>
               </Card>
@@ -211,7 +206,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                       className="flex w-full items-center justify-center"
                       size="sm"
                     >
-                      {isPremium ? (
+                      {isPro ? (
                         <CreditCard className="h-5 w-5" />
                       ) : (
                         <Rocket className="h-5 w-5" />
@@ -221,7 +216,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                 </TooltipTrigger>
                 {isOpen === false && (
                   <TooltipContent side="right">
-                    {isPremium
+                    {isPro
                       ? t('dashboard.subscriptions.manage_subscription')
                       : t('dashboard.subscriptions.upgrade_to_premium')}
                   </TooltipContent>

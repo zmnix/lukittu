@@ -121,6 +121,7 @@
     "value": "Value",
     "add_metadata": "Add metadata",
     "active": "Active",
+    "basic": "Basic",
     "inactive": "Inactive",
     "expiring": "Expiring",
     "expired": "Expired",
@@ -348,7 +349,11 @@
     },
     "subscriptions": {
       "upgrade_to_premium": "Upgrade to premium",
-      "manage_subscription": "Manage subscription"
+      "manage_subscription": "Manage subscription",
+      "free_plan": "Free plan",
+      "pro_plan": "Pro plan",
+      "using_free_description": "You are currently using the free plan. Upgrade to the pro plan to unlock more features.",
+      "using_pro_description": "You are currently using the pro plan. Manage your subscription below."
     }
   }
 }
