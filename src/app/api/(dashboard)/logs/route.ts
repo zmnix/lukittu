@@ -10,12 +10,15 @@ import { HttpStatus } from '@/types/http-status';
 import { RequestLog } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { UAParser } from 'ua-parser-js';
 
 export type ILogsGetSuccessResponse = {
   logs: (RequestLog & {
     alpha2: string | null;
     alpha3: string | null;
     country: string | null;
+    browser: string | null;
+    os: string | null;
   })[];
   totalLogs: number;
 };
@@ -160,6 +163,7 @@ export async function GET(
 
     const totalLogs = await prisma.requestLog.count({
       where: {
+        teamId: selectedTeam,
         createdAt: {
           gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
         },
@@ -171,15 +175,31 @@ export async function GET(
 
     const requestLogs = session.user.teams[0].requestLogs;
 
-    const requestLogsWithCountries = requestLogs.map((log) => ({
-      ...log,
-      country: log.country ? iso3ToName[log.country] : null,
-      alpha3: log.country ?? null,
-      alpha2:
-        Object.keys(iso2ToIso3Map).find(
-          (key) => iso2ToIso3Map[key] === log.country,
-        ) ?? null,
-    }));
+    const requestLogsWithCountries = requestLogs.map((log) => {
+      let browser: string | null = null;
+      let os: string | null = null;
+
+      if (log.userAgent) {
+        const parser = new UAParser(log.userAgent);
+        const browserObj = parser.getBrowser();
+        const osObj = parser.getOS();
+
+        browser = browserObj.name ?? null;
+        os = osObj.name ?? null;
+      }
+
+      return {
+        ...log,
+        country: log.country ? iso3ToName[log.country] : null,
+        alpha3: log.country ?? null,
+        alpha2:
+          Object.keys(iso2ToIso3Map).find(
+            (key) => iso2ToIso3Map[key] === log.country,
+          ) ?? null,
+        browser,
+        os,
+      };
+    });
 
     return NextResponse.json({
       logs: requestLogsWithCountries,

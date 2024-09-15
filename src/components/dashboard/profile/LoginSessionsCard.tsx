@@ -22,7 +22,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import UAParser from 'ua-parser-js';
 
 export default function LoginSessionsCard() {
   const t = useTranslations();
@@ -56,19 +55,6 @@ export default function LoginSessionsCard() {
       }
     })();
   }, [t]);
-
-  const parseDeviceFromUserAgent = (userAgent: string | null) => {
-    if (!userAgent) return null;
-    const parser = new UAParser(userAgent);
-    const browser = parser.getBrowser();
-    const os = parser.getOS();
-
-    if (browser.name && os.name) {
-      return `${browser.name} - ${os.name}`;
-    } else {
-      return null;
-    }
-  };
 
   const hasOtherThanCurrentSession = sessions.some(
     (session) => !session.current,
@@ -157,7 +143,8 @@ export default function LoginSessionsCard() {
               {sessions?.map((session) => (
                 <TableRow key={session.id}>
                   <TableCell className="truncate">
-                    {parseDeviceFromUserAgent(session.userAgent) ?? 'N/A'}
+                    {`${session.browser ?? 'N/A'} - ${session.os ?? ''}`.trim() ??
+                      'N/A'}
                   </TableCell>
                   <TableCell className="flex items-center gap-2 truncate">
                     {session.alpha2 && (

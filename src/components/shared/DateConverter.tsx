@@ -7,9 +7,33 @@ import {
 
 interface DateConverterProps {
   date: Date;
+  displayType?: 'date' | 'time' | 'datetime';
 }
 
-export function DateConverter({ date }: DateConverterProps) {
+const dateFormats = {
+  datetime: {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  },
+  date: {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  },
+  time: {
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+  },
+} as const;
+
+export function DateConverter({
+  date,
+  displayType = 'datetime',
+}: DateConverterProps) {
   const t = useTranslations();
   const dateObj = new Date(date);
   const locale = useLocale();
@@ -18,13 +42,9 @@ export function DateConverter({ date }: DateConverterProps) {
     <HoverCard>
       <HoverCardTrigger asChild>
         <span className="cursor-pointer underline">
-          {new Intl.DateTimeFormat(locale, {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-          }).format(dateObj)}
+          {new Intl.DateTimeFormat(locale, dateFormats[displayType]).format(
+            dateObj,
+          )}
         </span>
       </HoverCardTrigger>
       <HoverCardContent className="w-80">

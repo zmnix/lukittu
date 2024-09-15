@@ -1,3 +1,4 @@
+import CustomerView from '@/components/dashboard/customers/view/CustomerView';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,6 +25,7 @@ export default async function CustomerPage() {
           <BreadcrumbSeparator />
         </BreadcrumbList>
       </Breadcrumb>
+      <CustomerView />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Session } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { UAParser } from 'ua-parser-js';
 
 export type ISessionsGetSuccessResponse = {
   sessions: (Omit<Session, 'sessionId'> & {
@@ -17,6 +18,8 @@ export type ISessionsGetSuccessResponse = {
     alpha2: string | null;
     alpha3: string | null;
     country: string | null;
+    browser: string | null;
+    os: string | null;
   })[];
 };
 
@@ -51,17 +54,33 @@ export async function GET(): Promise<NextResponse<ISessionsGetResponse>> {
       );
     }
 
-    const sessions = session.user.sessions.map((s) => ({
-      ...s,
-      current: s.sessionId === sessionId,
-      sessionId: undefined,
-      country: session.country ? iso3ToName[session.country] : null,
-      alpha3: session.country ?? null,
-      alpha2:
-        Object.keys(iso2ToIso3Map).find(
-          (key) => iso2ToIso3Map[key] === session.country,
-        ) ?? null,
-    }));
+    const sessions = session.user.sessions.map((s) => {
+      let browser: string | null = null;
+      let os: string | null = null;
+
+      if (s.userAgent) {
+        const parser = new UAParser(s.userAgent);
+        const browserObj = parser.getBrowser();
+        const osObj = parser.getOS();
+
+        browser = browserObj.name ?? null;
+        os = osObj.name ?? null;
+      }
+
+      return {
+        ...s,
+        current: s.sessionId === sessionId,
+        sessionId: undefined,
+        country: session.country ? iso3ToName[session.country] : null,
+        alpha3: session.country ?? null,
+        browser,
+        os,
+        alpha2:
+          Object.keys(iso2ToIso3Map).find(
+            (key) => iso2ToIso3Map[key] === session.country,
+          ) ?? null,
+      };
+    });
 
     return NextResponse.json({
       sessions,

@@ -1,5 +1,14 @@
 'use client';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Tooltip,
@@ -9,10 +18,19 @@ import {
 } from '@/components/ui/tooltip';
 import { getMenuList } from '@/lib/utils/navigation-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { CalendarPlus, Ellipsis } from 'lucide-react';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CreditCard,
+  Ellipsis,
+  Rocket,
+  StarIcon,
+  ZapIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { CollapseMenuButton } from './CollapseMenuButton';
 
 interface MenuProps {
@@ -25,6 +43,9 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
+  const isPremium = false;
+
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <ScrollArea className="h-full [&>div>div[style]]:!block [&>div>div[style]]:h-full">
@@ -113,30 +134,96 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
               )}
             </li>
           ))}
-          <li className="flex w-full grow items-end">
+          <li className="flex w-full grow items-end pt-6">
+            <div
+              className={cn('w-full', {
+                hidden: isOpen === false,
+              })}
+            >
+              <Card className="w-full max-w-sm overflow-hidden transition-all duration-300 ease-in-out">
+                <CardHeader
+                  className="cursor-pointer p-4"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-bold">
+                      {isPremium ? 'Premium' : 'Free'} Plan
+                    </CardTitle>
+                    <div className="flex items-center space-x-2">
+                      <Badge
+                        className="uppercase"
+                        variant={isPremium ? 'default' : 'secondary'}
+                      >
+                        {isPremium ? 'Active' : 'Basic'}
+                      </Badge>
+                      {isExpanded ? (
+                        <ChevronUpIcon className="h-5 w-5" />
+                      ) : (
+                        <ChevronDownIcon className="h-5 w-5" />
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <div
+                  className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-96' : 'max-h-0'}`}
+                >
+                  <CardContent className="px-4 pt-0">
+                    <CardDescription className="mb-4">
+                      {isPremium
+                        ? 'Unlock all premium features'
+                        : 'Basic features for getting started'}
+                    </CardDescription>
+                    <div className="flex items-center space-x-2 text-sm">
+                      {isPremium ? (
+                        <StarIcon className="h-5 w-5 text-yellow-500" />
+                      ) : (
+                        <ZapIcon className="h-5 w-5 text-primary" />
+                      )}
+                      <span>
+                        {isPremium
+                          ? 'Full access to all premium features'
+                          : 'Limited access to basic features'}
+                      </span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="px-4">
+                    <Button className="flex w-full items-center gap-2">
+                      {isPremium ? (
+                        <CreditCard className="h-5 w-5" />
+                      ) : (
+                        <Rocket className="h-5 w-5" />
+                      )}
+                      {isPremium ? 'Manage Subscription' : 'Upgrade to Premium'}
+                    </Button>
+                  </CardFooter>
+                </div>
+              </Card>
+            </div>
             <TooltipProvider disableHoverableContent>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  <Button
-                    className="mt-5 h-10 w-full justify-center"
-                    onClick={() => {}}
+                  <div
+                    className={cn('w-full', {
+                      hidden: isOpen,
+                    })}
                   >
-                    <span className={cn(isOpen === false ? '' : 'mr-4')}>
-                      <CalendarPlus size={18} />
-                    </span>
-                    <p
-                      className={cn(
-                        'whitespace-nowrap',
-                        isOpen === false ? 'hidden opacity-0' : 'opacity-100',
-                      )}
+                    <Button
+                      className="flex w-full items-center justify-center"
+                      size="sm"
                     >
-                      {t('dashboard.licenses.add_license')}
-                    </p>
-                  </Button>
+                      {isPremium ? (
+                        <CreditCard className="h-5 w-5" />
+                      ) : (
+                        <Rocket className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </div>
                 </TooltipTrigger>
                 {isOpen === false && (
                   <TooltipContent side="right">
-                    {t('dashboard.licenses.add_license')}
+                    {isPremium
+                      ? t('dashboard.subscriptions.manage_subscription')
+                      : t('dashboard.subscriptions.upgrade_to_premium')}
                   </TooltipContent>
                 )}
               </Tooltip>

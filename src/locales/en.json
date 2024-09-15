@@ -58,6 +58,9 @@
     "license_not_found": "License not found!"
   },
   "general": {
+    "code": "Code",
+    "origin": "Origin",
+    "load_more": "Load more",
     "time_conversion": "Time conversion",
     "details": "Details",
     "no_data": "No data",
@@ -322,7 +325,9 @@
     },
     "logs": {
       "logs": "Logs",
-      "no_logs": "No logs"
+      "no_logs": "No logs",
+      "request_body": "Request body",
+      "response_body": "Response body"
     },
     "customers": {
       "customer_deleted": "Customer deleted",
@@ -336,6 +341,10 @@
       "search_customer": "Search customer...",
       "delete_customer_confirm_title": "Are you absolutely sure?",
       "delete_customer_confirm_description": "You are about to delete customer <strong>{name}</strong>! This will <strong>permanently delete</strong> this customer. This action cannot be undone."
+    },
+    "subscriptions": {
+      "upgrade_to_premium": "Upgrade to premium",
+      "manage_subscription": "Manage subscription"
     }
   }
 }

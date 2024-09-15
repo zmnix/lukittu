@@ -1,5 +1,5 @@
 'use client';
-import { IProductGetSuccessResponse } from '@/app/api/(dashboard)/products/[slug]/route';
+import { ICustomerGetSuccessResponse } from '@/app/api/(dashboard)/customers/[slug]/route';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -7,26 +7,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ProductModalContext } from '@/providers/ProductModalProvider';
+import { CustomerModalContext } from '@/providers/CustomerModalProvider';
 import { Edit, Ellipsis, Trash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 
-interface ProductActionsProps {
-  product: IProductGetSuccessResponse['product'] | null;
+interface CustomerActionsProps {
+  customer: ICustomerGetSuccessResponse['customer'] | null;
 }
-export default function ProductActions({ product }: ProductActionsProps) {
+export default function CustomerActions({ customer }: CustomerActionsProps) {
   const t = useTranslations();
-  const ctx = useContext(ProductModalContext);
+  const ctx = useContext(CustomerModalContext);
 
-  const handleProductEdit = () => {
-    ctx.setProductToEdit(product);
-    ctx.setProductModalOpen(true);
+  const handleCustomerEdit = () => {
+    ctx.setCustomerToEdit(customer);
+    ctx.setCustomerModalOpen(true);
   };
 
-  const handleProductDelete = () => {
-    ctx.setProductToDelete(product);
-    ctx.setProductToDeleteModalOpen(true);
+  const handleCustomerDelete = () => {
+    ctx.setCustomerToDelete(customer);
+    ctx.setCustomerToDeleteModalOpen(true);
   };
 
   return (
@@ -39,17 +39,17 @@ export default function ProductActions({ product }: ProductActionsProps) {
       <DropdownMenuContent align="end" className="font-medium" forceMount>
         <DropdownMenuItem
           className="hover:cursor-pointer"
-          onClick={handleProductEdit}
+          onClick={handleCustomerEdit}
         >
           <Edit className="mr-2 h-4 w-4" />
-          {t('dashboard.products.edit_product')}
+          {t('dashboard.customers.edit_customer')}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
-          onClick={handleProductDelete}
+          onClick={handleCustomerDelete}
         >
           <Trash className="mr-2 h-4 w-4" />
-          {t('dashboard.products.delete_product')}
+          {t('dashboard.customers.delete_customer')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

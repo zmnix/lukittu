@@ -18,6 +18,11 @@ export const getIp = () => {
 };
 
 /**
+ * Get origin from the headers
+ */
+export const getOrigin = () => headers().get('origin');
+
+/**
  * Get the user agent from the headers
  */
 export const getUserAgent = () => headers().get('user-agent');

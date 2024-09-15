@@ -3,14 +3,14 @@ import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { generateHMAC, signChallenge } from '@/lib/utils/crypto';
-import { getIp } from '@/lib/utils/header-helpers';
+import { getIp, getOrigin, getUserAgent } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import {
   VerifyLicenseSchema,
   verifyLicenseSchema,
 } from '@/lib/validation/licenses/verify-license-schema';
 import { HttpStatus } from '@/types/http-status';
-import { RequestStatus } from '@prisma/client';
+import { RequestMethod, RequestStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 type IExternalLicenseVerifyResponse = {
@@ -359,11 +359,14 @@ interface LogRequestProps {
   requestBody: any;
   responseBody: any;
   requestTime: Date;
+  statusCode: number;
   status: RequestStatus;
   customerId?: string;
   productId?: string;
   licenseKeyLookup?: string;
   teamId?: string;
+  pathName: string;
+  method: string;
 }
 
 async function logRequest({
@@ -371,12 +374,16 @@ async function logRequest({
   responseBody,
   requestTime,
   status,
+  statusCode,
   customerId,
   productId,
   licenseKeyLookup,
   teamId,
+  pathName,
+  method,
 }: LogRequestProps) {
   try {
+    const origin = getOrigin();
     const ipAddress = getIp();
     const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
     const geoDataJson = geoData.ok ? await geoData.json() : null;
@@ -386,6 +393,11 @@ async function logRequest({
 
     await prisma.requestLog.create({
       data: {
+        method: method.toUpperCase() as RequestMethod,
+        path: pathName,
+        userAgent: getUserAgent(),
+        origin,
+        statusCode,
         responseTime: new Date().getTime() - requestTime.getTime(),
         status,
         requestBody,
@@ -466,6 +478,9 @@ async function handleResponse({
     productId,
     licenseKeyLookup,
     teamId,
+    statusCode: httpStatus,
+    pathName: request.nextUrl.pathname,
+    method: request.method,
   });
 
   return NextResponse.json(responseBody, { status: httpStatus });

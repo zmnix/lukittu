@@ -145,6 +145,11 @@ model RequestLog {
   ipAddress    String?
   country      String?
   status       RequestStatus
+  statusCode   Int
+  userAgent    String?
+  origin       String?
+  path         String
+  method       RequestMethod
   requestBody  Json?
   responseBody Json?
   teamId       String
@@ -158,6 +163,14 @@ model RequestLog {
   createdAt    DateTime      @default(now())
 
   @@index([teamId])
+}
+
+enum RequestMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
 }
 
 enum AuditLogAction {

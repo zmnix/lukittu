@@ -10,9 +10,122 @@ import {
 } from '@/lib/validation/customers/set-customer-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Customer } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Customer,
+  User,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
+
+export type ICustomerGetSuccessResponse = {
+  customer: Customer & {
+    createdBy: Omit<User, 'passwordHash'> | null;
+  };
+};
+
+export type ICustomerGetResponse = ICustomerGetSuccessResponse | ErrorResponse;
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } },
+): Promise<NextResponse<ICustomerGetResponse>> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  try {
+    const customerId = params.slug;
+
+    if (!customerId || !regex.uuidV4.test(customerId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const selectedTeam = getSelectedTeam();
+
+    if (!selectedTeam) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              deletedAt: null,
+              id: selectedTeam,
+            },
+            include: {
+              customers: {
+                where: {
+                  id: customerId,
+                },
+                include: {
+                  createdBy: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const team = session.user.teams[0];
+
+    if (!team.customers.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.customer_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const customer = team.customers[0];
+
+    return NextResponse.json(
+      {
+        customer,
+      },
+      { status: HttpStatus.OK },
+    );
+  } catch (error) {
+    logger.error("Error occurred in 'customers/[slug]' route:", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
 
 export type ICustomersUpdateResponse =
   | ErrorResponse
