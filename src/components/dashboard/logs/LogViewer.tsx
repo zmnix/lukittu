@@ -7,6 +7,7 @@ import { DateConverter } from '@/components/shared/DateConverter';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
@@ -119,17 +120,22 @@ export default function LogViewer() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row">
+    <Card className="flex flex-col md:flex-row">
       <div
-        className={`w-full border-r md:w-1/2 ${showDetails ? 'hidden md:block' : 'block'}`}
+        className={`w-full border-r p-2 md:w-1/2 ${showDetails ? 'hidden md:block' : 'block'}`}
       >
         <div className="p-4">
-          <h2 className="mb-4 text-lg font-semibold">
-            {t('dashboard.navigation.logs')}
+          <h2 className="mb-4 mt-1 text-xl font-bold tracking-tight">
+            {t('dashboard.logs.logs')}
           </h2>
           {!loading ? (
             logs.map((log, index) => (
-              <div key={index} className="mb-4">
+              <div
+                key={index}
+                className={cn('mb-4', {
+                  'mb-0': index === logs.length - 1,
+                })}
+              >
                 <h3 className="mb-2 ml-5 text-sm font-normal text-muted-foreground">
                   {new Date(log[0].createdAt).toLocaleDateString(locale, {
                     month: 'short',
@@ -138,7 +144,7 @@ export default function LogViewer() {
                   })}
                 </h3>
                 <Separator className="mb-2" />
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1">
                   {log.map((l, indexInner) => (
                     <div key={`${index}-${indexInner}`} className="mb-2">
                       <Button
@@ -179,7 +185,7 @@ export default function LogViewer() {
         </div>
       </div>
       <div
-        className={`w-full md:w-1/2 ${showDetails ? 'block' : 'hidden md:block'}`}
+        className={`w-full p-2 md:w-1/2 ${showDetails ? 'block' : 'hidden md:block'}`}
       >
         {loading ? (
           <LogViewerRightSkeleton />
@@ -194,7 +200,7 @@ export default function LogViewer() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <h2
-                className="flex-grow truncate text-lg font-semibold"
+                className="mt-1 flex-grow truncate text-lg font-semibold tracking-tight"
                 title={`${selectedLog.method} ${selectedLog.path}`}
               >
                 {selectedLog.method} {selectedLog.path}
@@ -324,6 +330,6 @@ export default function LogViewer() {
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
