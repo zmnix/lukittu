@@ -1,3 +1,4 @@
+import ResetPasswordTemplate from '@/emails/ResetPasswordTemplate';
 import prisma from '@/lib/database/prisma';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -10,6 +11,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { JwtTypes } from '@/types/jwt-types-enum';
 import { Provider } from '@prisma/client';
+import { render } from '@react-email/components';
 import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -77,16 +79,26 @@ export async function POST(
 
     const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password?token=${token}`;
 
-    // TODO: Translate email
+    const html = await render(
+      ResetPasswordTemplate({
+        fullName: user.fullName,
+        link: resetLink,
+      }),
+    );
+
+    const text = await render(
+      ResetPasswordTemplate({
+        fullName: user.fullName,
+        link: resetLink,
+      }),
+      { plainText: true },
+    );
+
     const success = await sendEmail({
       to: email,
-      subject: 'Password Reset Request',
-      html: `
-        <p>
-          You requested a password reset. Click the link below to reset your password.
-        </p>
-        <a href="${resetLink}">Reset Password</a>
-      `,
+      subject: 'Reset your password',
+      html,
+      text,
     });
 
     if (!success) {
