@@ -119,6 +119,11 @@ export default function SetTeamModal({
 
       router.refresh();
       onOpenChange(false);
+      toast.success(
+        teamToEdit
+          ? t('dashboard.teams.edit_team_success')
+          : t('dashboard.teams.create_team_success'),
+      );
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -190,7 +195,7 @@ export default function SetTeamModal({
               type="submit"
               onClick={() => form.handleSubmit(onSubmit)()}
             >
-              {t('general.create')}
+              {Boolean(teamToEdit) ? t('general.edit') : t('general.create')}
             </LoadingButton>
           </div>
         </ResponsiveDialogFooter>

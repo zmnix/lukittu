@@ -255,9 +255,17 @@
       "create_team": "Create a team",
       "edit_team": "Edit team",
       "create_team_info": "You can change the team name after creation and add additional information.",
-      "my_first_team_placeholder": "My first team"
+      "my_first_team_placeholder": "My first team",
+      "edit_team_success": "Team updated successfully",
+      "create_team_success": "Team created successfully"
     },
     "profile": {
+      "profile_updated_success": "Profile updated successfully",
+      "leave_team_success": "Left team successfully",
+      "delete_team_success": "Team deleted successfully",
+      "transfer_ownership_success": "Ownership transferred successfully",
+      "logged_out_all_sessions": "You have been logged out of all other sessions.",
+      "logged_out_session": "You have been logged out of the session.",
       "change_password": "Change password",
       "login_provider": "Login provider",
       "new_password": "New password",

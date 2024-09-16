@@ -118,6 +118,7 @@ export default function TeamListCard() {
       return;
     }
 
+    toast.success(t('dashboard.profile.leave_team_success'));
     router.refresh();
   };
 
@@ -132,6 +133,7 @@ export default function TeamListCard() {
       return;
     }
 
+    toast.success(t('dashboard.profile.delete_team_success'));
     router.refresh();
   };
 
@@ -143,6 +145,7 @@ export default function TeamListCard() {
       return;
     }
 
+    toast.success(t('dashboard.profile.transfer_ownership_success'));
     router.refresh();
   };
 

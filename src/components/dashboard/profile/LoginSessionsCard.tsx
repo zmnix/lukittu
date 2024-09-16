@@ -91,6 +91,7 @@ export default function LoginSessionsCard() {
       }
 
       setSessions((prev) => prev.filter((session) => session.id !== id));
+      toast.success(t('dashboard.profile.logged_out_session'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -108,6 +109,7 @@ export default function LoginSessionsCard() {
       }
 
       setSessions((prev) => prev.filter((session) => session.current));
+      toast.success(t('dashboard.profile.logged_out_all_sessions'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {

@@ -100,6 +100,7 @@ export default function GeneralSettingsCard() {
         });
       }
       setEdit(false);
+      toast.success(t('dashboard.profile.profile_updated_success'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
