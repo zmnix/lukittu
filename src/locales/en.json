@@ -332,7 +332,10 @@
       "logs": "Logs",
       "no_logs": "No logs",
       "request_body": "Request body",
-      "response_body": "Response body"
+      "response_body": "Response body",
+      "select_log": "Select a log to view details",
+      "no_logs_title": "You have no logs",
+      "no_logs_description": "No logs found. Logs are created when a license verify request is made. You can view the details of the request and response here."
     },
     "customers": {
       "customer_deleted": "Customer deleted",

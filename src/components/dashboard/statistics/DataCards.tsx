@@ -80,7 +80,7 @@ export default function DataCards() {
         <CardContent>
           {loading ? (
             <>
-              <Skeleton className="mt-2 h-7 w-24" />
+              <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
             </>
           ) : (
@@ -109,7 +109,7 @@ export default function DataCards() {
         <CardContent>
           {loading ? (
             <>
-              <Skeleton className="mt-2 h-7 w-24" />
+              <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
             </>
           ) : (
@@ -138,7 +138,7 @@ export default function DataCards() {
         <CardContent>
           {loading ? (
             <>
-              <Skeleton className="mt-2 h-7 w-24" />
+              <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
             </>
           ) : (
@@ -167,7 +167,7 @@ export default function DataCards() {
         <CardContent>
           {loading ? (
             <>
-              <Skeleton className="mt-2 h-7 w-24" />
+              <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
             </>
           ) : (

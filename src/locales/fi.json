@@ -121,6 +121,7 @@
     "value": "Value",
     "add_metadata": "Add metadata",
     "active": "Active",
+    "basic": "Basic",
     "inactive": "Inactive",
     "expiring": "Expiring",
     "expired": "Expired",
@@ -331,7 +332,10 @@
       "logs": "Logs",
       "no_logs": "No logs",
       "request_body": "Request body",
-      "response_body": "Response body"
+      "response_body": "Response body",
+      "select_log": "Select a log to view details",
+      "no_logs_title": "You have no logs",
+      "no_logs_description": "No logs found. Logs are created when a license verify request is made. You can view the details of the request and response here."
     },
     "customers": {
       "customer_deleted": "Customer deleted",
@@ -348,7 +352,11 @@
     },
     "subscriptions": {
       "upgrade_to_premium": "Upgrade to premium",
-      "manage_subscription": "Manage subscription"
+      "manage_subscription": "Manage subscription",
+      "free_plan": "Free plan",
+      "pro_plan": "Pro plan",
+      "using_free_description": "You are currently using the free plan. Upgrade to the pro plan to unlock more features.",
+      "using_pro_description": "You are currently using the pro plan. Manage your subscription below."
     }
   }
 }

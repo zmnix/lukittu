@@ -258,7 +258,7 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex items-center gap-2 font-medium leading-none">
+                  <div className="flex cursor-pointer items-center gap-2 font-medium leading-none underline">
                     {comparedToPrevious.includes('-') ? (
                       <>
                         {t('dashboard.dashboard.trending_down')}{' '}
