@@ -201,7 +201,7 @@ export function LicensesListTable() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
-                      {t('dashboard.licenses.license')}
+                      {t('general.license')}
                     </TableHead>
                     <TableHead className="truncate">
                       {t('dashboard.licenses.status')}

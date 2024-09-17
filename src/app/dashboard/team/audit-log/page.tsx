@@ -1,3 +1,4 @@
+import AuditLogTable from '@/components/dashboard/audit-log/AuditLogTable';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,15 +21,18 @@ export default async function TeamAuditLogPage() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbPage>
-              {t('dashboard.navigation.audit_log')}
+              {t('dashboard.navigation.audit_logs')}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <h1 className="text-2xl font-bold">
-        {t('dashboard.navigation.audit_log')}
+        {t('dashboard.navigation.audit_logs')}
       </h1>
       <Separator className="mt-2" />
+      <div className="mt-6 flex flex-col gap-6">
+        <AuditLogTable />
+      </div>
     </div>
   );
 }

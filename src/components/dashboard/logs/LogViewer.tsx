@@ -317,7 +317,7 @@ export default function LogViewer() {
                       className="flex items-center gap-2"
                       href={`/dashboard/licenses/${selectedLog.licenseId}`}
                     >
-                      {t('dashboard.licenses.license')}
+                      {t('general.license')}
                       <ExternalLink className="h-4 w-4" />
                     </Link>
                   </Button>

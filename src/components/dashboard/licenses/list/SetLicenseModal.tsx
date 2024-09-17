@@ -256,7 +256,7 @@ export default function SetLicenseModal() {
                 name="licenseKey"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('dashboard.licenses.license')}</FormLabel>
+                    <FormLabel>{t('general.license')}</FormLabel>
                     <FormControl>
                       <div className="relative w-full">
                         <Input

@@ -73,7 +73,7 @@ export default function RecentlyActiveCard() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('dashboard.licenses.license')}</TableHead>
+              <TableHead>{t('general.license')}</TableHead>
               <TableHead>{t('general.created_at')}</TableHead>
               <TableHead>{t('dashboard.licenses.status')}</TableHead>
             </TableRow>
