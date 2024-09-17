@@ -19,11 +19,13 @@ export default async function TeamUsersPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>{t('dashboard.navigation.users')}</BreadcrumbPage>
+            <BreadcrumbPage>{t('dashboard.navigation.members')}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1 className="text-2xl font-bold">{t('dashboard.navigation.users')}</h1>
+      <h1 className="text-2xl font-bold">
+        {t('dashboard.navigation.members')}
+      </h1>
       <Separator className="mt-2" />
     </div>
   );
