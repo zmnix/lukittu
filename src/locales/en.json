@@ -371,6 +371,27 @@
       "pro_plan": "Pro plan",
       "using_free_description": "You are currently using the free plan. Upgrade to the pro plan to unlock more features.",
       "using_pro_description": "You are currently using the pro plan. Manage your subscription below."
+    },
+    "audit_logs": {
+      "show_request": "Show request",
+      "no_audit_logs_title": "You have no audit logs",
+      "no_audit_logs_description": "No audit logs found. Audit logs are created when an action is performed in the system. You can view the details of the action here.",
+      "actions_types": {
+        "leave_team": "leaved team",
+        "create_team": "created team",
+        "delete_team": "deleted team",
+        "update_team": "updated team",
+        "transfer_team_ownership": "transferred team ownership",
+        "create_license": "created license",
+        "delete_license": "deleted license",
+        "update_license": "updated license",
+        "create_product": "created product",
+        "delete_product": "deleted product",
+        "update_product": "updated product",
+        "create_customer": "created customer",
+        "delete_customer": "deleted customer",
+        "update_customer": "updated customer"
+      }
     }
   }
 }

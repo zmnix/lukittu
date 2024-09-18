@@ -28,6 +28,9 @@ export const createAuditLog = async ({
   const userAgent = getUserAgent();
   const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
   const geoDataJson = geoData.ok ? await geoData.json() : null;
+  const longitude = geoDataJson?.lon || null;
+  const latitude = geoDataJson?.lat || null;
+  const hasBothLongitudeAndLatitude = longitude && latitude;
   const countryAlpha3: string | null = geoDataJson?.countryCode
     ? iso2ToIso3Map[geoDataJson.countryCode]
     : null;
@@ -35,8 +38,11 @@ export const createAuditLog = async ({
   try {
     await prisma.auditLog.create({
       data: {
+        version: process.env.npm_package_version!,
         teamId,
         ipAddress,
+        latitude: hasBothLongitudeAndLatitude ? latitude : null,
+        longitude: hasBothLongitudeAndLatitude ? longitude : null,
         userAgent,
         action,
         targetId,

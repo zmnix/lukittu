@@ -387,17 +387,23 @@ async function logRequest({
     const ipAddress = getIp();
     const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
     const geoDataJson = geoData.ok ? await geoData.json() : null;
+    const longitude = geoDataJson?.lon || null;
+    const latitude = geoDataJson?.lat || null;
+    const hasBothLongitudeAndLatitude = longitude && latitude;
     const countryAlpha3: string | null = geoDataJson?.countryCode
       ? iso2ToIso3Map[geoDataJson.countryCode]
       : null;
 
     await prisma.requestLog.create({
       data: {
+        version: process.env.npm_package_version!,
         method: method.toUpperCase() as RequestMethod,
         path: pathName,
         userAgent: getUserAgent(),
         origin,
         statusCode,
+        longitude: hasBothLongitudeAndLatitude ? longitude : null,
+        latitude: hasBothLongitudeAndLatitude ? latitude : null,
         responseTime: new Date().getTime() - requestTime.getTime(),
         status,
         requestBody,

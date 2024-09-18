@@ -38,6 +38,7 @@
     "d3": "^7.9.0",
     "date-fns": "^3.6.0",
     "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.438.0",
     "next": "15.0.0-rc.0",
     "next-intl": "^3.19.0",
@@ -48,6 +49,7 @@
     "react-day-picker": "8.10.1",
     "react-dom": "19.0.0-rc-f994737d14-20240522",
     "react-hook-form": "^7.53.0",
+    "react-leaflet": "^4.2.1",
     "recharts": "2.13.0-alpha.5",
     "server-only": "^0.0.1",
     "sonner": "^1.5.0",
@@ -63,6 +65,7 @@
   "devDependencies": {
     "@types/d3": "^7.4.3",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/leaflet": "^1.9.12",
     "@types/node": "^20.16.3",
     "@types/nodemailer": "^6.4.15",
     "@types/react": "^18.3.5",

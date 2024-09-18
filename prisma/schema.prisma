@@ -123,11 +123,14 @@ model License {
 model AuditLog {
   id           String             @id @default(uuid())
   ipAddress    String?
+  longitude    Float?
+  latitude     Float?
   userAgent    String?
   country      String?
   requestBody  Json?
   responseBody Json?
   userId       String?
+  version      String
   user         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   targetId     String
   targetType   AuditLogTargetType
@@ -143,9 +146,12 @@ model RequestLog {
   id           String        @id @default(uuid())
   responseTime Int
   ipAddress    String?
+  longitude    Float?
+  latitude     Float?
   country      String?
   status       RequestStatus
   statusCode   Int
+  version      String
   userAgent    String?
   origin       String?
   path         String

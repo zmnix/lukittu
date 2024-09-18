@@ -1,7 +1,6 @@
 import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ThemeProvider } from '@/providers/ThemeProvider';
-import 'leaflet/dist/leaflet.css';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
