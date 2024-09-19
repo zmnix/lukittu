@@ -11,13 +11,15 @@ export default function AddLicenseButton() {
 
   return (
     <Button
-      className="ml-auto"
+      className="ml-auto flex gap-2"
       size="sm"
       variant="default"
       onClick={() => ctx.setLicenseModalOpen(true)}
     >
-      <Plus className="mr-2 h-4 w-4" />
-      {t('dashboard.licenses.add_license')}
+      <Plus className="h-4 w-4" />
+      <span className="max-md:hidden">
+        {t('dashboard.licenses.add_license')}
+      </span>
     </Button>
   );
 }

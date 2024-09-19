@@ -23,6 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useTableScroll } from '@/hooks/useTableScroll';
+import { cn } from '@/lib/utils/tailwind-helpers';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
 import {
   ArrowDownUp,
@@ -45,6 +47,7 @@ export function ProductListTable() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
   const router = useRouter();
+  const { showDropdown, containerRef } = useTableScroll();
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -151,7 +154,7 @@ export function ProductListTable() {
                   }}
                 />
               </div>
-              <Table>
+              <Table containerRef={containerRef}>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -204,9 +207,14 @@ export function ProductListTable() {
                         <ArrowDownUp className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
-                    <TableHead className="truncate text-right">
-                      {t('general.actions')}
-                    </TableHead>
+                    <TableHead
+                      className={cn(
+                        'sticky right-0 w-[50px] truncate px-2 text-right',
+                        {
+                          'bg-background drop-shadow-md': showDropdown,
+                        },
+                      )}
+                    />
                   </TableRow>
                 </TableHeader>
                 {loading ? (
@@ -240,7 +248,14 @@ export function ProductListTable() {
                         >
                           <DateConverter date={product.updatedAt} />
                         </TableCell>
-                        <TableCell className="truncate py-0 text-right">
+                        <TableCell
+                          className={cn(
+                            'sticky right-0 w-[50px] truncate px-2 py-0 text-right',
+                            {
+                              'bg-background drop-shadow-md': showDropdown,
+                            },
+                          )}
+                        >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button size="icon" variant="ghost">

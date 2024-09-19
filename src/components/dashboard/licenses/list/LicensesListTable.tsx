@@ -26,10 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useTableScroll } from '@/hooks/useTableScroll';
 import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
+import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import {
   ArrowDownUp,
@@ -52,6 +54,7 @@ export function LicensesListTable() {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
+  const { showDropdown, containerRef } = useTableScroll();
   const ctx = useContext(LicenseModalContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -161,7 +164,6 @@ export function LicensesListTable() {
           <CardTitle className="flex items-center text-xl font-bold">
             {t('dashboard.navigation.licenses')}
             <div className="ml-auto flex gap-2">
-              <AddLicenseButton />
               <Button
                 className="lg:hidden"
                 size="sm"
@@ -170,6 +172,7 @@ export function LicensesListTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
+              <AddLicenseButton />
             </div>
           </CardTitle>
         </CardHeader>
@@ -197,7 +200,7 @@ export function LicensesListTable() {
                   setCustomerIds={setCustomerIds}
                 />
               </div>
-              <Table>
+              <Table className="relative" containerRef={containerRef}>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -249,9 +252,14 @@ export function LicensesListTable() {
                         <ArrowDownUp className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
-                    <TableHead className="truncate text-right">
-                      {t('general.actions')}
-                    </TableHead>
+                    <TableHead
+                      className={cn(
+                        'sticky right-0 w-[50px] truncate px-2 text-right',
+                        {
+                          'bg-background drop-shadow-md': showDropdown,
+                        },
+                      )}
+                    />
                   </TableRow>
                 </TableHeader>
                 {loading ? (
@@ -319,7 +327,14 @@ export function LicensesListTable() {
                         >
                           <DateConverter date={license.updatedAt} />
                         </TableCell>
-                        <TableCell className="truncate py-0 text-right">
+                        <TableCell
+                          className={cn(
+                            'sticky right-0 w-[50px] truncate px-2 py-0 text-right',
+                            {
+                              'bg-background drop-shadow-md': showDropdown,
+                            },
+                          )}
+                        >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button size="icon" variant="ghost">
