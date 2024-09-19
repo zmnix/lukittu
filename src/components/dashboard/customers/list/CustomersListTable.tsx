@@ -8,13 +8,8 @@ import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -25,28 +20,20 @@ import {
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { CustomerModalContext } from '@/providers/CustomerModalProvider';
-import {
-  ArrowDownUp,
-  Edit,
-  Ellipsis,
-  Filter,
-  Search,
-  Trash,
-  Users,
-} from 'lucide-react';
+import { ArrowDownUp, Filter, Search, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddCustomerButton from './AddCustomerButton';
+import { CustomersActionDropdown } from './CustomersActionDropdown';
 import CustomersMobileFiltersModal from './CustomersMobileFilters';
 
 export function CustomersListTable() {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
-  const ctx = useContext(CustomerModalContext);
   const { showDropdown, containerRef } = useTableScroll();
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -128,7 +115,6 @@ export function CustomersListTable() {
           <CardTitle className="flex items-center text-xl font-bold">
             {t('dashboard.navigation.customers')}
             <div className="ml-auto flex gap-2">
-              <AddCustomerButton />
               <Button
                 className="lg:hidden"
                 size="sm"
@@ -137,6 +123,7 @@ export function CustomersListTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
+              <AddCustomerButton />
             </div>
           </CardTitle>
         </CardHeader>
@@ -154,7 +141,42 @@ export function CustomersListTable() {
                   }}
                 />
               </div>
-              <Table containerRef={containerRef}>
+              <div className="flex flex-col md:hidden">
+                {loading
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                      >
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    ))
+                  : customers.map((customer) => (
+                      <Link
+                        key={customer.id}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                        href={`/dashboard/customers/${customer.id}`}
+                      >
+                        <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
+                        <div className="z-10">
+                          <p className="font-medium">{`${customer.fullName}`}</p>
+                          <div className="mb-1 text-xs text-muted-foreground">
+                            {customer.email ?? t('general.unknown')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            <DateConverter date={customer.createdAt} />
+                          </div>
+                        </div>
+                        <div className="z-10 flex items-center space-x-2">
+                          <CustomersActionDropdown customer={customer} />
+                        </div>
+                      </Link>
+                    ))}
+              </div>
+              <Table
+                className="relative max-md:hidden"
+                containerRef={containerRef}
+              >
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -275,41 +297,7 @@ export function CustomersListTable() {
                             },
                           )}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="icon" variant="ghost">
-                                <Ellipsis className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="font-medium"
-                              forceMount
-                            >
-                              <DropdownMenuItem
-                                className="hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setCustomerToEdit(customer);
-                                  ctx.setCustomerModalOpen(true);
-                                }}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t('dashboard.customers.edit_customer')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setCustomerToDelete(customer);
-                                  ctx.setCustomerToDeleteModalOpen(true);
-                                }}
-                              >
-                                <Trash className="mr-2 h-4 w-4" />
-                                {t('dashboard.customers.delete_customer')}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <CustomersActionDropdown customer={customer} />
                         </TableCell>
                       </TableRow>
                     ))}

@@ -156,7 +156,7 @@ export default function SetTeamModal({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
         <Form {...form}>
-          <form className="max-md:px-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="max-md:px-2" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="name"

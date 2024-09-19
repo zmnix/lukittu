@@ -80,7 +80,7 @@ export function TransferTeamOwnershipModal({
             })}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
-        <div className="max-md:px-4">
+        <div className="max-md:px-2">
           <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
             <PopoverTrigger asChild>
               <Button

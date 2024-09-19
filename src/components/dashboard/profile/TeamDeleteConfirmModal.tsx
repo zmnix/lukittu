@@ -64,7 +64,7 @@ export function DeleteTeamConfirmModal({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
         <form
-          className="grid w-full gap-1.5 max-md:px-4"
+          className="grid w-full gap-1.5 max-md:px-2"
           onSubmit={handleConfirm}
         >
           <Label htmlFor="confirmName">

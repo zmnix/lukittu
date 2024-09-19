@@ -11,13 +11,15 @@ export default function AddCustomerButton() {
 
   return (
     <Button
-      className="ml-auto"
+      className="ml-auto flex gap-2"
       size="sm"
       variant="default"
       onClick={() => ctx.setCustomerModalOpen(true)}
     >
-      <Plus className="mr-2 h-4 w-4" />
-      {t('dashboard.customers.add_customer')}
+      <Plus className="h-4 w-4" />
+      <span className="max-md:hidden">
+        {t('dashboard.customers.add_customer')}
+      </span>
     </Button>
   );
 }

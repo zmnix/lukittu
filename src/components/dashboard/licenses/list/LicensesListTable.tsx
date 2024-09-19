@@ -11,13 +11,8 @@ import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -32,22 +27,14 @@ import {
   getLicenseStatusBadgeVariant,
 } from '@/lib/utils/license-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { LicenseModalContext } from '@/providers/LicenseModalProvider';
-import {
-  ArrowDownUp,
-  Copy,
-  Edit,
-  Ellipsis,
-  Filter,
-  Key,
-  Search,
-  Trash,
-} from 'lucide-react';
+import { ArrowDownUp, Filter, Key, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddLicenseButton from './AddLicenseButton';
+import { LicensesActionDropdown } from './LicensesActionDropdown';
 import MobileFiltersModal from './LicensesMobileFiltersModal';
 
 export function LicensesListTable() {
@@ -55,7 +42,6 @@ export function LicensesListTable() {
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
-  const ctx = useContext(LicenseModalContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -142,11 +128,6 @@ export function LicensesListTable() {
     };
   }, [debounceSearch]);
 
-  const handleCopy = (licenseKey: string) => {
-    navigator.clipboard.writeText(licenseKey);
-    toast.success(t('general.copied_to_clipboard'));
-  };
-
   return (
     <>
       <MobileFiltersModal
@@ -200,7 +181,51 @@ export function LicensesListTable() {
                   setCustomerIds={setCustomerIds}
                 />
               </div>
-              <Table className="relative" containerRef={containerRef}>
+              <div className="flex flex-col md:hidden">
+                {loading
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                      >
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    ))
+                  : licenses.map((license) => (
+                      <Link
+                        key={license.id}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                        href={`/dashboard/licenses/${license.id}`}
+                      >
+                        <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
+                        <div className="z-10">
+                          <p className="font-medium">{`${license.licenseKey}`}</p>
+                          <div className="text-xs text-muted-foreground">
+                            <DateConverter date={license.createdAt} />
+                          </div>
+                        </div>
+                        <div className="z-10 flex items-center space-x-2">
+                          <span className="rounded-full px-2 py-1 text-xs font-medium">
+                            <Badge
+                              className="text-xs"
+                              variant={getLicenseStatusBadgeVariant(
+                                getLicenseStatus(license),
+                              )}
+                            >
+                              {t(
+                                `general.${getLicenseStatus(license).toLowerCase()}` as any,
+                              )}
+                            </Badge>
+                          </span>
+                          <LicensesActionDropdown license={license} />
+                        </div>
+                      </Link>
+                    ))}
+              </div>
+              <Table
+                className="relative max-md:hidden"
+                containerRef={containerRef}
+              >
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -335,51 +360,7 @@ export function LicensesListTable() {
                             },
                           )}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="icon" variant="ghost">
-                                <Ellipsis className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="font-medium"
-                              forceMount
-                            >
-                              <DropdownMenuItem
-                                className="hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCopy(license.licenseKey);
-                                }}
-                              >
-                                <Copy className="mr-2 h-4 w-4" />
-                                {t('general.click_to_copy')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setLicenseToEdit(license);
-                                  ctx.setLicenseModalOpen(true);
-                                }}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t('dashboard.licenses.edit_license')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setLicenseToDelete(license);
-                                  ctx.setLicenseToDeleteModalOpen(true);
-                                }}
-                              >
-                                <Trash className="mr-2 h-4 w-4" />
-                                {t('dashboard.licenses.delete_license')}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <LicensesActionDropdown license={license} />
                         </TableCell>
                       </TableRow>
                     ))}

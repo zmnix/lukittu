@@ -162,7 +162,7 @@ export default function SetCustomerModal() {
           </ResponsiveDialogHeader>
           <Form {...form}>
             <form
-              className="space-y-4 max-md:px-4"
+              className="space-y-4 max-md:px-2"
               onSubmit={form.handleSubmit(onSubmit)}
             >
               <FormField

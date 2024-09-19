@@ -8,13 +8,8 @@ import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -25,27 +20,19 @@ import {
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { ProductModalContext } from '@/providers/ProductModalProvider';
-import {
-  ArrowDownUp,
-  Edit,
-  Ellipsis,
-  Filter,
-  Package,
-  Search,
-  Trash,
-} from 'lucide-react';
+import { ArrowDownUp, Filter, Package, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddProductButton from './AddProductButton';
+import { ProductsActionDropdown } from './ProductsActionDropdown';
 import ProductsMobileFiltersModal from './ProductsMobileFiltersModal';
 
 export function ProductListTable() {
   const locale = useLocale();
   const t = useTranslations();
-  const ctx = useContext(ProductModalContext);
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
 
@@ -128,7 +115,6 @@ export function ProductListTable() {
           <CardTitle className="flex items-center text-xl font-bold">
             {t('dashboard.navigation.products')}
             <div className="ml-auto flex gap-2">
-              <AddProductButton />
               <Button
                 className="lg:hidden"
                 size="sm"
@@ -137,6 +123,7 @@ export function ProductListTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
+              <AddProductButton />
             </div>
           </CardTitle>
         </CardHeader>
@@ -154,7 +141,39 @@ export function ProductListTable() {
                   }}
                 />
               </div>
-              <Table containerRef={containerRef}>
+              <div className="flex flex-col md:hidden">
+                {loading
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                      >
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    ))
+                  : products.map((product) => (
+                      <Link
+                        key={product.id}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                        href={`/dashboard/products/${product.id}`}
+                      >
+                        <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
+                        <div className="z-10">
+                          <p className="font-medium">{`${product.name}`}</p>
+                          <div className="text-xs text-muted-foreground">
+                            <DateConverter date={product.createdAt} />
+                          </div>
+                        </div>
+                        <div className="z-10 flex items-center space-x-2">
+                          <ProductsActionDropdown product={product} />
+                        </div>
+                      </Link>
+                    ))}
+              </div>
+              <Table
+                className="relative max-md:hidden"
+                containerRef={containerRef}
+              >
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -256,41 +275,7 @@ export function ProductListTable() {
                             },
                           )}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="icon" variant="ghost">
-                                <Ellipsis className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="font-medium"
-                              forceMount
-                            >
-                              <DropdownMenuItem
-                                className="hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setProductToEdit(product);
-                                  ctx.setProductModalOpen(true);
-                                }}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t('dashboard.products.edit_product')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive hover:cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  ctx.setProductToDelete(product);
-                                  ctx.setProductToDeleteModalOpen(true);
-                                }}
-                              >
-                                <Trash className="mr-2 h-4 w-4" />
-                                {t('dashboard.products.delete_product')}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <ProductsActionDropdown product={product} />
                         </TableCell>
                       </TableRow>
                     ))}

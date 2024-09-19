@@ -35,7 +35,7 @@ export default function AuditLogRequestModal({
             {t('dashboard.dashboard.requests')}
           </ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        <div className="max-md:px-4">
+        <div className="max-md:px-2">
           <h3 className="mb-2 font-semibold">
             {t('dashboard.logs.request_body')}
           </h3>

@@ -32,7 +32,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body
         className={cn(
-          'flex min-h-screen w-full max-w-[100vw] bg-background font-sans antialiased',
+          'flex min-h-dvh w-full max-w-[100vw] bg-background font-sans antialiased',
           roboto.variable,
         )}
       >

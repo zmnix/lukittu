@@ -43,7 +43,7 @@ export default function CustomersMobileFiltersModal({
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>{t('general.filters')}</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        <div className="flex flex-col gap-4 max-md:px-4">
+        <div className="flex flex-col gap-4 max-md:px-2">
           <div className="relative flex w-full items-center max-lg:w-full">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input

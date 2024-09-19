@@ -91,7 +91,7 @@ export function DeleteProductConfirmModal() {
               })}
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
-          <div className="grid w-full gap-1.5 max-md:px-4">
+          <div className="grid w-full gap-1.5 max-md:px-2">
             <Label htmlFor="productNameConfirmation">
               {t.rich('dashboard.products.delete_product_confirm_input', {
                 productName: `"${product.name.toUpperCase()}"`,
