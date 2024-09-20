@@ -309,6 +309,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        // @ts-expect-error
+        // TODO: fix this
         Chevron: ({ ...props }) =>
           props.orientation === 'left' ? (
             <ChevronLeft className="h-4 w-4" />
@@ -320,6 +322,8 @@ function Calendar({
             {props.date.getDate()}
           </PopoverClose>
         ),
+        // @ts-expect-error
+        // TODO: fix this
         MonthCaption: ({ calendarMonth }) => (
           <div className="inline-flex gap-2">
             <Select
