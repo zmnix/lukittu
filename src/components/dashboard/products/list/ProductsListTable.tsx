@@ -161,6 +161,20 @@ export function ProductListTable() {
                         <div className="z-10">
                           <p className="font-medium">{`${product.name}`}</p>
                           <div className="flex items-center gap-1">
+                            {product.url ? (
+                              <Link
+                                className="text-xs font-semibold text-primary"
+                                href={product.url}
+                              >
+                                {product.url}
+                              </Link>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                {t('general.unknown')}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                             <div className="text-xs text-muted-foreground">
                               <DateConverter date={product.createdAt} />

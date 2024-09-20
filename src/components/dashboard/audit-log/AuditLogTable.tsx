@@ -143,9 +143,10 @@ export default function AuditLogTable() {
                   : auditLogs.map((auditLog) => (
                       <div
                         key={auditLog.id}
-                        className="group relative border-b py-3 first:border-t"
+                        className="relative border-b py-3 first:border-t"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="group relative flex items-center justify-between">
+                          <div className="absolute inset-0 -mx-2 -my-3 rounded-lg transition-colors group-hover:bg-secondary/80 md:hidden" />
                           <div className="z-10 flex items-center gap-2">
                             <Avatar className="h-12 w-12 border">
                               <AvatarImage

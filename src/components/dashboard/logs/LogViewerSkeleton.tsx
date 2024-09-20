@@ -111,7 +111,7 @@ export function LogViewerRightSkeleton() {
 export function LogViewerLeftSkeleton() {
   return Array.from({ length: 8 }).map((_, index) => (
     <div key={index} className="mb-4">
-      <h3 className="mb-2 ml-5 text-sm font-normal text-muted-foreground">
+      <h3 className="mb-2 text-sm font-normal text-muted-foreground">
         <Skeleton className="h-4 w-full max-w-24" />
       </h3>
       <Separator className="mb-2" />

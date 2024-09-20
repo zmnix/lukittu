@@ -142,7 +142,7 @@ export default function LogViewer() {
                       'mb-0': index === logs.length - 1,
                     })}
                   >
-                    <h3 className="mb-2 ml-5 text-sm font-normal text-muted-foreground">
+                    <h3 className="mb-2 text-sm font-normal text-muted-foreground">
                       {new Date(log[0].createdAt).toLocaleDateString(locale, {
                         month: 'short',
                         day: 'numeric',
@@ -152,10 +152,14 @@ export default function LogViewer() {
                     <Separator className="mb-2" />
                     <div className="grid grid-cols-1">
                       {log.map((l, indexInner) => (
-                        <div key={`${index}-${indexInner}`} className="mb-2">
+                        <div
+                          key={`${index}-${indexInner}`}
+                          className="group relative mb-2"
+                        >
+                          <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80 md:hidden" />
                           <Button
                             className={cn(
-                              'w-full justify-start gap-2 text-left',
+                              'relative z-10 w-full justify-start gap-2 text-left max-md:px-0 max-md:hover:bg-inherit',
                               {
                                 'md:bg-muted': selectedLog?.id === l.id,
                               },
