@@ -37,6 +37,8 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { LanguageSwitcher } from '../shared/LanguageSwitcher';
+import { ThemeSwitcher } from '../shared/ThemeSwitcher';
 import LoginWithGithubButton from './LoginWithGithubButton';
 
 export default function RegisterCard() {
@@ -278,13 +280,17 @@ export default function RegisterCard() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-wrap items-center justify-between">
           <p className="text-sm">
             {t('auth.register.already_have_account')}{' '}
             <Link className="font-semibold text-primary" href="/auth/login">
               {t('general.login')}
             </Link>
           </p>
+          <div className="flex gap-1">
+            <ThemeSwitcher size="xs" />
+            <LanguageSwitcher size="xs" />
+          </div>
         </CardFooter>
       </Card>
     </>

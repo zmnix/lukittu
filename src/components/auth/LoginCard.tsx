@@ -34,6 +34,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { LanguageSwitcher } from '../shared/LanguageSwitcher';
+import { ThemeSwitcher } from '../shared/ThemeSwitcher';
 import LoginWithGithubButton from './LoginWithGithubButton';
 
 export default function LoginCard() {
@@ -262,13 +264,17 @@ export default function LoginCard() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-wrap items-center justify-between">
           <p className="text-sm">
             {t('auth.login.new_to_app')}{' '}
             <Link className="font-semibold text-primary" href="/auth/register">
               {t('auth.login.create_account')}
             </Link>
           </p>
+          <div className="flex gap-1">
+            <ThemeSwitcher size="xs" />
+            <LanguageSwitcher size="xs" />
+          </div>
         </CardFooter>
       </Card>
     </>

@@ -19,10 +19,12 @@ import {
 
 interface LanguageSwitcherProps {
   variant?: VariantProps<typeof buttonVariants>['variant'];
+  size?: VariantProps<typeof buttonVariants>['size'];
 }
 
 export function LanguageSwitcher({
-  variant = 'outline',
+  variant = 'ghost',
+  size = 'icon',
 }: LanguageSwitcherProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -38,7 +40,7 @@ export function LanguageSwitcher({
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" variant={variant}>
+              <Button size={size} variant={variant}>
                 <Globe className="h-[1.2rem] w-[1.2rem] rotate-0 transition-all" />
               </Button>
             </DropdownMenuTrigger>

@@ -19,9 +19,13 @@ import {
 
 interface ThemeSwitcherProps {
   variant?: VariantProps<typeof buttonVariants>['variant'];
+  size?: VariantProps<typeof buttonVariants>['size'];
 }
 
-export function ThemeSwitcher({ variant = 'outline' }: ThemeSwitcherProps) {
+export function ThemeSwitcher({
+  variant = 'ghost',
+  size = 'icon',
+}: ThemeSwitcherProps) {
   const t = useTranslations();
   const { setTheme } = useTheme();
 
@@ -31,7 +35,7 @@ export function ThemeSwitcher({ variant = 'outline' }: ThemeSwitcherProps) {
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" tabIndex={-1} variant={variant}>
+              <Button size={size} tabIndex={-1} variant={variant}>
                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>

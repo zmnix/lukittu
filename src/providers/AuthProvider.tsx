@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   if (loading || !session) {
     return (
-      <div className="flex h-dvh w-dvw items-center justify-center">
+      <div className="absolute left-0 top-0 flex h-dvh w-dvw items-center justify-center">
         <LoadingSpinner size={38} />
       </div>
     );

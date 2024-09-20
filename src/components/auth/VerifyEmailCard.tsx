@@ -63,7 +63,7 @@ export default function VerifyEmailCard() {
   }, [router, searchParams, t]);
 
   return loading ? (
-    <div className="flex h-dvh w-dvw items-center justify-center">
+    <div className="absolute left-0 top-0 flex h-dvh w-dvw items-center justify-center">
       <LoadingSpinner size={38} />
     </div>
   ) : (

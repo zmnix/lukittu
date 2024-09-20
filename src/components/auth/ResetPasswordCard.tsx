@@ -32,6 +32,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { LanguageSwitcher } from '../shared/LanguageSwitcher';
+import { ThemeSwitcher } from '../shared/ThemeSwitcher';
 
 export default function ResetPasswordCard() {
   const t = useTranslations();
@@ -202,13 +204,17 @@ export default function ResetPasswordCard() {
           )}
         </CardContent>
         {!passwordResetSuccess && (
-          <CardFooter>
+          <CardFooter className="flex flex-wrap items-center justify-between">
             <p className="text-sm">
               {t('auth.reset_password.dont_want_to_reset')}{' '}
               <Link className="font-semibold text-primary" href="/auth/login">
                 {t('general.back_to_login')}
               </Link>
             </p>
+            <div className="flex gap-1">
+              <ThemeSwitcher size="xs" />
+              <LanguageSwitcher size="xs" />
+            </div>
           </CardFooter>
         )}
       </Card>
