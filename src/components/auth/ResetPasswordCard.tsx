@@ -212,8 +212,8 @@ export default function ResetPasswordCard() {
               </Link>
             </p>
             <div className="flex gap-1">
-              <ThemeSwitcher size="xs" />
-              <LanguageSwitcher size="xs" />
+              <ThemeSwitcher />
+              <LanguageSwitcher />
             </div>
           </CardFooter>
         )}

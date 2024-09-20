@@ -164,7 +164,7 @@ export function LicensesListTable() {
                 <div className="relative flex w-full items-center">
                   <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
                   <Input
-                    className="wf pl-8"
+                    className="pl-8"
                     placeholder={t('dashboard.licenses.search_license')}
                     value={debounceSearch}
                     onChange={(e) => {

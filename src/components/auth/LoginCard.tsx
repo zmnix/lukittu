@@ -272,8 +272,8 @@ export default function LoginCard() {
             </Link>
           </p>
           <div className="flex gap-1">
-            <ThemeSwitcher size="xs" />
-            <LanguageSwitcher size="xs" />
+            <ThemeSwitcher />
+            <LanguageSwitcher />
           </div>
         </CardFooter>
       </Card>
