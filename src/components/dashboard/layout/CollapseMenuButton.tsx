@@ -39,6 +39,7 @@ interface CollapseMenuButtonProps {
   active: boolean;
   submenus: Submenu[];
   isOpen: boolean | undefined;
+  onClick?: () => void;
 }
 
 export function CollapseMenuButton({
@@ -47,6 +48,7 @@ export function CollapseMenuButton({
   active,
   submenus,
   isOpen,
+  onClick,
 }: CollapseMenuButtonProps) {
   const t = useTranslations();
   const isSubmenuActive = submenus.some((submenu) => submenu.active);
@@ -105,6 +107,7 @@ export function CollapseMenuButton({
             className="mb-1 h-10 w-full justify-start"
             variant={active ? 'secondary' : 'ghost'}
             asChild
+            onClick={onClick}
           >
             <Link href={href}>
               <span className="ml-2 mr-4">

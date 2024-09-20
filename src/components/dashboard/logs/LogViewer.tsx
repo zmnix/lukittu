@@ -157,7 +157,7 @@ export default function LogViewer() {
                             className={cn(
                               'w-full justify-start gap-2 text-left',
                               {
-                                'bg-muted': selectedLog?.id === l.id,
+                                'md:bg-muted': selectedLog?.id === l.id,
                               },
                             )}
                             variant="ghost"
@@ -204,13 +204,14 @@ export default function LogViewer() {
                 <div className="mb-4 flex items-center">
                   <Button
                     className="mr-2 md:hidden"
-                    variant="ghost"
+                    size="sm"
+                    variant="outline"
                     onClick={() => setShowDetails(false)}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <h2
-                    className="mt-1 flex-grow truncate text-lg font-semibold tracking-tight"
+                    className="flex-grow truncate text-lg font-semibold tracking-tight md:mt-1"
                     title={`${selectedLog.method} ${selectedLog.path}`}
                   >
                     {selectedLog.method} {selectedLog.path}

@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { firstLetterUppercase } from '@/lib/utils/text-helpers';
+import { firstLetterUppercase, getInitials } from '@/lib/utils/text-helpers';
 import {
   UpdateProfileSchema,
   updateProfileSchema,
@@ -52,16 +52,6 @@ export default function GeneralSettingsCard() {
   const handleCancel = () => {
     setEdit(false);
     form.reset();
-  };
-
-  const getInitials = (fullName: string) => {
-    const initials = fullName
-      .split(' ')
-      .slice(0, 2)
-      .map((name) => name.charAt(0))
-      .join('');
-
-    return initials;
   };
 
   const handleProfileUpdate = async (payload: UpdateProfileSchema) => {
@@ -133,7 +123,7 @@ export default function GeneralSettingsCard() {
                   <div className="mb-1 text-sm font-semibold">
                     {t('general.avatar')}
                   </div>
-                  <Avatar className="h-32 w-32 border">
+                  <Avatar className="h-32 w-32 border max-md:h-28 max-md:w-28">
                     <AvatarImage src={user?.avatarUrl} asChild>
                       {user?.avatarUrl && (
                         <Image alt="Avatar" src={user.avatarUrl} fill />

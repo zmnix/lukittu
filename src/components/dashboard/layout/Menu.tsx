@@ -127,6 +127,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                         isOpen={isOpen}
                         submenus={submenus}
                         translation={translation}
+                        onClick={onClose}
                       />
                     </div>
                   ),

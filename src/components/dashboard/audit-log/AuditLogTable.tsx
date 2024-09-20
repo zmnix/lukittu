@@ -6,9 +6,11 @@ import {
 import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -17,11 +19,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getInitials } from '@/lib/utils/text-helpers';
 import 'leaflet/dist/leaflet.css';
 import {
   ArrowDownUp,
   ChevronDown,
   ChevronRight,
+  Clock,
   ExternalLink,
   Logs,
   MapPinOff,
@@ -126,7 +130,160 @@ export default function AuditLogTable() {
                     opacity 0.3s ease-in;
                 }
               `}</style>
-              <Table>
+              <div className="flex flex-col md:hidden">
+                {loading
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="group relative flex items-center justify-between border-b py-3 first:border-t"
+                      >
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    ))
+                  : auditLogs.map((auditLog) => (
+                      <div
+                        key={auditLog.id}
+                        className="group relative border-b py-3 first:border-t"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="z-10 flex items-center gap-2">
+                            <Avatar className="h-12 w-12 border">
+                              <AvatarImage
+                                src={auditLog.user?.avatarUrl!}
+                                asChild
+                              >
+                                {auditLog.user?.avatarUrl && (
+                                  <Image
+                                    alt="Avatar"
+                                    src={auditLog.user.avatarUrl}
+                                    fill
+                                  />
+                                )}
+                              </AvatarImage>
+                              <AvatarFallback className="bg-primary text-xs text-white">
+                                {getInitials(auditLog.user?.fullName ?? '??')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="z-10">
+                              <p className="font-medium">{`${auditLog.user?.email}`}</p>
+                              <div className="flex items-center gap-1">
+                                <div className="text-xs font-semibold text-muted-foreground">
+                                  {t(
+                                    `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="text-xs text-muted-foreground">
+                                  <DateConverter date={auditLog.createdAt} />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="z-10 flex items-center space-x-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => toggleRow(auditLog.id)}
+                            >
+                              <ChevronDown
+                                className={`h-4 w-4 ${
+                                  expandedRows.has(auditLog.id)
+                                    ? 'rotate-180 transform'
+                                    : ''
+                                }`}
+                              />
+                            </Button>
+                          </div>
+                        </div>
+                        <div
+                          className={`expanded-content ${expandedRows.has(auditLog.id) ? 'open z-20' : ''}`}
+                        >
+                          <div className="mt-6 flex flex-col gap-3">
+                            <div className="flex gap-2">
+                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                {t('general.user')}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {auditLog.user?.email}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                {t('general.ip_address')}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {auditLog.alpha2 && (
+                                  <Image
+                                    alt={
+                                      auditLog.alpha3 ?? t('general.unknown')
+                                    }
+                                    className="rounded-[2px]"
+                                    height={20}
+                                    src={`/countries/${auditLog.alpha2.toLowerCase()}.svg`}
+                                    width={20}
+                                  />
+                                )}
+                                {auditLog.ipAddress ?? t('general.unknown')}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                {t('general.browser')}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {auditLog.browser ?? t('general.unknown')}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                {t('general.operating_system')}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {auditLog.os ?? t('general.unknown')}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                {t('general.device')}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {auditLog.device ?? t('general.unknown')}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                {t(
+                                  `general.${auditLog.targetType.toLowerCase()}` as any,
+                                )}
+                              </h3>
+                              <Link
+                                className="truncate text-sm font-semibold text-primary hover:underline"
+                                href={`/dashboard/${auditLog.targetType.toLowerCase()}s/${auditLog.targetId}`}
+                                title={auditLog.targetId}
+                              >
+                                {auditLog.targetId}
+                              </Link>
+                            </div>
+                          </div>
+                          <div className="mt-4 grid rounded-lg bg-muted max-md:min-h-60">
+                            {auditLog.latitude && auditLog.longitude ? (
+                              <AuditLogMapPreview
+                                latitude={auditLog.latitude}
+                                longitude={auditLog.longitude}
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center">
+                                <MapPinOff className="h-16 w-16 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+              </div>
+              <Table className="max-md:hidden">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[50px] truncate" />
@@ -180,13 +337,32 @@ export default function AuditLogTable() {
                               )}
                             </Button>
                           </TableCell>
-                          <TableCell className="truncate">
-                            <b>
-                              {auditLog.user?.email ?? t('general.unknown')}
-                            </b>{' '}
-                            {t(
-                              `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,
-                            )}
+                          <TableCell className="flex items-center gap-2 truncate">
+                            <Avatar className="h-8 w-8 border">
+                              <AvatarImage
+                                src={auditLog.user?.avatarUrl!}
+                                asChild
+                              >
+                                {auditLog.user?.avatarUrl && (
+                                  <Image
+                                    alt="Avatar"
+                                    src={auditLog.user.avatarUrl}
+                                    fill
+                                  />
+                                )}
+                              </AvatarImage>
+                              <AvatarFallback className="bg-primary text-xs text-white">
+                                {getInitials(auditLog.user?.fullName ?? '??')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>
+                              <b>
+                                {auditLog.user?.email ?? t('general.unknown')}
+                              </b>{' '}
+                              {t(
+                                `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,
+                              )}
+                            </span>
                           </TableCell>
                           <TableCell className="truncate">
                             <Badge className="text-xs" variant="secondary">
@@ -309,7 +485,7 @@ export default function AuditLogTable() {
                                       />
                                     ) : (
                                       <div className="flex items-center justify-center">
-                                        <MapPinOff className="h-16 w-16" />
+                                        <MapPinOff className="h-16 w-16 text-muted-foreground" />
                                       </div>
                                     )}
                                   </div>

@@ -13,7 +13,11 @@ import { UAParser } from 'ua-parser-js';
 
 export type IAuditLogsGetSuccessResponse = {
   auditLogs: (AuditLog & {
-    user: Omit<User, 'passwordHash'> | null;
+    user:
+      | (Omit<User, 'passwordHash'> & {
+          avatarUrl: string | null;
+        })
+      | null;
     alpha2: string | null;
     alpha3: string | null;
     country: string | null;
@@ -135,6 +139,14 @@ export async function GET(
 
     const auditlog = session.user.teams[0].auditLogs;
 
+    const getGravatarUrl = (email: string) => {
+      const hash = require('crypto')
+        .createHash('md5')
+        .update(email)
+        .digest('hex');
+      return `https://www.gravatar.com/avatar/${hash}?d=404&s=200`;
+    };
+
     const requestLogsWithCountries = auditlog.map((log) => {
       let browser: string | null = null;
       let os: string | null = null;
@@ -164,6 +176,14 @@ export async function GET(
         browser,
         os,
         device,
+        user: log.user
+          ? {
+              ...log.user,
+              avatarUrl: log.user?.email
+                ? getGravatarUrl(log.user.email)
+                : null,
+            }
+          : null,
       };
     });
 

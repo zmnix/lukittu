@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { getInitials } from '@/lib/utils/text-helpers';
 import { AuthContext } from '@/providers/AuthProvider';
 import { LogOut, UserIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -30,16 +31,6 @@ export function UserDropdown() {
   const authCtx = useContext(AuthContext);
 
   const user = useMemo(() => authCtx.session?.user, [authCtx]);
-
-  const getInitials = (fullName: string) => {
-    const initials = fullName
-      .split(' ')
-      .slice(0, 2)
-      .map((name) => name.charAt(0))
-      .join('');
-
-    return initials;
-  };
 
   const handleSignOut = async () => {
     await fetch('/api/auth/sign-out', {

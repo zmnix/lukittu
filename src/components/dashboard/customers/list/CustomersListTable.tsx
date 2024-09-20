@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { ArrowDownUp, Filter, Search, Users } from 'lucide-react';
+import { ArrowDownUp, Clock, Filter, Search, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -160,11 +160,14 @@ export function CustomersListTable() {
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
                           <p className="font-medium">{`${customer.fullName}`}</p>
-                          <div className="mb-1 text-xs text-muted-foreground">
+                          <div className="mb-1 text-xs font-semibold text-muted-foreground">
                             {customer.email ?? t('general.unknown')}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            <DateConverter date={customer.createdAt} />
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            <div className="text-xs text-muted-foreground">
+                              <DateConverter date={customer.createdAt} />
+                            </div>
                           </div>
                         </div>
                         <div className="z-10 flex items-center space-x-2">
@@ -329,7 +332,7 @@ export function CustomersListTable() {
                   {t('dashboard.customers.customer_description')}
                 </p>
                 <div>
-                  <AddCustomerButton />
+                  <AddCustomerButton displayText />
                 </div>
               </div>
             </div>
