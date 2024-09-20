@@ -84,14 +84,24 @@ export async function POST(
 
     const passwordHash = hashPassword(newPassword);
 
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
-      data: {
-        passwordHash,
-      },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: {
+          id: session.user.id,
+        },
+        data: {
+          passwordHash,
+        },
+      }),
+      prisma.session.deleteMany({
+        where: {
+          userId: session.user.id,
+          sessionId: {
+            not: session.sessionId,
+          },
+        },
+      }),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

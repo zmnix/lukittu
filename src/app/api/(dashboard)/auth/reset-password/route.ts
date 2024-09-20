@@ -137,10 +137,15 @@ export async function POST(
 
     const passwordHash = hashPassword(password);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash },
+      }),
+      prisma.session.deleteMany({
+        where: { userId: user.id },
+      }),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {
