@@ -45,12 +45,12 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd lukittu
+            git fetch --all
             git reset --hard origin/main
-            git pull
             docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ secrets.REGISTRY }}
             docker pull ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
-            docker compose down
-            docker compose up -d
+            docker compose -f docker-compose-prod.yml down
+            docker compose -f docker-compose-prod.yml up -d
             echo "Sleeping for 10 seconds"
             sleep 10
             docker compose -f docker-compose-migrate.yml up -d
