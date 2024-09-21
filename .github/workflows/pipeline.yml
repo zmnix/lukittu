@@ -1,0 +1,56 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+concurrency:
+  group: build-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  next:
+    name: Build and Deploy
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add environment variables
+        run: |
+          touch .env
+          echo NEXT_PUBLIC_BASE_URL=https://${{ secrets.BASE_HOST }} >> .env
+          echo NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }} >> .env
+          echo NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }} >> .env
+          echo NEXT_PUBLIC_GOOGLE_REDIRECT_URI=https://${{ secrets.NEXT_PUBLIC_GOOGLE_REDIRECT_URI }} >> .env
+          echo NEXT_PUBLIC_GITHUB_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }} >> .env
+          echo NEXT_PUBLIC_GITHUB_REDIRECT_URI=https://${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }} >> .env
+        working-directory: ./next
+
+      - name: Build docker image
+        run: |
+          echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+          docker build -t ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }} .
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
+        working-directory: ./next
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd lukittu
+            git reset --hard origin/main
+            git pull
+            docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ secrets.REGISTRY }}
+            docker pull ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
+            docker compose down
+            docker compose up -d
+            echo "Sleeping for 10 seconds"
+            sleep 10
+            docker compose -f docker-compose-migrate.yaml up -d
