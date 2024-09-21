@@ -84,5 +84,6 @@
   },
   "resolutions": {
     "react-is": "^19.0.0-rc-2d2cc042-20240809"
-  }
+  },
+  "packageManager": "pnpm@9.11.0"
 }
