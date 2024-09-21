@@ -27,14 +27,14 @@ jobs:
           echo NEXT_PUBLIC_GOOGLE_REDIRECT_URI=https://${{ secrets.NEXT_PUBLIC_GOOGLE_REDIRECT_URI }} >> .env
           echo NEXT_PUBLIC_GITHUB_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }} >> .env
           echo NEXT_PUBLIC_GITHUB_REDIRECT_URI=https://${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }} >> .env
-        working-directory: ./next
+        working-directory: .
 
       - name: Build docker image
         run: |
           echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
           docker build -t ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }} .
           docker push ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
-        working-directory: ./next
+        working-directory: .
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@master
