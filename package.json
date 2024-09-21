@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "prisma generate && next dev",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "dev:email": "email dev --dir ./src/emails"
+    "email-dev": "email dev --dir ./src/emails"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
