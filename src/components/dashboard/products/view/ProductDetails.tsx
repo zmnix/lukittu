@@ -70,7 +70,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               {product ? (
                 product.url ? (
                   <Link
-                    className="text-primary hover:underline"
+                    className="block truncate text-primary hover:underline"
                     href={product.url}
                   >
                     {product.url}
