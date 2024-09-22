@@ -14,7 +14,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
 
   return (
     <div className="relative flex min-h-dvh w-full items-center justify-center bg-background p-2">
-      <div className="mb-28 mt-10 w-full">{children}</div>
+      <div className="my-5 w-full">{children}</div>
     </div>
   );
 }
