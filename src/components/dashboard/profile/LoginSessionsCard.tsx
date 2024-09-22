@@ -148,7 +148,7 @@ export default function LoginSessionsCard() {
                     {`${session.browser ?? 'N/A'} - ${session.os ?? ''}`.trim() ??
                       'N/A'}
                   </TableCell>
-                  <TableCell className="flex items-center gap-2 truncate">
+                  <TableCell className="flex items-center gap-2">
                     {session.alpha2 && (
                       <Image
                         alt={session.alpha3 ?? t('general.unknown')}
