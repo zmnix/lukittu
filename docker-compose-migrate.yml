@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   prisma:
     image: node:latest
@@ -10,7 +9,7 @@ services:
       - .:/app
     networks:
       - lukittu-network
-    command: sh -c "npx prisma generate && npx prisma migrate deploy"
+    command: sh -c "npm install -g pnpm && pnpm exec prisma generate && pnpm exec prisma migrate deploy"
 
 networks:
   lukittu-network:
