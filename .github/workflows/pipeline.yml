@@ -21,12 +21,12 @@ jobs:
       - name: Add environment variables
         run: |
           touch .env
-          echo NEXT_PUBLIC_BASE_URL=https://${{ secrets.NEXT_PUBLIC_BASE_URL }} >> .env
+          echo NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }} >> .env
           echo NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }} >> .env
           echo NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }} >> .env
-          echo NEXT_PUBLIC_GOOGLE_REDIRECT_URI=https://${{ secrets.NEXT_PUBLIC_GOOGLE_REDIRECT_URI }} >> .env
+          echo NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GOOGLE_REDIRECT_URI }} >> .env
           echo NEXT_PUBLIC_GITHUB_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }} >> .env
-          echo NEXT_PUBLIC_GITHUB_REDIRECT_URI=https://${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }} >> .env
+          echo NEXT_PUBLIC_GITHUB_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }} >> .env
         working-directory: .
 
       - name: Build docker image
