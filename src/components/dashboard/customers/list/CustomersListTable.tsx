@@ -159,8 +159,8 @@ export function CustomersListTable() {
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
-                          <p className="font-medium">{`${customer.fullName}`}</p>
-                          <div className="mb-1 text-xs font-semibold text-muted-foreground">
+                          <p className="line-clamp-2 font-medium">{`${customer.fullName}`}</p>
+                          <div className="mb-1 line-clamp-1 break-all text-xs font-semibold text-muted-foreground">
                             {customer.email ?? t('general.unknown')}
                           </div>
                           <div className="flex items-center gap-1">

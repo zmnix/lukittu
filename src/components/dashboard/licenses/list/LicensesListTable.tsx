@@ -199,7 +199,7 @@ export function LicensesListTable() {
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
-                          <p className="font-medium">{`${license.licenseKey}`}</p>
+                          <p className="line-clamp-2 font-medium">{`${license.licenseKey}`}</p>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                             <div className="text-xs text-muted-foreground">

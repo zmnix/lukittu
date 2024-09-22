@@ -159,11 +159,11 @@ export function ProductListTable() {
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
-                          <p className="font-medium">{`${product.name}`}</p>
+                          <p className="line-clamp-2 font-medium">{`${product.name}`}</p>
                           <div className="flex items-center gap-1">
                             {product.url ? (
                               <Link
-                                className="text-xs font-semibold text-primary"
+                                className="line-clamp-1 break-all text-xs font-semibold text-primary"
                                 href={product.url}
                               >
                                 {product.url}
