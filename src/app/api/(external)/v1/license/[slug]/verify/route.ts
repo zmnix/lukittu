@@ -396,7 +396,7 @@ async function logRequest({
 
     await prisma.requestLog.create({
       data: {
-        version: process.env.npm_package_version!,
+        version: process.env.version!,
         method: method.toUpperCase() as RequestMethod,
         path: pathName,
         userAgent: getUserAgent(),

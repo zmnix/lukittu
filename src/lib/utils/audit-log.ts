@@ -38,7 +38,7 @@ export const createAuditLog = async ({
   try {
     await prisma.auditLog.create({
       data: {
-        version: process.env.npm_package_version!,
+        version: process.env.version!,
         teamId,
         ipAddress,
         latitude: hasBothLongitudeAndLatitude ? latitude : null,
