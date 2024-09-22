@@ -41,6 +41,7 @@ const DrawerContent = React.forwardRef<
   <DrawerPortal>
     <DrawerOverlay />
     <DrawerPrimitive.Content
+      onOpenAutoFocus={(e) => e.preventDefault()}
       ref={ref}
       className={cn(
         'fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[calc(100dvh-1.5rem)] flex-col rounded-t-[10px] border bg-background',
