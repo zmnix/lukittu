@@ -1,5 +1,7 @@
 import LogViewer from '@/components/dashboard/logs/LogViewer';
 import { Separator } from '@/components/ui/separator';
+import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 export default async function LogsPage() {
@@ -13,4 +15,12 @@ export default async function LogsPage() {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('dashboard.navigation.logs')} | Lukittu`,
+  };
 }

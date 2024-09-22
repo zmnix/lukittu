@@ -50,6 +50,9 @@ export default function DataCards() {
 
   const successPercentage = useMemo(() => {
     if (!data) return 0;
+    if (data.requestsLast24h.success + data.requestsLast24h.failed === 0) {
+      return 0;
+    }
     return (
       (data.requestsLast24h.success /
         (data.requestsLast24h.success + data.requestsLast24h.failed)) *
@@ -59,6 +62,9 @@ export default function DataCards() {
 
   const failedPercentage = useMemo(() => {
     if (!data) return 0;
+    if (data.requestsLast24h.success + data.requestsLast24h.failed === 0) {
+      return 0;
+    }
     return (
       (data.requestsLast24h.failed /
         (data.requestsLast24h.success + data.requestsLast24h.failed)) *

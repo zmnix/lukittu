@@ -6,6 +6,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
@@ -28,4 +30,12 @@ export default async function LicensePage() {
       <LicenseView />
     </div>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('dashboard.navigation.licenses')} | Lukittu`,
+  };
 }

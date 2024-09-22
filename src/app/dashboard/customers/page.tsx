@@ -1,6 +1,7 @@
 import CustomersListCard from '@/components/dashboard/customers/list/CustomersListCard';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 export default async function CustomersPage() {
@@ -16,4 +17,12 @@ export default async function CustomersPage() {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('dashboard.navigation.customers')} | Lukittu`,
+  };
 }

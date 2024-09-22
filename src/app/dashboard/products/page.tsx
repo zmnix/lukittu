@@ -1,6 +1,7 @@
 import ProductsListCard from '@/components/dashboard/products/list/ProductsListCard';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 interface ProductsPageProps {
@@ -23,4 +24,12 @@ export default async function ProductsPage({
       </div>
     </div>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('dashboard.navigation.products')} | Lukittu`,
+  };
 }

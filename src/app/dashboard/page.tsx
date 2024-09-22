@@ -4,7 +4,10 @@ import RecentlyActiveCard from '@/components/dashboard/statistics/RecentlyActive
 import { RequestsAreaChart } from '@/components/dashboard/statistics/RequestsAreaChart';
 import WorldMapChart from '@/components/dashboard/statistics/WorldMapChart';
 import { Separator } from '@/components/ui/separator';
+import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 export default function Dashboard() {
   const t = useTranslations();
@@ -33,4 +36,12 @@ export default function Dashboard() {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('dashboard.navigation.dashboard')} | Lukittu`,
+  };
 }

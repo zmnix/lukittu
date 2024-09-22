@@ -1,4 +1,8 @@
 {
+  "seo": {
+    "title": "Lukittu Dashboard",
+    "description": "Sign in to the Lukittu dashboard to manage and distribute your software licenses. Create products, assign licenses, monitor customer usage, and streamline license management all in one place."
+  },
   "validation": {
     "invalid_email": "Invalid email address!",
     "invalid_token": "Invalid token.",
@@ -162,7 +166,8 @@
       "create_account": "Create an account",
       "invalid_email_password": "Invalid email or password",
       "login_failed": "Login failed",
-      "email_not_verified": "Your email is not verified. Please verify your email first."
+      "email_not_verified": "Your email is not verified. Please verify your email first.",
+      "seo_title": "Lukittu Login - Sign in to the Lukittu dashboard"
     },
     "register": {
       "title": "Create your Lukittu account",
@@ -175,14 +180,16 @@
       "already_have_account": "Already have an account?",
       "email_already_in_use": "This email is already in use!",
       "email_sent_title": "Confirm your registration",
-      "email_sent_description": "We have sent a email verification mail to <strong>{email}</strong>. Please check your inbox spam folder. If you don't receive the email within a few minutes, you can try registering again."
+      "email_sent_description": "We have sent a email verification mail to <strong>{email}</strong>. Please check your inbox spam folder. If you don't receive the email within a few minutes, you can try registering again.",
+      "seo_title": "Sign Up and Create a Lukittu Account | Lukittu"
     },
     "forgot_password": {
       "title": "Forgot your password?",
       "description": "Enter your email to reset your password.",
       "remember_password": "Remember your password?",
       "email_sent_title": "Password reset email sent",
-      "email_sent_description": "We have sent a password reset email to <strong>{email}</strong>. Please check your inbox spam folder. If you don't receive the email within a few minutes, you can try resetting your password again."
+      "email_sent_description": "We have sent a password reset email to <strong>{email}</strong>. Please check your inbox spam folder. If you don't receive the email within a few minutes, you can try resetting your password again.",
+      "seo_title": "Forgot Password - Reset your password"
     },
     "reset_password": {
       "title": "Reset your password",
@@ -192,7 +199,8 @@
       "reset_password": "Reset password",
       "send_reset_email": "Send reset email",
       "reset_success_title": "Password reset successfully",
-      "reset_success_description": "Password reset successfully. You can now login with your new password."
+      "reset_success_description": "Password reset successfully. You can now login with your new password.",
+      "seo_title": "Reset Password - Set a new password"
     },
     "verify_email": {
       "title": "Your email is not verified",
@@ -200,7 +208,8 @@
       "verification_failed_title": "Email verification failed",
       "verification_success_title": "Your email is now verified",
       "verification_success": "Your email is now verified. You can now go back to the login page and login.",
-      "resend_email": "Resend email"
+      "resend_email": "Resend email",
+      "seo_title": "Verify Email - Verify your email address"
     },
     "resend_verify": {
       "title": "We have resent the verification email",

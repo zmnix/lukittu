@@ -2,7 +2,10 @@ import GeneralSettingsCard from '@/components/dashboard/profile/GeneralSettingsC
 import LoginSessionsCard from '@/components/dashboard/profile/LoginSessionsCard';
 import TeamListCard from '@/components/dashboard/profile/TeamListCard';
 import { Separator } from '@/components/ui/separator';
+import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 export default function ProfilePage() {
   const t = useTranslations();
@@ -19,4 +22,12 @@ export default function ProfilePage() {
       </div>
     </>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('general.profile')} | Lukittu`,
+  };
 }

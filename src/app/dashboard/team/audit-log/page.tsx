@@ -7,6 +7,8 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
+import { getLanguage } from '@/lib/utils/header-helpers';
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 export default async function TeamAuditLogPage() {
@@ -35,4 +37,12 @@ export default async function TeamAuditLogPage() {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  return {
+    title: `${t('dashboard.navigation.audit_logs')} | Lukittu`,
+  };
 }
