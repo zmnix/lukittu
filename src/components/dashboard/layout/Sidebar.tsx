@@ -33,6 +33,7 @@ export function Sidebar() {
             'mb-1 transition-transform duration-300 ease-in-out',
             ctx.open === false ? 'translate-x-1' : 'translate-x-0',
           )}
+          tabIndex={0}
           variant="link"
           asChild
         >
