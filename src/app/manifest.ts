@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Lukittu',
     description:
       'Lukittu is a free, open-source software for license distribution and management. It enables you to safeguard your commercial applications by integrating a licensing layer and provides real-time monitoring of application usage.',
-    start_url: '/auth/login',
+    start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#4153af',
