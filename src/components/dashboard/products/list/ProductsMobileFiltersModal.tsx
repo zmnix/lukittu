@@ -47,7 +47,7 @@ export default function ProductsMobileFiltersModal({
           <div className="relative flex w-full items-center max-lg:w-full">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input
-              className="wf pl-8"
+              className="pl-8"
               placeholder={t('dashboard.licenses.search_product')}
               value={tempSearch}
               onChange={(e) => {

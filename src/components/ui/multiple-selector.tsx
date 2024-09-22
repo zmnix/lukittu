@@ -423,14 +423,14 @@ const MultipleSelector = React.forwardRef<
       // For async search that showing emptyIndicator
       if (onSearch && !creatable && Object.keys(options).length === 0) {
         return (
-          <CommandEmpty className="px-4 py-1 pb-0 text-sm">
+          <CommandEmpty className="px-4 py-2 pb-0 text-sm">
             {emptyIndicator}
           </CommandEmpty>
         );
       }
 
       return (
-        <CommandEmpty className="px-4 py-1 pb-0 text-sm">
+        <CommandEmpty className="px-4 py-2 pb-0 text-sm">
           {emptyIndicator}
         </CommandEmpty>
       );
@@ -477,9 +477,9 @@ const MultipleSelector = React.forwardRef<
       >
         <div
           className={cn(
-            'flex min-h-9 items-center rounded-md border border-input text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+            'flex min-h-10 items-center rounded-md border border-input text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
             {
-              'px-3 py-1': selected.length !== 0,
+              'px-3 py-2': selected.length !== 0,
               'cursor-text': !disabled && selected.length !== 0,
             },
             className,
@@ -531,7 +531,7 @@ const MultipleSelector = React.forwardRef<
                 'flex-1 bg-transparent outline-none placeholder:text-muted-foreground',
                 {
                   'w-full': hidePlaceholderWhenSelected,
-                  'px-3 py-1': selected.length === 0,
+                  'px-3 py-2': selected.length === 0,
                   'ml-1': selected.length !== 0,
                 },
                 inputProps?.className,

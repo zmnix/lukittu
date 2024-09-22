@@ -145,8 +145,8 @@ export default function ForgotPasswordCard() {
             </Link>
           </p>
           <div className="flex gap-1">
-            <ThemeSwitcher />
-            <LanguageSwitcher />
+            <ThemeSwitcher size="xs" />
+            <LanguageSwitcher size="xs" />
           </div>
         </CardFooter>
       </Card>

@@ -142,7 +142,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
             >
               <Card className="w-full max-w-sm overflow-hidden transition-all duration-300 ease-in-out">
                 <CardHeader
-                  className="cursor-pointer px-4 py-2"
+                  className="cursor-pointer p-4"
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
                   <div className="flex items-center justify-between">
@@ -176,7 +176,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                         : t('dashboard.subscriptions.using_free_description')}
                     </CardDescription>
                   </CardContent>
-                  <CardFooter className="px-4 pb-2">
+                  <CardFooter className="px-4">
                     {!isPro ? (
                       <ConfettiButton className="flex w-full items-center gap-2">
                         <Rocket className="h-5 w-5" />

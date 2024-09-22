@@ -137,7 +137,7 @@ export default function GeneralSettingsCard() {
                 <div className="max-w-md text-sm text-muted-foreground">
                   {t.rich('dashboard.gravatar.description', {
                     link: (children) => (
-                      <Button className="p-0" variant="link" asChild>
+                      <Button className="p-0" size="sm" variant="link" asChild>
                         <Link
                           href="https://gravatar.com"
                           rel="noopener noreferrer"

@@ -418,7 +418,7 @@ const TimePeriodSelect = React.forwardRef<
     };
 
     return (
-      <div className="flex h-9 items-center">
+      <div className="flex h-10 items-center">
         <Select
           defaultValue={period}
           onValueChange={(value: Period) => handleValueChange(value)}
