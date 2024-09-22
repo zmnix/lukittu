@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://app.lukittu.com/sitemap.xml
