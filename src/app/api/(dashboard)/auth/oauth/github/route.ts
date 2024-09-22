@@ -5,12 +5,14 @@ import { logger } from '@/lib/utils/logger';
 import { Provider } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get('code');
 
     if (!code || typeof code !== 'string') {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+      return NextResponse.redirect(new URL('/auth/login', baseUrl));
     }
 
     const formattedUrl = 'https://github.com/login/oauth/access_token';
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     if (!accessTokenRes.ok) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=github', request.url),
+        new URL('/auth/login?error=server_error&provider=github', baseUrl),
       );
     }
 
@@ -39,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     if (!accessTokenData?.access_token) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=github', request.url),
+        new URL('/auth/login?error=server_error&provider=github', baseUrl),
       );
     }
 
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     if (!userRes.ok) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=github', request.url),
+        new URL('/auth/login?error=server_error&provider=github', baseUrl),
       );
     }
 
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     if (!user?.id || !user?.email) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=github', request.url),
+        new URL('/auth/login?error=server_error&provider=github', baseUrl),
       );
     }
 
@@ -74,7 +76,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(
           new URL(
             `/auth/login?error=wrong_provider&provider=${existingUser.provider.toLowerCase()}`,
-            request.url,
+            baseUrl,
           ),
         );
       }
@@ -83,14 +85,11 @@ export async function GET(request: NextRequest) {
 
       if (!createdSession) {
         return NextResponse.redirect(
-          new URL(
-            '/auth/login?error=server_error&provider=github',
-            request.url,
-          ),
+          new URL('/auth/login?error=server_error&provider=github', baseUrl),
         );
       }
 
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/dashboard', baseUrl));
     }
 
     const newUser = await prisma.$transaction(async (prisma) => {
@@ -126,15 +125,15 @@ export async function GET(request: NextRequest) {
 
     if (!createdSession) {
       return NextResponse.redirect(
-        new URL('/auth/login?error=server_error&provider=github', request.url),
+        new URL('/auth/login?error=server_error&provider=github', baseUrl),
       );
     }
 
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/dashboard', baseUrl));
   } catch (error) {
     logger.error("Error occurred in 'auth/oauth/github' route", error);
     return NextResponse.redirect(
-      new URL('/auth/login?error=server_error&provider=github', request.url),
+      new URL('/auth/login?error=server_error&provider=github', baseUrl),
     );
   }
 }
