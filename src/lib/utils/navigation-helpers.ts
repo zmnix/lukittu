@@ -107,9 +107,9 @@ export function getMenuList(pathname: string): Group[] {
               active: pathname === '/dashboard/team/members',
             },
             {
-              href: '/dashboard/team/audit-log',
+              href: '/dashboard/team/audit-logs',
               translation: 'audit_logs',
-              active: pathname === '/dashboard/team/audit-log',
+              active: pathname === '/dashboard/team/audit-logs',
             },
           ],
         },

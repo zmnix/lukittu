@@ -2,7 +2,7 @@
 import {
   IAuditLogsGetResponse,
   IAuditLogsGetSuccessResponse,
-} from '@/app/api/(dashboard)/audit-log/route';
+} from '@/app/api/(dashboard)/audit-logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -70,7 +70,7 @@ export default function AuditLogTable() {
           searchParams.set('sortDirection', sortDirection);
         }
 
-        const response = await fetch(`/api/audit-log?${searchParams}`);
+        const response = await fetch(`/api/audit-logs?${searchParams}`);
         const data = (await response.json()) as IAuditLogsGetResponse;
 
         if ('message' in data) {
