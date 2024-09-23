@@ -46,7 +46,7 @@ export const ResetPasswordTemplate = ({
           <Img
             alt="Lukittu logo"
             height="50"
-            src="https://lukittu.com/logo_text_light.svg"
+            src="https://app.lukittu.com/logo_text_dark.svg"
             style={logo}
             width="170"
           />

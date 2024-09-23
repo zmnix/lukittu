@@ -12,32 +12,36 @@ import {
   Text,
 } from '@react-email/components';
 
-interface VerifyEmailTemplateProps {
-  fullName: string;
-  link: string;
+interface TeamInviteEmailTemplateProps {
+  recipientName: string;
+  senderName: string;
+  teamName: string;
+  inviteLink: string;
 }
 
-export const VerifyEmailTemplate = ({
-  fullName,
-  link,
-}: VerifyEmailTemplateProps) => (
+export const TeamInviteEmailTemplate = ({
+  recipientName,
+  senderName,
+  teamName,
+  inviteLink,
+}: TeamInviteEmailTemplateProps) => (
   <Html>
     <Head />
-    <Preview>Welcome to Lukittu! Verify your email to get started.</Preview>
+    <Preview>You&apos;ve been invited to join {teamName} on Lukittu!</Preview>
     {/* eslint-disable-next-line @next/next/no-head-element */}
     <head>
       <style>
         {`
-          .box {
-            padding: 0 48px;
-          }
-
-          @media (max-width: 640px) {
             .box {
-              padding: 0 10px;
+              padding: 0 48px;
             }
-          }
-        `}
+  
+            @media (max-width: 640px) {
+              .box {
+                padding: 0 10px;
+              }
+            }
+          `}
       </style>
     </head>
     <Body style={main}>
@@ -50,32 +54,33 @@ export const VerifyEmailTemplate = ({
             style={logo}
             width="170"
           />
-          <Text style={paragraph}>Hi {fullName},</Text>
+          <Text style={paragraph}>Hi {recipientName},</Text>
           <Text style={paragraph}>
-            Welcome to Lukittu! We&apos;re excited to have you on board. To
-            complete your sign-up and unlock all the features, please confirm
-            your email address by clicking the button below:
+            You&apos;ve been invited by {senderName} to join the team &quot;
+            {teamName}&quot; on Lukittu! To accept this invitation and gain
+            access to the team, please click the button below:
           </Text>
           <Section style={btnContainer}>
-            <Button href={link} style={button}>
-              Verify Your Email
+            <Button href={inviteLink} style={button}>
+              Accept Invitation
             </Button>
           </Section>
           <Text style={paragraph}>
-            If the button doesn&apos;t work, simply copy and paste this URL into
-            your browser:
+            If the button doesn&apos;t work, you can copy and paste this URL
+            into your browser:
           </Text>
-          <Link href={link} style={manualLink}>
-            {link}
+          <Link href={inviteLink} style={manualLink}>
+            {inviteLink}
           </Link>
           <Hr style={hr} />
           <Text style={footer}>
-            If you have any questions, please contact us at{' '}
+            If you have any questions or didn&apos;t expect this invitation,
+            please contact us at{' '}
             <Link href="mailto:support@lukittu.com">support@lukittu.com</Link>.
           </Text>
           <Text style={footer}>
-            Please note, for your security, never share your account information
-            with anyone.
+            For your security, please do not share this invitation link with
+            anyone else.
           </Text>
         </Section>
       </Container>
@@ -83,12 +88,14 @@ export const VerifyEmailTemplate = ({
   </Html>
 );
 
-VerifyEmailTemplate.PreviewProps = {
-  fullName: 'Kasperi Pohtinen',
-  link: 'https://lukittu.com/forgot-password',
-} as VerifyEmailTemplateProps;
+TeamInviteEmailTemplate.PreviewProps = {
+  recipientName: 'Jane Doe',
+  senderName: 'John Smith',
+  teamName: 'Awesome Project',
+  inviteLink: 'https://lukittu.com/invite/awesome-project',
+} as TeamInviteEmailTemplateProps;
 
-export default VerifyEmailTemplate;
+export default TeamInviteEmailTemplate;
 
 const main = {
   backgroundColor: '#f1f5f9',
