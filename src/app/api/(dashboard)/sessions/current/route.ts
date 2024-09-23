@@ -1,4 +1,5 @@
 import { getSession } from '@/lib/utils/auth';
+import { getGravatarUrl } from '@/lib/utils/gravatar';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
@@ -55,14 +56,6 @@ export async function GET(): Promise<
         { status: HttpStatus.UNAUTHORIZED },
       );
     }
-
-    const getGravatarUrl = (email: string) => {
-      const hash = require('crypto')
-        .createHash('md5')
-        .update(email)
-        .digest('hex');
-      return `https://www.gravatar.com/avatar/${hash}?d=404&s=200`;
-    };
 
     const response = {
       session: {

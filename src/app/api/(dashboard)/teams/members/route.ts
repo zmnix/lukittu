@@ -1,5 +1,3 @@
-import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
-import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
 import { getGravatarUrl } from '@/lib/utils/gravatar';
@@ -7,35 +5,25 @@ import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLog, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { UAParser } from 'ua-parser-js';
 
-export type IAuditLogsGetSuccessResponse = {
-  auditLogs: (AuditLog & {
-    user:
-      | (Omit<User, 'passwordHash'> & {
-          avatarUrl: string | null;
-        })
-      | null;
-    alpha2: string | null;
-    alpha3: string | null;
-    country: string | null;
-    browser: string | null;
-    os: string | null;
-    device: string | null;
+type ITeamsMembersSuccessResponse = {
+  members: (Omit<User, 'passwordHash'> & {
+    avatarUrl: string | null;
+    isOwner: boolean;
   })[];
-  totalAuditLogs: number;
 };
 
-export type IAuditLogsGetResponse =
+export type ITeamsMembersResponse =
   | ErrorResponse
-  | IAuditLogsGetSuccessResponse;
+  | ITeamsMembersSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<IAuditLogsGetResponse>> {
+  { params }: { params: { slug: string } },
+): Promise<NextResponse<ITeamsMembersResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
@@ -54,6 +42,8 @@ export async function GET(
     const allowedPageSizes = [10, 25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
     const allowedSortColumns = ['createdAt'];
+
+    const search = (searchParams.get('search') as string) || '';
 
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
@@ -88,20 +78,28 @@ export async function GET(
               id: selectedTeam,
             },
             include: {
-              auditLogs: {
+              users: {
                 where: {
-                  createdAt: {
-                    gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
-                  },
+                  OR: search
+                    ? [
+                        {
+                          email: {
+                            contains: search,
+                            mode: 'insensitive',
+                          },
+                        },
+                        {
+                          fullName: {
+                            contains: search,
+                            mode: 'insensitive',
+                          },
+                        },
+                      ]
+                    : undefined,
                 },
-                include: {
-                  user: true,
+                orderBy: {
+                  [sortColumn]: sortDirection,
                 },
-                orderBy: [
-                  {
-                    [sortColumn]: sortDirection,
-                  },
-                ],
                 skip,
                 take,
               },
@@ -129,63 +127,28 @@ export async function GET(
       );
     }
 
-    const totalAuditLogs = await prisma.auditLog.count({
+    const totalMembers = await prisma.user.count({
       where: {
-        teamId: selectedTeam,
-        createdAt: {
-          gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+        teams: {
+          some: {
+            id: selectedTeam,
+          },
         },
       },
     });
 
-    const auditlog = session.user.teams[0].auditLogs;
-
-    const requestLogsWithCountries = auditlog.map((log) => {
-      let browser: string | null = null;
-      let os: string | null = null;
-      let device: string | null = null;
-
-      if (log.userAgent) {
-        const parser = new UAParser(log.userAgent);
-        const browserObj = parser.getBrowser();
-        const osObj = parser.getOS();
-        const deviceObj = parser.getDevice();
-
-        browser = browserObj?.name
-          ? `${browserObj.name} ${browserObj?.version ?? ''}`
-          : null;
-        os = osObj?.name ? `${osObj.name} ${osObj?.version ?? ''}` : null;
-        device = deviceObj?.type ?? null;
-      }
-
-      return {
-        ...log,
-        country: log.country ? iso3ToName[log.country] : null,
-        alpha3: log.country ?? null,
-        alpha2:
-          Object.keys(iso2ToIso3Map).find(
-            (key) => iso2ToIso3Map[key] === log.country,
-          ) ?? null,
-        browser,
-        os,
-        device,
-        user: log.user
-          ? {
-              ...log.user,
-              avatarUrl: log.user?.email
-                ? getGravatarUrl(log.user.email)
-                : null,
-            }
-          : null,
-      };
-    });
+    const members = session.user.teams[0].users.map((user) => ({
+      ...user,
+      avatarUrl: getGravatarUrl(user.email),
+      isOwner: user.id === session.user.teams[0].ownerId,
+    }));
 
     return NextResponse.json({
-      auditLogs: requestLogsWithCountries,
-      totalAuditLogs,
+      members,
+      totalMembers,
     });
   } catch (error) {
-    logger.error("Error occurred in 'auditlogs' route", error);
+    logger.error("Error occurred in 'teams/[slug]/members' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
