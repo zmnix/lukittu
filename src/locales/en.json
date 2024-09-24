@@ -59,7 +59,11 @@
     "customer_exists": "Customer already exists with given email!",
     "license_key_exists": "License key already exists!",
     "customer_not_found": "Customer not found!",
-    "license_not_found": "License not found!"
+    "license_not_found": "License not found!",
+    "user_already_in_team": "User with this email is already in the team!",
+    "invitation_already_sent": "You have recently sent an invitation to this user! Please wait at least 15 minutes before sending another one.",
+    "invitation_not_found": "Invitation not found! It may have expired. Please ask the team owner to resend the invitation.",
+    "invitation_already_accepted": "Invitation has already been accepted!"
   },
   "general": {
     "avatar": "Avatar",

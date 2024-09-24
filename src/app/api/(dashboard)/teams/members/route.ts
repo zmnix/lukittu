@@ -22,7 +22,6 @@ export type ITeamsMembersResponse =
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
 ): Promise<NextResponse<ITeamsMembersResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
@@ -148,7 +147,7 @@ export async function GET(
       totalMembers,
     });
   } catch (error) {
-    logger.error("Error occurred in 'teams/[slug]/members' route", error);
+    logger.error("Error occurred in 'teams/members' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

@@ -15,21 +15,22 @@ datasource db {
 }
 
 model User {
-  id               String     @id @default(uuid())
-  email            String     @unique
-  emailVerified    Boolean    @default(false)
-  fullName         String
-  passwordHash     String?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  provider         Provider   @default(CREDENTIALS)
-  sessions         Session[]
-  createdProducts  Product[]
-  auditLogs        AuditLog[]
-  ownedTeams       Team[]     @relation("TeamOwner")
-  teams            Team[]     @relation("TeamUsers")
-  createdLicenses  License[]
-  createdCustomers Customer[]
+  id                 String       @id @default(uuid())
+  email              String       @unique
+  emailVerified      Boolean      @default(false)
+  fullName           String
+  passwordHash       String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  provider           Provider     @default(CREDENTIALS)
+  sessions           Session[]
+  createdProducts    Product[]
+  auditLogs          AuditLog[]
+  ownedTeams         Team[]       @relation("TeamOwner")
+  teams              Team[]       @relation("TeamUsers")
+  createdLicenses    License[]
+  createdCustomers   Customer[]
+  createdInvitations Invitation[]
 }
 
 model Session {
@@ -55,11 +56,23 @@ model Team {
   customers     Customer[]
   requestLogs   RequestLog[]
   auditLogs     AuditLog[]
+  invitations   Invitation[]
   publicKeyRsa  String
   privateKeyRsa String
   deletedAt     DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+}
+
+model Invitation {
+  id              String   @id @default(uuid())
+  email           String
+  teamId          String
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  accepted        Boolean  @default(false)
+  createdByUserId String?
+  createdBy       User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
 }
 
 model Product {

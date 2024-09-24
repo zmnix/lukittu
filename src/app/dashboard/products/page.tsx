@@ -4,13 +4,7 @@ import { getLanguage } from '@/lib/utils/header-helpers';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-interface ProductsPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default async function ProductsPage({
-  searchParams,
-}: ProductsPageProps) {
+export default async function ProductsPage() {
   const t = await getTranslations({ locale: getLanguage() });
 
   return (

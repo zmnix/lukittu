@@ -13,14 +13,12 @@ import {
 } from '@react-email/components';
 
 interface TeamInviteEmailTemplateProps {
-  recipientName: string;
   senderName: string;
   teamName: string;
   inviteLink: string;
 }
 
 export const TeamInviteEmailTemplate = ({
-  recipientName,
   senderName,
   teamName,
   inviteLink,
@@ -54,7 +52,7 @@ export const TeamInviteEmailTemplate = ({
             style={logo}
             width="170"
           />
-          <Text style={paragraph}>Hi {recipientName},</Text>
+          <Text style={paragraph}>Hi,</Text>
           <Text style={paragraph}>
             You&apos;ve been invited by {senderName} to join the team &quot;
             {teamName}&quot; on Lukittu! To accept this invitation and gain
@@ -89,7 +87,6 @@ export const TeamInviteEmailTemplate = ({
 );
 
 TeamInviteEmailTemplate.PreviewProps = {
-  recipientName: 'Jane Doe',
   senderName: 'John Smith',
   teamName: 'Awesome Project',
   inviteLink: 'https://lukittu.com/invite/awesome-project',
