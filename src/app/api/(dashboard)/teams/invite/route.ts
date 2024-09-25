@@ -151,7 +151,7 @@ export async function POST(
       return invitation;
     });
 
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/invite/${invitation.id}`;
+    const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/invite/${invitation.id}`;
 
     const html = await render(
       TeamInviteEmailTemplate({
