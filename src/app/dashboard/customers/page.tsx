@@ -1,4 +1,4 @@
-import CustomersListCard from '@/components/dashboard/customers/list/CustomersListCard';
+import { CustomersTable } from '@/components/dashboard/customers/list/CustomersTable';
 import { Separator } from '@/components/ui/separator';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { Metadata } from 'next';
@@ -13,7 +13,7 @@ export default async function CustomersPage() {
       </h1>
       <Separator className="mt-2" />
       <div className="mt-6 flex flex-col gap-6">
-        <CustomersListCard />
+        <CustomersTable />
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function LoginSessionsCard() {
+export default function SessionsTable() {
   const t = useTranslations();
   const locale = useLocale();
 

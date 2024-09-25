@@ -35,7 +35,7 @@ import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
 import { LeaveTeamConfirmModal } from './TeamLeaveConfirmModal';
 import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
 
-export default function TeamListCard() {
+export default function TeamsTable() {
   const authCtx = useContext(AuthContext);
 
   const [loading, setLoading] = useState(true);

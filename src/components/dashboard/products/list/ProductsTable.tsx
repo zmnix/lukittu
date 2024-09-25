@@ -1,8 +1,8 @@
 'use client';
 import {
-  ICustomersGetResponse,
-  ICustomersGetSuccessResponse,
-} from '@/app/api/(dashboard)/customers/route';
+  IProductsGetResponse,
+  IProductsGetSuccessResponse,
+} from '@/app/api/(dashboard)/products/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -20,17 +20,18 @@ import {
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { ArrowDownUp, Clock, Filter, Search, Users } from 'lucide-react';
+import { ProductModalProvider } from '@/providers/ProductModalProvider';
+import { ArrowDownUp, Clock, Filter, Package, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import AddCustomerButton from './AddCustomerButton';
-import { CustomersActionDropdown } from './CustomersActionDropdown';
-import CustomersMobileFiltersModal from './CustomersMobileFilters';
+import AddProductButton from './AddProductButton';
+import { ProductsActionDropdown } from './ProductsActionDropdown';
+import ProductsMobileFiltersModal from './ProductsMobileFiltersModal';
 
-export function CustomersListTable() {
+export function ProductsTable() {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
@@ -38,16 +39,16 @@ export function CustomersListTable() {
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [customers, setCustomers] = useState<
-    ICustomersGetSuccessResponse['customers']
+  const [products, setProducts] = useState<
+    IProductsGetSuccessResponse['products']
   >([]);
-  const [totalCustomers, setTotalCustomers] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [sortColumn, setSortColumn] = useState<
-    'createdAt' | 'updatedAt' | 'fullName' | 'email' | null
+    'createdAt' | 'updatedAt' | 'name' | null
   >(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
@@ -73,17 +74,17 @@ export function CustomersListTable() {
         searchParams.set('pageSize', pageSize.toString());
 
         const response = await fetch(
-          `/api/customers?${searchParams.toString()}`,
+          `/api/products?${searchParams.toString()}`,
         );
 
-        const data = (await response.json()) as ICustomersGetResponse;
+        const data = (await response.json()) as IProductsGetResponse;
 
         if ('message' in data) {
           return toast.error(data.message);
         }
 
-        setCustomers(data.customers);
-        setTotalCustomers(data.totalCustomers);
+        setProducts(data.products);
+        setTotalProducts(data.totalProducts);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {
@@ -103,8 +104,8 @@ export function CustomersListTable() {
   }, [debounceSearch]);
 
   return (
-    <>
-      <CustomersMobileFiltersModal
+    <ProductModalProvider>
+      <ProductsMobileFiltersModal
         open={mobileFiltersOpen}
         search={debounceSearch}
         setSearch={setSearch}
@@ -113,7 +114,7 @@ export function CustomersListTable() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-bold">
-            {t('dashboard.navigation.customers')}
+            {t('dashboard.navigation.products')}
             <div className="ml-auto flex gap-2">
               <Button
                 className="lg:hidden"
@@ -123,18 +124,18 @@ export function CustomersListTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddCustomerButton />
+              <AddProductButton />
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {totalCustomers ? (
+          {totalProducts ? (
             <>
               <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   className="pl-8"
-                  placeholder={t('dashboard.customers.search_customer')}
+                  placeholder="Search products"
                   value={debounceSearch}
                   onChange={(e) => {
                     setDebounceSearch(e.target.value);
@@ -151,27 +152,38 @@ export function CustomersListTable() {
                         <Skeleton className="h-10 w-full" />
                       </div>
                     ))
-                  : customers.map((customer) => (
+                  : products.map((product) => (
                       <Link
-                        key={customer.id}
+                        key={product.id}
                         className="group relative flex items-center justify-between border-b py-3 first:border-t"
-                        href={`/dashboard/customers/${customer.id}`}
+                        href={`/dashboard/products/${product.id}`}
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
-                          <p className="line-clamp-2 font-medium">{`${customer.fullName}`}</p>
-                          <div className="mb-1 line-clamp-1 break-all text-xs font-semibold text-muted-foreground">
-                            {customer.email ?? t('general.unknown')}
+                          <p className="line-clamp-2 font-medium">{`${product.name}`}</p>
+                          <div className="flex items-center gap-1">
+                            {product.url ? (
+                              <Link
+                                className="line-clamp-1 break-all text-xs font-semibold text-primary"
+                                href={product.url}
+                              >
+                                {product.url}
+                              </Link>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                {t('general.unknown')}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                             <div className="text-xs text-muted-foreground">
-                              <DateConverter date={customer.createdAt} />
+                              <DateConverter date={product.createdAt} />
                             </div>
                           </div>
                         </div>
                         <div className="z-10 flex items-center space-x-2">
-                          <CustomersActionDropdown customer={customer} />
+                          <ProductsActionDropdown product={product} />
                         </div>
                       </Link>
                     ))}
@@ -186,31 +198,15 @@ export function CustomersListTable() {
                       <Button
                         variant="ghost"
                         onClick={() => {
-                          setSortColumn('fullName');
+                          setSortColumn('name');
                           setSortDirection(
-                            sortColumn === 'fullName' && sortDirection === 'asc'
+                            sortColumn === 'name' && sortDirection === 'asc'
                               ? 'desc'
                               : 'asc',
                           );
                         }}
                       >
                         {t('general.name')}
-                        <ArrowDownUp className="ml-2 h-4 w-4" />
-                      </Button>
-                    </TableHead>
-                    <TableHead className="truncate">
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setSortColumn('email');
-                          setSortDirection(
-                            sortColumn === 'email' && sortDirection === 'asc'
-                              ? 'desc'
-                              : 'asc',
-                          );
-                        }}
-                      >
-                        {t('general.email')}
                         <ArrowDownUp className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
@@ -259,38 +255,35 @@ export function CustomersListTable() {
                   </TableRow>
                 </TableHeader>
                 {loading ? (
-                  <TableSkeleton columns={5} rows={6} />
+                  <TableSkeleton columns={4} rows={6} />
                 ) : (
                   <TableBody>
-                    {customers.map((customer) => (
+                    {products.map((product) => (
                       <TableRow
-                        key={customer.id}
+                        key={product.id}
                         className="cursor-pointer"
                         onClick={() =>
-                          router.push(`/dashboard/customers/${customer.id}`)
+                          router.push(`/dashboard/products/${product.id}`)
                         }
                       >
                         <TableCell className="truncate">
-                          {customer.fullName ?? 'N/A'}
-                        </TableCell>
-                        <TableCell className="truncate">
-                          {customer.email ?? 'N/A'}
+                          {product.name}
                         </TableCell>
                         <TableCell
                           className="truncate"
-                          title={new Date(customer.createdAt).toLocaleString(
+                          title={new Date(product.createdAt).toLocaleString(
                             locale,
                           )}
                         >
-                          <DateConverter date={customer.createdAt} />
+                          <DateConverter date={product.createdAt} />
                         </TableCell>
                         <TableCell
                           className="truncate"
-                          title={new Date(customer.updatedAt).toLocaleString(
+                          title={new Date(product.updatedAt).toLocaleString(
                             locale,
                           )}
                         >
-                          <DateConverter date={customer.updatedAt} />
+                          <DateConverter date={product.updatedAt} />
                         </TableCell>
                         <TableCell
                           className={cn(
@@ -300,7 +293,7 @@ export function CustomersListTable() {
                             },
                           )}
                         >
-                          <CustomersActionDropdown customer={customer} />
+                          <ProductsActionDropdown product={product} />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -310,11 +303,11 @@ export function CustomersListTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={customers.length}
+                results={products.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
-                totalItems={totalCustomers}
-                totalPages={Math.ceil(totalCustomers / pageSize)}
+                totalItems={totalProducts}
+                totalPages={Math.ceil(totalProducts / pageSize)}
               />
             </>
           ) : (
@@ -322,23 +315,23 @@ export function CustomersListTable() {
               <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
                 <div className="flex">
                   <span className="rounded-lg bg-secondary p-4">
-                    <Users className="h-6 w-6" />
+                    <Package className="h-6 w-6" />
                   </span>
                 </div>
                 <h3 className="text-lg font-bold">
-                  {t('dashboard.customers.add_your_first_customer')}
+                  {t('dashboard.products.add_your_first_product')}
                 </h3>
                 <p className="max-w-sm text-center text-sm text-muted-foreground">
-                  {t('dashboard.customers.customer_description')}
+                  {t('dashboard.products.product_description')}
                 </p>
                 <div>
-                  <AddCustomerButton displayText />
+                  <AddProductButton displayText />
                 </div>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
-    </>
+    </ProductModalProvider>
   );
 }
