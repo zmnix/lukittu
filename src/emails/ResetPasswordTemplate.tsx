@@ -28,20 +28,29 @@ export const ResetPasswordTemplate = ({
     <head>
       <style>
         {`
-          .box {
-            padding: 0 48px;
+          .container {
+            padding: 48px;
           }
 
           @media (max-width: 640px) {
-            .box {
-              padding: 0 10px;
+            .container {
+              padding: 10px!important;
+            }
+            
+            .emptyContainer {
+              display: none;
+            }
+
+            .main {
+              background-color: #ffffff!important;
             }
           }
         `}
       </style>
     </head>
-    <Body style={main}>
-      <Container style={container}>
+    <Body className="main" style={main}>
+      <Container style={emptyContainer} />
+      <Container className="container" style={container}>
         <Section className="box">
           <Img
             alt="Lukittu logo"
@@ -84,6 +93,7 @@ export const ResetPasswordTemplate = ({
           </Text>
         </Section>
       </Container>
+      <Container style={emptyContainer} />
     </Body>
   </Html>
 );
@@ -103,10 +113,14 @@ const main = {
 
 const container = {
   backgroundColor: '#ffffff',
+  borderRadius: '16px',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '24px',
-  marginTop: '24px',
+  maxWidth: '550px',
+  width: '100%',
+};
+
+const emptyContainer = {
+  height: '64px',
 };
 
 const logo = {

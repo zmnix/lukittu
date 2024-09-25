@@ -30,20 +30,29 @@ export const TeamInviteEmailTemplate = ({
     <head>
       <style>
         {`
-            .box {
-              padding: 0 48px;
+          .container {
+            padding: 48px;
+          }
+
+          @media (max-width: 640px) {
+            .container {
+              padding: 10px!important;
             }
-  
-            @media (max-width: 640px) {
-              .box {
-                padding: 0 10px;
-              }
+            
+            .emptyContainer {
+              display: none;
             }
-          `}
+
+            .main {
+              background-color: #ffffff!important;
+            }
+          }
+        `}
       </style>
     </head>
-    <Body style={main}>
-      <Container style={container}>
+    <Body className="main" style={main}>
+      <Container className="emptyContainer" style={emptyContainer} />
+      <Container className="container" style={container}>
         <Section className="box">
           <Img
             alt="Lukittu logo"
@@ -82,6 +91,7 @@ export const TeamInviteEmailTemplate = ({
           </Text>
         </Section>
       </Container>
+      <Container className="emptyContainer" style={emptyContainer} />
     </Body>
   </Html>
 );
@@ -102,10 +112,14 @@ const main = {
 
 const container = {
   backgroundColor: '#ffffff',
+  borderRadius: '16px',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '24px',
-  marginTop: '24px',
+  maxWidth: '550px',
+  width: '100%',
+};
+
+const emptyContainer = {
+  height: '64px',
 };
 
 const logo = {
