@@ -115,6 +115,7 @@
     "ip_address": "IP address",
     "date": "Date",
     "role": "Role",
+    "last_login": "Last login",
     "actions": "Actions",
     "owner": "Owner",
     "member": "Member",
@@ -405,6 +406,15 @@
         "delete_customer": "deleted customer",
         "update_customer": "updated customer"
       }
+    },
+    "members": {
+      "new_member": "New member",
+      "kick_member": "Kick member",
+      "search_member": "Search member...",
+      "member_invited": "Member has been invited! They will receive an email shortly.",
+      "invite_member": "Invite member",
+      "invite_member_description": "Invite a new member to your team by entering their email address below. They will receive an email with an invitation link.",
+      "send_invite": "Send invite"
     }
   }
 }

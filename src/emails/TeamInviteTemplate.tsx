@@ -48,7 +48,7 @@ export const TeamInviteEmailTemplate = ({
           <Img
             alt="Lukittu logo"
             height="50"
-            src="https://app.lukittu.com/logo_text_dark.svg"
+            src="https://app.lukittu.com/logo_text_dark.png"
             style={logo}
             width="170"
           />

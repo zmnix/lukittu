@@ -14,7 +14,7 @@ import { render } from '@react-email/components';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ITeamsInviteSuccessResponse = {
+export type ITeamsInviteSuccessResponse = {
   success: boolean;
 };
 

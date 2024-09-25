@@ -9,20 +9,22 @@ import { User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ITeamsMembersSuccessResponse = {
+export type ITeamsMembersGetSuccessResponse = {
   members: (Omit<User, 'passwordHash'> & {
     avatarUrl: string | null;
     isOwner: boolean;
+    lastLoginAt: Date | null;
   })[];
+  totalMembers: number;
 };
 
-export type ITeamsMembersResponse =
+export type ITeamsMembersGetResponse =
   | ErrorResponse
-  | ITeamsMembersSuccessResponse;
+  | ITeamsMembersGetSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<ITeamsMembersResponse>> {
+): Promise<NextResponse<ITeamsMembersGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
@@ -96,6 +98,17 @@ export async function GET(
                       ]
                     : undefined,
                 },
+                include: {
+                  sessions: {
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                    take: 1,
+                    select: {
+                      createdAt: true,
+                    },
+                  },
+                },
                 orderBy: {
                   [sortColumn]: sortDirection,
                 },
@@ -140,6 +153,7 @@ export async function GET(
       ...user,
       avatarUrl: getGravatarUrl(user.email),
       isOwner: user.id === session.user.teams[0].ownerId,
+      lastLoginAt: user.sessions[0]?.createdAt || null,
     }));
 
     return NextResponse.json({

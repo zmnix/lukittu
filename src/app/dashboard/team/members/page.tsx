@@ -1,3 +1,4 @@
+import { MembersTable } from '@/components/dashboard/members/list/MembersTable';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -29,6 +30,9 @@ export default async function TeamMembersPage() {
         {t('dashboard.navigation.members')}
       </h1>
       <Separator className="mt-2" />
+      <div className="mt-6 flex flex-col gap-6">
+        <MembersTable />
+      </div>
     </div>
   );
 }
