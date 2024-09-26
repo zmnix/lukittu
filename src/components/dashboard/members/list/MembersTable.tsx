@@ -162,11 +162,11 @@ export function MembersTable() {
                             {getInitials(member?.fullName ?? '??')}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="z-10">
-                          <p className="font-medium">{`${member?.email}`}</p>
+                        <div className="z-10 grid">
+                          <p className="truncate font-medium">{`${member?.email}`}</p>
                           <div className="flex items-center gap-1">
-                            <div className="text-xs font-semibold text-muted-foreground">
-                              {member?.email}
+                            <div className="grid text-xs font-semibold text-muted-foreground">
+                              <p className="truncate">{member?.email}</p>
                             </div>
                           </div>
                         </div>

@@ -63,9 +63,10 @@ export const TeamInviteEmailTemplate = ({
           />
           <Text style={paragraph}>Hi,</Text>
           <Text style={paragraph}>
-            You&apos;ve been invited by {senderName} to join the team &quot;
-            {teamName}&quot; on Lukittu! To accept this invitation and gain
-            access to the team, please click the button below:
+            You&apos;ve been invited by <b>{senderName}</b> to join the team
+            &quot;
+            <b>{teamName}</b>&quot; on Lukittu! To accept this invitation and
+            gain access to the team, please click the button below:
           </Text>
           <Section style={btnContainer}>
             <Button href={inviteLink} style={button}>

@@ -63,7 +63,8 @@
     "user_already_in_team": "User with this email is already in the team!",
     "invitation_already_sent": "You have recently sent an invitation to this user! Please wait at least 15 minutes before sending another one.",
     "invitation_not_found": "Invitation not found! It may have expired. Please ask the team owner to resend the invitation.",
-    "invitation_already_accepted": "Invitation has already been accepted!"
+    "invitation_already_accepted": "Invitation has already been accepted!",
+    "invitation_for_different_email": "Invitation is for a different email address!"
   },
   "general": {
     "avatar": "Avatar",
@@ -278,7 +279,8 @@
       "create_team_info": "You can change the team name after creation and add additional information.",
       "my_first_team_placeholder": "My first team",
       "edit_team_success": "Team updated successfully",
-      "create_team_success": "Team created successfully"
+      "create_team_success": "Team created successfully",
+      "invitation_accepted": "Invitation has been accepted! You are now a member of <strong>{teamName}</strong>."
     },
     "profile": {
       "profile_updated_success": "Profile updated successfully",

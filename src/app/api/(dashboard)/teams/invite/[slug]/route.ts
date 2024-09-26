@@ -5,19 +5,22 @@ import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { Team } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type ITeamsInviteSuccessResponse = {
-  success: boolean;
+type ITeamsAcceptInviteSuccessResponse = {
+  team: Omit<Team, 'privateKeyRsa' | 'publicKeyRsa'>;
 };
 
-export type ITeamsInviteResponse = ErrorResponse | ITeamsInviteSuccessResponse;
+export type ITeamsAcceptInviteResponse =
+  | ErrorResponse
+  | ITeamsAcceptInviteSuccessResponse;
 
 export async function POST(
   _: NextRequest,
   { params }: { params: { slug: string } },
-): Promise<NextResponse<ITeamsInviteResponse>> {
+): Promise<NextResponse<ITeamsAcceptInviteResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
@@ -64,9 +67,9 @@ export async function POST(
     if (invitation.email !== session.user.email) {
       return NextResponse.json(
         {
-          message: t('validation.unauthorized'),
+          message: t('validation.invitation_for_different_email'),
         },
-        { status: HttpStatus.UNAUTHORIZED },
+        { status: HttpStatus.BAD_REQUEST },
       );
     }
 
@@ -79,7 +82,7 @@ export async function POST(
       );
     }
 
-    await prisma.$transaction(async (prisma) => {
+    const team = await prisma.$transaction(async (prisma) => {
       await prisma.invitation.update({
         where: {
           id: invitationId,
@@ -89,7 +92,7 @@ export async function POST(
         },
       });
 
-      await prisma.team.update({
+      const team = await prisma.team.update({
         where: {
           id: invitation.teamId,
         },
@@ -101,9 +104,11 @@ export async function POST(
           },
         },
       });
+
+      return team;
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ team });
   } catch (error) {
     logger.error("Error occurred in 'teams/invite/[slug]' route", error);
     return NextResponse.json(
