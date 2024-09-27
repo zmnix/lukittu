@@ -26,7 +26,16 @@ export default function LoadingButton({
       {...props}
       size={size}
     >
-      {pending ? <LoadingSpinner /> : children}
+      {pending ? (
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <LoadingSpinner />
+          </div>
+          <div className="opacity-0">{children}</div>
+        </div>
+      ) : (
+        children
+      )}
     </Button>
   );
 }

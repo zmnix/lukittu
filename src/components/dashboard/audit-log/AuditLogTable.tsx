@@ -144,10 +144,12 @@ export default function AuditLogTable() {
                       <div
                         key={auditLog.id}
                         className="relative border-b py-3 first:border-t"
+                        role="button"
+                        onClick={() => toggleRow(auditLog.id)}
                       >
                         <div className="group relative flex items-center justify-between">
                           <div className="absolute inset-0 -mx-2 -my-3 rounded-lg transition-colors group-hover:bg-secondary/80 md:hidden" />
-                          <div className="z-10 flex items-center gap-2">
+                          <div className="z-10 grid grid-cols-[auto,1fr,auto] items-center gap-4">
                             <Avatar className="h-12 w-12 border">
                               <AvatarImage
                                 src={auditLog.user?.avatarUrl!}
@@ -165,18 +167,18 @@ export default function AuditLogTable() {
                                 {getInitials(auditLog.user?.fullName ?? '??')}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="z-10">
-                              <p className="font-medium">{`${auditLog.user?.email}`}</p>
+                            <div className="overflow-hidden">
+                              <p className="truncate font-medium">
+                                {auditLog.user?.email}
+                              </p>
                               <div className="flex items-center gap-1">
-                                <div className="text-xs font-semibold text-muted-foreground">
-                                  {t(
-                                    `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,
-                                  )}
+                                <div className="truncate text-xs font-semibold text-muted-foreground">
+                                  {auditLog.action.toLowerCase()}
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                                <div className="text-xs text-muted-foreground">
+                                <Clock className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                                <div className="truncate text-xs text-muted-foreground">
                                   <DateConverter date={auditLog.createdAt} />
                                 </div>
                               </div>
@@ -201,20 +203,26 @@ export default function AuditLogTable() {
                         <div
                           className={`expanded-content ${expandedRows.has(auditLog.id) ? 'open z-20' : ''}`}
                         >
-                          <div className="mt-6 flex flex-col gap-3">
-                            <div className="flex gap-2">
-                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                          <div className="mt-6 grid gap-3">
+                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                              <h3 className="text-sm font-semibold">
                                 {t('general.user')}
                               </h3>
-                              <p className="text-sm text-muted-foreground">
+                              <p
+                                className="truncate text-sm text-muted-foreground"
+                                title={auditLog.user?.email}
+                              >
                                 {auditLog.user?.email}
                               </p>
                             </div>
-                            <div className="flex gap-2">
-                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                              <h3 className="text-sm font-semibold">
                                 {t('general.ip_address')}
                               </h3>
-                              <p className="text-sm text-muted-foreground">
+                              <p
+                                className="truncate text-sm text-muted-foreground"
+                                title={auditLog.ipAddress ?? ''}
+                              >
                                 {auditLog.alpha2 && (
                                   <Image
                                     alt={
@@ -229,32 +237,35 @@ export default function AuditLogTable() {
                                 {auditLog.ipAddress ?? t('general.unknown')}
                               </p>
                             </div>
-                            <div className="flex gap-2">
-                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                              <h3 className="text-sm font-semibold">
                                 {t('general.browser')}
                               </h3>
-                              <p className="text-sm text-muted-foreground">
+                              <p
+                                className="truncate text-sm text-muted-foreground"
+                                title={auditLog.browser ?? ''}
+                              >
                                 {auditLog.browser ?? t('general.unknown')}
                               </p>
                             </div>
-                            <div className="flex gap-2">
-                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                              <h3 className="text-sm font-semibold">
                                 {t('general.operating_system')}
                               </h3>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="truncate text-sm text-muted-foreground">
                                 {auditLog.os ?? t('general.unknown')}
                               </p>
                             </div>
-                            <div className="flex gap-2">
-                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                              <h3 className="text-sm font-semibold">
                                 {t('general.device')}
                               </h3>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="truncate text-sm text-muted-foreground">
                                 {auditLog.device ?? t('general.unknown')}
                               </p>
                             </div>
-                            <div className="flex gap-2">
-                              <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                              <h3 className="text-sm font-semibold">
                                 {t(
                                   `general.${auditLog.targetType.toLowerCase()}` as any,
                                 )}
@@ -387,20 +398,20 @@ export default function AuditLogTable() {
                             >
                               <div className="rounded-md p-4">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                  <div className="flex flex-col gap-3">
-                                    <div className="flex gap-2">
-                                      <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                  <div className="grid gap-3">
+                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                                      <h3 className="text-sm font-semibold">
                                         {t('general.user')}
                                       </h3>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="truncate text-sm text-muted-foreground">
                                         {auditLog.user?.email}
                                       </p>
                                     </div>
-                                    <div className="flex gap-2">
-                                      <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                                      <h3 className="text-sm font-semibold">
                                         {t('general.ip_address')}
                                       </h3>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="truncate text-sm text-muted-foreground">
                                         {auditLog.alpha2 && (
                                           <Image
                                             alt={
@@ -417,28 +428,28 @@ export default function AuditLogTable() {
                                           t('general.unknown')}
                                       </p>
                                     </div>
-                                    <div className="flex gap-2">
-                                      <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                                      <h3 className="text-sm font-semibold">
                                         {t('general.browser')}
                                       </h3>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="truncate text-sm text-muted-foreground">
                                         {auditLog.browser ??
                                           t('general.unknown')}
                                       </p>
                                     </div>
-                                    <div className="flex gap-2">
-                                      <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                                      <h3 className="text-sm font-semibold">
                                         {t('general.operating_system')}
                                       </h3>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="truncate text-sm text-muted-foreground">
                                         {auditLog.os ?? t('general.unknown')}
                                       </p>
                                     </div>
-                                    <div className="flex gap-2">
-                                      <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                                      <h3 className="text-sm font-semibold">
                                         {t('general.device')}
                                       </h3>
-                                      <p className="text-sm text-muted-foreground">
+                                      <p className="truncate text-sm text-muted-foreground">
                                         {auditLog.device ??
                                           t('general.unknown')}
                                       </p>
@@ -448,8 +459,8 @@ export default function AuditLogTable() {
                                       'LICENSE',
                                       'PRODUCT',
                                     ].includes(auditLog.targetType) && (
-                                      <div className="flex gap-2">
-                                        <h3 className="flex-[0 0 20%] min-w-[180px] max-w-[240px] text-sm font-semibold">
+                                      <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                                        <h3 className="text-sm font-semibold">
                                           {t(
                                             `general.${auditLog.targetType.toLowerCase()}` as any,
                                           )}
