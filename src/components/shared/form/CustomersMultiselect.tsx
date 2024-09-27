@@ -108,6 +108,23 @@ export const CustomersMultiselect = ({
     [searchQuery, customers],
   );
 
+  const highlightText = useCallback((text: string, highlight: string) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+
+    const regex = new RegExp(`(${highlight})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <strong key={index}>{part}</strong>
+      ) : (
+        part
+      ),
+    );
+  }, []);
+
   const handleSelect = useCallback(
     (customerId: string) => {
       setSelectedItems((current) => {
@@ -125,6 +142,10 @@ export const CustomersMultiselect = ({
     [setCustomerIds],
   );
 
+  const handleReset = () => {
+    setSelectedItems([]);
+    setCustomerIds([]);
+  };
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -162,7 +183,7 @@ export const CustomersMultiselect = ({
               <Button
                 className="h-8 px-2"
                 variant="ghost"
-                onClick={() => setSelectedItems([])}
+                onClick={handleReset}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -190,7 +211,12 @@ export const CustomersMultiselect = ({
                       onCheckedChange={() => handleSelect(customer.id)}
                       onClick={(e) => e.preventDefault()}
                     />
-                    {`${customer.fullName ?? 'N/A'} - ${customer.email ?? 'N/A'}`}
+                    <p>
+                      {highlightText(
+                        `${customer.fullName ?? 'N/A'} - ${customer.email ?? 'N/A'}`,
+                        debouncedSearchQuery,
+                      )}
+                    </p>
                     <Check
                       className={cn(
                         'ml-auto h-4 w-4',

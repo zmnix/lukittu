@@ -297,27 +297,6 @@ export async function POST(
       },
     });
 
-    // Generate 3000 mock customers
-    for (let i = 0; i < 3000; i++) {
-      await prisma.customer.create({
-        data: {
-          email: `example+${i}@gmail.com`,
-          fullName: `Example Customer ${i}`,
-          metadata: {},
-          createdBy: {
-            connect: {
-              id: session.user.id,
-            },
-          },
-          team: {
-            connect: {
-              id: team.id,
-            },
-          },
-        },
-      });
-    }
-
     const response = {
       customer,
     };

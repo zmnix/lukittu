@@ -97,6 +97,23 @@ export const ProductsMultiselect = ({
     [searchQuery, products],
   );
 
+  const highlightText = useCallback((text: string, highlight: string) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+
+    const regex = new RegExp(`(${highlight})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <strong key={index}>{part}</strong>
+      ) : (
+        part
+      ),
+    );
+  }, []);
+
   const handleSelect = useCallback(
     (productId: string) => {
       setSelectedItems((current) => {
@@ -113,6 +130,11 @@ export const ProductsMultiselect = ({
     },
     [setProductIds],
   );
+
+  const handleReset = () => {
+    setSelectedItems([]);
+    setProductIds([]);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -148,7 +170,7 @@ export const ProductsMultiselect = ({
               <Button
                 className="h-8 px-2"
                 variant="ghost"
-                onClick={() => setSelectedItems([])}
+                onClick={handleReset}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -176,7 +198,7 @@ export const ProductsMultiselect = ({
                       onCheckedChange={() => handleSelect(product.id)}
                       onClick={(e) => e.preventDefault()}
                     />
-                    {product.name}
+                    <p>{highlightText(product.name, debouncedSearchQuery)}</p>
                     <Check
                       className={cn(
                         'ml-auto h-4 w-4',
