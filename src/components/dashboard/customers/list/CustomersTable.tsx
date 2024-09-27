@@ -43,6 +43,7 @@ export function CustomersTable() {
     ICustomersGetSuccessResponse['customers']
   >([]);
   const [totalCustomers, setTotalCustomers] = useState(1);
+  const [hasCustomers, setHasCustomers] = useState(true);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -84,7 +85,8 @@ export function CustomersTable() {
         }
 
         setCustomers(data.customers);
-        setTotalCustomers(data.totalCustomers);
+        setHasCustomers(data.hasResults);
+        setTotalCustomers(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {
@@ -129,7 +131,7 @@ export function CustomersTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {totalCustomers ? (
+          {hasCustomers ? (
             <>
               <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />

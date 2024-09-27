@@ -67,6 +67,7 @@
     "invitation_for_different_email": "Invitation is for a different email address!"
   },
   "general": {
+    "selected": "Selected",
     "avatar": "Avatar",
     "code": "Code",
     "origin": "Origin",
@@ -95,6 +96,7 @@
     "wrong_provider": "You have an account with a different provider! Please login with {provider}.",
     "select_team": "Select team",
     "search_team": "Search team...",
+    "search_customer": "Search customer...",
     "no_team_found": "No teams found",
     "sign_out": "Sign out",
     "toggle_theme": "Toggle theme",
@@ -129,6 +131,8 @@
     "page_of": "Page {page} of {pages}",
     "showing_of_results": "Showing {start}-{end} of {total} results",
     "rows_per_page": "Rows per page",
+    "select_products": "Select products",
+    "select_customers": "Select customers",
     "loading": "Loading...",
     "no_results": "No results",
     "retry": "Retry",

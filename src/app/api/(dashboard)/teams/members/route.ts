@@ -5,7 +5,7 @@ import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -15,7 +15,7 @@ export type ITeamsMembersGetSuccessResponse = {
     isOwner: boolean;
     lastLoginAt: Date | null;
   })[];
-  totalMembers: number;
+  totalResults: number;
 };
 
 export type ITeamsMembersGetResponse =
@@ -70,6 +70,25 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    const whereWithoutTeamCheck = {
+      OR: search
+        ? [
+            {
+              email: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              fullName: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+          ]
+        : undefined,
+    } as Prisma.UserWhereInput;
+
     const session = await getSession({
       user: {
         include: {
@@ -80,24 +99,7 @@ export async function GET(
             },
             include: {
               users: {
-                where: {
-                  OR: search
-                    ? [
-                        {
-                          email: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
-                        },
-                        {
-                          fullName: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
-                        },
-                      ]
-                    : undefined,
-                },
+                where: whereWithoutTeamCheck,
                 include: {
                   sessions: {
                     orderBy: {
@@ -139,11 +141,13 @@ export async function GET(
       );
     }
 
-    const totalMembers = await prisma.user.count({
+    const totalResults = await prisma.user.count({
       where: {
+        ...whereWithoutTeamCheck,
         teams: {
           some: {
             id: selectedTeam,
+            deletedAt: null,
           },
         },
       },
@@ -158,7 +162,7 @@ export async function GET(
 
     return NextResponse.json({
       members,
-      totalMembers,
+      totalResults,
     });
   } catch (error) {
     logger.error("Error occurred in 'teams/members' route", error);

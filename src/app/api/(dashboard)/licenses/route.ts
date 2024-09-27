@@ -20,6 +20,7 @@ import {
   AuditLogTargetType,
   Customer,
   License,
+  Prisma,
   Product,
 } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
@@ -30,7 +31,8 @@ export type ILicensesGetSuccessResponse = {
     products: Product[];
     customers: Customer[];
   })[];
-  totalLicenses: number;
+  totalResults: number;
+  hasResults: boolean;
 };
 
 export type ILicensesGetResponse = ErrorResponse | ILicensesGetSuccessResponse;
@@ -112,6 +114,28 @@ export async function GET(
       ? generateHMAC(`${search}:${selectedTeam}`)
       : undefined;
 
+    const whereWithoutTeamCheck = {
+      licenseKeyLookup,
+      products: productIdsFormatted.length
+        ? {
+            some: {
+              id: {
+                in: productIdsFormatted,
+              },
+            },
+          }
+        : undefined,
+      customers: customerIdsFormatted.length
+        ? {
+            some: {
+              id: {
+                in: customerIdsFormatted,
+              },
+            },
+          }
+        : undefined,
+    } as Prisma.LicenseWhereInput;
+
     const session = await getSession({
       user: {
         include: {
@@ -122,27 +146,7 @@ export async function GET(
             },
             include: {
               licenses: {
-                where: {
-                  licenseKeyLookup,
-                  products: productIdsFormatted.length
-                    ? {
-                        some: {
-                          id: {
-                            in: productIdsFormatted,
-                          },
-                        },
-                      }
-                    : undefined,
-                  customers: customerIdsFormatted.length
-                    ? {
-                        some: {
-                          id: {
-                            in: customerIdsFormatted,
-                          },
-                        },
-                      }
-                    : undefined,
-                },
+                where: whereWithoutTeamCheck,
                 skip,
                 take,
                 orderBy: {
@@ -177,17 +181,22 @@ export async function GET(
       );
     }
 
-    const totalLicenses = await prisma.license.count({
-      where: {
-        teamId: selectedTeam,
-        products: productIdsFormatted.length
-          ? { some: { id: { in: productIdsFormatted } } }
-          : undefined,
-        customers: customerIdsFormatted.length
-          ? { some: { id: { in: customerIdsFormatted } } }
-          : undefined,
-      },
-    });
+    const [hasResults, totalResults] = await prisma.$transaction([
+      prisma.license.findFirst({
+        where: {
+          teamId: selectedTeam,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      prisma.license.count({
+        where: {
+          ...whereWithoutTeamCheck,
+          teamId: selectedTeam,
+        },
+      }),
+    ]);
 
     const licenses = session.user.teams[0].licenses.map((license) => ({
       ...license,
@@ -197,7 +206,8 @@ export async function GET(
 
     return NextResponse.json({
       licenses,
-      totalLicenses,
+      totalResults,
+      hasResults: Boolean(hasResults),
     });
   } catch (error) {
     logger.error("Error occurred in 'products' route", error);

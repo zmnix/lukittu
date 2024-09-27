@@ -4,8 +4,8 @@ import {
   ILicensesGetSuccessResponse,
 } from '@/app/api/(dashboard)/licenses/route';
 import { DateConverter } from '@/components/shared/DateConverter';
-import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
-import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
+import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
+import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +50,7 @@ export function LicensesTable() {
     ILicensesGetSuccessResponse['licenses']
   >([]);
   const [totalLicenses, setTotalLicenses] = useState(1);
+  const [hasLicenses, setHasLicenses] = useState(true);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [productIds, setProductIds] = useState<string[]>([]);
@@ -101,7 +102,8 @@ export function LicensesTable() {
         }
 
         setLicenses(data.licenses);
-        setTotalLicenses(data.totalLicenses);
+        setTotalLicenses(data.totalResults);
+        setHasLicenses(data.hasResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {
@@ -159,7 +161,7 @@ export function LicensesTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {totalLicenses ? (
+          {hasLicenses ? (
             <>
               <div className="mb-4 flex items-center gap-4 max-lg:hidden max-lg:flex-col">
                 <div className="relative flex w-full items-center">
@@ -173,12 +175,9 @@ export function LicensesTable() {
                     }}
                   />
                 </div>
-                <ProductsAutocomplete
-                  productIds={productIds}
-                  setProductIds={setProductIds}
-                />
-                <CustomersAutocomplete
-                  customerIds={customerIds}
+                <ProductsMultiselect setProductIds={setProductIds} />
+                <CustomersMultiselect
+                  initialCustomerIds={customerIds}
                   setCustomerIds={setCustomerIds}
                 />
               </div>

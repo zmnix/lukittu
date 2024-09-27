@@ -256,7 +256,7 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <TooltipProvider>
-              <Tooltip>
+              <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div className="flex cursor-pointer items-center gap-2 font-medium leading-none underline">
                     {comparedToPrevious.includes('-') ? (

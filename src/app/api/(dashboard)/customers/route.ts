@@ -10,13 +10,19 @@ import {
 } from '@/lib/validation/customers/set-customer-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Customer } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Customer,
+  Prisma,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export type ICustomersGetSuccessResponse = {
   customers: Customer[];
-  totalCustomers: number;
+  totalResults: number;
+  hasResults: boolean;
 };
 
 export type ICustomersGetResponse =
@@ -81,6 +87,32 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    const whereWithoutTeamCheck = {
+      licenses: licenseId
+        ? {
+            some: {
+              id: licenseId,
+            },
+          }
+        : undefined,
+      OR: search
+        ? [
+            {
+              email: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              fullName: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+          ]
+        : undefined,
+    } as Prisma.CustomerWhereInput;
+
     const session = await getSession({
       user: {
         include: {
@@ -91,31 +123,7 @@ export async function GET(
             },
             include: {
               customers: {
-                where: {
-                  licenses: licenseId
-                    ? {
-                        some: {
-                          id: licenseId,
-                        },
-                      }
-                    : undefined,
-                  OR: search
-                    ? [
-                        {
-                          email: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
-                        },
-                        {
-                          fullName: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
-                        },
-                      ]
-                    : undefined,
-                },
+                where: whereWithoutTeamCheck,
                 orderBy: {
                   [sortColumn]: sortDirection,
                 },
@@ -146,24 +154,29 @@ export async function GET(
       );
     }
 
-    const totalCustomers = await prisma.customer.count({
-      where: {
-        teamId: selectedTeam,
-        licenses: licenseId
-          ? {
-              some: {
-                id: licenseId,
-              },
-            }
-          : undefined,
-      },
-    });
+    const [hasResults, totalResults] = await prisma.$transaction([
+      prisma.customer.findFirst({
+        where: {
+          teamId: selectedTeam,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      prisma.customer.count({
+        where: {
+          ...whereWithoutTeamCheck,
+          teamId: selectedTeam,
+        },
+      }),
+    ]);
 
     const customers = session.user.teams[0].customers;
 
     return NextResponse.json({
       customers,
-      totalCustomers,
+      totalResults,
+      hasResults: Boolean(hasResults),
     });
   } catch (error) {
     logger.error("Error occurred in 'products' route", error);
@@ -283,6 +296,27 @@ export async function POST(
         },
       },
     });
+
+    // Generate 3000 mock customers
+    for (let i = 0; i < 3000; i++) {
+      await prisma.customer.create({
+        data: {
+          email: `example+${i}@gmail.com`,
+          fullName: `Example Customer ${i}`,
+          metadata: {},
+          createdBy: {
+            connect: {
+              id: session.user.id,
+            },
+          },
+          team: {
+            connect: {
+              id: team.id,
+            },
+          },
+        },
+      });
+    }
 
     const response = {
       customer,

@@ -10,13 +10,19 @@ import {
 } from '@/lib/validation/products/set-product-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Product } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Prisma,
+  Product,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export type IProductsGetSuccessResponse = {
   products: Product[];
-  totalProducts: number;
+  totalResults: number;
+  hasResults: boolean;
 };
 
 export type IProductsGetResponse = ErrorResponse | IProductsGetSuccessResponse;
@@ -79,6 +85,22 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    const whereWithoutTeamCheck = {
+      licenses: licenseId
+        ? {
+            some: {
+              id: licenseId,
+            },
+          }
+        : undefined,
+      name: search
+        ? {
+            contains: search,
+            mode: 'insensitive',
+          }
+        : undefined,
+    } as Prisma.ProductWhereInput;
+
     const session = await getSession({
       user: {
         include: {
@@ -89,21 +111,7 @@ export async function GET(
             },
             include: {
               products: {
-                where: {
-                  licenses: licenseId
-                    ? {
-                        some: {
-                          id: licenseId,
-                        },
-                      }
-                    : undefined,
-                  name: search
-                    ? {
-                        contains: search,
-                        mode: 'insensitive',
-                      }
-                    : undefined,
-                },
+                where: whereWithoutTeamCheck,
                 skip,
                 take,
                 orderBy: {
@@ -134,24 +142,28 @@ export async function GET(
       );
     }
 
-    const totalProducts = await prisma.product.count({
-      where: {
-        teamId: selectedTeam,
-        licenses: licenseId
-          ? {
-              some: {
-                id: licenseId,
-              },
-            }
-          : undefined,
-      },
-    });
-
+    const [hasResults, totalResults] = await prisma.$transaction([
+      prisma.product.findFirst({
+        where: {
+          teamId: selectedTeam,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      prisma.product.count({
+        where: {
+          ...whereWithoutTeamCheck,
+          teamId: selectedTeam,
+        },
+      }),
+    ]);
     const products = session.user.teams[0].products;
 
     return NextResponse.json({
       products,
-      totalProducts,
+      totalResults,
+      hasResults: Boolean(hasResults),
     });
   } catch (error) {
     logger.error("Error occurred in 'products' route", error);

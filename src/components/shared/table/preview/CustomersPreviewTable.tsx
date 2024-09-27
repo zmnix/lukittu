@@ -73,7 +73,7 @@ export default function CustomersPreviewTable({
         }
 
         SetCustomers(data.customers);
-        setTotalCustomers(data.totalCustomers);
+        setTotalCustomers(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {

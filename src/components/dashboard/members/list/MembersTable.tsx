@@ -74,7 +74,7 @@ export function MembersTable() {
         }
 
         setMembers(data.members);
-        settotalMembers(data.totalMembers);
+        settotalMembers(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {

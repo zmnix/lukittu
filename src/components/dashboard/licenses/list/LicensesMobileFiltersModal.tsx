@@ -1,5 +1,5 @@
-import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
-import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
+import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
+import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Input } from '@/components/ui/input';
 import {
@@ -69,12 +69,12 @@ export default function LicensesMobileFiltersModal({
               }}
             />
           </div>
-          <ProductsAutocomplete
-            productIds={tempProductIds}
+          <ProductsMultiselect
+            initialProductIds={tempProductIds}
             setProductIds={setTempProductIds}
           />
-          <CustomersAutocomplete
-            customerIds={tempCustomerIds}
+          <CustomersMultiselect
+            initialCustomerIds={tempCustomerIds}
             setCustomerIds={setTempCustomerIds}
           />
         </div>

@@ -7,7 +7,7 @@ import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLog, User } from '@prisma/client';
+import { AuditLog, Prisma, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { UAParser } from 'ua-parser-js';
@@ -26,7 +26,7 @@ export type IAuditLogsGetSuccessResponse = {
     os: string | null;
     device: string | null;
   })[];
-  totalAuditLogs: number;
+  totalResults: number;
 };
 
 export type IAuditLogsGetResponse =
@@ -79,6 +79,12 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    const whereWithoutTeamCheck = {
+      createdAt: {
+        gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+      },
+    } as Prisma.AuditLogWhereInput;
+
     const session = await getSession({
       user: {
         include: {
@@ -89,11 +95,7 @@ export async function GET(
             },
             include: {
               auditLogs: {
-                where: {
-                  createdAt: {
-                    gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
-                  },
-                },
+                where: whereWithoutTeamCheck,
                 include: {
                   user: true,
                 },
@@ -129,12 +131,10 @@ export async function GET(
       );
     }
 
-    const totalAuditLogs = await prisma.auditLog.count({
+    const totalResults = await prisma.auditLog.count({
       where: {
+        ...whereWithoutTeamCheck,
         teamId: selectedTeam,
-        createdAt: {
-          gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
-        },
       },
     });
 
@@ -182,7 +182,7 @@ export async function GET(
 
     return NextResponse.json({
       auditLogs: requestLogsWithCountries,
-      totalAuditLogs,
+      totalResults,
     });
   } catch (error) {
     logger.error("Error occurred in 'auditlogs' route", error);

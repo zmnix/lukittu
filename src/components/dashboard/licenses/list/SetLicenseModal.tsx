@@ -2,8 +2,8 @@
 import { ILicensesUpdateResponse } from '@/app/api/(dashboard)/licenses/[slug]/route';
 import { ILicensesGenerateResponse } from '@/app/api/(dashboard)/licenses/generate/route';
 import { ILicensesCreateResponse } from '@/app/api/(dashboard)/licenses/route';
-import { CustomersAutocomplete } from '@/components/shared/form/CustomersAutocomplete';
-import { ProductsAutocomplete } from '@/components/shared/form/ProductsAutocomplete';
+import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
+import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
@@ -455,9 +455,8 @@ export default function SetLicenseModal() {
                 <FormLabel>
                   {t('dashboard.licenses.assigned_products')}
                 </FormLabel>
-                <ProductsAutocomplete
-                  initialProducts={ctx.licenseToEdit?.products}
-                  productIds={form.getValues('productIds')}
+                <ProductsMultiselect
+                  initialProductIds={form.getValues('productIds')}
                   setProductIds={(productIds) =>
                     form.setValue('productIds', productIds)
                   }
@@ -468,9 +467,8 @@ export default function SetLicenseModal() {
                 <FormLabel>
                   {t('dashboard.licenses.assigned_customers')}
                 </FormLabel>
-                <CustomersAutocomplete
-                  customerIds={form.getValues('customerIds')}
-                  initialCustomers={ctx.licenseToEdit?.customers}
+                <CustomersMultiselect
+                  initialCustomerIds={form.getValues('customerIds')}
                   setCustomerIds={(customerIds) =>
                     form.setValue('customerIds', customerIds)
                   }

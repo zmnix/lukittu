@@ -7,7 +7,7 @@ import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { RequestLog } from '@prisma/client';
+import { Prisma, RequestLog } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { UAParser } from 'ua-parser-js';
@@ -20,7 +20,7 @@ export type ILogsGetSuccessResponse = {
     browser: string | null;
     os: string | null;
   })[];
-  totalLogs: number;
+  totalResults: number;
 };
 
 export type ILogsGetResponse = ErrorResponse | ILogsGetSuccessResponse;
@@ -105,6 +105,21 @@ export async function GET(
             : new Date().setMonth(new Date().getMonth() - 6),
     );
 
+    const whereWithoutTeamCheck = {
+      createdAt: {
+        gte: dateLimit,
+      },
+      licenseId: licenseId ? licenseId : undefined,
+      productId: productId ? productId : undefined,
+      customerId: customerId ? customerId : undefined,
+      ipAddress: search
+        ? {
+            contains: search,
+            mode: 'insensitive',
+          }
+        : undefined,
+    } as Prisma.RequestLogWhereInput;
+
     const session = await getSession({
       user: {
         include: {
@@ -115,20 +130,7 @@ export async function GET(
             },
             include: {
               requestLogs: {
-                where: {
-                  createdAt: {
-                    gte: dateLimit,
-                  },
-                  licenseId: licenseId ? licenseId : undefined,
-                  productId: productId ? productId : undefined,
-                  customerId: customerId ? customerId : undefined,
-                  ipAddress: search
-                    ? {
-                        contains: search,
-                        mode: 'insensitive',
-                      }
-                    : undefined,
-                },
+                where: whereWithoutTeamCheck,
                 orderBy: [
                   {
                     [sortColumn]: sortDirection,
@@ -161,15 +163,10 @@ export async function GET(
       );
     }
 
-    const totalLogs = await prisma.requestLog.count({
+    const totalResults = await prisma.requestLog.count({
       where: {
+        ...whereWithoutTeamCheck,
         teamId: selectedTeam,
-        createdAt: {
-          gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
-        },
-        licenseId: licenseId ? licenseId : undefined,
-        productId: productId ? productId : undefined,
-        customerId: customerId ? customerId : undefined,
       },
     });
 
@@ -203,7 +200,7 @@ export async function GET(
 
     return NextResponse.json({
       logs: requestLogsWithCountries,
-      totalLogs,
+      totalResults,
     });
   } catch (error) {
     logger.error("Error occurred in 'logs' route", error);

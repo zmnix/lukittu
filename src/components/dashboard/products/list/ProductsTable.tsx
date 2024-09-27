@@ -42,6 +42,7 @@ export function ProductsTable() {
   const [products, setProducts] = useState<
     IProductsGetSuccessResponse['products']
   >([]);
+  const [hasProducts, setHasProducts] = useState(true);
   const [totalProducts, setTotalProducts] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
@@ -84,7 +85,8 @@ export function ProductsTable() {
         }
 
         setProducts(data.products);
-        setTotalProducts(data.totalProducts);
+        setHasProducts(data.hasResults);
+        setTotalProducts(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {
@@ -129,7 +131,7 @@ export function ProductsTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {totalProducts ? (
+          {hasProducts ? (
             <>
               <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
@@ -153,11 +155,14 @@ export function ProductsTable() {
                       </div>
                     ))
                   : products.map((product) => (
-                      <Link
+                      <div
                         key={product.id}
                         className="group relative flex items-center justify-between border-b py-3 first:border-t"
-                        href={`/dashboard/products/${product.id}`}
+                        role="button"
                         tabIndex={0}
+                        onClick={() =>
+                          router.push(`/dashboard/products/${product.id}`)
+                        }
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
@@ -186,7 +191,7 @@ export function ProductsTable() {
                         <div className="z-10 flex items-center space-x-2">
                           <ProductsActionDropdown product={product} />
                         </div>
-                      </Link>
+                      </div>
                     ))}
               </div>
               <Table

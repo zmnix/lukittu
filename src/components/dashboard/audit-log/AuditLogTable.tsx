@@ -77,7 +77,7 @@ export default function AuditLogTable() {
         }
 
         setAuditLogs(data.auditLogs);
-        setTotalAuditLogs(data.totalAuditLogs);
+        setTotalAuditLogs(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {

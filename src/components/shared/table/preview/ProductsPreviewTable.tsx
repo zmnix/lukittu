@@ -71,7 +71,7 @@ export default function ProductsPreviewTable({
         }
 
         setProducts(data.products);
-        setTotalProducts(data.totalProducts);
+        setTotalProducts(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {

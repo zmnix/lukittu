@@ -131,7 +131,7 @@ export function ProductDivisionPieChart() {
             <LoadingSpinner className="h-10 w-10" />
           </div>
         )}
-        {data.length === 0 ? (
+        {total === 0 ? (
           <div className="mx-auto flex aspect-square max-h-[300px] items-center justify-center">
             <div className="text-center">
               <Frown className="mx-auto h-12 w-12" />

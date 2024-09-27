@@ -77,7 +77,7 @@ export default function LicensesPreviewTable({
         }
 
         setLicenses(data.licenses);
-        setTotalLicenses(data.totalLicenses);
+        setTotalLicenses(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {

@@ -83,7 +83,7 @@ export default function RequestLogsPreviewTable({
         }
 
         setLogs(data.logs);
-        setTotalLogs(data.totalLogs);
+        setTotalLogs(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
       } finally {

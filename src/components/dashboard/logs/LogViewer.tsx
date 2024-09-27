@@ -65,14 +65,14 @@ export default function LogViewer() {
         return toast.error(data.message);
       }
 
-      setTotalLogs(data.totalLogs);
+      setTotalLogs(data.totalResults);
       setLogs((prevLogs) => {
         const newLogs = [...prevLogs.flat(), ...data.logs];
         const uniqueLogs = Array.from(
           new Map(newLogs.map((log) => [log.id, log])).values(),
         );
 
-        setHasMore(data.totalLogs > uniqueLogs.length);
+        setHasMore(data.totalResults > uniqueLogs.length);
 
         const groupedLogs = uniqueLogs.reduce(
           (acc, log) => {
