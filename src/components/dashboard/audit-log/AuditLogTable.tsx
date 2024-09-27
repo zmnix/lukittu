@@ -220,8 +220,8 @@ export default function AuditLogTable() {
                               <h3 className="text-sm font-semibold">
                                 {t('general.ip_address')}
                               </h3>
-                              <p
-                                className="truncate text-sm text-muted-foreground"
+                              <div
+                                className="flex items-center gap-1 truncate text-sm text-muted-foreground"
                                 title={auditLog.ipAddress ?? ''}
                               >
                                 {auditLog.alpha2 && (
@@ -235,8 +235,10 @@ export default function AuditLogTable() {
                                     width={20}
                                   />
                                 )}
-                                {auditLog.ipAddress ?? t('general.unknown')}
-                              </p>
+                                <span>
+                                  {auditLog.ipAddress ?? t('general.unknown')}
+                                </span>
+                              </div>
                             </div>
                             <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
                               <h3 className="text-sm font-semibold">
@@ -412,7 +414,7 @@ export default function AuditLogTable() {
                                       <h3 className="text-sm font-semibold">
                                         {t('general.ip_address')}
                                       </h3>
-                                      <p className="truncate text-sm text-muted-foreground">
+                                      <p className="flex items-center gap-1 truncate text-sm text-muted-foreground">
                                         {auditLog.alpha2 && (
                                           <Image
                                             alt={
