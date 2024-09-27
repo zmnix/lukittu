@@ -2,12 +2,12 @@ import { Toaster } from '@/components/ui/sonner';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+import '@/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { Roboto } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
-import './globals.css';
 
 const roboto = Roboto({
   weight: ['100', '300', '400', '500', '700', '900'],

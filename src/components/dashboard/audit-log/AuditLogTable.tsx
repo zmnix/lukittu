@@ -20,7 +20,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getInitials } from '@/lib/utils/text-helpers';
-import 'leaflet/dist/leaflet.css';
 import {
   ArrowDownUp,
   ChevronDown,
@@ -173,7 +172,9 @@ export default function AuditLogTable() {
                               </p>
                               <div className="flex items-center gap-1">
                                 <div className="truncate text-xs font-semibold text-muted-foreground">
-                                  {auditLog.action.toLowerCase()}
+                                  {t(
+                                    `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,
+                                  )}
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">

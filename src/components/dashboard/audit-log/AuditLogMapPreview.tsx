@@ -1,6 +1,6 @@
 'use client';
+import '@/styles/leaflet.css';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 
 const customIcon = L.icon({
