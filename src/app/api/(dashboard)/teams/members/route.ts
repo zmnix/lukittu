@@ -9,12 +9,21 @@ import { Prisma, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+type IRegularUser = Omit<User, 'passwordHash'> & {
+  avatarUrl: string | null;
+  isOwner: boolean;
+  lastLoginAt: Date | null;
+};
+
+type IInvitationUser = {
+  id: string;
+  email: string;
+  createdAt: Date;
+  isInvitation: true;
+};
+
 export type ITeamsMembersGetSuccessResponse = {
-  members: (Omit<User, 'passwordHash'> & {
-    avatarUrl: string | null;
-    isOwner: boolean;
-    lastLoginAt: Date | null;
-  })[];
+  members: (IRegularUser | IInvitationUser)[];
   totalResults: number;
 };
 
@@ -67,9 +76,6 @@ export async function GET(
       page = 1;
     }
 
-    const skip = (page - 1) * pageSize;
-    const take = pageSize;
-
     const whereWithoutTeamCheck = {
       OR: search
         ? [
@@ -111,11 +117,13 @@ export async function GET(
                     },
                   },
                 },
-                orderBy: {
-                  [sortColumn]: sortDirection,
+              },
+              invitations: {
+                where: {
+                  createdAt: {
+                    gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
+                  },
                 },
-                skip,
-                take,
               },
             },
           },
@@ -141,6 +149,38 @@ export async function GET(
       );
     }
 
+    const team = session.user.teams[0];
+
+    const combinedResults = [
+      ...(team.users.map((user) => ({
+        ...user,
+        avatarUrl: getGravatarUrl(user.email),
+        isOwner: user.id === session.user.teams[0].ownerId,
+        lastLoginAt: user.sessions[0]?.createdAt || null,
+      })) as IRegularUser[]),
+      ...(team.invitations.map((invitation) => ({
+        id: invitation.id,
+        email: invitation.email,
+        createdAt: invitation.createdAt,
+        isInvitation: true,
+      })) as IInvitationUser[]),
+    ];
+
+    const sortedResults = combinedResults.sort((a, b) => {
+      if (sortColumn === 'createdAt') {
+        return sortDirection === 'asc'
+          ? a.createdAt.getTime() - b.createdAt.getTime()
+          : b.createdAt.getTime() - a.createdAt.getTime();
+      }
+
+      return 0;
+    });
+
+    const paginatedResults = sortedResults.slice(
+      (page - 1) * pageSize,
+      page * pageSize,
+    );
+
     const totalResults = await prisma.user.count({
       where: {
         ...whereWithoutTeamCheck,
@@ -153,15 +193,8 @@ export async function GET(
       },
     });
 
-    const members = session.user.teams[0].users.map((user) => ({
-      ...user,
-      avatarUrl: getGravatarUrl(user.email),
-      isOwner: user.id === session.user.teams[0].ownerId,
-      lastLoginAt: user.sessions[0]?.createdAt || null,
-    }));
-
     return NextResponse.json({
-      members,
+      members: paginatedResults,
       totalResults,
     });
   } catch (error) {

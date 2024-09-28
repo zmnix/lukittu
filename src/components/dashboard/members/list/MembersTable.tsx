@@ -94,7 +94,10 @@ export function MembersTable() {
   }, [debounceSearch]);
 
   const isTeamOwner = members.some(
-    (member) => member.isOwner && member.id === ctx.session?.user?.id,
+    (member) =>
+      'isOwner' in member &&
+      member.isOwner &&
+      member.id === ctx.session?.user?.id,
   );
 
   return (
@@ -118,7 +121,7 @@ export function MembersTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddMemberButton disabled={!isTeamOwner} />
+              <AddMemberButton isTeamOwner={isTeamOwner} />
             </div>
           </CardTitle>
         </CardHeader>
@@ -153,13 +156,20 @@ export function MembersTable() {
                       <div className="absolute inset-0 -mx-2 rounded-lg" />
                       <div className="z-10 flex items-center gap-2">
                         <Avatar className="h-12 w-12 border">
-                          <AvatarImage src={member?.avatarUrl!} asChild>
-                            {member?.avatarUrl && (
+                          <AvatarImage
+                            src={'avatarUrl' in member ? member.avatarUrl! : ''}
+                            asChild
+                          >
+                            {'avatarUrl' in member && member.avatarUrl && (
                               <Image alt="Avatar" src={member.avatarUrl} fill />
                             )}
                           </AvatarImage>
                           <AvatarFallback className="bg-primary text-xs text-white">
-                            {getInitials(member?.fullName ?? '??')}
+                            {getInitials(
+                              'fullName' in member
+                                ? (member?.fullName ?? '??')
+                                : '??',
+                            )}
                           </AvatarFallback>
                         </Avatar>
                         <div className="z-10 grid">
@@ -174,12 +184,16 @@ export function MembersTable() {
                       <div className="z-10 flex items-center space-x-2">
                         <span className="rounded-full px-2 py-1 text-xs font-medium">
                           <Badge className="text-xs" variant="outline">
-                            {member.isOwner
+                            {'isOwner' in member && member.isOwner
                               ? t('general.owner')
                               : t('general.member')}
                           </Badge>
                         </span>
-                        <MembersActionDropdown member={member} />
+                        <MembersActionDropdown
+                          isSelf={member.id === ctx.session?.user?.id}
+                          isTeamOwner={isTeamOwner}
+                          member={member}
+                        />
                       </div>
                     </div>
                   ))}
@@ -218,30 +232,45 @@ export function MembersTable() {
                       <TableCell className="truncate">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8 border">
-                            <AvatarImage src={member?.avatarUrl!} asChild>
-                              {member?.avatarUrl && (
+                            <AvatarImage
+                              src={
+                                'avatarUrl' in member ? member.avatarUrl! : ''
+                              }
+                              asChild
+                            >
+                              {'avatarUrl' in member && member.avatarUrl && (
                                 <Image
                                   alt="Avatar"
-                                  src={member.avatarUrl}
+                                  src={
+                                    'avatarUrl' in member
+                                      ? member.avatarUrl
+                                      : ''
+                                  }
                                   fill
                                 />
                               )}
                             </AvatarImage>
                             <AvatarFallback className="bg-primary text-xs text-white">
-                              {getInitials(member?.fullName ?? '??')}
+                              {getInitials(
+                                'fullName' in member
+                                  ? (member?.fullName ?? '??')
+                                  : '??',
+                              )}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <b>{member.fullName ?? 'N/A'}</b>
+                            <b>
+                              {'fullName' in member ? member.fullName : 'N/A'}
+                            </b>
                             <p className="text-xs text-muted-foreground">
-                              {member.email ?? 'N/A'}
+                              {member.email}
                             </p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="truncate">
                         <Badge className="text-xs" variant="outline">
-                          {member.isOwner
+                          {'isOwner' in member && member.isOwner
                             ? t('general.owner')
                             : t('general.member')}
                         </Badge>
@@ -249,10 +278,16 @@ export function MembersTable() {
                       <TableCell
                         className="truncate"
                         title={new Date(
-                          member.lastLoginAt ?? '',
+                          'lastLoginAt' in member
+                            ? (member.lastLoginAt ?? '')
+                            : '',
                         ).toLocaleString(locale)}
                       >
-                        {member.lastLoginAt ? (
+                        {'isInvitation' in member ? (
+                          <Badge className="text-xs" variant="secondary">
+                            {t('general.invitation_sent')}
+                          </Badge>
+                        ) : member.lastLoginAt ? (
                           <DateConverter date={member.lastLoginAt} />
                         ) : (
                           <span className="text-muted-foreground">
@@ -268,7 +303,11 @@ export function MembersTable() {
                           },
                         )}
                       >
-                        <MembersActionDropdown member={member} />
+                        <MembersActionDropdown
+                          isSelf={member.id === ctx.session?.user?.id}
+                          isTeamOwner={isTeamOwner}
+                          member={member}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

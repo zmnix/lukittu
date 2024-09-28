@@ -67,6 +67,7 @@
     "invitation_for_different_email": "Invitation is for a different email address!"
   },
   "general": {
+    "invitation_sent": "Invitation sent",
     "selected": "Selected",
     "avatar": "Avatar",
     "code": "Code",
@@ -415,8 +416,13 @@
       }
     },
     "members": {
+      "only_for_owners": "This action is only available for team owner.",
       "new_member": "New member",
       "kick_member": "Kick member",
+      "cancel_invitation": "Cancel invitation",
+      "invitation_cancelled": "Invitation cancelled",
+      "cancel_invitation_confirm_title": "Are you absolutely sure?",
+      "cancel_invitation_confirm_description": "You are about to cancel the invitation for <strong>{email}</strong>! If you cancel the invitation, the user will not be able to join the team using the invitation link anymore.",
       "search_member": "Search member...",
       "member_invited": "Member has been invited! They will receive an email shortly.",
       "invite_member": "Invite member",
