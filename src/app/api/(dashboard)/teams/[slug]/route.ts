@@ -10,7 +10,7 @@ import {
 } from '@/lib/validation/team/set-team-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Team } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Team, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -230,6 +230,96 @@ export async function PUT(
     return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'teams' route", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
+
+export type ITeamGetSuccessResponse = {
+  team: Omit<Team, 'privateKeyRsa'> & {
+    owner: Omit<User, 'passwordHash'>;
+    memberCount: number;
+  };
+};
+
+export type ITeamGetResponse = ErrorResponse | ITeamGetSuccessResponse;
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } },
+) {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  try {
+    const teamId = params.slug;
+
+    if (!teamId || !regex.uuidV4.test(teamId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              id: teamId,
+              deletedAt: null,
+            },
+            omit: {
+              publicKeyRsa: false,
+            },
+            include: {
+              owner: true,
+              _count: {
+                select: {
+                  users: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const team = session.user.teams[0];
+
+    return NextResponse.json({
+      team: {
+        ...team,
+        owner: team.owner,
+        memberCount: team._count.users,
+        _count: undefined,
+      },
+    });
+  } catch (error) {
+    logger.error("Error occurred in 'teams/[slug]' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

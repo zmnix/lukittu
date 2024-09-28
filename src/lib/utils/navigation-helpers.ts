@@ -102,6 +102,11 @@ export function getMenuList(pathname: string): Group[] {
           icon: Shield,
           submenus: [
             {
+              href: '/dashboard/team/settings',
+              translation: 'settings',
+              active: pathname === '/dashboard/team/settings',
+            },
+            {
               href: '/dashboard/team/members',
               translation: 'members',
               active: pathname === '/dashboard/team/members',

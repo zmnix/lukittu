@@ -277,7 +277,8 @@
       "external_links": "External Links",
       "documentation": "Documentation",
       "discord": "Discord",
-      "logs": "Logs"
+      "logs": "Logs",
+      "settings": "Settings"
     },
     "teams": {
       "create_team": "Create a team",
@@ -431,6 +432,15 @@
       "invite_member": "Invite member",
       "invite_member_description": "Invite a new member to your team by entering their email address below. They will receive an email with an invitation link.",
       "send_invite": "Send invite"
+    },
+    "settings": {
+      "base_64_encoded": "Base64 Encoded",
+      "plain_format": "Plain Format (PEM)",
+      "rsa_public_key": "RSA 2048 Public Key",
+      "rsa_public_key_description": "This is your team's public key, which can be used to verify the authenticity of license verify challenges.",
+      "reset_key": "Reset key",
+      "strict_customers": "Strict customers",
+      "strict_products": "Strict products"
     }
   }
 }
