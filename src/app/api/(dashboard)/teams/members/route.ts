@@ -120,6 +120,7 @@ export async function GET(
               },
               invitations: {
                 where: {
+                  accepted: false,
                   createdAt: {
                     gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
                   },
