@@ -1,6 +1,6 @@
 import prisma from '@/lib/database/prisma';
+import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
 import { createSession } from '@/lib/utils/auth';
-import { verifyTurnstileToken } from '@/lib/utils/cloudflare-helpers';
 import { verifyPassword } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';

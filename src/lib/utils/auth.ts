@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 import 'server-only';
 import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
+import { proxyCheck } from '../providers/proxycheck';
 import { getIp, getUserAgent } from './header-helpers';
 import { logger } from './logger';
 
@@ -13,10 +14,9 @@ export async function createSession(userId: string, rememberMe: boolean) {
     const ipAddress = getIp();
     const userAgent = getUserAgent();
 
-    const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
-    const geoDataJson = geoData.ok ? await geoData.json() : null;
-    const countryAlpha3: string | null = geoDataJson?.countryCode
-      ? iso2ToIso3Map[geoDataJson.countryCode]
+    const geoData = await proxyCheck(ipAddress);
+    const countryAlpha3: string | null = geoData?.isocode
+      ? iso2ToIso3Map[geoData.isocode]
       : null;
 
     const sessionId = randomBytes(16).toString('hex');

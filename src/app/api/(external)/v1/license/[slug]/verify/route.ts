@@ -2,6 +2,7 @@
 import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { proxyCheck } from '@/lib/providers/proxycheck';
 import { generateHMAC, signChallenge } from '@/lib/utils/crypto';
 import { getIp, getOrigin, getUserAgent } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -385,13 +386,12 @@ async function logRequest({
   try {
     const origin = getOrigin();
     const ipAddress = getIp();
-    const geoData = await fetch(`http://ip-api.com/json/${ipAddress}`);
-    const geoDataJson = geoData.ok ? await geoData.json() : null;
-    const longitude = geoDataJson?.lon || null;
-    const latitude = geoDataJson?.lat || null;
+    const geoData = await proxyCheck(ipAddress);
+    const longitude = geoData?.longitude || null;
+    const latitude = geoData?.latitude || null;
     const hasBothLongitudeAndLatitude = longitude && latitude;
-    const countryAlpha3: string | null = geoDataJson?.countryCode
-      ? iso2ToIso3Map[geoDataJson.countryCode]
+    const countryAlpha3: string | null = geoData?.isocode
+      ? iso2ToIso3Map[geoData.isocode]
       : null;
 
     await prisma.requestLog.create({

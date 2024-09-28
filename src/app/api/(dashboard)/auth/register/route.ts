@@ -1,6 +1,6 @@
 import VerifyEmailTemplate from '@/emails/VerifyEmailTemplate';
 import prisma from '@/lib/database/prisma';
-import { verifyTurnstileToken } from '@/lib/utils/cloudflare-helpers';
+import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
 import { generateKeyPair, hashPassword } from '@/lib/utils/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';

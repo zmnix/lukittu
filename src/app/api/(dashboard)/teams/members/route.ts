@@ -1,6 +1,6 @@
 import prisma from '@/lib/database/prisma';
+import { getGravatarUrl } from '@/lib/providers/gravatar';
 import { getSession } from '@/lib/utils/auth';
-import { getGravatarUrl } from '@/lib/utils/gravatar';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
