@@ -20,7 +20,7 @@ export default function AddMemberButton({ isTeamOwner }: AddMemberButtonProps) {
   const ctx = useContext(MemberModalContext);
 
   return (
-    <TooltipProvider>
+    <TooltipProvider disableHoverableContent>
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
           <span>

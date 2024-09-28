@@ -1,5 +1,6 @@
 'use client';
 import { CancelInviteConfirmModal } from '@/components/dashboard/members/CancelInviteConfirmModal';
+import { KickMemberConfirmModal } from '@/components/dashboard/members/KickMemberConfirmModal';
 import InviteMemberModal from '@/components/dashboard/members/list/InviteMemberModal';
 import { User } from '@prisma/client';
 import { createContext, useState } from 'react';
@@ -68,6 +69,7 @@ export const MemberModalProvider = ({
     >
       <CancelInviteConfirmModal />
       <InviteMemberModal />
+      <KickMemberConfirmModal />
       {children}
     </MemberModalContext.Provider>
   );
