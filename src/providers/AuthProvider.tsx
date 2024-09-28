@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const fetchSession = async () => {
       try {
         const res = await fetch('/api/sessions/current');
-        if (!res.ok && res.status === 401) {
+        if (!res.ok) {
           setSession(null);
           try {
             const response = await fetch('/api/auth/sign-out', {
