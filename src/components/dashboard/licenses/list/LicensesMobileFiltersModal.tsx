@@ -57,7 +57,13 @@ export default function LicensesMobileFiltersModal({
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>{t('general.filters')}</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        <div className="flex flex-col gap-4 max-md:px-2">
+        <form
+          className="flex flex-col gap-4 max-md:px-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleApply();
+          }}
+        >
           <div className="relative flex w-full items-center max-lg:w-full">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
             <Input
@@ -77,7 +83,7 @@ export default function LicensesMobileFiltersModal({
             initialCustomerIds={tempCustomerIds}
             setCustomerIds={setTempCustomerIds}
           />
-        </div>
+        </form>
         <ResponsiveDialogFooter>
           <div>
             <LoadingButton className="w-full" variant="outline">

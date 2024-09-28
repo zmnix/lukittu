@@ -12,12 +12,11 @@ declare global {
           session: {
             sessionId: true;
           };
-          team: {
-            privateKeyRsa: true;
-            publicKeyRsa: true;
-          };
           license: {
             licenseKeyLookup: true;
+          };
+          keyPair: {
+            privateKey: true;
           };
         };
       }>
@@ -34,12 +33,11 @@ const prisma =
       session: {
         sessionId: true,
       },
-      team: {
-        privateKeyRsa: true,
-        publicKeyRsa: true,
-      },
       license: {
         licenseKeyLookup: true,
+      },
+      keyPair: {
+        privateKey: true,
       },
     },
   });

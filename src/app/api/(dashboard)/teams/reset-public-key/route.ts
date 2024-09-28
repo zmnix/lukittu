@@ -1,16 +1,17 @@
-import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { generateKeyPair } from '@/lib/utils/crypto';
-import { getLanguage } from '@/lib/utils/header-helpers';
+import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export type ITeamsResetPublicKeySuccessResponse = {
-  publicKeyRsa: string;
+  publicKey: string;
 };
 
 export type ITeamsResetPublicKeyResponse =
@@ -24,14 +25,14 @@ export async function POST(
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const teamId = params.slug;
+    const selectedTeam = getSelectedTeam();
 
-    if (!teamId || !regex.uuidV4.test(teamId)) {
+    if (!selectedTeam) {
       return NextResponse.json(
         {
-          message: t('validation.bad_request'),
+          message: t('validation.team_not_found'),
         },
-        { status: HttpStatus.BAD_REQUEST },
+        { status: HttpStatus.NOT_FOUND },
       );
     }
 
@@ -40,11 +41,8 @@ export async function POST(
         include: {
           teams: {
             where: {
-              id: teamId,
+              id: selectedTeam,
               deletedAt: null,
-            },
-            omit: {
-              publicKeyRsa: false,
             },
           },
         },
@@ -71,30 +69,32 @@ export async function POST(
 
     const { privateKey, publicKey } = generateKeyPair();
 
-    await prisma.team.update({
+    await prisma.keyPair.update({
       where: {
-        id: teamId,
+        teamId: selectedTeam,
       },
       data: {
-        publicKeyRsa: publicKey,
-        privateKeyRsa: privateKey,
-      },
-      omit: {
-        publicKeyRsa: false,
+        publicKey,
+        privateKey,
       },
     });
 
-    return NextResponse.json(
-      {
-        publicKeyRsa: publicKey,
-      },
-      { status: HttpStatus.OK },
-    );
+    const response = {
+      publicKey,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: selectedTeam,
+      action: AuditLogAction.RESET_PUBLIC_KEY,
+      targetId: selectedTeam,
+      targetType: AuditLogTargetType.TEAM,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {
-    logger.error(
-      "Error occurred in 'teams/[slug]/reset-public-key' route",
-      error,
-    );
+    logger.error("Error occurred in 'teams/reset-public-key' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

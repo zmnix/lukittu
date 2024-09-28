@@ -111,11 +111,21 @@ export async function POST(
         data: {
           name: 'My first team',
           ownerId: user.id,
-          privateKeyRsa: privateKey,
-          publicKeyRsa: publicKey,
           users: {
             connect: {
               id: user.id,
+            },
+          },
+          keyPair: {
+            create: {
+              privateKey,
+              publicKey,
+            },
+          },
+          settings: {
+            create: {
+              strictCustomers: false,
+              strictProducts: false,
             },
           },
         },

@@ -1,5 +1,6 @@
 import TeamInviteEmailTemplate from '@/emails/TeamInviteTemplate';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -10,6 +11,7 @@ import {
 } from '@/lib/validation/team/invite-member-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { render } from '@react-email/components';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -188,12 +190,21 @@ export async function POST(
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-      },
-      { status: HttpStatus.OK },
-    );
+    const response = {
+      success: true,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.INVITE_MEMBER,
+      targetId: invitation.id,
+      targetType: AuditLogTargetType.TEAM,
+      requestBody: body,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {
     logger.error("Error occurred in 'teams/invite' route", error);
     return NextResponse.json(

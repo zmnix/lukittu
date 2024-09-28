@@ -1,16 +1,17 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Team } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Team } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 type ITeamsAcceptInviteSuccessResponse = {
-  team: Omit<Team, 'privateKeyRsa' | 'publicKeyRsa'>;
+  team: Team;
 };
 
 export type ITeamsAcceptInviteResponse =
@@ -108,7 +109,20 @@ export async function POST(
       return team;
     });
 
-    return NextResponse.json({ team });
+    const response = {
+      team,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.ACCEPT_INVITATION,
+      targetId: invitation.id,
+      targetType: AuditLogTargetType.TEAM,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'teams/invite/[slug]' route", error);
     return NextResponse.json(
@@ -121,7 +135,7 @@ export async function POST(
 }
 
 export type ITeamsInviteCancelSuccessResponse = {
-  success: true;
+  success: boolean;
 };
 
 export type ITeamsInviteCancelResponse =
@@ -234,7 +248,20 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json({ success: true });
+    const response = {
+      success: true,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.CANCEL_INVITATION,
+      targetId: invitation.id,
+      targetType: AuditLogTargetType.TEAM,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'teams/invite/[slug]' route", error);
     return NextResponse.json(

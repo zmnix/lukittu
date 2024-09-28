@@ -32,10 +32,7 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
   const ctx = useContext(TeamContext);
   const [open, setOpen] = useState(false);
   const [createTeamModalOpen, setTeamModalOpen] = useState(false);
-  const [teamToEdit, setTeamToEdit] = useState<Omit<
-    Team,
-    'publicKeyRsa' | 'privateKeyRsa'
-  > | null>(null);
+  const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
 
   return (
     <>

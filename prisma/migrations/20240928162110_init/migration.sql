@@ -1,11 +1,14 @@
 -- CreateEnum
-CREATE TYPE "AuditLogAction" AS ENUM ('LEAVE_TEAM', 'CREATE_TEAM', 'UPDATE_TEAM', 'DELETE_TEAM', 'TRANSFER_TEAM_OWNERSHIP', 'CREATE_LICENSE', 'UPDATE_LICENSE', 'DELETE_LICENSE', 'CREATE_CUSTOMER', 'UPDATE_CUSTOMER', 'DELETE_CUSTOMER', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT');
+CREATE TYPE "RequestMethod" AS ENUM ('GET', 'POST', 'PUT', 'PATCH', 'DELETE');
+
+-- CreateEnum
+CREATE TYPE "AuditLogAction" AS ENUM ('LEAVE_TEAM', 'CREATE_TEAM', 'UPDATE_TEAM', 'DELETE_TEAM', 'TRANSFER_TEAM_OWNERSHIP', 'CREATE_LICENSE', 'UPDATE_LICENSE', 'DELETE_LICENSE', 'CREATE_CUSTOMER', 'UPDATE_CUSTOMER', 'DELETE_CUSTOMER', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'INVITE_MEMBER', 'KICK_MEMBER', 'CANCEL_INVITATION', 'ACCEPT_INVITATION', 'RESET_PUBLIC_KEY', 'UPDATE_TEAM_SETTINGS');
 
 -- CreateEnum
 CREATE TYPE "AuditLogTargetType" AS ENUM ('LICENSE', 'CUSTOMER', 'PRODUCT', 'TEAM');
 
 -- CreateEnum
-CREATE TYPE "Provider" AS ENUM ('CREDENTIALS', 'GOOGLE');
+CREATE TYPE "Provider" AS ENUM ('CREDENTIALS', 'GOOGLE', 'GITHUB');
 
 -- CreateEnum
 CREATE TYPE "LicenseExpirationType" AS ENUM ('NEVER', 'DATE', 'DURATION');
@@ -49,13 +52,57 @@ CREATE TABLE "Team" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
-    "publicKeyRsa" TEXT NOT NULL,
-    "privateKeyRsa" TEXT NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Settings" (
+    "id" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "strictCustomers" BOOLEAN NOT NULL DEFAULT false,
+    "strictProducts" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Settings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "KeyPair" (
+    "id" TEXT NOT NULL,
+    "publicKey" TEXT NOT NULL,
+    "privateKey" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "KeyPair_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ApiKey" (
+    "id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "createdByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ApiKey_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Invitation" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "accepted" BOOLEAN NOT NULL DEFAULT false,
+    "createdByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Invitation_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -110,11 +157,14 @@ CREATE TABLE "License" (
 CREATE TABLE "AuditLog" (
     "id" TEXT NOT NULL,
     "ipAddress" TEXT,
+    "longitude" DOUBLE PRECISION,
+    "latitude" DOUBLE PRECISION,
     "userAgent" TEXT,
     "country" TEXT,
     "requestBody" JSONB,
     "responseBody" JSONB,
     "userId" TEXT,
+    "version" TEXT NOT NULL,
     "targetId" TEXT NOT NULL,
     "targetType" "AuditLogTargetType" NOT NULL,
     "teamId" TEXT NOT NULL,
@@ -129,8 +179,16 @@ CREATE TABLE "RequestLog" (
     "id" TEXT NOT NULL,
     "responseTime" INTEGER NOT NULL,
     "ipAddress" TEXT,
+    "longitude" DOUBLE PRECISION,
+    "latitude" DOUBLE PRECISION,
     "country" TEXT,
     "status" "RequestStatus" NOT NULL,
+    "statusCode" INTEGER NOT NULL,
+    "version" TEXT NOT NULL,
+    "userAgent" TEXT,
+    "origin" TEXT,
+    "path" TEXT NOT NULL,
+    "method" "RequestMethod" NOT NULL,
     "requestBody" JSONB,
     "responseBody" JSONB,
     "teamId" TEXT NOT NULL,
@@ -165,6 +223,18 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionId_key" ON "Session"("sessionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Settings_teamId_key" ON "Settings"("teamId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "KeyPair_teamId_key" ON "KeyPair"("teamId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ApiKey_key_key" ON "ApiKey"("key");
+
+-- CreateIndex
+CREATE INDEX "ApiKey_teamId_idx" ON "ApiKey"("teamId");
 
 -- CreateIndex
 CREATE INDEX "Product_teamId_idx" ON "Product"("teamId");
@@ -204,6 +274,24 @@ ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Team" ADD CONSTRAINT "Team_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Settings" ADD CONSTRAINT "Settings_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "KeyPair" ADD CONSTRAINT "KeyPair_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ApiKey" ADD CONSTRAINT "ApiKey_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ApiKey" ADD CONSTRAINT "ApiKey_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Invitation" ADD CONSTRAINT "Invitation_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Invitation" ADD CONSTRAINT "Invitation_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,4 +1,6 @@
-import { Button } from '@/components/ui/button';
+import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
+import { ITeamsSettingsEditResponse } from '@/app/api/(dashboard)/teams/settings/route';
+import LoadingButton from '@/components/shared/LoadingButton';
 import {
   Card,
   CardContent,
@@ -28,10 +30,18 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
-export default function GeneralSettings() {
+interface GeneralSettingsProps {
+  team: ITeamGetSuccessResponse['team'] | null;
+}
+
+export default function GeneralSettings({ team }: GeneralSettingsProps) {
   const t = useTranslations();
+
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<SetTeamSettingsSchema>({
     resolver: zodResolver(setTeamSettingsSchema(t)),
@@ -41,7 +51,38 @@ export default function GeneralSettings() {
     },
   });
 
-  const onSubmit = async (data: SetTeamSettingsSchema) => {};
+  useEffect(() => {
+    form.reset({
+      strictCustomers: team?.settings?.strictCustomers ?? false,
+      strictProducts: team?.settings?.strictProducts ?? false,
+    });
+  }, [form, team]);
+
+  const onSubmit = async (payload: SetTeamSettingsSchema) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/teams/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json()) as ITeamsSettingsEditResponse;
+
+      if ('message' in data) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success(t('dashboard.settings.team_settings_updated'));
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Card>
@@ -65,11 +106,11 @@ export default function GeneralSettings() {
                     {t('dashboard.settings.strict_customers')}
                   </FormLabel>
                   <Select
-                    defaultValue={`${field.value}`}
-                    onValueChange={field.onChange}
+                    value={`${field.value}`}
+                    onValueChange={(value) => field.onChange(value === 'true')}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger disabled={!team || loading}>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -91,11 +132,11 @@ export default function GeneralSettings() {
                     {t('dashboard.settings.strict_products')}
                   </FormLabel>
                   <Select
-                    defaultValue={`${field.value}`}
-                    onValueChange={field.onChange}
+                    value={`${field.value}`}
+                    onValueChange={(value) => field.onChange(value === 'true')}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger disabled={!team || loading}>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -109,13 +150,20 @@ export default function GeneralSettings() {
               )}
             />
           </form>
+          <button className="hidden" type="submit" />
         </Form>
       </CardContent>
       <CardFooter>
-        <Button size="sm" type="submit" variant="secondary">
+        <LoadingButton
+          pending={loading}
+          size="sm"
+          type="submit"
+          variant="secondary"
+          onClick={form.handleSubmit(onSubmit)}
+        >
           <Save className="mr-2 h-4 w-4" />
           {t('general.save')}
-        </Button>
+        </LoadingButton>
       </CardFooter>
     </Card>
   );

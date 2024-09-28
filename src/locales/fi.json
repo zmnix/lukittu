@@ -413,7 +413,13 @@
         "update_product": "updated product",
         "create_customer": "created customer",
         "delete_customer": "deleted customer",
-        "update_customer": "updated customer"
+        "update_customer": "updated customer",
+        "invite_member": "invited member",
+        "kick_member": "kicked member",
+        "cancel_invitation": "cancelled invitation",
+        "accept_invitation": "accepted invitation",
+        "reset_public_key": "reset public key",
+        "update_team_settings": "updated team settings"
       }
     },
     "members": {
@@ -440,7 +446,11 @@
       "rsa_public_key_description": "This is your team's public key, which can be used to verify the authenticity of license verify challenges.",
       "reset_key": "Reset key",
       "strict_customers": "Strict customers",
-      "strict_products": "Strict products"
+      "strict_products": "Strict products",
+      "reset_public_key_confirm_title": "Reset public key",
+      "reset_public_key_confirm_description": "You are about to reset your team's public key! This will generate a new public key and invalidate the old one. You will need to update the public key in your software to continue verifying licenses.",
+      "public_key_reset": "Public key reset successfully",
+      "team_settings_updated": "Team settings updated"
     }
   }
 }

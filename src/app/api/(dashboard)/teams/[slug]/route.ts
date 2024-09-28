@@ -10,7 +10,13 @@ import {
 } from '@/lib/validation/team/set-team-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Team, User } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Settings,
+  Team,
+  User,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -139,7 +145,7 @@ export async function DELETE(
 }
 
 type ITeamsEditSuccessResponse = {
-  team: Omit<Team, 'privateKeyRsa' | 'publicKeyRsa'>;
+  team: Team;
 };
 
 export type ITeamsEditResponse = ErrorResponse | ITeamsEditSuccessResponse;
@@ -180,7 +186,12 @@ export async function PUT(
     const session = await getSession({
       user: {
         include: {
-          teams: true,
+          teams: {
+            where: {
+              id: teamId,
+              deletedAt: null,
+            },
+          },
         },
       },
     });
@@ -194,7 +205,7 @@ export async function PUT(
       );
     }
 
-    if (!teamId || !session.user.teams.some((team) => team.id === teamId)) {
+    if (!session.user.teams.length) {
       return NextResponse.json(
         {
           message: t('validation.team_not_found'),
@@ -240,9 +251,11 @@ export async function PUT(
 }
 
 export type ITeamGetSuccessResponse = {
-  team: Omit<Team, 'privateKeyRsa'> & {
+  team: Team & {
     owner: Omit<User, 'passwordHash'>;
     memberCount: number;
+    publicKey: string;
+    settings: Settings;
   };
 };
 
@@ -251,7 +264,7 @@ export type ITeamGetResponse = ErrorResponse | ITeamGetSuccessResponse;
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } },
-) {
+): Promise<NextResponse<ITeamGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
@@ -274,11 +287,10 @@ export async function GET(
               id: teamId,
               deletedAt: null,
             },
-            omit: {
-              publicKeyRsa: false,
-            },
             include: {
               owner: true,
+              keyPair: true,
+              settings: true,
               _count: {
                 select: {
                   users: true,
@@ -315,7 +327,10 @@ export async function GET(
         ...team,
         owner: team.owner,
         memberCount: team._count.users,
+        publicKey: team.keyPair!.publicKey,
         _count: undefined,
+        keyPair: undefined,
+        settings: team.settings!,
       },
     });
   } catch (error) {

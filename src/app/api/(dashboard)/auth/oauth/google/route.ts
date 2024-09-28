@@ -135,11 +135,21 @@ export async function GET(request: NextRequest) {
         data: {
           name: 'My first team',
           ownerId: newUser.id,
-          privateKeyRsa: privateKey,
-          publicKeyRsa: publicKey,
           users: {
             connect: {
               id: newUser.id,
+            },
+          },
+          keyPair: {
+            create: {
+              privateKey,
+              publicKey,
+            },
+          },
+          settings: {
+            create: {
+              strictCustomers: false,
+              strictProducts: false,
             },
           },
         },

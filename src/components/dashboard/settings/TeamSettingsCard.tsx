@@ -47,8 +47,8 @@ export default function TeamSettingsCard() {
       <div className="flex">
         <div className="flex w-full gap-4 max-xl:flex-col-reverse">
           <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-            <GeneralSettings />
-            <PublicKeysCard publicKeyRsa={team?.publicKeyRsa} />
+            <GeneralSettings team={team} />
+            <PublicKeysCard team={team} />
           </div>
           <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
             <TeamDetails team={team} />

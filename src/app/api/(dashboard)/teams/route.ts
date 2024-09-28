@@ -68,7 +68,7 @@ export async function GET(): Promise<
 }
 
 type ITeamsCreateSuccessResponse = {
-  team: Omit<Team, 'privateKeyRsa' | 'publicKeyRsa'>;
+  team: Team;
 };
 
 export type ITeamsCreateResponse = ErrorResponse | ITeamsCreateSuccessResponse;
@@ -111,11 +111,21 @@ export async function POST(
       data: {
         name,
         ownerId: session.user.id,
-        privateKeyRsa: privateKey,
-        publicKeyRsa: publicKey,
         users: {
           connect: {
             id: session.user.id,
+          },
+        },
+        keyPair: {
+          create: {
+            privateKey,
+            publicKey,
+          },
+        },
+        settings: {
+          create: {
+            strictCustomers: false,
+            strictProducts: false,
           },
         },
       },

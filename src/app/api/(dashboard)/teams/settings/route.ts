@@ -1,36 +1,40 @@
-import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
+import {
+  setTeamSettingsSchema,
+  SetTeamSettingsSchema,
+} from '@/lib/validation/team/set-team-settings-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Settings } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export type ITeamsMembersKickSuccessResponse = {
-  success: true;
+export type ITeamsSettingsEditSuccessResponse = {
+  settings: Settings;
 };
 
-export type ITeamsMembersKickResponse =
+export type ITeamsSettingsEditResponse =
   | ErrorResponse
-  | ITeamsMembersKickSuccessResponse;
+  | ITeamsSettingsEditSuccessResponse;
 
-export async function DELETE(
-  _: NextRequest,
-  { params }: { params: { slug: string } },
-) {
+export async function PUT(
+  request: NextRequest,
+): Promise<NextResponse<ITeamsSettingsEditResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
-    const memberId = params.slug;
+    const body = (await request.json()) as SetTeamSettingsSchema;
+    const validated = await setTeamSettingsSchema(t).safeParseAsync(body);
 
-    if (!memberId || !regex.uuidV4.test(memberId)) {
+    if (!validated.success) {
       return NextResponse.json(
         {
-          message: t('validation.bad_request'),
+          message: validated.error.errors[0].message,
+          field: validated.error.errors[0].path[0],
         },
         { status: HttpStatus.BAD_REQUEST },
       );
@@ -55,13 +59,6 @@ export async function DELETE(
               id: selectedTeam,
               deletedAt: null,
             },
-            include: {
-              users: {
-                where: {
-                  id: memberId,
-                },
-              },
-            },
           },
         },
       },
@@ -80,71 +77,40 @@ export async function DELETE(
       return NextResponse.json(
         {
           message: t('validation.team_not_found'),
+          field: 'id',
         },
         { status: HttpStatus.NOT_FOUND },
       );
     }
 
-    const team = session.user.teams[0];
+    const { strictCustomers, strictProducts } = validated.data;
 
-    if (team.ownerId !== session.user.id) {
-      return NextResponse.json(
-        {
-          message: t('validation.unauthorized'),
-        },
-        { status: HttpStatus.UNAUTHORIZED },
-      );
-    }
-
-    if (!team.users.length) {
-      return NextResponse.json(
-        {
-          message: t('validation.bad_request'),
-        },
-        { status: HttpStatus.BAD_REQUEST },
-      );
-    }
-
-    const user = team.users[0];
-
-    if (user.id === session.user.id) {
-      return NextResponse.json(
-        {
-          message: t('validation.bad_request'),
-        },
-        { status: HttpStatus.BAD_REQUEST },
-      );
-    }
-
-    await prisma.team.update({
+    const updatedSettings = await prisma.settings.update({
       where: {
-        id: selectedTeam,
+        teamId: selectedTeam,
       },
       data: {
-        users: {
-          disconnect: {
-            id: memberId,
-          },
-        },
+        strictCustomers,
+        strictProducts,
       },
     });
-
     const response = {
-      success: true,
+      settings: updatedSettings,
     };
 
     createAuditLog({
       userId: session.user.id,
-      teamId: team.id,
-      action: AuditLogAction.KICK_MEMBER,
-      targetId: memberId,
+      teamId: selectedTeam,
+      action: AuditLogAction.UPDATE_TEAM_SETTINGS,
+      targetId: selectedTeam,
       targetType: AuditLogTargetType.TEAM,
+      requestBody: body,
       responseBody: response,
     });
 
     return NextResponse.json(response);
   } catch (error) {
-    logger.error("Error occurred in 'teams/members/[slug]' route", error);
+    logger.error("Error occurred in 'teams/settings' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

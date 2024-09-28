@@ -34,7 +34,7 @@ import { toast } from 'sonner';
 interface SetTeamModalProps {
   open: boolean;
   onOpenChange: (boolean: boolean) => void;
-  teamToEdit: Omit<Team, 'publicKeyRsa' | 'privateKeyRsa'> | null;
+  teamToEdit: Team | null;
 }
 
 export default function SetTeamModal({

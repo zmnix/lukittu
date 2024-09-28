@@ -96,8 +96,12 @@ export async function POST(
           },
         },
         team: {
-          omit: {
-            privateKeyRsa: false,
+          include: {
+            keyPair: {
+              omit: {
+                privateKey: false,
+              },
+            },
           },
         },
         requestLogs: true,
@@ -293,8 +297,10 @@ export async function POST(
       }
     }
 
+    const privateKey = license.team.keyPair?.privateKey!;
+
     const challengeResponse = challenge
-      ? signChallenge(challenge, license.team.privateKeyRsa)
+      ? signChallenge(challenge, privateKey)
       : undefined;
 
     return await handleResponse({

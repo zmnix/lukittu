@@ -19,7 +19,7 @@ export const TeamContext = createContext({
   loading: true,
   selectedTeam: '',
   selectTeam: (teamId: string) => {},
-  teams: [] as Omit<Team, 'publicKeyRsa' | 'privateKeyRsa'>[],
+  teams: [] as Team[],
 });
 
 export const TeamProvider = ({ children }: { children: React.ReactNode }) => {

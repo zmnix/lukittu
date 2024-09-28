@@ -28,6 +28,7 @@ model User {
   auditLogs          AuditLog[]
   ownedTeams         Team[]       @relation("TeamOwner")
   teams              Team[]       @relation("TeamUsers")
+  createdApiKeys     ApiKey[]
   createdLicenses    License[]
   createdCustomers   Customer[]
   createdInvitations Invitation[]
@@ -46,22 +47,54 @@ model Session {
 }
 
 model Team {
-  id            String       @id @default(uuid())
-  name          String
-  ownerId       String
-  owner         User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  users         User[]       @relation("TeamUsers")
-  products      Product[]
-  licenses      License[]
-  customers     Customer[]
-  requestLogs   RequestLog[]
-  auditLogs     AuditLog[]
-  invitations   Invitation[]
-  publicKeyRsa  String
-  privateKeyRsa String
-  deletedAt     DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id          String       @id @default(uuid())
+  name        String
+  ownerId     String
+  owner       User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  users       User[]       @relation("TeamUsers")
+  products    Product[]
+  licenses    License[]
+  customers   Customer[]
+  requestLogs RequestLog[]
+  auditLogs   AuditLog[]
+  invitations Invitation[]
+  apiKeys     ApiKey[]
+  settings    Settings?
+  keyPair     KeyPair?
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Settings {
+  id              String   @id @default(uuid())
+  teamId          String   @unique
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  strictCustomers Boolean  @default(false)
+  strictProducts  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model KeyPair {
+  id         String   @id @default(uuid())
+  publicKey  String
+  privateKey String
+  teamId     String   @unique
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model ApiKey {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  teamId          String
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdByUserId String?
+  createdBy       User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+
+  @@index([teamId])
 }
 
 model Invitation {
@@ -207,6 +240,12 @@ enum AuditLogAction {
   CREATE_PRODUCT
   UPDATE_PRODUCT
   DELETE_PRODUCT
+  INVITE_MEMBER
+  KICK_MEMBER
+  CANCEL_INVITATION
+  ACCEPT_INVITATION
+  RESET_PUBLIC_KEY
+  UPDATE_TEAM_SETTINGS
 }
 
 enum AuditLogTargetType {
