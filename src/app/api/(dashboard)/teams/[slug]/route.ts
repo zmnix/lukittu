@@ -61,7 +61,7 @@ export async function DELETE(
       );
     }
 
-    const team = await prisma.team.findFirst({
+    const team = await prisma.team.findUnique({
       where: {
         id: teamId,
         deletedAt: null,

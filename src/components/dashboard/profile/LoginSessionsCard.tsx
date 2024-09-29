@@ -5,6 +5,7 @@ import {
   ISessionsGetSuccessResponse,
   ISessionsSignOutAllResponse,
 } from '@/app/api/(dashboard)/sessions/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import LoadingButton from '@/components/shared/LoadingButton';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,16 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getRelativeTimeString } from '@/lib/utils/date-helpers';
 import { LogOut } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function SessionsTable() {
   const t = useTranslations();
-  const locale = useLocale();
 
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +162,7 @@ export default function SessionsTable() {
                       : session.ipAddress}
                   </TableCell>
                   <TableCell className="truncate">
-                    {getRelativeTimeString(session.createdAt, locale)}
+                    <DateConverter date={session.createdAt} />
                   </TableCell>
                   <TableCell className="py-0 text-right">
                     {session.current ? (

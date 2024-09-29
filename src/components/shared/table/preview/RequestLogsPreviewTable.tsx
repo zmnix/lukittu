@@ -97,7 +97,7 @@ export default function RequestLogsPreviewTable({
       <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
         <div className="grid flex-1 gap-1">
           <CardTitle className="text-xl font-bold">
-            {t('dashboard.logs.logs')}
+            {t('dashboard.navigation.logs')}
           </CardTitle>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>

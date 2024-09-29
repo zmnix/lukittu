@@ -130,7 +130,7 @@ export default function LogViewer() {
           >
             <div className="p-4">
               <h2 className="mb-4 mt-1 text-xl font-bold tracking-tight">
-                {t('dashboard.logs.logs')}
+                {t('dashboard.navigation.logs')}
               </h2>
               {loading ? (
                 <LogViewerLeftSkeleton />
@@ -355,7 +355,7 @@ export default function LogViewer() {
       ) : (
         <div className="w-full">
           <h2 className="my-1 p-6 text-xl font-bold tracking-tight">
-            {t('dashboard.logs.logs')}
+            {t('dashboard.navigation.logs')}
           </h2>
           <div className="flex w-full flex-col items-center justify-center p-6 pt-0">
             <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4 py-20">

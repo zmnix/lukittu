@@ -16,6 +16,8 @@ export type IAuthSignOutResponse = ErrorResponse | IAuthSignOutSuccessResponse;
 export async function POST(): Promise<NextResponse<IAuthSignOutResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
+  const sessionId = cookies().get('session')?.value;
+
   cookies().set('session', '', {
     expires: new Date(0),
     httpOnly: true,
@@ -24,8 +26,6 @@ export async function POST(): Promise<NextResponse<IAuthSignOutResponse>> {
   });
 
   try {
-    const sessionId = cookies().get('session')?.value;
-
     if (sessionId) {
       await prisma.session.delete({
         where: { sessionId },

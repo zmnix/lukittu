@@ -104,7 +104,13 @@ export async function POST(
             },
           },
         },
-        requestLogs: true,
+        requestLogs: {
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000), // 6 months
+            },
+          },
+        },
       },
     });
 

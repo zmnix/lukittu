@@ -238,7 +238,7 @@ export function LicensesTable() {
                       {t('dashboard.licenses.status')}
                     </TableHead>
                     <TableHead className="truncate">
-                      {t('dashboard.licenses.expires_at')}
+                      {t('general.expires_at')}
                     </TableHead>
                     <TableHead className="truncate">
                       {t('dashboard.navigation.customers')}

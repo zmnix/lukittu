@@ -1,5 +1,6 @@
 import prisma from '@/lib/database/prisma';
 import { getSession } from '@/lib/utils/auth';
+import { generateHMAC } from '@/lib/utils/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
@@ -107,16 +108,19 @@ const generateLicenseKey = (): string => {
 const findUniqueLicenseKey = async (
   selectedTeamId: string,
 ): Promise<string | null> => {
-  const MAX_ATTEMPTS = 10;
+  const MAX_ATTEMPTS = 5;
   let attempts = 0;
 
   while (attempts < MAX_ATTEMPTS) {
     const licenseKey = generateLicenseKey();
+    const hmac = generateHMAC(`${licenseKey}:${selectedTeamId}`);
 
-    const license = await prisma.license.findFirst({
+    const license = await prisma.license.findUnique({
       where: {
-        licenseKey,
-        teamId: selectedTeamId,
+        teamId_licenseKeyLookup: {
+          teamId: selectedTeamId,
+          licenseKeyLookup: hmac,
+        },
       },
     });
 

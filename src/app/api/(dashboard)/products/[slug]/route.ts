@@ -198,7 +198,7 @@ export async function DELETE(
       );
     }
 
-    const product = await prisma.product.findFirst({
+    const product = await prisma.product.findUnique({
       where: {
         id: productId,
         teamId: selectedTeam,

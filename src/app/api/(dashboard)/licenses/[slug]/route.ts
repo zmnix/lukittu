@@ -438,7 +438,7 @@ export async function DELETE(
       );
     }
 
-    const license = await prisma.license.findFirst({
+    const license = await prisma.license.findUnique({
       where: {
         id: licenseId,
         teamId: selectedTeam,

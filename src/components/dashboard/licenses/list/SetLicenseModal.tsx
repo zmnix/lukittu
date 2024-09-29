@@ -303,7 +303,7 @@ export default function SetLicenseModal() {
                     variant="outline"
                     onClick={() => handleExpirationTypeChange('DATE')}
                   >
-                    {t('dashboard.licenses.date')}
+                    {t('general.date')}
                   </Button>
                   <Button
                     className={cn(
@@ -315,7 +315,7 @@ export default function SetLicenseModal() {
                     variant="outline"
                     onClick={() => handleExpirationTypeChange('DURATION')}
                   >
-                    {t('dashboard.licenses.duration')}
+                    {t('general.duration')}
                   </Button>
                 </div>
               </div>

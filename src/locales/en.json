@@ -159,7 +159,9 @@
     "click_to_copy": "Click to copy",
     "other": "Other",
     "copied_to_clipboard": "Copied to clipboard",
-    "metadata_updated": "Metadata updated"
+    "metadata_updated": "Metadata updated",
+    "expires_at": "Expires at",
+    "duration": "Duration"
   },
   "auth": {
     "oauth": {
@@ -350,9 +352,6 @@
       "activation": "Activation",
       "expiration_days": "Days",
       "expiration_settings": "Expiration settings",
-      "duration": "Duration",
-      "date": "Date",
-      "expires_at": "Expires at",
       "add_your_first_license": "Add your first license",
       "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage.",
       "no_products_assigned": "No products assigned",
@@ -366,7 +365,6 @@
       "delete_license_confirm_description": "You are about to delete license <strong>{license}</strong>! This will <strong>permanently delete</strong> this license. This action cannot be undone."
     },
     "logs": {
-      "logs": "Logs",
       "no_logs": "No logs",
       "request_body": "Request body",
       "response_body": "Response body",

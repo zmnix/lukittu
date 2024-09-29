@@ -278,7 +278,11 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              licenses: true,
+              licenses: {
+                omit: {
+                  licenseKeyLookup: false,
+                },
+              },
             },
           },
         },
