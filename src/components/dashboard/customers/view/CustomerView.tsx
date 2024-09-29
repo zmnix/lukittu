@@ -49,7 +49,7 @@ export default function CustomerView() {
 
   return (
     <CustomerModalProvider>
-      <div className="flex justify-between gap-2 max-sm:flex-col">
+      <div className="flex justify-between gap-2">
         {loading ? (
           <Skeleton className="h-8 w-96" />
         ) : (
@@ -57,7 +57,7 @@ export default function CustomerView() {
             {customer?.fullName ?? customer?.email}
           </h1>
         )}
-        <CustomersActionDropdown customer={customer!} />
+        <CustomersActionDropdown customer={customer!} variant="outline" />
       </div>
       <Separator className="mt-2" />
       <div className="mt-6">

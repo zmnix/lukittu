@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { Customer, License, Product } from '@prisma/client';
+import { VariantProps } from 'class-variance-authority';
 import { Copy, Edit, Ellipsis, Send, Trash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
@@ -18,10 +19,12 @@ interface LicensesActionDropdownProps {
     products: Product[];
     customers: Customer[];
   };
+  variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
 export const LicensesActionDropdown = ({
   license,
+  variant = 'ghost',
 }: LicensesActionDropdownProps) => {
   const t = useTranslations();
   const ctx = useContext(LicenseModalContext);
@@ -34,7 +37,7 @@ export const LicensesActionDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" variant="ghost">
+        <Button size="sm" variant={variant}>
           <Ellipsis className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

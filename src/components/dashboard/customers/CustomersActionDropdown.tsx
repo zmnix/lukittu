@@ -1,6 +1,6 @@
 'use client';
 import { ICustomersGetSuccessResponse } from '@/app/api/(dashboard)/customers/route';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,16 +8,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { CustomerModalContext } from '@/providers/CustomerModalProvider';
+import { VariantProps } from 'class-variance-authority';
 import { Edit, Ellipsis, Trash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 
 interface CustomersActionDropdownProps {
   customer: ICustomersGetSuccessResponse['customers'][number];
+  variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
 export const CustomersActionDropdown = ({
   customer,
+  variant = 'ghost',
 }: CustomersActionDropdownProps) => {
   const ctx = useContext(CustomerModalContext);
   const t = useTranslations();
@@ -25,7 +28,7 @@ export const CustomersActionDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" variant="ghost">
+        <Button size="icon" variant={variant}>
           <Ellipsis className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

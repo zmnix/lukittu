@@ -49,13 +49,13 @@ export default function ProductView() {
 
   return (
     <ProductModalProvider>
-      <div className="flex justify-between gap-2 max-sm:flex-col">
+      <div className="flex justify-between gap-2">
         {loading ? (
           <Skeleton className="h-8 w-96" />
         ) : (
           <h1 className="truncate text-2xl font-bold">{product?.name}</h1>
         )}
-        <ProductsActionDropdown product={product!} />
+        <ProductsActionDropdown product={product!} variant="outline" />
       </div>
       <Separator className="mt-2" />
       <div className="mt-6">

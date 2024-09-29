@@ -53,13 +53,13 @@ export default function LicenseView() {
 
   return (
     <LicenseModalProvider>
-      <div className="flex justify-between gap-2 max-sm:flex-col">
+      <div className="flex justify-between gap-2">
         {loading ? (
           <Skeleton className="h-8 w-96" />
         ) : (
           <h1 className="truncate text-2xl font-bold">{license?.licenseKey}</h1>
         )}
-        <LicensesActionDropdown license={license!} />
+        <LicensesActionDropdown license={license!} variant="outline" />
       </div>
       <Separator className="mt-2" />
       <div className="mt-6">
