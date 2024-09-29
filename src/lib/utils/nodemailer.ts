@@ -22,7 +22,10 @@ export async function sendEmail({ to, subject, html, text }: Email) {
     });
 
     const mailOptions: MailOptions = {
-      from: process.env.SMTP_FROM,
+      from: {
+        address: process.env.SMTP_FROM!,
+        name: process.env.SMTP_FROM_NAME!,
+      },
       to,
       subject,
       html,
