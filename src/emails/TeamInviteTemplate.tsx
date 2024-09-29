@@ -59,7 +59,6 @@ export const TeamInviteEmailTemplate = ({
             height="50"
             src="https://app.lukittu.com/logo_text_dark.png"
             style={logo}
-            width="170"
           />
           <Text style={paragraph}>Hi,</Text>
           <Text style={paragraph}>

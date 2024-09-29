@@ -57,7 +57,6 @@ export const VerifyEmailTemplate = ({
             height="50"
             src="https://app.lukittu.com/logo_text_dark.png"
             style={logo}
-            width="170"
           />
           <Text style={paragraph}>Hi {fullName},</Text>
           <Text style={paragraph}>
