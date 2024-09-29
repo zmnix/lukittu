@@ -72,6 +72,7 @@ model Settings {
   team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   strictCustomers Boolean  @default(false)
   strictProducts  Boolean  @default(false)
+  emailMessage    String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

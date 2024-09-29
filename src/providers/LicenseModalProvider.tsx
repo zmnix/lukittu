@@ -1,23 +1,28 @@
 'use client';
 import { DeleteLicenseConfirmModal } from '@/components/dashboard/licenses/LicenseDeleteConfirmModal';
+import { LicenseEmailDeliveryModal } from '@/components/dashboard/licenses/LicenseEmailDeliveryModal';
 import SetLicenseModal from '@/components/dashboard/licenses/list/SetLicenseModal';
 import { Customer, License, Product } from '@prisma/client';
 import { createContext, useState } from 'react';
 
-type LicenseToEdit = Omit<License, 'licenseKeyLookup'> & {
+type LicenseExtended = Omit<License, 'licenseKeyLookup'> & {
   products: Product[];
   customers: Customer[];
 };
 
 export const LicenseModalContext = createContext({
   setLicenseModalOpen: (open: boolean) => {},
-  setLicenseToEdit: (license: LicenseToEdit | null) => {},
+  setLicenseToEdit: (license: LicenseExtended | null) => {},
   setLicenseToDelete: (license: Omit<License, 'licenseKeyLookup'> | null) => {},
   setLicenseToDeleteModalOpen: (open: boolean) => {},
-  licenseToEdit: null as LicenseToEdit | null,
+  setLicenseEmailDeliveryModalOpen: (open: boolean) => {},
+  setLicenseEmailDelivery: (license: LicenseExtended | null) => {},
+  licenseToEdit: null as LicenseExtended | null,
   licenseModalOpen: false,
   licenseToDelete: null as Omit<License, 'licenseKeyLookup'> | null,
   licenseToDeleteModalOpen: false,
+  licenseEmailDeliveryModalOpen: false,
+  licenseEmailDelivery: null as LicenseExtended | null,
 });
 
 export const LicenseModalProvider = ({
@@ -32,9 +37,13 @@ export const LicenseModalProvider = ({
   const [licenseToDeleteModalOpen, setLicenseToDeleteModalOpen] =
     useState(false);
   const [licenseModalOpen, setLicenseModalOpen] = useState(false);
-  const [licenseToEdit, setLicenseToEdit] = useState<LicenseToEdit | null>(
+  const [licenseToEdit, setLicenseToEdit] = useState<LicenseExtended | null>(
     null,
   );
+  const [licenseEmailDeliveryModalOpen, setLicenseEmailDeliveryModalOpen] =
+    useState(false);
+  const [licenseEmailDelivery, setLicenseEmailDelivery] =
+    useState<LicenseExtended | null>(null);
 
   return (
     <LicenseModalContext.Provider
@@ -43,12 +52,17 @@ export const LicenseModalProvider = ({
         setLicenseModalOpen,
         setLicenseToDelete,
         setLicenseToDeleteModalOpen,
+        setLicenseEmailDeliveryModalOpen,
+        setLicenseEmailDelivery,
         licenseToEdit,
         licenseModalOpen,
         licenseToDelete,
         licenseToDeleteModalOpen,
+        licenseEmailDeliveryModalOpen,
+        licenseEmailDelivery,
       }}
     >
+      <LicenseEmailDeliveryModal />
       <DeleteLicenseConfirmModal />
       <SetLicenseModal />
       {children}

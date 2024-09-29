@@ -11,8 +11,9 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { Fragment } from 'react';
 
-interface LicenseKeyTemplateProps {
+interface LicenseDistributionEmailTemplateProps {
   customerName: string;
   licenseKey: string;
   products: string[];
@@ -21,19 +22,17 @@ interface LicenseKeyTemplateProps {
   businessLogoUrl: string;
 }
 
-export const LicenseKeyTemplate = ({
+export const LicenseDistributionEmailTemplate = ({
   customerName,
   licenseKey,
   products,
   teamName,
   businessMessage,
   businessLogoUrl,
-}: LicenseKeyTemplateProps) => (
+}: LicenseDistributionEmailTemplateProps) => (
   <Html>
     <Head />
-    <Preview>
-      Your License Key for {teamName} Products (Powered by Lukittu)
-    </Preview>
+    <Preview>Your License Key for {teamName} Products (via Lukittu)</Preview>
     {/* eslint-disable-next-line @next/next/no-head-element */}
     <head>
       <style>
@@ -94,7 +93,14 @@ export const LicenseKeyTemplate = ({
           )}
 
           {businessMessage && (
-            <Text style={customMessage}>{businessMessage}</Text>
+            <Text style={customMessage}>
+              {businessMessage.split('\n').map((line, index) => (
+                <Fragment key={index}>
+                  {line}
+                  <br />
+                </Fragment>
+              ))}
+            </Text>
           )}
 
           <Hr style={hr} />
@@ -132,7 +138,7 @@ export const LicenseKeyTemplate = ({
   </Html>
 );
 
-LicenseKeyTemplate.PreviewProps = {
+LicenseDistributionEmailTemplate.PreviewProps = {
   customerName: 'Kasperi Pohtinen',
   licenseKey: '12345-67890-12345-67890-12345',
   products: ['Product A', 'Product B', 'Product C'],
@@ -140,9 +146,9 @@ LicenseKeyTemplate.PreviewProps = {
   businessMessage:
     'We hope you enjoy using our products! Please let us know if there is anything else we can do for you.',
   businessLogoUrl: 'https://app.lukittu.com/logo_text_dark.png',
-} as LicenseKeyTemplateProps;
+} as LicenseDistributionEmailTemplateProps;
 
-export default LicenseKeyTemplate;
+export default LicenseDistributionEmailTemplate;
 
 const main = {
   backgroundColor: '#f1f5f9',

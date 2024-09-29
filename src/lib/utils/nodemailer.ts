@@ -7,9 +7,10 @@ interface Email {
   subject: string;
   html: string;
   text?: string;
+  fromName?: string;
 }
 
-export async function sendEmail({ to, subject, html, text }: Email) {
+export async function sendEmail({ to, subject, html, text, fromName }: Email) {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST as string,
@@ -24,7 +25,7 @@ export async function sendEmail({ to, subject, html, text }: Email) {
     const mailOptions: MailOptions = {
       from: {
         address: process.env.SMTP_FROM!,
-        name: process.env.SMTP_FROM_NAME!,
+        name: fromName || process.env.SMTP_FROM_NAME!,
       },
       to,
       subject,

@@ -12,5 +12,6 @@ export const setTeamSettingsSchema = (
     .object({
       strictProducts: z.boolean(),
       strictCustomers: z.boolean(),
+      emailMessage: z.string().max(1000).optional(),
     })
     .strict();

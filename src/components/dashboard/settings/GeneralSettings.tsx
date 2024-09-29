@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import {
   SetTeamSettingsSchema,
   setTeamSettingsSchema,
@@ -55,8 +56,11 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
     form.reset({
       strictCustomers: team?.settings?.strictCustomers ?? false,
       strictProducts: team?.settings?.strictProducts ?? false,
+      emailMessage: team?.settings?.emailMessage ?? '',
     });
   }, [form, team]);
+
+  const emailMessage = form.watch('emailMessage');
 
   const onSubmit = async (payload: SetTeamSettingsSchema) => {
     setLoading(true);
@@ -145,6 +149,30 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
                       <SelectItem value="false">False</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="emailMessage"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex justify-between pt-2">
+                    <FormLabel htmlFor="emailMessage">
+                      {t('dashboard.settings.email_delivery_message')}
+                    </FormLabel>
+                    <div className="flex justify-end text-xs text-muted-foreground">
+                      {emailMessage?.length ?? 0} / 1000
+                    </div>
+                  </div>
+                  <Textarea
+                    {...field}
+                    className="form-textarea"
+                    disabled={!team || loading}
+                    id="emailMessage"
+                    maxLength={1000}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

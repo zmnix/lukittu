@@ -338,6 +338,10 @@
       "delete_license": "Delete license",
       "add_license": "Add license",
       "edit_license": "Edit license",
+      "send_email_delivery": "Send email delivery",
+      "emails_delivered": "Emails delivered to all customers linked to this license.",
+      "email_delivery_confirm_title": "Send email delivery",
+      "email_delivery_confirm_description": "You are about to send email delivery to all customers linked to this license. They will receive an email with the license key including information about the linked products.",
       "search_product": "Search product...",
       "assigned_products": "Assigned products",
       "assigned_customers": "Assigned customers",
@@ -448,7 +452,8 @@
       "reset_public_key_confirm_title": "Reset public key",
       "reset_public_key_confirm_description": "You are about to reset your team's public key! This will generate a new public key and invalidate the old one. You will need to update the public key in your software to continue verifying licenses.",
       "public_key_reset": "Public key reset successfully",
-      "team_settings_updated": "Team settings updated"
+      "team_settings_updated": "Team settings updated",
+      "email_delivery_message": "Email delivery message"
     }
   }
 }

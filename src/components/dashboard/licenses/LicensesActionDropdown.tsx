@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { Customer, License, Product } from '@prisma/client';
-import { Copy, Edit, Ellipsis, Trash } from 'lucide-react';
+import { Copy, Edit, Ellipsis, Send, Trash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 import { toast } from 'sonner';
@@ -59,6 +59,18 @@ export const LicensesActionDropdown = ({
         >
           <Edit className="mr-2 h-4 w-4" />
           {t('dashboard.licenses.edit_license')}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="hover:cursor-pointer"
+          disabled={license?.customers?.filter((c) => c.email)?.length === 0}
+          onClick={(e) => {
+            e.stopPropagation();
+            ctx.setLicenseEmailDelivery(license);
+            ctx.setLicenseEmailDeliveryModalOpen(true);
+          }}
+        >
+          <Send className="mr-2 h-4 w-4" />
+          {t('dashboard.licenses.send_email_delivery')}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
