@@ -27,8 +27,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { CustomersActionDropdown } from '../CustomersActionDropdown';
 import AddCustomerButton from './AddCustomerButton';
-import { CustomersActionDropdown } from './CustomersActionDropdown';
 import CustomersMobileFiltersModal from './CustomersMobileFilters';
 
 export function CustomersTable() {

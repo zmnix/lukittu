@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import ProductActions from './ProductActions';
+import { ProductsActionDropdown } from '../ProductsActionDropdown';
 import { ProductDetails } from './ProductDetails';
 
 export default function ProductView() {
@@ -55,7 +55,7 @@ export default function ProductView() {
         ) : (
           <h1 className="truncate text-2xl font-bold">{product?.name}</h1>
         )}
-        <ProductActions product={product} />
+        <ProductsActionDropdown product={product!} />
       </div>
       <Separator className="mt-2" />
       <div className="mt-6">

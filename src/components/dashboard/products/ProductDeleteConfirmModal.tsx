@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -22,6 +22,7 @@ export function DeleteProductConfirmModal() {
   const [loading, setLoading] = useState(false);
   const [productNameConfirmation, setProductNameConfirmation] = useState('');
   const router = useRouter();
+  const pathname = usePathname();
 
   const product = ctx.productToDelete;
 
@@ -56,6 +57,10 @@ export function DeleteProductConfirmModal() {
         toast.error(res.message);
       } else {
         toast.success(t('dashboard.products.product_deleted'));
+
+        if (pathname.includes('/dashboard/products/')) {
+          router.push('/dashboard/products');
+        }
       }
 
       router.refresh();

@@ -34,8 +34,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import AddLicenseButton from './AddLicenseButton';
-import { LicensesActionDropdown } from './LicensesActionDropdown';
 import MobileFiltersModal from './LicensesMobileFiltersModal';
 
 export function LicensesTable() {

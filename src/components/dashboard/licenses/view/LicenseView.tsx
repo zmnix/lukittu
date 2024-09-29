@@ -16,7 +16,7 @@ import ProductsPreviewTable from '../../../shared/table/preview/ProductsPreviewT
 import RequestLogsPreviewTable from '../../../shared/table/preview/RequestLogsPreviewTable';
 import { RequestsAreaChart } from '../../statistics/RequestsAreaChart';
 import WorldMapChart from '../../statistics/WorldMapChart';
-import LicenseActions from './LicenseActions';
+import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import { LicenseDetails } from './LicenseDetails';
 
 export default function LicenseView() {
@@ -59,7 +59,7 @@ export default function LicenseView() {
         ) : (
           <h1 className="truncate text-2xl font-bold">{license?.licenseKey}</h1>
         )}
-        <LicenseActions license={license} />
+        <LicensesActionDropdown license={license!} />
       </div>
       <Separator className="mt-2" />
       <div className="mt-6">

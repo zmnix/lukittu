@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import CustomerActions from './CustomerActions';
+import { CustomersActionDropdown } from '../CustomersActionDropdown';
 import { CustomerDetails } from './CustomerDetails';
 
 export default function CustomerView() {
@@ -57,7 +57,7 @@ export default function CustomerView() {
             {customer?.fullName ?? customer?.email}
           </h1>
         )}
-        <CustomerActions customer={customer} />
+        <CustomersActionDropdown customer={customer!} />
       </div>
       <Separator className="mt-2" />
       <div className="mt-6">
