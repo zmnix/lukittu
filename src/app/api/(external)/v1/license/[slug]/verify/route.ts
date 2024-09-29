@@ -85,16 +85,8 @@ export async function POST(
         teamId_licenseKeyLookup: { teamId, licenseKeyLookup },
       },
       include: {
-        customers: {
-          where: {
-            id: customerId,
-          },
-        },
-        products: {
-          where: {
-            id: productId,
-          },
-        },
+        customers: true,
+        products: true,
         team: {
           include: {
             keyPair: {
@@ -102,6 +94,7 @@ export async function POST(
                 privateKey: false,
               },
             },
+            settings: true,
           },
         },
         requestLogs: {
@@ -114,8 +107,21 @@ export async function POST(
       },
     });
 
-    const hasCustomer = Boolean(license?.customers?.[0]);
-    const hasProduct = Boolean(license?.products?.[0]);
+    const settings = license?.team.settings;
+
+    const licenseHasCustomers = Boolean(license?.customers.length);
+    const licenseHasProducts = Boolean(license?.products.length);
+
+    const hasStrictProducts = settings?.strictProducts || false;
+    const hasStrictCustomers = settings?.strictCustomers || false;
+
+    const matchingCustomer = license?.customers.find(
+      (customer) => customer.id === customerId,
+    );
+
+    const matchingProduct = license?.products.find(
+      (product) => product.id === productId,
+    );
 
     if (!license) {
       return await handleResponse({
@@ -123,8 +129,8 @@ export async function POST(
         request,
         requestTime,
         teamId,
-        customerId: hasCustomer ? customerId : undefined,
-        productId: hasProduct ? productId : undefined,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
         status: RequestStatus.LICENSE_NOT_FOUND,
         response: {
           data: null,
@@ -138,6 +144,59 @@ export async function POST(
       });
     }
 
+    const strictModeNoCustomerId =
+      hasStrictCustomers && licenseHasCustomers && !customerId;
+    const noCustomerMatch =
+      licenseHasCustomers && customerId && !matchingCustomer;
+
+    if (strictModeNoCustomerId || noCustomerMatch) {
+      return await handleResponse({
+        body,
+        request,
+        requestTime,
+        teamId,
+        licenseKeyLookup,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.CUSTOMER_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Customer not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    const strictModeNoProductId =
+      hasStrictProducts && licenseHasProducts && !productId;
+    const noProductMatch = licenseHasProducts && productId && !matchingProduct;
+
+    if (strictModeNoProductId || noProductMatch) {
+      return await handleResponse({
+        body,
+        request,
+        requestTime,
+        teamId,
+        licenseKeyLookup,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.PRODUCT_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Product not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
     if (license.suspended) {
       return await handleResponse({
         body,
@@ -145,8 +204,8 @@ export async function POST(
         requestTime,
         teamId,
         licenseKeyLookup,
-        customerId: hasCustomer ? customerId : undefined,
-        productId: hasProduct ? productId : undefined,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
         status: RequestStatus.LICENSE_SUSPENDED,
         response: {
           data: null,
@@ -171,8 +230,8 @@ export async function POST(
           requestTime,
           teamId,
           licenseKeyLookup,
-          customerId: hasCustomer ? customerId : undefined,
-          productId: hasProduct ? productId : undefined,
+          customerId: matchingCustomer ? customerId : undefined,
+          productId: matchingProduct ? productId : undefined,
           status: RequestStatus.LICENSE_EXPIRED,
           response: {
             data: null,
@@ -213,8 +272,8 @@ export async function POST(
             requestTime,
             teamId,
             licenseKeyLookup,
-            customerId: hasCustomer ? customerId : undefined,
-            productId: hasProduct ? productId : undefined,
+            customerId: matchingCustomer ? customerId : undefined,
+            productId: matchingProduct ? productId : undefined,
             status: RequestStatus.LICENSE_EXPIRED,
             response: {
               data: null,
@@ -230,50 +289,6 @@ export async function POST(
       }
     }
 
-    if (customerId && !hasCustomer) {
-      return await handleResponse({
-        body,
-        request,
-        requestTime,
-        teamId,
-        licenseKeyLookup,
-        customerId: hasCustomer ? customerId : undefined,
-        productId: hasProduct ? productId : undefined,
-        status: RequestStatus.CUSTOMER_NOT_FOUND,
-        response: {
-          data: null,
-          result: {
-            timestamp: new Date(),
-            valid: false,
-            details: 'Customer not found',
-          },
-        },
-        httpStatus: HttpStatus.NOT_FOUND,
-      });
-    }
-
-    if (productId && !hasProduct) {
-      return await handleResponse({
-        body,
-        request,
-        requestTime,
-        teamId,
-        licenseKeyLookup,
-        customerId: hasCustomer ? customerId : undefined,
-        productId: hasProduct ? productId : undefined,
-        status: RequestStatus.PRODUCT_NOT_FOUND,
-        response: {
-          data: null,
-          result: {
-            timestamp: new Date(),
-            valid: false,
-            details: 'Product not found',
-          },
-        },
-        httpStatus: HttpStatus.NOT_FOUND,
-      });
-    }
-
     if (license.ipLimit) {
       const ipAddress = getIp();
       const existingIps = license.requestLogs.map((log) => log.ipAddress);
@@ -287,8 +302,8 @@ export async function POST(
           requestTime,
           teamId,
           licenseKeyLookup,
-          customerId: hasCustomer ? customerId : undefined,
-          productId: hasProduct ? productId : undefined,
+          customerId: matchingCustomer ? customerId : undefined,
+          productId: matchingProduct ? productId : undefined,
           status: RequestStatus.IP_LIMIT_REACHED,
           response: {
             data: null,
@@ -315,8 +330,8 @@ export async function POST(
       requestTime,
       teamId,
       licenseKeyLookup,
-      customerId: hasCustomer ? customerId : undefined,
-      productId: hasProduct ? productId : undefined,
+      customerId: matchingCustomer ? customerId : undefined,
+      productId: matchingProduct ? productId : undefined,
       status: RequestStatus.VALID,
       response: {
         data: null,
