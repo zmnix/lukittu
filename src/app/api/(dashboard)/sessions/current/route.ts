@@ -1,4 +1,3 @@
-import { getGravatarUrl } from '@/lib/providers/gravatar';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -10,9 +9,8 @@ import { NextResponse } from 'next/server';
 
 export type ISessionsGetCurrentSuccessResponse = {
   session: Omit<Session, 'sessionId'> & {
-    user: User & {
+    user: Omit<User, 'passwordHash'> & {
       teams: Team[];
-      avatarUrl: string;
     };
   };
 };
@@ -58,13 +56,7 @@ export async function GET(): Promise<
     }
 
     const response = {
-      session: {
-        ...session,
-        user: {
-          ...session.user,
-          avatarUrl: getGravatarUrl(session.user.email),
-        },
-      },
+      session,
     };
 
     return NextResponse.json(response);

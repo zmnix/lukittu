@@ -151,13 +151,13 @@ export default function AuditLogTable() {
                           <div className="z-10 grid grid-cols-[auto,1fr,auto] items-center gap-4">
                             <Avatar className="h-12 w-12 border">
                               <AvatarImage
-                                src={auditLog.user?.avatarUrl!}
+                                src={auditLog.user?.imageUrl!}
                                 asChild
                               >
-                                {auditLog.user?.avatarUrl && (
+                                {auditLog.user?.imageUrl && (
                                   <Image
                                     alt="Avatar"
-                                    src={auditLog.user.avatarUrl}
+                                    src={auditLog.user.imageUrl}
                                     fill
                                   />
                                 )}
@@ -355,13 +355,13 @@ export default function AuditLogTable() {
                           <TableCell className="flex items-center gap-2 truncate">
                             <Avatar className="h-8 w-8 border">
                               <AvatarImage
-                                src={auditLog.user?.avatarUrl!}
+                                src={auditLog.user?.imageUrl!}
                                 asChild
                               >
-                                {auditLog.user?.avatarUrl && (
+                                {auditLog.user?.imageUrl && (
                                   <Image
                                     alt="Avatar"
-                                    src={auditLog.user.avatarUrl}
+                                    src={auditLog.user.imageUrl}
                                     fill
                                   />
                                 )}

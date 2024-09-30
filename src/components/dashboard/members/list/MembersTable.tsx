@@ -157,11 +157,11 @@ export function MembersTable() {
                       <div className="z-10 flex items-center gap-2">
                         <Avatar className="h-12 w-12 border">
                           <AvatarImage
-                            src={'avatarUrl' in member ? member.avatarUrl! : ''}
+                            src={'imageUrl' in member ? member.imageUrl! : ''}
                             asChild
                           >
-                            {'avatarUrl' in member && member.avatarUrl && (
-                              <Image alt="Avatar" src={member.avatarUrl} fill />
+                            {'imageUrl' in member && member.imageUrl && (
+                              <Image alt="Avatar" src={member.imageUrl} fill />
                             )}
                           </AvatarImage>
                           <AvatarFallback className="bg-primary text-xs text-white">
@@ -233,18 +233,14 @@ export function MembersTable() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8 border">
                             <AvatarImage
-                              src={
-                                'avatarUrl' in member ? member.avatarUrl! : ''
-                              }
+                              src={'imageUrl' in member ? member.imageUrl! : ''}
                               asChild
                             >
-                              {'avatarUrl' in member && member.avatarUrl && (
+                              {'imageUrl' in member && member.imageUrl && (
                                 <Image
                                   alt="Avatar"
                                   src={
-                                    'avatarUrl' in member
-                                      ? member.avatarUrl
-                                      : ''
+                                    'imageUrl' in member ? member.imageUrl : ''
                                   }
                                   fill
                                 />

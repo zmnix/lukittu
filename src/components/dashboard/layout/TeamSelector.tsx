@@ -1,4 +1,5 @@
 'use client';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -15,11 +16,13 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { getInitials } from '@/lib/utils/text-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Team } from '@prisma/client';
 import { CommandList } from 'cmdk';
 import { Check, ChevronsUpDown, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useContext, useState } from 'react';
 import SetTeamModal from './SetTeamModal';
 
@@ -33,6 +36,10 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
   const [open, setOpen] = useState(false);
   const [createTeamModalOpen, setTeamModalOpen] = useState(false);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
+
+  const team = ctx.teams.find(
+    (team) => team.id.toString() === ctx.selectedTeam,
+  );
 
   return (
     <>
@@ -57,13 +64,25 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
             {ctx.loading ? (
               <Skeleton className="h-4 w-full" />
             ) : ctx.selectedTeam ? (
-              <span className="truncate">
-                {
-                  ctx.teams.find(
-                    (team) => team.id.toString() === ctx.selectedTeam,
-                  )?.name
-                }
-              </span>
+              <div className="grid grid-flow-col items-center gap-2">
+                <Avatar className="h-6 w-6 border">
+                  <AvatarImage src={team?.imageUrl!} asChild>
+                    {team?.imageUrl && (
+                      <Image
+                        alt="Team image"
+                        className="object-cover"
+                        height={64}
+                        src={team?.imageUrl}
+                        width={64}
+                      />
+                    )}
+                  </AvatarImage>
+                  <AvatarFallback className="bg-primary text-xs text-white">
+                    {getInitials(team?.name ?? '??')}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate">{team?.name}</span>
+              </div>
             ) : (
               t('general.select_team')
             )}
@@ -72,7 +91,7 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
         </PopoverTrigger>
         <PopoverContent
           className={cn(
-            'popover-content-width-full w-[200px] p-0',
+            'max-lg:popover-content-width-full w-[300px] p-0',
             fullWidth && 'w-full',
           )}
         >
@@ -112,7 +131,25 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
                               : 'opacity-0',
                           )}
                         />
-                        <span className="line-clamp-2">{team.name}</span>
+                        <div className="grid grid-flow-col items-center gap-2">
+                          <Avatar className="h-6 w-6 border">
+                            <AvatarImage src={team.imageUrl!} asChild>
+                              {team.imageUrl && (
+                                <Image
+                                  alt="Team image"
+                                  className="object-cover"
+                                  height={64}
+                                  src={team.imageUrl}
+                                  width={64}
+                                />
+                              )}
+                            </AvatarImage>
+                            <AvatarFallback className="bg-primary text-xs text-white">
+                              {getInitials(team.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="line-clamp-2">{team.name}</span>
+                        </div>
                         {team.id.toString() === ctx.selectedTeam && (
                           <Button
                             className="ml-auto h-5 text-xs text-foreground"

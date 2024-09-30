@@ -55,9 +55,9 @@ export function UserDropdown() {
                 variant="default"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.avatarUrl} asChild>
-                    {user?.avatarUrl && (
-                      <Image alt="Avatar" src={user.avatarUrl} fill />
+                  <AvatarImage src={user?.imageUrl!} asChild>
+                    {user?.imageUrl && (
+                      <Image alt="Avatar" src={user.imageUrl} fill />
                     )}
                   </AvatarImage>
                   <AvatarFallback className="bg-transparent">

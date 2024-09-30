@@ -1,7 +1,6 @@
 import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import prisma from '@/lib/database/prisma';
-import { getGravatarUrl } from '@/lib/providers/gravatar';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -14,11 +13,7 @@ import { UAParser } from 'ua-parser-js';
 
 export type IAuditLogsGetSuccessResponse = {
   auditLogs: (AuditLog & {
-    user:
-      | (Omit<User, 'passwordHash'> & {
-          avatarUrl: string | null;
-        })
-      | null;
+    user: Omit<User, 'passwordHash'> | null;
     alpha2: string | null;
     alpha3: string | null;
     country: string | null;
@@ -169,14 +164,7 @@ export async function GET(
         browser,
         os,
         device,
-        user: log.user
-          ? {
-              ...log.user,
-              avatarUrl: log.user?.email
-                ? getGravatarUrl(log.user.email)
-                : null,
-            }
-          : null,
+        user: log.user,
       };
     });
 

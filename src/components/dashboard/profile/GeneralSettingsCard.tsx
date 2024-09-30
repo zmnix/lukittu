@@ -1,4 +1,5 @@
 'use client';
+import { IUsersImageSetResponse } from '@/app/api/(dashboard)/users/image/route';
 import { IUsersUpdateResponse } from '@/app/api/(dashboard)/users/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,10 +20,9 @@ import {
 } from '@/lib/validation/profile/update-profile-schema';
 import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Edit, ExternalLink } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -35,6 +35,7 @@ export default function GeneralSettingsCard() {
   const [edit, setEdit] = useState(false);
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const form = useForm<UpdateProfileSchema>({
     resolver: zodResolver(updateProfileSchema(t)),
@@ -98,6 +99,47 @@ export default function GeneralSettingsCard() {
     }
   };
 
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/users/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = (await response.json()) as IUsersImageSetResponse;
+
+      if ('message' in data) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success(t('dashboard.profile.profile_picture_updated'));
+
+      authCtx.setSession((session) => ({
+        ...session!,
+        user: {
+          ...session!.user,
+          imageUrl: data.url,
+        },
+      }));
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileSelect = () => {
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    input.click();
+  };
+
   const isTouched = form.formState.isDirty || form.formState.isSubmitting;
 
   return (
@@ -124,31 +166,45 @@ export default function GeneralSettingsCard() {
                     {t('general.avatar')}
                   </div>
                   <Avatar className="h-32 w-32 border max-md:h-28 max-md:w-28">
-                    <AvatarImage src={user?.avatarUrl} asChild>
-                      {user?.avatarUrl && (
-                        <Image alt="Avatar" src={user.avatarUrl} fill />
+                    <AvatarImage src={user?.imageUrl!} asChild>
+                      {user?.imageUrl && (
+                        <Image
+                          alt="User image"
+                          className="object-cover"
+                          height={128}
+                          src={user?.imageUrl}
+                          width={128}
+                        />
                       )}
                     </AvatarImage>
                     <AvatarFallback className="bg-primary text-2xl text-white">
                       {getInitials(user?.fullName ?? '??')}
                     </AvatarFallback>
                   </Avatar>
-                </div>
-                <div className="max-w-md text-sm text-muted-foreground">
-                  {t.rich('dashboard.gravatar.description', {
-                    link: (children) => (
-                      <Button className="p-0" size="sm" variant="link" asChild>
-                        <Link
-                          href="https://gravatar.com"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {children}
-                          <ExternalLink className="ml-1 h-4 w-4" />
-                        </Link>
-                      </Button>
-                    ),
-                  })}
+                  <LoadingButton
+                    className="absolute bottom-0 left-0"
+                    disabled={uploading}
+                    pending={uploading}
+                    size="sm"
+                    variant="secondary"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleFileSelect();
+                    }}
+                  >
+                    {t('general.edit')}
+                  </LoadingButton>
+                  <Input
+                    accept="image/jpeg, image/png, image/webp"
+                    className="hidden"
+                    type="file"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleUpload(file);
+                      }
+                    }}
+                  />
                 </div>
               </div>
               <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">

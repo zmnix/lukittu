@@ -20,6 +20,7 @@ model User {
   emailVerified      Boolean      @default(false)
   fullName           String
   passwordHash       String?
+  imageUrl           String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   provider           Provider     @default(CREDENTIALS)
@@ -50,6 +51,7 @@ model Team {
   id          String       @id @default(uuid())
   name        String
   ownerId     String
+  imageUrl    String?
   owner       User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   users       User[]       @relation("TeamUsers")
   products    Product[]

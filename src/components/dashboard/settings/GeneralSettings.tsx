@@ -1,6 +1,8 @@
 import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
+import { ITeamsImageSetResponse } from '@/app/api/(dashboard)/teams/image/route';
 import { ITeamsSettingsEditResponse } from '@/app/api/(dashboard)/teams/settings/route';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Card,
   CardContent,
@@ -16,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -24,14 +27,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { getInitials } from '@/lib/utils/text-helpers';
 import {
   SetTeamSettingsSchema,
   setTeamSettingsSchema,
 } from '@/lib/validation/team/set-team-settings-schema';
+import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -41,8 +47,15 @@ interface GeneralSettingsProps {
 
 export default function GeneralSettings({ team }: GeneralSettingsProps) {
   const t = useTranslations();
+  const ctx = useContext(AuthContext);
 
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    setImageUrl(team?.imageUrl ?? null);
+  }, [team]);
 
   const form = useForm<SetTeamSettingsSchema>({
     resolver: zodResolver(setTeamSettingsSchema(t)),
@@ -88,6 +101,49 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
     }
   };
 
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/teams/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = (await response.json()) as ITeamsImageSetResponse;
+
+      if ('message' in data) {
+        toast.error(data.message);
+        return;
+      }
+
+      setImageUrl(data.url);
+      ctx.setSession((session) => ({
+        ...session!,
+        user: {
+          ...session!.user,
+          teams: session!.user.teams.map((t) =>
+            t.id === team?.id ? { ...t, imageUrl: data.url } : t,
+          ),
+        },
+      }));
+      toast.success(t('dashboard.settings.team_image_updated'));
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileSelect = () => {
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    input.click();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -101,6 +157,51 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
             className="space-y-2 max-md:px-2"
             onSubmit={form.handleSubmit(onSubmit)}
           >
+            <div className="relative">
+              <div className="mb-1 text-sm font-semibold">
+                {t('general.avatar')}
+              </div>
+              <Avatar className="h-32 w-32 border max-md:h-28 max-md:w-28">
+                <AvatarImage src={imageUrl!} asChild>
+                  {imageUrl && (
+                    <Image
+                      alt="Team image"
+                      className="object-cover"
+                      height={128}
+                      src={imageUrl}
+                      width={128}
+                    />
+                  )}
+                </AvatarImage>
+                <AvatarFallback className="bg-primary text-2xl text-white">
+                  {getInitials(team?.name ?? '??')}
+                </AvatarFallback>
+              </Avatar>
+              <LoadingButton
+                className="absolute bottom-0 left-0"
+                disabled={!team || uploading}
+                pending={uploading}
+                size="sm"
+                variant="secondary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleFileSelect();
+                }}
+              >
+                {t('general.edit')}
+              </LoadingButton>
+              <Input
+                accept="image/jpeg, image/png, image/webp"
+                className="hidden"
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleUpload(file);
+                  }
+                }}
+              />
+            </div>
             <FormField
               control={form.control}
               name="strictCustomers"

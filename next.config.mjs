@@ -15,7 +15,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'www.gravatar.com',
+        hostname: 'eu2.contabostorage.com',
         protocol: 'https',
       },
     ],

@@ -1,5 +1,4 @@
 import prisma from '@/lib/database/prisma';
-import { getGravatarUrl } from '@/lib/providers/gravatar';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -10,7 +9,6 @@ import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 type IRegularUser = Omit<User, 'passwordHash'> & {
-  avatarUrl: string | null;
   isOwner: boolean;
   lastLoginAt: Date | null;
 };
@@ -155,7 +153,6 @@ export async function GET(
     const combinedResults = [
       ...(team.users.map((user) => ({
         ...user,
-        avatarUrl: getGravatarUrl(user.email),
         isOwner: user.id === session.user.teams[0].ownerId,
         lastLoginAt: user.sessions[0]?.createdAt || null,
       })) as IRegularUser[]),
