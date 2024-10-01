@@ -53,26 +53,16 @@ export default function RequestLogsPreviewTable({
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
-
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
-
-        if (licenseId) {
-          searchParams.set('licenseId', licenseId);
-        }
-
-        if (timeRange) {
-          searchParams.set('timeRange', timeRange);
-        }
-
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', '10');
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: '10',
+          ...(sortColumn && { sortColumn }),
+          ...(sortDirection && { sortDirection }),
+          ...(licenseId && { licenseId }),
+          timeRange,
+        });
 
         const response = await fetch(`/api/logs?${searchParams.toString()}`);
 

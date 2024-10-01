@@ -66,30 +66,17 @@ export function LicensesTable() {
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
-
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
-
-        if (search) {
-          searchParams.set('search', search);
-        }
-
-        if (productIds.length) {
-          searchParams.set('productIds', productIds.join(','));
-        }
-
-        if (customerIds.length) {
-          searchParams.set('customerIds', customerIds.join(','));
-        }
-
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', pageSize.toString());
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString(),
+          ...(sortColumn && { sortColumn }),
+          ...(sortDirection && { sortDirection }),
+          ...(search && { search }),
+          ...(productIds.length && { productIds: productIds.join(',') }),
+          ...(customerIds.length && { customerIds: customerIds.join(',') }),
+        });
 
         const response = await fetch(
           `/api/licenses?${searchParams.toString()}`,

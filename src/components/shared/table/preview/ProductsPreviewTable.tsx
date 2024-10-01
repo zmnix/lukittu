@@ -43,22 +43,15 @@ export default function ProductsPreviewTable({
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
-
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
-
-        if (licenseId) {
-          searchParams.set('licenseId', licenseId);
-        }
-
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', '10');
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: '10',
+          ...(sortColumn && { sortColumn }),
+          ...(sortDirection && { sortDirection }),
+          ...(licenseId && { licenseId }),
+        });
 
         const response = await fetch(
           `/api/products?${searchParams.toString()}`,

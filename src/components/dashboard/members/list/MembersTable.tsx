@@ -54,14 +54,11 @@ export function MembersTable() {
   useEffect(() => {
     (async () => {
       try {
-        const searchParams = new URLSearchParams();
-
-        if (search) {
-          searchParams.set('search', search);
-        }
-
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', pageSize.toString());
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString(),
+          ...(search && { search }),
+        });
 
         const response = await fetch(
           `/api/teams/members?${searchParams.toString()}`,

@@ -59,15 +59,14 @@ export default function AuditLogTable() {
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
-
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString(),
+          ...(sortColumn && { sortColumn }),
+          ...(sortDirection && { sortDirection }),
+        });
 
         const response = await fetch(`/api/audit-logs?${searchParams}`);
         const data = (await response.json()) as IAuditLogsGetResponse;
@@ -84,7 +83,7 @@ export default function AuditLogTable() {
         setLoading(false);
       }
     })();
-  }, [sortColumn, sortDirection, page, t]);
+  }, [sortColumn, sortDirection, page, t, pageSize]);
 
   const toggleRow = (id: string) => {
     const newExpandedRows = new Set(expandedRows);

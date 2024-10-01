@@ -45,26 +45,16 @@ export default function LicensesPreviewTable({
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
-
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
-
-        if (productId) {
-          searchParams.set('productIds', productId);
-        }
-
-        if (customerId) {
-          searchParams.set('customerIds', customerId);
-        }
-
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', '10');
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: '10',
+          ...(sortColumn && { sortColumn }),
+          ...(sortDirection && { sortDirection }),
+          ...(productId && { productId }),
+          ...(customerId && { customerId }),
+        });
 
         const response = await fetch(
           `/api/licenses?${searchParams.toString()}`,

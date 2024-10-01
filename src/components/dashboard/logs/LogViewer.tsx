@@ -52,10 +52,10 @@ export default function LogViewer() {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const searchParams = new URLSearchParams();
-
-      searchParams.set('page', page.toString());
-      searchParams.set('pageSize', '10');
+      const searchParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: '10',
+      });
 
       const response = await fetch(`/api/logs?${searchParams.toString()}`);
 

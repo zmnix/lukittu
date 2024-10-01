@@ -57,22 +57,15 @@ export function CustomersTable() {
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const searchParams = new URLSearchParams();
-        if (sortColumn) {
-          searchParams.set('sortColumn', sortColumn);
-        }
-
-        if (sortDirection) {
-          searchParams.set('sortDirection', sortDirection);
-        }
-
-        if (search) {
-          searchParams.set('search', search);
-        }
-
-        searchParams.set('page', page.toString());
-        searchParams.set('pageSize', pageSize.toString());
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString(),
+          ...(sortColumn && { sortColumn }),
+          ...(sortDirection && { sortDirection }),
+          ...(search && { search }),
+        });
 
         const response = await fetch(
           `/api/customers?${searchParams.toString()}`,
