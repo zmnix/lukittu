@@ -312,19 +312,25 @@ export default function LogViewer() {
                   </div>
                 </div>
                 <div className="mt-2">
-                  <Button
-                    className="p-0"
-                    disabled={!selectedLog.licenseId}
-                    variant="link"
-                    asChild
-                  >
-                    <Link
-                      className="flex items-center gap-2"
-                      href={`/dashboard/licenses/${selectedLog.licenseId}`}
-                    >
-                      {t('general.license')}
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
+                  <Button className="p-0" variant="link" asChild>
+                    {!selectedLog.licenseId ? (
+                      <Button
+                        className="flex items-center gap-2"
+                        variant="link"
+                        disabled
+                      >
+                        {t('general.license')}
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Link
+                        className="flex items-center gap-2"
+                        href={`/dashboard/licenses/${selectedLog.licenseId}`}
+                      >
+                        {t('general.license')}
+                        <ExternalLink className="h-4 w-4" />
+                      </Link>
+                    )}
                   </Button>
                 </div>
                 <Separator className="my-4" />
