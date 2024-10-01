@@ -1,30 +1,14 @@
 import prisma from '@/lib/database/prisma';
+import { deleteFileFromS3, uploadFileToS3 } from '@/lib/providers/aws-s3';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import {
-  DeleteObjectCommand,
-  DeleteObjectCommandInput,
-  PutObjectCommand,
-  PutObjectCommandInput,
-  S3Client,
-} from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
-
-const s3Client = new S3Client({
-  endpoint: process.env.CONTABO_STORAGE_ENDPOINT,
-  region: 'default',
-  credentials: {
-    accessKeyId: process.env.CONTABO_ACCESS_KEY!,
-    secretAccessKey: process.env.CONTABO_SECRET_KEY!,
-  },
-  forcePathStyle: true,
-});
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1 MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -138,27 +122,19 @@ export async function POST(request: NextRequest) {
 
     if (team.imageUrl) {
       const imageUrlParts = team.imageUrl.split('/');
-      const fileKey = imageUrlParts[imageUrlParts.length - 1];
-
-      const deleteParams = {
-        Bucket: process.env.CONTABO_BUCKET_NAME!,
-        Key: `teams/${fileKey}`,
-      } as DeleteObjectCommandInput;
-
-      await s3Client.send(new DeleteObjectCommand(deleteParams));
+      const fileKey = `teams/${imageUrlParts[imageUrlParts.length - 1]}`;
+      await deleteFileFromS3(process.env.CONTABO_BUCKET_NAME!, fileKey);
     }
 
     const imageUuid = randomUUID();
 
     const fileKey = `teams/${imageUuid}.${file.type.split('/')[1]}`;
-    const uploadParams = {
-      Bucket: process.env.CONTABO_BUCKET_NAME!,
-      Key: fileKey,
-      Body: processedImageBuffer,
-      ContentType: file.type,
-    } as PutObjectCommandInput;
-
-    await s3Client.send(new PutObjectCommand(uploadParams));
+    await uploadFileToS3(
+      process.env.CONTABO_BUCKET_NAME!,
+      fileKey,
+      processedImageBuffer,
+      file.type,
+    );
 
     const imageUrl = `${process.env.CONTABO_PUBLIC_ENDPOINT}:${process.env.CONTABO_BUCKET_NAME}/${fileKey}`;
 
