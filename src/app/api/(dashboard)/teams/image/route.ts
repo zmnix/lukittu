@@ -163,3 +163,90 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  try {
+    const selectedTeam = getSelectedTeam();
+
+    if (!selectedTeam) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              id: selectedTeam,
+              deletedAt: null,
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const team = session.user.teams[0];
+
+    if (!team.imageUrl) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const imageUrlParts = team.imageUrl.split('/');
+    const fileKey = `teams/${imageUrlParts[imageUrlParts.length - 1]}`;
+    await deleteFileFromS3(process.env.CONTABO_BUCKET_NAME!, fileKey);
+
+    await prisma.team.update({
+      where: {
+        id: team.id,
+      },
+      data: {
+        imageUrl: null,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+      },
+      { status: HttpStatus.OK },
+    );
+  } catch (error) {
+    logger.error("Error occurred in 'teams/image' route", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}

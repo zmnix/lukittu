@@ -163,7 +163,9 @@
     "copied_to_clipboard": "Copied to clipboard",
     "metadata_updated": "Metadata updated",
     "expires_at": "Expires at",
-    "duration": "Duration"
+    "duration": "Duration",
+    "upload_photo": "Upload a photo",
+    "remove_photo": "Remove photo"
   },
   "auth": {
     "oauth": {
@@ -293,6 +295,7 @@
     "profile": {
       "profile_updated_success": "Profile updated successfully",
       "profile_picture_updated": "Profile picture updated",
+      "profile_picture_removed": "Profile picture removed",
       "leave_team_success": "Left team successfully",
       "delete_team_success": "Team deleted successfully",
       "transfer_ownership_success": "Ownership transferred successfully",
@@ -454,7 +457,8 @@
       "public_key_reset": "Public key reset successfully",
       "team_settings_updated": "Team settings updated",
       "email_delivery_message": "Email delivery message",
-      "team_image_updated": "Team image updated"
+      "team_image_updated": "Team image updated",
+      "team_image_removed": "Team image removed"
     }
   }
 }

@@ -6,6 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Form,
   FormControl,
   FormField,
@@ -20,7 +26,7 @@ import {
 } from '@/lib/validation/profile/update-profile-schema';
 import { AuthContext } from '@/providers/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Edit } from 'lucide-react';
+import { Edit, Trash2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
@@ -133,10 +139,46 @@ export default function GeneralSettingsCard() {
     }
   };
 
+  const handleRemove = async () => {
+    setUploading(true);
+    try {
+      const response = await fetch('/api/users/image', {
+        method: 'DELETE',
+      });
+
+      const data = (await response.json()) as IUsersImageSetResponse;
+
+      if ('message' in data) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success(t('dashboard.profile.profile_picture_removed'));
+
+      authCtx.setSession((session) => ({
+        ...session!,
+        user: {
+          ...session!.user,
+          imageUrl: null,
+        },
+      }));
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleFileSelect = () => {
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg, image/png, image/webp';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        await handleUpload(file);
+      }
+    };
     input.click();
   };
 
@@ -181,30 +223,32 @@ export default function GeneralSettingsCard() {
                       {getInitials(user?.fullName ?? '??')}
                     </AvatarFallback>
                   </Avatar>
-                  <LoadingButton
-                    className="absolute bottom-0 left-0"
-                    disabled={uploading}
-                    pending={uploading}
-                    size="sm"
-                    variant="secondary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleFileSelect();
-                    }}
-                  >
-                    {t('general.edit')}
-                  </LoadingButton>
-                  <Input
-                    accept="image/jpeg, image/png, image/webp"
-                    className="hidden"
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleUpload(file);
-                      }
-                    }}
-                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <LoadingButton
+                        className="absolute bottom-0 left-0"
+                        disabled={uploading}
+                        pending={uploading}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        {t('general.edit')}
+                      </LoadingButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleFileSelect}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        {t('general.upload_photo')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={!user?.imageUrl || uploading}
+                        onClick={handleRemove}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t('general.remove_photo')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <div className="flex min-h-10 items-center text-sm max-sm:flex-col max-sm:items-start max-sm:gap-2">

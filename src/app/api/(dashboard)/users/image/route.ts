@@ -133,3 +133,70 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export type IUsersImageDeleteSuccessResponse = {
+  success: boolean;
+};
+
+export type IUsersImageDeleteResponse =
+  | ErrorResponse
+  | IUsersImageDeleteSuccessResponse;
+
+export async function DELETE(
+  request: NextRequest,
+): Promise<NextResponse<IUsersImageDeleteResponse>> {
+  const t = await getTranslations({ locale: getLanguage() });
+
+  try {
+    const session = await getSession({ user: true });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    const user = session.user;
+
+    if (!user.imageUrl) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const imageUrlParts = user.imageUrl.split('/');
+    const fileKey = `users/${imageUrlParts[imageUrlParts.length - 1]}`;
+
+    await deleteFileFromS3(process.env.CONTABO_BUCKET_NAME!, fileKey);
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        imageUrl: null,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+      },
+      { status: HttpStatus.OK },
+    );
+  } catch (error) {
+    logger.error("Error occurred in 'users/image' route", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
