@@ -177,11 +177,11 @@ model Heartbeat {
   licenseId        String
   license          License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
   ipAddress        String?
-  clientIdentifier String
+  deviceIdentifier String
   lastBeatAt       DateTime @default(now())
   createdAt        DateTime @default(now())
 
-  @@unique([licenseId, clientIdentifier])
+  @@unique([licenseId, deviceIdentifier])
 }
 
 model AuditLog {

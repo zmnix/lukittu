@@ -18,6 +18,7 @@ import { RequestsAreaChart } from '../../statistics/RequestsAreaChart';
 import WorldMapChart from '../../statistics/WorldMapChart';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import { LicenseDetails } from './LicenseDetails';
+import LicenseHeartbeatsTable from './LicenseHeartbeatsTable';
 
 export default function LicenseView() {
   const params = useParams();
@@ -69,6 +70,7 @@ export default function LicenseView() {
               <ProductsPreviewTable licenseId={licenseId} />
               <CustomersPreviewTable licenseId={licenseId} />
               <RequestLogsPreviewTable licenseId={licenseId} />
+              <LicenseHeartbeatsTable licenseId={licenseId} />
               <RequestsAreaChart licenseId={licenseId} />
               <WorldMapChart licenseId={licenseId} />
             </div>

@@ -16,15 +16,15 @@ export const licenseHeartbeatSchema = () =>
               'License key must be in the format of XXXXX-XXXXX-XXXXX-XXXXX-XXXXX',
           },
         ),
-      clientIdentifier: z
+      deviceIdentifier: z
         .string({
-          message: 'Client identifier must be a string',
+          message: 'Device identifier must be a string',
         })
         .min(10, {
-          message: 'Client identifier must be at least 10 characters',
+          message: 'Device identifier must be at least 10 characters',
         })
         .max(1000, {
-          message: 'Client identifier must be less than 1000 characters',
+          message: 'Device identifier must be less than 1000 characters',
         }),
       customerId: z
         .string({ message: 'Customer UUID must be a string' })

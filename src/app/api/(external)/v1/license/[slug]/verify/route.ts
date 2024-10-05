@@ -130,7 +130,7 @@ export async function POST(
       });
     }
 
-    const { licenseKey, customerId, productId, challenge, clientIdentifier } =
+    const { licenseKey, customerId, productId, challenge, deviceIdentifier } =
       validated.data;
 
     const licenseKeyLookup = generateHMAC(`${licenseKey}:${teamId}`);
@@ -365,7 +365,7 @@ export async function POST(
       }
     }
 
-    if (clientIdentifier) {
+    if (deviceIdentifier) {
       if (license.seats) {
         const heartbeatTimeout = settings?.heartbeatTimeout || 60; // Timeout in minutes
 
@@ -376,7 +376,7 @@ export async function POST(
         );
 
         const seatsIncludesClient = activeSeats.some(
-          (seat) => seat.clientIdentifier === clientIdentifier,
+          (seat) => seat.deviceIdentifier === deviceIdentifier,
         );
 
         if (!seatsIncludesClient && activeSeats.length >= license.seats) {
@@ -404,9 +404,9 @@ export async function POST(
 
       await prisma.heartbeat.upsert({
         where: {
-          licenseId_clientIdentifier: {
+          licenseId_deviceIdentifier: {
             licenseId: license.id,
-            clientIdentifier,
+            deviceIdentifier,
           },
         },
         update: {
@@ -414,7 +414,7 @@ export async function POST(
           ipAddress: getIp(),
         },
         create: {
-          clientIdentifier,
+          deviceIdentifier,
           lastBeatAt: new Date(),
           licenseId: license.id,
         },

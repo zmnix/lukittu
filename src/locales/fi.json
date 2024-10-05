@@ -71,6 +71,7 @@
     "too_many_requests": "Too many requests! Please try again later."
   },
   "general": {
+    "heartbeats": "Heartbeats",
     "invitation_sent": "Invitation sent",
     "selected": "Selected",
     "avatar": "Avatar",
@@ -167,6 +168,7 @@
     "expires_at": "Expires at",
     "duration": "Duration",
     "upload_photo": "Upload a photo",
+    "device_identifier": "Device identifier",
     "remove_photo": "Remove photo"
   },
   "auth": {
@@ -341,6 +343,7 @@
       "no_licenses_assigned": "No licenses assigned"
     },
     "licenses": {
+      "last_beat_at": "Last beat at",
       "delete_license": "Delete license",
       "add_license": "Add license",
       "edit_license": "Edit license",
@@ -366,6 +369,7 @@
       "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage.",
       "no_products_assigned": "No products assigned",
       "no_customers_assigned": "No customers assigned",
+      "no_heartbeat_data": "No heartbeat data",
       "not_yet_activated": "Not yet activated",
       "license_updated": "License updated",
       "license_deleted": "License deleted",
