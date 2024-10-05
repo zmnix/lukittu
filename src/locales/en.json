@@ -283,6 +283,7 @@
       "documentation": "Documentation",
       "discord": "Discord",
       "logs": "Logs",
+      "blacklist": "Blacklist",
       "settings": "Settings"
     },
     "teams": {

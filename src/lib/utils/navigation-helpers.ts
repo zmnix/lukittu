@@ -1,5 +1,6 @@
 import { discordIcon } from '@/components/shared/Icons';
 import {
+  Ban,
   BookOpenText,
   KeyRound,
   LayoutGrid,
@@ -76,6 +77,18 @@ export function getMenuList(pathname: string): Group[] {
           translation: 'customers',
           active: pathname === '/dashboard/customers',
           icon: Users,
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupTranslation: '',
+      menus: [
+        {
+          href: '/dashboard/blacklist',
+          translation: 'blacklist',
+          active: pathname === '/dashboard/blacklist',
+          icon: Ban,
           submenus: [],
         },
       ],
