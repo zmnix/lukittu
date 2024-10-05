@@ -83,7 +83,8 @@ export async function PUT(
       );
     }
 
-    const { strictCustomers, strictProducts, emailMessage } = validated.data;
+    const { strictCustomers, strictProducts, emailMessage, heartbeatTimeout } =
+      validated.data;
 
     const updatedSettings = await prisma.settings.update({
       where: {
@@ -92,6 +93,7 @@ export async function PUT(
       data: {
         strictCustomers,
         strictProducts,
+        heartbeatTimeout,
         emailMessage: emailMessage || null,
       },
     });

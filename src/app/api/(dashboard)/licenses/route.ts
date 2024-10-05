@@ -256,6 +256,8 @@ export async function POST(
       licenseKey,
       metadata,
       productIds,
+      seats,
+      suspended,
     } = body;
 
     const selectedTeam = getSelectedTeam();
@@ -380,8 +382,9 @@ export async function POST(
         licenseKey: encryptedLicenseKey,
         licenseKeyLookup: hmac,
         metadata,
-        suspended: false,
+        suspended,
         teamId: team.id,
+        seats,
         products: productIds.length
           ? { connect: productIds.map((id) => ({ id })) }
           : undefined,

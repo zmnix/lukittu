@@ -195,6 +195,7 @@ export async function PUT(
       metadata,
       productIds,
       suspended,
+      seats,
     } = body;
 
     const selectedTeam = getSelectedTeam();
@@ -331,6 +332,7 @@ export async function PUT(
         licenseKeyLookup: hmac,
         metadata,
         suspended,
+        seats,
         products: {
           set: productIds.map((id) => ({ id })),
         },

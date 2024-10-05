@@ -12,6 +12,10 @@ export const setTeamSettingsSchema = (
     .object({
       strictProducts: z.boolean(),
       strictCustomers: z.boolean(),
+      heartbeatTimeout: z
+        .number()
+        .positive({ message: t('validation.heartbeat_timeout_positive') })
+        .int(),
       emailMessage: z.string().max(1000).optional(),
     })
     .strict();

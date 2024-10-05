@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -74,6 +75,7 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
     form.reset({
       strictCustomers: team?.settings?.strictCustomers ?? false,
       strictProducts: team?.settings?.strictProducts ?? false,
+      heartbeatTimeout: team?.settings?.heartbeatTimeout ?? 60,
       emailMessage: team?.settings?.emailMessage ?? '',
     });
   }, [form, team]);
@@ -294,6 +296,33 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
                       <SelectItem value="false">False</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="heartbeatTimeout"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('dashboard.settings.heartbeat_timeout')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={!team || loading}
+                      min={1}
+                      placeholder={t('dashboard.settings.heartbeat_timeout')}
+                      type="number"
+                      onChange={(e) => {
+                        if (!e.target.value || e.target.value === '0') {
+                          e.target.value = '1';
+                        }
+                        form.setValue('heartbeatTimeout', +e.target.value);
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

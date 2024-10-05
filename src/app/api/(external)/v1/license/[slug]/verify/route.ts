@@ -35,7 +35,7 @@ export async function POST(
 
   try {
     if (!teamId || !regex.uuidV4.test(teamId)) {
-      return await handleResponse({
+      return handleResponse({
         body: null,
         request,
         requestTime,
@@ -56,7 +56,7 @@ export async function POST(
     const validated = await verifyLicenseSchema().safeParseAsync(body);
 
     if (!validated.success) {
-      return await handleResponse({
+      return handleResponse({
         body,
         request,
         requestTime,
@@ -73,7 +73,40 @@ export async function POST(
       });
     }
 
-    const { licenseKey, customerId, productId, challenge } = validated.data;
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      include: {
+        keyPair: {
+          omit: {
+            privateKey: false,
+          },
+        },
+        settings: true,
+      },
+    });
+
+    const settings = team?.settings;
+
+    if (!team || !settings) {
+      return handleResponse({
+        body,
+        request,
+        requestTime,
+        status: RequestStatus.TEAM_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Team not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    const { licenseKey, customerId, productId, challenge, clientIdentifier } =
+      validated.data;
 
     const licenseKeyLookup = generateHMAC(`${licenseKey}:${teamId}`);
 
@@ -87,16 +120,7 @@ export async function POST(
       include: {
         customers: true,
         products: true,
-        team: {
-          include: {
-            keyPair: {
-              omit: {
-                privateKey: false,
-              },
-            },
-            settings: true,
-          },
-        },
+        heartbeats: true,
         requestLogs: {
           where: {
             createdAt: {
@@ -106,8 +130,6 @@ export async function POST(
         },
       },
     });
-
-    const settings = license?.team.settings;
 
     const licenseHasCustomers = Boolean(license?.customers.length);
     const licenseHasProducts = Boolean(license?.products.length);
@@ -124,7 +146,7 @@ export async function POST(
     );
 
     if (!license) {
-      return await handleResponse({
+      return handleResponse({
         body,
         request,
         requestTime,
@@ -150,7 +172,7 @@ export async function POST(
       licenseHasCustomers && customerId && !matchingCustomer;
 
     if (strictModeNoCustomerId || noCustomerMatch) {
-      return await handleResponse({
+      return handleResponse({
         body,
         request,
         requestTime,
@@ -176,7 +198,7 @@ export async function POST(
     const noProductMatch = licenseHasProducts && productId && !matchingProduct;
 
     if (strictModeNoProductId || noProductMatch) {
-      return await handleResponse({
+      return handleResponse({
         body,
         request,
         requestTime,
@@ -198,7 +220,7 @@ export async function POST(
     }
 
     if (license.suspended) {
-      return await handleResponse({
+      return handleResponse({
         body,
         request,
         requestTime,
@@ -224,7 +246,7 @@ export async function POST(
       const currentDate = new Date();
 
       if (currentDate.getTime() > expirationDate.getTime()) {
-        return await handleResponse({
+        return handleResponse({
           body,
           request,
           requestTime,
@@ -266,7 +288,7 @@ export async function POST(
         const currentDate = new Date();
 
         if (currentDate.getTime() > expirationDate.getTime()) {
-          return await handleResponse({
+          return handleResponse({
             body,
             request,
             requestTime,
@@ -296,7 +318,7 @@ export async function POST(
 
       // TODO: @KasperiP: Maybe add separate table for storing IP addresses because user's probably want to also remove old IP addresses
       if (!existingIps.includes(ipAddress) && ipLimitReached) {
-        return await handleResponse({
+        return handleResponse({
           body,
           request,
           requestTime,
@@ -318,13 +340,69 @@ export async function POST(
       }
     }
 
-    const privateKey = license.team.keyPair?.privateKey!;
+    if (clientIdentifier) {
+      if (license.seats) {
+        const heartbeatTimeout = settings?.heartbeatTimeout || 60; // Timeout in minutes
+
+        const activeSeats = license.heartbeats.filter(
+          (heartbeat) =>
+            new Date(heartbeat.lastBeatAt).getTime() >
+            new Date(Date.now() - heartbeatTimeout * 60 * 1000).getTime(),
+        );
+
+        const seatsIncludesClient = activeSeats.some(
+          (seat) => seat.clientIdentifier === clientIdentifier,
+        );
+
+        if (!seatsIncludesClient && activeSeats.length >= license.seats) {
+          return handleResponse({
+            body,
+            request,
+            requestTime,
+            teamId,
+            licenseKeyLookup,
+            customerId: matchingCustomer ? customerId : undefined,
+            productId: matchingProduct ? productId : undefined,
+            status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
+            response: {
+              data: null,
+              result: {
+                timestamp: new Date(),
+                valid: false,
+                details: 'License seat limit reached',
+              },
+            },
+            httpStatus: HttpStatus.FORBIDDEN,
+          });
+        }
+      }
+
+      await prisma.heartbeat.upsert({
+        where: {
+          licenseId_clientIdentifier: {
+            licenseId: license.id,
+            clientIdentifier,
+          },
+        },
+        update: {
+          lastBeatAt: new Date(),
+          ipAddress: getIp(),
+        },
+        create: {
+          clientIdentifier,
+          lastBeatAt: new Date(),
+          licenseId: license.id,
+        },
+      });
+    }
+
+    const privateKey = team.keyPair?.privateKey!;
 
     const challengeResponse = challenge
       ? signChallenge(challenge, privateKey)
       : undefined;
 
-    return await handleResponse({
+    return handleResponse({
       body,
       request,
       requestTime,
@@ -345,10 +423,13 @@ export async function POST(
       httpStatus: HttpStatus.OK,
     });
   } catch (error) {
-    logger.error("Error occurred in 'license/verify' route", error);
+    logger.error(
+      "Error occurred in '(external)/v1/license/[slug]/verify' route",
+      error,
+    );
 
     if (error instanceof SyntaxError) {
-      return await handleResponse({
+      return handleResponse({
         body: null,
         request,
         requestTime,
@@ -365,7 +446,7 @@ export async function POST(
       });
     }
 
-    return await handleResponse({
+    return handleResponse({
       body: null,
       request,
       requestTime,
@@ -502,19 +583,21 @@ async function handleResponse({
     },
   };
 
-  await logRequest({
-    requestBody: body,
-    responseBody,
-    requestTime,
-    status,
-    customerId,
-    productId,
-    licenseKeyLookup,
-    teamId,
-    statusCode: httpStatus,
-    pathName: request.nextUrl.pathname,
-    method: request.method,
-  });
+  if (teamId) {
+    logRequest({
+      requestBody: body,
+      responseBody,
+      requestTime,
+      status,
+      customerId,
+      productId,
+      licenseKeyLookup,
+      teamId,
+      statusCode: httpStatus,
+      pathName: request.nextUrl.pathname,
+      method: request.method,
+    });
+  }
 
   return NextResponse.json(responseBody, { status: httpStatus });
 }

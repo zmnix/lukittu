@@ -66,7 +66,8 @@
     "invitation_already_accepted": "Invitation has already been accepted!",
     "invitation_for_different_email": "Invitation is for a different email address!",
     "file_too_large": "File is too large! Maximum file size is 1MB.",
-    "invalid_file_type": "Invalid file type! Only PNG, JPEG, and WEBP are allowed."
+    "invalid_file_type": "Invalid file type! Only PNG, JPEG, and WEBP are allowed.",
+    "heartbeat_timeout_positive": "Heartbeat timeout must be at least 1 minute!"
   },
   "general": {
     "invitation_sent": "Invitation sent",
@@ -369,7 +370,8 @@
       "license_created": "License created",
       "search_license": "Search license...",
       "delete_license_confirm_title": "Delete license",
-      "delete_license_confirm_description": "You are about to delete license <strong>{license}</strong>! This will <strong>permanently delete</strong> this license. This action cannot be undone."
+      "delete_license_confirm_description": "You are about to delete license <strong>{license}</strong>! This will <strong>permanently delete</strong> this license. This action cannot be undone.",
+      "seats": "Seats (concurrent users)"
     },
     "logs": {
       "no_logs": "No logs",
@@ -445,6 +447,7 @@
       "send_invite": "Send invite"
     },
     "settings": {
+      "heartbeat_timeout": "Heartbeat timeout (minutes)",
       "base_64_encoded": "Base64 Encoded",
       "plain_format": "Plain Format (PEM)",
       "rsa_public_key": "RSA 2048 Public Key",

@@ -72,6 +72,7 @@ export default function SetLicenseModal() {
       expirationDays: null,
       expirationStart: null,
       ipLimit: null,
+      seats: null,
       expirationType: 'NEVER',
       metadata: [],
     },
@@ -111,6 +112,7 @@ export default function SetLicenseModal() {
         form.setValue('expirationDays', ctx.licenseToEdit.expirationDays);
       }
 
+      form.setValue('seats', ctx.licenseToEdit.seats);
       form.setValue('ipLimit', ctx.licenseToEdit.ipLimit);
       form.setValue(
         'metadata',
@@ -450,7 +452,31 @@ export default function SetLicenseModal() {
                   </FormItem>
                 )}
               />
-
+              <FormField
+                control={form.control}
+                name="seats"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('dashboard.licenses.seats')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        min={1}
+                        placeholder={t('dashboard.licenses.seats')}
+                        type="number"
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          if (!e.target.value || e.target.value === '0') {
+                            return form.setValue('seats', null);
+                          }
+                          form.setValue('seats', +e.target.value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormItem>
                 <FormLabel>
                   {t('dashboard.licenses.assigned_products')}

@@ -69,14 +69,15 @@ model Team {
 }
 
 model Settings {
-  id              String   @id @default(uuid())
-  teamId          String   @unique
-  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  strictCustomers Boolean  @default(false)
-  strictProducts  Boolean  @default(false)
-  emailMessage    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(uuid())
+  teamId           String   @unique
+  team             Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  heartbeatTimeout Int      @default(60)
+  strictCustomers  Boolean  @default(false)
+  strictProducts   Boolean  @default(false)
+  emailMessage     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model KeyPair {
@@ -155,6 +156,7 @@ model License {
   expirationStart  LicenseExpirationStart @default(CREATION)
   expirationDate   DateTime?
   expirationDays   Int?
+  seats            Int?
   suspended        Boolean                @default(false)
   teamId           String
   team             Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -165,8 +167,21 @@ model License {
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
   requestLogs      RequestLog[]
+  heartbeats       Heartbeat[]
 
   @@unique([teamId, licenseKeyLookup])
+}
+
+model Heartbeat {
+  id               String   @id @default(uuid())
+  licenseId        String
+  license          License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  ipAddress        String?
+  clientIdentifier String
+  lastBeatAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  @@unique([licenseId, clientIdentifier])
 }
 
 model AuditLog {
@@ -188,7 +203,7 @@ model AuditLog {
   action       AuditLogAction
   createdAt    DateTime           @default(now())
 
-  @@index([teamId])
+  @@index([teamId, createdAt])
 }
 
 model RequestLog {
@@ -217,7 +232,7 @@ model RequestLog {
   customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt    DateTime      @default(now())
 
-  @@index([teamId])
+  @@index([teamId, createdAt])
 }
 
 enum RequestMethod {
@@ -285,4 +300,6 @@ enum RequestStatus {
   CUSTOMER_NOT_FOUND
   LICENSE_EXPIRED
   LICENSE_SUSPENDED
+  MAXIMUM_CONCURRENT_SEATS
+  TEAM_NOT_FOUND
 }

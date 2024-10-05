@@ -20,11 +20,12 @@ export const setLicenseSchema = (
       expirationType: z.enum(['DATE', 'DURATION', 'NEVER']),
       expirationStart: z.enum(['CREATION', 'ACTIVATION']).nullable(),
       expirationDate: z.coerce.date().nullable(),
-      expirationDays: z.number().positive().nullable(),
+      expirationDays: z.number().positive().min(1).int().nullable(),
+      seats: z.number().min(1).positive().int().nullable(),
       suspended: z.boolean(),
       productIds: z.array(z.string().uuid()),
       customerIds: z.array(z.string().uuid()),
-      ipLimit: z.number().positive().nullable(),
+      ipLimit: z.number().positive().int().nullable(),
       metadata: metadataSchema(t),
     })
     .strict()
