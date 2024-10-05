@@ -9,7 +9,7 @@ services:
     networks:
       - lukittu-network
 
-  postgresDB:
+  lukittuPostgres:
     container_name: lukittuPostgres
     platform: linux/amd64 #for platform error on Apple M1 chips
     restart: unless-stopped
@@ -23,6 +23,15 @@ services:
       - postgres-data:/var/lib/postgresql/data/
     ports:
       - '127.0.0.1:5434:5432'
+    networks:
+      - lukittu-network
+
+  lukittuRedis:
+    container_name: lukittuRedis
+    image: redis/redis-stack-server:latest
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:6382:6379'
     networks:
       - lukittu-network
 

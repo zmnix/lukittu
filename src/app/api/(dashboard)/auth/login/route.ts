@@ -2,8 +2,9 @@ import prisma from '@/lib/database/prisma';
 import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
 import { createSession } from '@/lib/utils/auth';
 import { verifyPassword } from '@/lib/utils/crypto';
-import { getLanguage } from '@/lib/utils/header-helpers';
+import { getIp, getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
+import { isRateLimited } from '@/lib/utils/rate-limit';
 import { loginSchema, LoginSchema } from '@/lib/validation/auth/login-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
@@ -34,6 +35,21 @@ export async function POST(
         },
         { status: HttpStatus.BAD_REQUEST },
       );
+    }
+
+    const ip = getIp();
+    if (ip) {
+      const key = `login:${ip}`;
+      const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes
+
+      if (isLimited) {
+        return NextResponse.json(
+          {
+            message: t('validation.too_many_requests'),
+          },
+          { status: HttpStatus.TOO_MANY_REQUESTS },
+        );
+      }
     }
 
     const { email, password, rememberMe, token } = validated.data;

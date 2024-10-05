@@ -67,7 +67,8 @@
     "invitation_for_different_email": "Invitation is for a different email address!",
     "file_too_large": "File is too large! Maximum file size is 1MB.",
     "invalid_file_type": "Invalid file type! Only PNG, JPEG, and WEBP are allowed.",
-    "heartbeat_timeout_positive": "Heartbeat timeout must be at least 1 minute!"
+    "heartbeat_timeout_positive": "Heartbeat timeout must be at least 1 minute!",
+    "too_many_requests": "Too many requests! Please try again later."
   },
   "general": {
     "invitation_sent": "Invitation sent",

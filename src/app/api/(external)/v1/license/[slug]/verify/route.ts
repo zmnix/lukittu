@@ -6,6 +6,7 @@ import { proxyCheck } from '@/lib/providers/proxycheck';
 import { generateHMAC, signChallenge } from '@/lib/utils/crypto';
 import { getIp, getOrigin, getUserAgent } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
+import { isRateLimited } from '@/lib/utils/rate-limit';
 import {
   VerifyLicenseSchema,
   verifyLicenseSchema,
@@ -71,6 +72,30 @@ export async function POST(
         },
         httpStatus: HttpStatus.BAD_REQUEST,
       });
+    }
+
+    const ip = getIp();
+    if (ip) {
+      const key = `license-verify:${ip}`;
+      const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
+
+      if (isLimited) {
+        return handleResponse({
+          body,
+          request,
+          requestTime,
+          status: RequestStatus.RATE_LIMIT,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'Rate limited',
+            },
+          },
+          httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+        });
+      }
     }
 
     const team = await prisma.team.findUnique({

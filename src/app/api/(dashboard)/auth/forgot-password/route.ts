@@ -1,8 +1,9 @@
 import ResetPasswordTemplate from '@/emails/ResetPasswordTemplate';
 import prisma from '@/lib/database/prisma';
-import { getLanguage } from '@/lib/utils/header-helpers';
+import { getIp, getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { sendEmail } from '@/lib/utils/nodemailer';
+import { isRateLimited } from '@/lib/utils/rate-limit';
 import {
   forgotPasswordSchema,
   IForgotPasswordSchema,
@@ -44,6 +45,21 @@ export async function POST(
     }
 
     const { email } = validated.data;
+
+    const ip = getIp();
+    if (ip) {
+      const key = `forgot-password:${email}`;
+      const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes
+
+      if (isLimited) {
+        return NextResponse.json(
+          {
+            message: t('validation.too_many_requests'),
+          },
+          { status: HttpStatus.TOO_MANY_REQUESTS },
+        );
+      }
+    }
 
     const user = await prisma.user.findUnique({
       where: { email },
