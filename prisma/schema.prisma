@@ -61,6 +61,7 @@ model Team {
   auditLogs   AuditLog[]
   invitations Invitation[]
   apiKeys     ApiKey[]
+  heartbeats  Heartbeat[]
   settings    Settings?
   keyPair     KeyPair?
   deletedAt   DateTime?
@@ -176,12 +177,15 @@ model Heartbeat {
   id               String   @id @default(uuid())
   licenseId        String
   license          License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  teamId           String
+  team             Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   ipAddress        String?
   deviceIdentifier String
   lastBeatAt       DateTime @default(now())
   createdAt        DateTime @default(now())
 
   @@unique([licenseId, deviceIdentifier])
+  @@index([teamId])
 }
 
 model AuditLog {

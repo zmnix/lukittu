@@ -1,7 +1,7 @@
 import {
   ILicenseHeartbeatsGetResponse,
   ILicenseHeartbeatsGetSuccessResponse,
-} from '@/app/api/(dashboard)/licenses/[slug]/heartbeats/route';
+} from '@/app/api/(dashboard)/heartbeats/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -22,12 +22,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-interface LicenseHeartbeatsTableProps {
-  licenseId: string;
+interface HeartbeatPreviewTableProps {
+  licenseId?: string;
 }
-export default function LicenseHeartbeatsTable({
+export default function HeartbeatPreviewTable({
   licenseId,
-}: LicenseHeartbeatsTableProps) {
+}: HeartbeatPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
 
@@ -51,10 +51,11 @@ export default function LicenseHeartbeatsTable({
           pageSize: '10',
           ...(sortColumn && { sortColumn }),
           ...(sortDirection && { sortDirection }),
+          ...(licenseId && { licenseId }),
         });
 
         const response = await fetch(
-          `/api/licenses/${licenseId}/heartbeats?${searchParams.toString()}`,
+          `/api/heartbeats?${searchParams.toString()}`,
         );
 
         const data = (await response.json()) as ILicenseHeartbeatsGetResponse;

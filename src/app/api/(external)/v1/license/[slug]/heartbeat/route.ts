@@ -351,6 +351,7 @@ export async function POST(
         ipAddress: getIp(),
       },
       create: {
+        teamId: team.id,
         deviceIdentifier,
         lastBeatAt: new Date(),
         licenseId: license.id,

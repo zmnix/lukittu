@@ -414,6 +414,7 @@ export async function POST(
           ipAddress: getIp(),
         },
         create: {
+          teamId,
           deviceIdentifier,
           lastBeatAt: new Date(),
           licenseId: license.id,

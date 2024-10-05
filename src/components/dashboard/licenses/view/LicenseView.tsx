@@ -12,13 +12,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import CustomersPreviewTable from '../../../shared/table/preview/CustomersPreviewTable';
+import HeartbeatPreviewTable from '../../../shared/table/preview/HeartbeatPreviewTable';
 import ProductsPreviewTable from '../../../shared/table/preview/ProductsPreviewTable';
 import RequestLogsPreviewTable from '../../../shared/table/preview/RequestLogsPreviewTable';
 import { RequestsAreaChart } from '../../statistics/RequestsAreaChart';
 import WorldMapChart from '../../statistics/WorldMapChart';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import { LicenseDetails } from './LicenseDetails';
-import LicenseHeartbeatsTable from './LicenseHeartbeatsTable';
 
 export default function LicenseView() {
   const params = useParams();
@@ -70,7 +70,7 @@ export default function LicenseView() {
               <ProductsPreviewTable licenseId={licenseId} />
               <CustomersPreviewTable licenseId={licenseId} />
               <RequestLogsPreviewTable licenseId={licenseId} />
-              <LicenseHeartbeatsTable licenseId={licenseId} />
+              <HeartbeatPreviewTable licenseId={licenseId} />
               <RequestsAreaChart licenseId={licenseId} />
               <WorldMapChart licenseId={licenseId} />
             </div>

@@ -457,12 +457,14 @@ export default function SetLicenseModal() {
                 name="seats"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('dashboard.licenses.seats')}</FormLabel>
+                    <FormLabel>
+                      {t('dashboard.licenses.concurrent_users')}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         min={1}
-                        placeholder={t('dashboard.licenses.seats')}
+                        placeholder={t('dashboard.licenses.concurrent_users')}
                         type="number"
                         value={field.value ?? ''}
                         onChange={(e) => {

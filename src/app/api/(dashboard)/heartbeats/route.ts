@@ -24,23 +24,11 @@ export type ILicenseHeartbeatsGetResponse =
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
 ): Promise<NextResponse<ILicenseHeartbeatsGetResponse>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const licenseId = params.slug;
-
-    if (!licenseId || !regex.uuidV4.test(licenseId)) {
-      return NextResponse.json(
-        {
-          message: t('validation.bad_request'),
-        },
-        { status: HttpStatus.BAD_REQUEST },
-      );
-    }
-
     const selectedTeam = getSelectedTeam();
 
     if (!selectedTeam) {
@@ -52,6 +40,7 @@ export async function GET(
       );
     }
 
+    const licenseId = searchParams.get('licenseId') as string;
     const allowedPageSizes = [10, 25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
     const allowedSortColumns = ['lastBeatAt'];
@@ -60,6 +49,15 @@ export async function GET(
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
+
+    if (licenseId && !regex.uuidV4.test(licenseId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
@@ -94,20 +92,13 @@ export async function GET(
             },
             include: {
               settings: true,
-              licenses: {
-                where: {
-                  id: licenseId,
+              heartbeats: {
+                where: whereWithoutTeamCheck,
+                orderBy: {
+                  [sortColumn]: sortDirection,
                 },
-                include: {
-                  heartbeats: {
-                    where: whereWithoutTeamCheck,
-                    orderBy: {
-                      [sortColumn]: sortDirection,
-                    },
-                    skip,
-                    take,
-                  },
-                },
+                skip,
+                take,
               },
             },
           },
@@ -135,25 +126,17 @@ export async function GET(
 
     const team = session.user.teams[0];
 
-    if (!team.licenses.length) {
-      return NextResponse.json(
-        {
-          message: t('validation.license_not_found'),
-        },
-        { status: HttpStatus.NOT_FOUND },
-      );
-    }
-
     const totalResults = await prisma.heartbeat.count({
       where: {
         ...whereWithoutTeamCheck,
+        teamId: selectedTeam,
       },
     });
 
-    const heartbeats = session.user.teams[0].licenses[0].heartbeats;
+    const heartbeats = team.heartbeats;
 
     const heartbeatsWithStatus = heartbeats.map((heartbeat) => {
-      const heartbeatTimeout = team.settings?.heartbeatTimeout || 60; // Minutes
+      const heartbeatTimeout = team.settings?.heartbeatTimeout || 60;
 
       const lastBeatAt = new Date(heartbeat.lastBeatAt);
       const now = new Date();

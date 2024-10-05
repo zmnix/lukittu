@@ -377,7 +377,7 @@
       "search_license": "Search license...",
       "delete_license_confirm_title": "Delete license",
       "delete_license_confirm_description": "You are about to delete license <strong>{license}</strong>! This will <strong>permanently delete</strong> this license. This action cannot be undone.",
-      "seats": "Seats (concurrent users)"
+      "concurrent_users": "Concurrent users"
     },
     "logs": {
       "no_logs": "No logs",
