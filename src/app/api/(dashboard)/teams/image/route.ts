@@ -1,10 +1,12 @@
 import prisma from '@/lib/database/prisma';
 import { deleteFileFromS3, uploadFileToS3 } from '@/lib/providers/aws-s3';
+import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -147,12 +149,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      {
-        url: imageUrl,
-      },
-      { status: HttpStatus.OK },
-    );
+    const response = {
+      url: imageUrl,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.UPDATE_TEAM_PICTURE,
+      targetId: team.id,
+      targetType: AuditLogTargetType.TEAM,
+      requestBody: null,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {
     logger.error("Error occurred in 'teams/image' route", error);
     return NextResponse.json(

@@ -432,7 +432,8 @@
         "cancel_invitation": "cancelled invitation",
         "accept_invitation": "accepted invitation",
         "reset_public_key": "reset public key",
-        "update_team_settings": "updated team settings"
+        "update_team_settings": "updated team settings",
+        "update_team_picture": "updated team picture"
       }
     },
     "members": {
