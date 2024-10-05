@@ -7,18 +7,15 @@ import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
 type CardData = {
+  activeLicenses: number;
   totalLicenses: number;
   totalProducts: number;
   totalCustomers: number;
-  requestsLast24h: {
-    success: number;
-    failed: number;
-  };
   trends: {
+    activeLicensesPreviousPeriod: number;
     licensesLastWeek: number;
     productsLastWeek: number;
     customersLastWeek: number;
-    requestsComparedToPreviousDay: number;
   };
 };
 
@@ -54,6 +51,7 @@ export async function GET(): Promise<
               deletedAt: null,
             },
             include: {
+              settings: true,
               products: {
                 select: {
                   createdAt: true,
@@ -65,21 +63,8 @@ export async function GET(): Promise<
                 },
               },
               licenses: {
-                select: {
-                  createdAt: true,
-                },
-              },
-              requestLogs: {
-                where: {
-                  createdAt: {
-                    gte: new Date(
-                      new Date().setDate(new Date().getDate() - 1 * 2),
-                    ),
-                  },
-                },
-                select: {
-                  status: true,
-                  createdAt: true,
+                include: {
+                  heartbeats: true,
                 },
               },
             },
@@ -103,23 +88,31 @@ export async function GET(): Promise<
     }
 
     const team = session.user.teams[0];
+    const settings = team.settings;
+    const heartbeatTimeout = settings?.heartbeatTimeout || 60; // Minutes
 
-    const requestsLast24h = team.requestLogs.filter(
-      (request) =>
-        new Date(request.createdAt) >=
-        new Date(new Date().setDate(new Date().getDate() - 1)),
+    const heartbeats = team.licenses
+      .flatMap((license) => license.heartbeats)
+      .filter(
+        (heartbeat) =>
+          new Date(heartbeat.lastBeatAt) >=
+          new Date(new Date().getTime() - heartbeatTimeout * 60 * 2 * 1000),
+      );
+
+    const activeHeartbeats = heartbeats.filter(
+      (heartbeat) =>
+        new Date(heartbeat.lastBeatAt) >=
+        new Date(new Date().getTime() - heartbeatTimeout * 60 * 1000),
     );
+
+    const activeLicensesPreviousPeriod =
+      heartbeats.length - activeHeartbeats.length;
 
     const data: CardData = {
       totalLicenses: team.licenses.length,
       totalProducts: team.products.length,
       totalCustomers: team.customers.length,
-      requestsLast24h: {
-        success: requestsLast24h.filter((request) => request.status === 'VALID')
-          .length,
-        failed: requestsLast24h.filter((request) => request.status !== 'VALID')
-          .length,
-      },
+      activeLicenses: activeHeartbeats.length,
       trends: {
         licensesLastWeek: team.licenses.filter(
           (license) =>
@@ -136,8 +129,7 @@ export async function GET(): Promise<
             new Date(customer.createdAt) >=
             new Date(new Date().setDate(new Date().getDate() - 7)),
         ).length,
-        requestsComparedToPreviousDay:
-          team.requestLogs.length - requestsLast24h.length,
+        activeLicensesPreviousPeriod,
       },
     };
 

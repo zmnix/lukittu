@@ -244,6 +244,7 @@
   },
   "dashboard": {
     "dashboard": {
+      "active_licenses": "Active licenses",
       "requests": "Requests",
       "requests_description": "Showing license verify requests divided by status.",
       "last_hour": "Last hour",
@@ -267,7 +268,6 @@
       "total_licenses": "Total licenses",
       "total_customers": "Total customers",
       "total_products": "Total products",
-      "requests_24h": "Requests last 24h",
       "recently_activity": "Recent activity",
       "recently_activity_description": "Showing recent license verify requests."
     },
