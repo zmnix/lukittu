@@ -77,7 +77,7 @@ export default function LogViewer() {
         const groupedLogs = uniqueLogs.reduce(
           (acc, log) => {
             const date = new Date(log.createdAt).toDateString();
-            acc[date] = acc[date];
+            acc[date] = acc[date] ?? [];
             acc[date].push(log);
             return acc;
           },
