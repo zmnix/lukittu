@@ -25,7 +25,7 @@ export default function TeamSettingsCard() {
           cookie.includes('selectedTeam'),
         );
 
-        const selectedTeamId = selectedTeam?.split('=')?.[1];
+        const selectedTeamId = selectedTeam?.split('=')[1];
 
         if (!selectedTeamId) {
           throw new Error(t('validation.unauthorized'));

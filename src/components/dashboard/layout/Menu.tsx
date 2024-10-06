@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 'use client';
 import ConfettiButton from '@/components/shared/ConfettiButton';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +62,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                     `dashboard.navigation.${groupTranslation as Exclude<typeof groupTranslation, ''>}`,
                   )}
                 </p>
-              ) : !isOpen && isOpen !== undefined && groupTranslation ? (
+              ) : !isOpen && groupTranslation ? (
                 <TooltipProvider>
                   <Tooltip delayDuration={100}>
                     <TooltipTrigger className="w-full">

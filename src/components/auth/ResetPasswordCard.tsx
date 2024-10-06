@@ -92,7 +92,7 @@ export default function ResetPasswordCard() {
           });
         }
 
-        return setFormError(res.message ?? t('general.error_occurred'));
+        return setFormError(res.message);
       }
 
       setPasswordResetSuccess(true);

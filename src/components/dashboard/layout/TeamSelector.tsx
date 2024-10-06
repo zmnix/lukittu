@@ -72,7 +72,7 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
                         alt="Team image"
                         className="object-cover"
                         height={64}
-                        src={team?.imageUrl}
+                        src={team.imageUrl}
                         width={64}
                       />
                     )}

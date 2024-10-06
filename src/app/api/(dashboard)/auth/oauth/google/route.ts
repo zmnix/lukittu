@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const accessTokenData: IGoogleAuthenticationResponse =
       (await accessTokenRes.json()) as any;
 
-    if (!accessTokenData?.access_token) {
+    if (!accessTokenData.access_token) {
       return NextResponse.redirect(
         new URL('/auth/login?error=server_error&provider=google', baseUrl),
       );

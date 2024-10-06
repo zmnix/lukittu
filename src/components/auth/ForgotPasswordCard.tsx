@@ -81,7 +81,7 @@ export default function ForgotPasswordCard() {
             message: res.message,
           });
         }
-        return setFormError(res.message ?? t('general.error_occurred'));
+        return setFormError(res.message);
       }
 
       setSuccessModalOpen(true);

@@ -144,8 +144,8 @@ export async function POST(
     const licenseHasCustomers = Boolean(license?.customers.length);
     const licenseHasProducts = Boolean(license?.products.length);
 
-    const hasStrictProducts = settings?.strictProducts || false;
-    const hasStrictCustomers = settings?.strictCustomers || false;
+    const hasStrictProducts = settings.strictProducts || false;
+    const hasStrictCustomers = settings.strictCustomers || false;
 
     const matchingCustomer = license?.customers.find(
       (customer) => customer.id === customerId,
@@ -310,7 +310,7 @@ export async function POST(
     }
 
     if (license.seats) {
-      const heartbeatTimeout = settings?.heartbeatTimeout || 60;
+      const heartbeatTimeout = settings.heartbeatTimeout || 60;
 
       const activeSeats = license.heartbeats.filter(
         (heartbeat) =>

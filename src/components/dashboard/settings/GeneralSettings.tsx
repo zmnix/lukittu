@@ -73,10 +73,10 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
 
   useEffect(() => {
     form.reset({
-      strictCustomers: team?.settings?.strictCustomers ?? false,
-      strictProducts: team?.settings?.strictProducts ?? false,
-      heartbeatTimeout: team?.settings?.heartbeatTimeout ?? 60,
-      emailMessage: team?.settings?.emailMessage ?? '',
+      strictCustomers: team?.settings.strictCustomers ?? false,
+      strictProducts: team?.settings.strictProducts ?? false,
+      heartbeatTimeout: team?.settings.heartbeatTimeout ?? 60,
+      emailMessage: team?.settings.emailMessage ?? '',
     });
   }, [form, team]);
 

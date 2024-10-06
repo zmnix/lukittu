@@ -42,7 +42,7 @@ export const proxyCheck = async (ipAddress: string | null) => {
   );
   const data = (await response.json()) as ProxyCheckResponse;
 
-  const formatted = data?.[ipAddress] as ProxyCheckAsn;
+  const formatted = data[ipAddress] as ProxyCheckAsn;
 
   return formatted;
 };

@@ -65,7 +65,7 @@ export const LicensesActionDropdown = ({
         </DropdownMenuItem>
         <DropdownMenuItem
           className="hover:cursor-pointer"
-          disabled={license?.customers?.filter((c) => c.email)?.length === 0}
+          disabled={license.customers.filter((c) => c.email).length === 0}
           onClick={(e) => {
             e.stopPropagation();
             ctx.setLicenseEmailDelivery(license);

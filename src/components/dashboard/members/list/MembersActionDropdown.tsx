@@ -70,7 +70,7 @@ export const MembersActionDropdown = ({
             {t('dashboard.members.kick_member')}
           </DropdownMenuItem>
         )}
-        {'isInvitation' in member && member.isInvitation && (
+        {'isInvitation' in member && (
           <DropdownMenuItem
             className="text-destructive hover:cursor-pointer"
             onClick={(e) => {

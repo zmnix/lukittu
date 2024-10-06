@@ -92,17 +92,17 @@ export default function SetTeamModal({
         }
 
         onOpenChange(false);
-        return toast.error(res.message ?? t('general.error_occurred'));
+        return toast.error(res.message);
       }
 
-      if ('team' in res && authCtx.session && !teamToEdit) {
+      if ('team' in res && authCtx.session) {
         if (teamToEdit) {
           authCtx.setSession({
             ...authCtx.session,
             user: {
               ...authCtx.session.user,
               teams: authCtx.session.user.teams.map((team) =>
-                team.id === res.team?.id ? res.team : team,
+                team.id === res.team.id ? res.team : team,
               ),
             },
           });

@@ -154,7 +154,7 @@ export async function GET(
       ...(team.users.map((user) => ({
         ...user,
         isOwner: user.id === session.user.teams[0].ownerId,
-        lastLoginAt: user.sessions[0]?.createdAt || null,
+        lastLoginAt: user.sessions[0]?.createdAt,
       })) as IRegularUser[]),
       ...(team.invitations.map((invitation) => ({
         id: invitation.id,

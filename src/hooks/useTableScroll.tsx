@@ -38,9 +38,7 @@ export const useTableScroll = (buffer: number = 20) => {
       handleScroll();
 
       return () => {
-        if (tableContainer) {
-          tableContainer.removeEventListener('scroll', onScroll);
-        }
+        tableContainer.removeEventListener('scroll', onScroll);
         window.removeEventListener('resize', handleResize);
         observer.disconnect();
       };

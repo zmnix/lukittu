@@ -146,11 +146,11 @@ export async function GET(
         const osObj = parser.getOS();
         const deviceObj = parser.getDevice();
 
-        browser = browserObj?.name
-          ? `${browserObj.name} ${browserObj?.version ?? ''}`
+        browser = browserObj.name
+          ? `${browserObj.name} ${browserObj.version ?? ''}`
           : null;
-        os = osObj?.name ? `${osObj.name} ${osObj?.version ?? ''}` : null;
-        device = deviceObj?.type ?? null;
+        os = osObj.name ? `${osObj.name} ${osObj.version ?? ''}` : null;
+        device = deviceObj.type ?? null;
       }
 
       return {

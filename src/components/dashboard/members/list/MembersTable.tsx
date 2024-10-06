@@ -94,7 +94,7 @@ export function MembersTable() {
     (member) =>
       'isOwner' in member &&
       member.isOwner &&
-      member.id === ctx.session?.user?.id,
+      member.id === ctx.session?.user.id,
   );
 
   return (
@@ -163,17 +163,15 @@ export function MembersTable() {
                           </AvatarImage>
                           <AvatarFallback className="bg-primary text-xs text-white">
                             {getInitials(
-                              'fullName' in member
-                                ? (member?.fullName ?? '??')
-                                : '??',
+                              'fullName' in member ? member.fullName : '??',
                             )}
                           </AvatarFallback>
                         </Avatar>
                         <div className="z-10 grid">
-                          <p className="truncate font-medium">{`${member?.email}`}</p>
+                          <p className="truncate font-medium">{`${member.email}`}</p>
                           <div className="flex items-center gap-1">
                             <div className="grid text-xs font-semibold text-muted-foreground">
-                              <p className="truncate">{member?.email}</p>
+                              <p className="truncate">{member.email}</p>
                             </div>
                           </div>
                         </div>
@@ -187,7 +185,7 @@ export function MembersTable() {
                           </Badge>
                         </span>
                         <MembersActionDropdown
-                          isSelf={member.id === ctx.session?.user?.id}
+                          isSelf={member.id === ctx.session?.user.id}
                           isTeamOwner={isTeamOwner}
                           member={member}
                         />
@@ -245,9 +243,7 @@ export function MembersTable() {
                             </AvatarImage>
                             <AvatarFallback className="bg-primary text-xs text-white">
                               {getInitials(
-                                'fullName' in member
-                                  ? (member?.fullName ?? '??')
-                                  : '??',
+                                'fullName' in member ? member.fullName : '??',
                               )}
                             </AvatarFallback>
                           </Avatar>
@@ -297,7 +293,7 @@ export function MembersTable() {
                         )}
                       >
                         <MembersActionDropdown
-                          isSelf={member.id === ctx.session?.user?.id}
+                          isSelf={member.id === ctx.session?.user.id}
                           isTeamOwner={isTeamOwner}
                           member={member}
                         />

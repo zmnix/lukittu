@@ -113,7 +113,7 @@ export default function LoginCard() {
         }
 
         // Fallback should never happen
-        return setFormError(res.message ?? t('general.error_occurred'));
+        return setFormError(res.message);
       }
 
       // Redirect to dashboard

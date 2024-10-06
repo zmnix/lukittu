@@ -24,7 +24,7 @@ export function Sidebar() {
     <aside
       className={cn(
         'sticky left-0 top-0 z-20 h-dvh shrink-0 -translate-x-full transform-gpu bg-background transition-[width] duration-300 ease-in-out max-lg:hidden lg:translate-x-0',
-        ctx?.open === false ? 'w-[90px]' : 'w-72',
+        ctx.open === false ? 'w-[90px]' : 'w-72',
       )}
     >
       <div className="relative flex h-full flex-col overflow-y-auto border-r px-3 py-4">

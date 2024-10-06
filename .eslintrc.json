@@ -1,10 +1,18 @@
 {
-  "extends": "next/core-web-vitals",
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "project": ["tsconfig.json"],
+    "sourceType": "module"
+  },
   "rules": {
     "prefer-const": "error",
     "react/react-in-jsx-scope": "off",
     "spaced-comment": "error",
-    "no-unused-vars": ["error", { "args": "none" }],
+    "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+    "@typescript-eslint/no-unnecessary-condition": "warn",
     "no-unused-expressions": "error",
     "no-unneeded-ternary": "error",
     "no-useless-return": "error",

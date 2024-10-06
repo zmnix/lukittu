@@ -77,7 +77,7 @@ export default function LogViewer() {
         const groupedLogs = uniqueLogs.reduce(
           (acc, log) => {
             const date = new Date(log.createdAt).toDateString();
-            acc[date] = acc[date] || [];
+            acc[date] = acc[date];
             acc[date].push(log);
             return acc;
           },
@@ -306,9 +306,7 @@ export default function LogViewer() {
                     <p className="text-sm text-muted-foreground">
                       {t('dashboard.licenses.status')}
                     </p>
-                    <p className="text-sm">
-                      {selectedLog.statusCode ?? t('general.unknown')}
-                    </p>
+                    <p className="text-sm">{selectedLog.statusCode}</p>
                   </div>
                 </div>
                 <div className="mt-2">

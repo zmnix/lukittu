@@ -214,7 +214,7 @@ export default function GeneralSettingsCard() {
                           alt="User image"
                           className="object-cover"
                           height={128}
-                          src={user?.imageUrl}
+                          src={user.imageUrl}
                           width={128}
                         />
                       )}

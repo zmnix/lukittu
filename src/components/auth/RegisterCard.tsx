@@ -103,7 +103,7 @@ export default function RegisterCard() {
           });
         }
 
-        return setFormError(res.message ?? t('general.error_occurred'));
+        return setFormError(res.message);
       }
 
       setSuccessModalOpen(true);

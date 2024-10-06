@@ -58,8 +58,9 @@ export default function SetProductModal() {
         name: ctx.productToEdit.name,
         url: ctx.productToEdit.url ?? '',
         metadata:
-          (ctx.productToEdit.metadata as { key: string; value: string }[]) ??
-          [],
+          (ctx.productToEdit.metadata as
+            | { key: string; value: string }[]
+            | null) ?? [],
       });
     }
   }, [ctx.productToEdit, form]);

@@ -56,33 +56,28 @@ export const getLicenseStatus = (
     return 'ACTIVE';
   }
 
-  if (license.expirationType === 'DURATION') {
-    const hasStartedExpiring = Boolean(license.expirationDate);
+  const hasStartedExpiring = Boolean(license.expirationDate);
 
-    if (hasStartedExpiring) {
-      if (
-        currentDate.getTime() >
-        new Date(license.expirationDate!).getTime() - 30 * 24 * 60 * 60 * 1000
-      ) {
-        return 'EXPIRING';
-      }
-
-      if (currentDate.getTime() > new Date(license.expirationDate!).getTime()) {
-        return 'EXPIRED';
-      }
-    }
-
+  if (hasStartedExpiring) {
     if (
-      currentDate.getTime() - lastActiveDate.getTime() >
-      30 * 24 * 60 * 60 * 1000
+      currentDate.getTime() >
+      new Date(license.expirationDate!).getTime() - 30 * 24 * 60 * 60 * 1000
     ) {
-      return 'INACTIVE';
+      return 'EXPIRING';
     }
 
-    return 'ACTIVE';
+    if (currentDate.getTime() > new Date(license.expirationDate!).getTime()) {
+      return 'EXPIRED';
+    }
   }
 
-  // Should never reach this point
+  if (
+    currentDate.getTime() - lastActiveDate.getTime() >
+    30 * 24 * 60 * 60 * 1000
+  ) {
+    return 'INACTIVE';
+  }
+
   return 'ACTIVE';
 };
 

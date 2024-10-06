@@ -141,11 +141,10 @@ export default function SessionsTable() {
             <TableSkeleton columns={4} rows={4} />
           ) : (
             <TableBody>
-              {sessions?.map((session) => (
+              {sessions.map((session) => (
                 <TableRow key={session.id}>
                   <TableCell className="truncate">
-                    {`${session.browser ?? 'N/A'} - ${session.os ?? ''}`.trim() ??
-                      'N/A'}
+                    {`${session.browser ?? 'N/A'} - ${session.os ?? ''}`.trim()}
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
                     {session.alpha2 && (
