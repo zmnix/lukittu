@@ -1,3 +1,4 @@
+import { AuthLogo } from '@/components/shared/AuthLogo';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -13,8 +14,9 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
   }
 
   return (
-    <div className="relative flex w-full items-center justify-center bg-background p-2">
-      <div className="my-5 w-full">{children}</div>
+    <div className="relative my-14 flex w-full flex-col justify-start bg-background p-2 max-md:my-7">
+      <AuthLogo />
+      <div className="w-full">{children}</div>
     </div>
   );
 }
