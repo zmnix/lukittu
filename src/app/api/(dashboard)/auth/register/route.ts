@@ -17,6 +17,7 @@ import { Provider } from '@prisma/client';
 import { render } from '@react-email/components';
 import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
 type IAuthRegisterSuccessResponse = {
@@ -108,6 +109,10 @@ export async function POST(
         },
         { status: HttpStatus.BAD_REQUEST },
       );
+    }
+
+    if (process.env.IS_WAITLIST_ONLY === 'true') {
+      redirect('/auth/login?error=waitlist_only');
     }
 
     const passwordHash = hashPassword(password);

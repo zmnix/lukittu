@@ -92,6 +92,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', baseUrl));
     }
 
+    if (process.env.IS_WAITLIST_ONLY === 'true') {
+      return NextResponse.redirect(
+        new URL('/auth/login?error=waitlist_only', baseUrl),
+      );
+    }
+
     const newUser = await prisma.$transaction(async (prisma) => {
       const newUser = await prisma.user.create({
         data: {
