@@ -15,7 +15,12 @@ export const AuthLogo = () => {
 
   return (
     <div className="mx-auto mb-4 w-full max-w-lg px-12 max-md:max-w-md max-md:px-6">
-      <Image alt="Logo" src={logo} width={140} />
+      <Image
+        alt="Logo"
+        className="pointer-events-none select-none"
+        src={logo}
+        width={140}
+      />
     </div>
   );
 };
