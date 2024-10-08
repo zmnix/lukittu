@@ -11,6 +11,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -99,7 +100,24 @@ export default function WaitlistModal({
           </div>
           <ResponsiveDialogFooter>
             <p className="mt-2 w-full text-center text-xs text-gray-500">
-              {t('auth.waitlist.join_disclaimer')}
+              {t.rich('auth.waitlist.join_questions', {
+                discordLinkElement: (children) => (
+                  <Link
+                    className="font-semibold text-primary"
+                    href="https://discord.com/invite/5Gxh4V3dSC"
+                  >
+                    {children}
+                  </Link>
+                ),
+                emailElement: (children) => (
+                  <Link
+                    className="font-semibold text-primary"
+                    href="mailto:support@lukittu.com"
+                  >
+                    {children}
+                  </Link>
+                ),
+              })}
             </p>
           </ResponsiveDialogFooter>
         </div>
