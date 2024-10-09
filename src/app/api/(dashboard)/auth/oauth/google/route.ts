@@ -158,6 +158,9 @@ export async function GET(request: NextRequest) {
               strictProducts: false,
             },
           },
+          limits: {
+            create: {},
+          },
         },
       });
 

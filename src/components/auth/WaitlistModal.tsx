@@ -52,9 +52,7 @@ export default function WaitlistModal({
       }
 
       toast.success(t('auth.waitlist.joined_waitlist'));
-      setEmail('');
-      onOpenChange(false);
-      router.replace('/auth/login');
+      handleOpenChange(false);
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -62,8 +60,17 @@ export default function WaitlistModal({
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    onOpenChange(open);
+
+    if (!open) {
+      setEmail('');
+      router.replace('/auth/login');
+    }
+  };
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="sm:max-w-[625px]">
         <div className="relative z-10">
           <ResponsiveDialogHeader>

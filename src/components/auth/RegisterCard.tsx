@@ -35,6 +35,7 @@ import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
 import { AlertCircle, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
@@ -44,6 +45,8 @@ import LoginWithGithubButton from './LoginWithGithubButton';
 export default function RegisterCard() {
   const t = useTranslations();
   const turnstile = useRef<TurnstileInstance>(null);
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [resendVerifyEmailModalOpen, setResendVerifyEmailModalOpen] =
@@ -82,6 +85,10 @@ export default function RegisterCard() {
       body: JSON.stringify(payload),
     });
 
+    if (response.redirected) {
+      return router.push(response.url);
+    }
+
     const data = (await response.json()) as IAuthRegisterResponse;
 
     return data;
@@ -91,6 +98,9 @@ export default function RegisterCard() {
     setLoading(true);
     try {
       const res = await handleCredentialsRegister(data);
+
+      if (!res) return; // Redirected
+
       if ('message' in res) {
         if (res.reverifyEmail) {
           return setResendVerifyEmailModalOpen(true);

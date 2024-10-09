@@ -128,6 +128,9 @@ export async function POST(
             strictProducts: false,
           },
         },
+        limits: {
+          create: {},
+        },
       },
     });
 

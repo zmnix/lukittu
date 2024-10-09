@@ -62,11 +62,25 @@ model Team {
   invitations Invitation[]
   apiKeys     ApiKey[]
   heartbeats  Heartbeat[]
+  limits      Limits?
   settings    Settings?
   keyPair     KeyPair?
   deletedAt   DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Limits {
+  id             String   @id @default(uuid())
+  teamId         String   @unique
+  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  maxLicenses    Int      @default(100)
+  maxProducts    Int      @default(3)
+  logRetention   Int      @default(30)
+  maxCustomers   Int      @default(100)
+  maxTeamMembers Int      @default(10)
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
 }
 
 model Settings {

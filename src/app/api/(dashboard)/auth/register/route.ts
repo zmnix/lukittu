@@ -17,8 +17,9 @@ import { Provider } from '@prisma/client';
 import { render } from '@react-email/components';
 import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 
 type IAuthRegisterSuccessResponse = {
   success: boolean;
@@ -30,7 +31,7 @@ export type IAuthRegisterResponse =
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IAuthRegisterResponse>> {
+): Promise<NextResponse<IAuthRegisterResponse | unknown>> {
   const t = await getTranslations({ locale: getLanguage() });
 
   try {
@@ -112,7 +113,9 @@ export async function POST(
     }
 
     if (process.env.IS_WAITLIST_ONLY === 'true') {
-      redirect('/auth/login?error=waitlist_only');
+      return NextResponse.redirect(
+        new URL('/auth/login?error=waitlist_only', baseUrl),
+      );
     }
 
     const passwordHash = hashPassword(password);
@@ -148,6 +151,9 @@ export async function POST(
               strictCustomers: false,
               strictProducts: false,
             },
+          },
+          limits: {
+            create: {},
           },
         },
       });

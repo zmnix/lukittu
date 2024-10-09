@@ -31,7 +31,11 @@ export default function OauthLoginFailedccessModal({
     router.push('/auth/login');
   };
 
-  if (!error) return null;
+  const allowedErrors = ['server_error', 'wrong_provider'];
+
+  if (!error || !allowedErrors.includes(error)) {
+    return null;
+  }
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
