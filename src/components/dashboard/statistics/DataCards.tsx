@@ -68,7 +68,7 @@ export default function DataCards() {
           ) : (
             <>
               <div className="text-2xl font-bold">
-                {data?.activeLicenses.toLocaleString()}
+                {data?.activeLicenses ?? 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 {comparedToPrevious}{' '}
@@ -96,11 +96,11 @@ export default function DataCards() {
           ) : (
             <>
               <div className="text-2xl font-bold">
-                {data?.totalLicenses.toLocaleString()}
+                {data?.totalLicenses ?? 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 {t('dashboard.dashboard.new_in_last_7_days', {
-                  count: data?.trends.licensesLastWeek,
+                  count: data?.trends.licensesLastWeek ?? 0,
                 }).toLowerCase()}
               </p>
             </>
@@ -125,11 +125,11 @@ export default function DataCards() {
           ) : (
             <>
               <div className="text-2xl font-bold">
-                {data?.totalProducts.toLocaleString()}
+                {data?.totalProducts ?? 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 {t('dashboard.dashboard.new_in_last_7_days', {
-                  count: data?.trends.productsLastWeek,
+                  count: data?.trends.productsLastWeek ?? 0,
                 }).toLowerCase()}
               </p>
             </>
@@ -154,11 +154,11 @@ export default function DataCards() {
           ) : (
             <>
               <div className="text-2xl font-bold">
-                {data?.totalCustomers.toLocaleString()}
+                {data?.totalCustomers ?? 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 {t('dashboard.dashboard.new_in_last_7_days', {
-                  count: data?.trends.customersLastWeek,
+                  count: data?.trends.customersLastWeek ?? 0,
                 }).toLowerCase()}
               </p>
             </>
