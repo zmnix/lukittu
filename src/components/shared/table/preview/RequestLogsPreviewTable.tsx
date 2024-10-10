@@ -104,9 +104,6 @@ export default function RequestLogsPreviewTable({
             <SelectItem className="rounded-lg" value="30d">
               {t('dashboard.dashboard.last_30_days')}
             </SelectItem>
-            <SelectItem className="rounded-lg" value="6m">
-              {t('dashboard.dashboard.last_6_months')}
-            </SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>

@@ -280,6 +280,7 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
+              limits: true,
               licenses: {
                 omit: {
                   licenseKeyLookup: false,
@@ -310,6 +311,25 @@ export async function POST(
     }
 
     const team = session.user.teams[0];
+
+    if (!team.limits) {
+      // Should never happen
+      return NextResponse.json(
+        {
+          message: t('general.server_error'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (team.licenses.length >= team.limits.maxLicenses) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_licenses_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     const hmac = generateHMAC(`${licenseKey}:${team.id}`);
 

@@ -64,6 +64,7 @@ export async function POST(
             },
             include: {
               users: true,
+              limits: true,
               invitations: {
                 where: {
                   email,
@@ -94,6 +95,25 @@ export async function POST(
     }
 
     const team = session.user.teams[0];
+
+    if (!team.limits) {
+      // Should never happen
+      return NextResponse.json(
+        {
+          message: t('general.server_error'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (team.users.length >= team.limits.maxTeamMembers) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_team_members_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (team.ownerId !== session.user.id) {
       return NextResponse.json(

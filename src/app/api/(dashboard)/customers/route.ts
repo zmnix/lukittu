@@ -237,11 +237,8 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              customers: {
-                where: {
-                  email,
-                },
-              },
+              customers: true,
+              limits: true,
             },
           },
         },
@@ -268,7 +265,28 @@ export async function POST(
 
     const team = session.user.teams[0];
 
-    const existingCustomer = team.customers.length;
+    if (!team.limits) {
+      // Should never happen
+      return NextResponse.json(
+        {
+          message: t('general.server_error'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (team.customers.length >= team.limits.maxCustomers) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_customers_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const existingCustomer = team.customers.find(
+      (customer) => customer.email === email,
+    );
     if (existingCustomer) {
       return NextResponse.json(
         {

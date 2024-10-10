@@ -71,7 +71,7 @@ export async function GET(
       );
     }
 
-    const timeRanges = ['24h', '7d', '30d', '6m'];
+    const timeRanges = ['24h', '7d', '30d'];
     if (timeRange && !timeRanges.includes(timeRange)) {
       timeRange = '30d';
     }
@@ -95,15 +95,51 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    const dateLimit = new Date(
-      timeRange === '24h'
-        ? new Date().setDate(new Date().getDate() - 1)
-        : timeRange === '7d'
-          ? new Date().setDate(new Date().getDate() - 7)
-          : timeRange === '30d'
-            ? new Date().setMonth(new Date().getMonth() - 1)
-            : new Date().setMonth(new Date().getMonth() - 6),
+    const team = await prisma.team.findUnique({
+      where: {
+        id: selectedTeam,
+      },
+      include: {
+        limits: true,
+      },
+    });
+
+    if (!team) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const DAYS_IN_MONTH = 30;
+    const SIX_MONTHS_IN_DAYS = 6 * DAYS_IN_MONTH;
+
+    const teamLogRetentionDays =
+      team.limits?.logRetention ?? SIX_MONTHS_IN_DAYS;
+    const teamLogRetentionInMonths = Math.floor(
+      teamLogRetentionDays / DAYS_IN_MONTH,
     );
+
+    const now = new Date();
+    let dateLimit: Date;
+
+    switch (timeRange) {
+      case '24h':
+        dateLimit = new Date(now.setDate(now.getDate() - 1));
+        break;
+      case '7d':
+        dateLimit = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case '30d':
+        dateLimit = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      default:
+        dateLimit = new Date(
+          now.setMonth(now.getMonth() - teamLogRetentionInMonths),
+        );
+    }
 
     const whereWithoutTeamCheck = {
       createdAt: {

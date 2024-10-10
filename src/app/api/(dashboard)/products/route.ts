@@ -226,6 +226,7 @@ export async function POST(
             },
             include: {
               products: true,
+              limits: true,
             },
           },
         },
@@ -251,6 +252,25 @@ export async function POST(
     }
 
     const team = session.user.teams[0];
+
+    if (!team.limits) {
+      // Should never happen
+      return NextResponse.json(
+        {
+          message: t('general.server_error'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (team.products.length >= team.limits.maxProducts) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_products_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (team.products.find((product) => product.name === name)) {
       return NextResponse.json(

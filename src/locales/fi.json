@@ -68,7 +68,12 @@
     "file_too_large": "File is too large! Maximum file size is 1MB.",
     "invalid_file_type": "Invalid file type! Only PNG, JPEG, and WEBP are allowed.",
     "heartbeat_timeout_positive": "Heartbeat timeout must be at least 1 minute!",
-    "too_many_requests": "Too many requests! Please try again later."
+    "too_many_requests": "Too many requests! Please try again later.",
+    "max_licenses_reached": "Your team has reached the maximum number of licenses allowed for the current plan. Please upgrade to add more licenses.",
+    "max_products_reached": "Your team has reached the maximum number of products allowed for the current plan. Please upgrade to add more products.",
+    "max_customers_reached": "Your team has reached the maximum number of customers allowed for the current plan. Please upgrade to add more customers.",
+    "max_team_members_reached": "Your team has reached the maximum number of members allowed for the current plan. Please upgrade to add more members.",
+    "max_team_members_reached_invite": "The team has reached the maximum number of members allowed for the current plan. Please ask the team owner to upgrade the plan."
   },
   "general": {
     "heartbeats": "Heartbeats",
@@ -261,7 +266,6 @@
       "last_24_hours": "Last 24 hours",
       "last_7_days": "Last 7 days",
       "last_30_days": "Last 30 days",
-      "last_6_months": "Last 6 months",
       "new_in_last_7_days": "{count} new in the last 7 days",
       "requests_in_last_24_hours": "{count} requests in the last 24 hours",
       "success": "Success",

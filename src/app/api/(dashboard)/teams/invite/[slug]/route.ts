@@ -54,6 +54,14 @@ export async function POST(
           gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
         },
       },
+      include: {
+        team: {
+          include: {
+            users: true,
+            limits: true,
+          },
+        },
+      },
     });
 
     if (!invitation) {
@@ -78,6 +86,25 @@ export async function POST(
       return NextResponse.json(
         {
           message: t('validation.invitation_already_accepted'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (!invitation.team.limits) {
+      // Should never happen (unless the team was deleted)
+      return NextResponse.json(
+        {
+          message: t('general.server_error'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (invitation.team.users.length >= invitation.team.limits.maxTeamMembers) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_team_members_reached_invite'),
         },
         { status: HttpStatus.BAD_REQUEST },
       );

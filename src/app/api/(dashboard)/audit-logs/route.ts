@@ -74,9 +74,35 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    const team = await prisma.team.findUnique({
+      where: {
+        id: selectedTeam,
+      },
+      include: {
+        limits: true,
+      },
+    });
+
+    if (!team) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const DAYS_IN_MONTH = 30;
+    const SIX_MONTHS_IN_DAYS = 6 * DAYS_IN_MONTH;
+
+    const teamLogRetentionDays =
+      team.limits?.logRetention ?? SIX_MONTHS_IN_DAYS;
+
     const whereWithoutTeamCheck = {
       createdAt: {
-        gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+        gte: new Date(
+          new Date().getTime() - teamLogRetentionDays * 24 * 60 * 60 * 1000,
+        ),
       },
     } as Prisma.AuditLogWhereInput;
 
