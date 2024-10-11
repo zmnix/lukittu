@@ -3,7 +3,7 @@ import {
   ITeamGetResponse,
   ITeamGetSuccessResponse,
 } from '@/app/api/(dashboard)/teams/[slug]/route';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -39,9 +39,9 @@ export default function TeamSettingsCard() {
 
   return (
     <>
-      <div className="flex">
-        <div className="flex w-full gap-4 max-xl:flex-col-reverse">
-          {teamCtx.selectedTeam ? (
+      {teamCtx.selectedTeam ? (
+        <div className="flex">
+          <div className="flex w-full gap-4 max-xl:flex-col-reverse">
             <>
               <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
                 <GeneralSettings team={team} />
@@ -51,29 +51,34 @@ export default function TeamSettingsCard() {
                 <TeamDetails team={team} />
               </aside>
             </>
-          ) : (
-            <Card className="flex w-full flex-col md:flex-row">
-              <div className="w-full">
-                <div className="flex w-full flex-col items-center justify-center p-6 pt-0">
-                  <div className="flex w-full flex-col items-center justify-center gap-4 py-20">
-                    <div className="flex">
-                      <span className="rounded-lg bg-secondary p-4">
-                        <Shield className="h-6 w-6" />
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-bold">
-                      {t('dashboard.settings.no_team')}
-                    </h3>
-                    <p className="max-w-sm text-center text-sm text-muted-foreground">
-                      {t('dashboard.settings.no_team_description')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-xl font-bold">
+              {t('dashboard.navigation.settings')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
+                <div className="flex">
+                  <span className="rounded-lg bg-secondary p-4">
+                    <Shield className="h-6 w-6" />
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold">
+                  {t('dashboard.audit_logs.no_audit_logs_title')}
+                </h3>
+                <p className="max-w-sm text-center text-sm text-muted-foreground">
+                  {t('dashboard.audit_logs.no_audit_logs_description')}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }

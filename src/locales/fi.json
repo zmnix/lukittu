@@ -463,7 +463,9 @@
       "member_invited": "Member has been invited! They will receive an email shortly.",
       "invite_member": "Invite member",
       "invite_member_description": "Invite a new member to your team by entering their email address below. They will receive an email with an invitation link.",
-      "send_invite": "Send invite"
+      "send_invite": "Send invite",
+      "no_members": "No members",
+      "no_members_description": "No members found. Members are the users who have access to the team and its resources."
     },
     "settings": {
       "heartbeat_timeout": "Heartbeat timeout (minutes)",

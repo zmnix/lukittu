@@ -114,7 +114,7 @@ export default function AuditLogTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {totalAuditLogs ? (
+          {totalAuditLogs && teamCtx.selectedTeam ? (
             <>
               <style jsx>{`
                 .expanded-content {
