@@ -14,7 +14,7 @@ import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 
 interface CustomersActionDropdownProps {
-  customer: ICustomersGetSuccessResponse['customers'][number];
+  customer: ICustomersGetSuccessResponse['customers'][number] | undefined;
   variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
@@ -24,6 +24,8 @@ export const CustomersActionDropdown = ({
 }: CustomersActionDropdownProps) => {
   const ctx = useContext(CustomerModalContext);
   const t = useTranslations();
+
+  if (!customer) return null;
 
   return (
     <DropdownMenu>

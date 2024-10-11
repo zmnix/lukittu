@@ -19,7 +19,7 @@ import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 
 interface MembersDropdownProps {
-  member: ITeamsMembersGetSuccessResponse['members'][number];
+  member: ITeamsMembersGetSuccessResponse['members'][number] | undefined;
   isTeamOwner: boolean;
   isSelf: boolean;
 }
@@ -31,6 +31,8 @@ export const MembersActionDropdown = ({
 }: MembersDropdownProps) => {
   const ctx = useContext(MemberModalContext);
   const t = useTranslations();
+
+  if (!member) return null;
 
   return (
     <DropdownMenu>

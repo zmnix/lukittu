@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getInitials } from '@/lib/utils/text-helpers';
+import { TeamContext } from '@/providers/TeamProvider';
 import {
   ArrowDownUp,
   ChevronDown,
@@ -32,13 +33,14 @@ import {
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AuditLogMapPreview from './AuditLogMapPreview';
 import AuditLogRequestModal from './AuditLogRequestModal';
 
 export default function AuditLogTable() {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
   const [auditLogModalOpen, setAuditLogModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<
@@ -51,7 +53,7 @@ export default function AuditLogTable() {
     null,
   );
   const [pageSize, setPageSize] = useState(25);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [auditLogs, setAuditLogs] = useState<
     IAuditLogsGetSuccessResponse['auditLogs']
   >([]);
@@ -59,7 +61,10 @@ export default function AuditLogTable() {
 
   useEffect(() => {
     (async () => {
+      if (!teamCtx.selectedTeam) return;
+
       setLoading(true);
+
       try {
         const searchParams = new URLSearchParams({
           page: page.toString(),
@@ -83,7 +88,7 @@ export default function AuditLogTable() {
         setLoading(false);
       }
     })();
-  }, [sortColumn, sortDirection, page, t, pageSize]);
+  }, [sortColumn, sortDirection, page, t, pageSize, teamCtx.selectedTeam]);
 
   const toggleRow = (id: string) => {
     const newExpandedRows = new Set(expandedRows);

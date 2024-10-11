@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils/tailwind-helpers';
 import { getInitials } from '@/lib/utils/text-helpers';
 import { AuthContext } from '@/providers/AuthProvider';
 import { MemberModalProvider } from '@/providers/MemberModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Filter, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -39,9 +40,10 @@ export function MembersTable() {
   const t = useTranslations();
   const { showDropdown, containerRef } = useTableScroll();
   const ctx = useContext(AuthContext);
+  const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<
     ITeamsMembersGetSuccessResponse['members']
   >([]);
@@ -53,6 +55,10 @@ export function MembersTable() {
 
   useEffect(() => {
     (async () => {
+      if (!teamCtx.selectedTeam) return;
+
+      setLoading(true);
+
       try {
         const searchParams = new URLSearchParams({
           page: page.toString(),
@@ -78,7 +84,7 @@ export function MembersTable() {
         setLoading(false);
       }
     })();
-  }, [page, pageSize, search, t]);
+  }, [page, pageSize, search, t, teamCtx.selectedTeam]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

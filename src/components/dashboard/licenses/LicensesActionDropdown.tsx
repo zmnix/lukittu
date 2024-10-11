@@ -15,10 +15,12 @@ import { useContext } from 'react';
 import { toast } from 'sonner';
 
 interface LicensesActionDropdownProps {
-  license: Omit<License, 'licenseKeyLookup'> & {
-    products: Product[];
-    customers: Customer[];
-  };
+  license:
+    | (Omit<License, 'licenseKeyLookup'> & {
+        products: Product[];
+        customers: Customer[];
+      })
+    | undefined;
   variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
@@ -28,6 +30,8 @@ export const LicensesActionDropdown = ({
 }: LicensesActionDropdownProps) => {
   const t = useTranslations();
   const ctx = useContext(LicenseModalContext);
+
+  if (!license) return null;
 
   const handleCopy = (licenseKey: string) => {
     navigator.clipboard.writeText(licenseKey);

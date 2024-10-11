@@ -480,7 +480,9 @@
       "team_settings_updated": "Team settings updated",
       "email_delivery_message": "Email delivery message",
       "team_image_updated": "Team image updated",
-      "team_image_removed": "Team image removed"
+      "team_image_removed": "Team image removed",
+      "no_team": "No team",
+      "no_team_description": "You are not part of any team. Create a team or join an existing team to start using Lukittu."
     }
   }
 }

@@ -14,7 +14,7 @@ import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 
 interface ProductsActionDropdownProps {
-  product: IProductsGetSuccessResponse['products'][number];
+  product: IProductsGetSuccessResponse['products'][number] | undefined;
   variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
@@ -24,6 +24,8 @@ export const ProductsActionDropdown = ({
 }: ProductsActionDropdownProps) => {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
+
+  if (!product) return null;
 
   return (
     <DropdownMenu>
