@@ -32,9 +32,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { TeamContext } from '@/providers/TeamProvider';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 
@@ -57,6 +58,7 @@ interface RequestsAreaChartProps {
 export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
   const t = useTranslations();
   const locale = useLocale();
+  const teamCtx = useContext(TeamContext);
 
   const [timeRange, setTimeRange] = useState('24h');
   const [comparedToPrevious, setComparedToPrevious] = useState('0%');
@@ -65,6 +67,8 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!teamCtx.selectedTeam) return;
+
       try {
         const res = await fetch(
           `/api/statistics/requests?timeRange=${timeRange}${
@@ -89,11 +93,11 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
 
     fetchData();
 
-    // Fetch data every 90 seconds (1.5 minutes)
-    const intervalId = setInterval(fetchData, 90000);
+    // Fetch data every 60 seconds
+    const intervalId = setInterval(fetchData, 60000);
 
     return () => clearInterval(intervalId);
-  }, [t, timeRange, licenseId]);
+  }, [t, timeRange, licenseId, teamCtx.selectedTeam]);
 
   const chartConfig = {
     total: {

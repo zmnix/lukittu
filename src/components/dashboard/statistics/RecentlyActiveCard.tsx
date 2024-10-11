@@ -21,20 +21,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TeamContext } from '@/providers/TeamProvider';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function RecentlyActiveCard() {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<
     IStatisticsRecentActivityGetSuccessResponse['data']
   >([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (initial?: boolean) => {
+      if (!teamCtx.selectedTeam) return;
+
+      if (initial) {
+        setLoading(true);
+      }
+
       try {
         const res = await fetch('/api/statistics/recent-activity');
         const data = (await res.json()) as IStatisticsRecentActivityGetResponse;
@@ -54,8 +62,13 @@ export default function RecentlyActiveCard() {
       }
     };
 
-    fetchData();
-  }, [t]);
+    fetchData(true);
+
+    // Fetch data every 60 seconds
+    const intervalId = setInterval(fetchData, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [t, teamCtx.selectedTeam]);
 
   return (
     <Card className="flex h-full flex-col">

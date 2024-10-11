@@ -28,11 +28,12 @@ import {
 } from '@/lib/utils/license-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp, Clock, Filter, Key, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import AddLicenseButton from './AddLicenseButton';
@@ -43,9 +44,10 @@ export function LicensesTable() {
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
+  const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [licenses, setLicenses] = useState<
     ILicensesGetSuccessResponse['licenses']
   >([]);
@@ -66,6 +68,8 @@ export function LicensesTable() {
 
   useEffect(() => {
     (async () => {
+      if (!teamCtx.selectedTeam) return;
+
       setLoading(true);
       try {
         const searchParams = new URLSearchParams({
@@ -106,6 +110,7 @@ export function LicensesTable() {
     t,
     productIds,
     customerIds,
+    teamCtx.selectedTeam,
   ]);
 
   useEffect(() => {
@@ -148,7 +153,7 @@ export function LicensesTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {hasLicenses ? (
+          {hasLicenses && teamCtx.selectedTeam ? (
             <>
               <div className="mb-4 flex items-center gap-4 max-lg:hidden max-lg:flex-col">
                 <div className="relative flex w-full items-center">

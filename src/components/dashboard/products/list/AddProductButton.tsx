@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
@@ -15,10 +16,12 @@ export default function AddProductButton({
 }: AddProductButtonProps) {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
+  const teamCtx = useContext(TeamContext);
 
   return (
     <Button
       className="ml-auto flex gap-2"
+      disabled={!teamCtx.selectedTeam}
       size="sm"
       variant="default"
       onClick={() => ctx.setProductModalOpen(true)}

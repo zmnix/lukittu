@@ -20,9 +20,10 @@ import {
 } from '@/components/ui/select';
 import numberFormatter from '@/lib/utils/number-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { TeamContext } from '@/providers/TeamProvider';
 import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import * as topojson from 'topojson-client';
 import worldJson from 'visionscarto-world-atlas/world/110m.json';
@@ -45,8 +46,9 @@ interface WorldMapChartProps {
 
 export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [timeRange, setTimeRange] = useState('30d');
   const [data, setData] = useState<
     IStatisticsMapDataGetSuccessResponse['data'] | null
@@ -74,7 +76,13 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
   }, [data]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (initial?: boolean) => {
+      if (!teamCtx.selectedTeam) return;
+
+      if (initial) {
+        setLoading(true);
+      }
+
       try {
         const res = await fetch(
           `/api/statistics/map-data?timeRange=${timeRange}${
@@ -98,8 +106,13 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
       }
     };
 
-    fetchData();
-  }, [t, timeRange, licenseId]);
+    fetchData(true);
+
+    // Fetch data every 60 seconds
+    const intervalId = setInterval(fetchData, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [t, timeRange, licenseId, teamCtx.selectedTeam]);
 
   useEffect(() => {
     if (!svgRef.current) {

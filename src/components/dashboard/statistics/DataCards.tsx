@@ -5,21 +5,29 @@ import {
 } from '@/app/api/(dashboard)/statistics/card-data/route';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Activity, Key, Package, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function DataCards() {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<
     IStatisticsCardDataGetSuccessResponse['data'] | null
   >(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (initial?: boolean) => {
+      if (!teamCtx.selectedTeam) return;
+
+      if (initial) {
+        setLoading(true);
+      }
+
       try {
         const res = await fetch('/api/statistics/card-data');
         const data = (await res.json()) as IStatisticsCardDataGetResponse;
@@ -39,8 +47,13 @@ export default function DataCards() {
       }
     };
 
-    fetchData();
-  }, [t]);
+    fetchData(true);
+
+    // Fetch data every 60 seconds
+    const intervalId = setInterval(fetchData, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [t, teamCtx.selectedTeam]);
 
   const comparedToPrevious = data?.trends.activeLicensesPreviousPeriod
     ? data.activeLicenses > data.trends.activeLicensesPreviousPeriod

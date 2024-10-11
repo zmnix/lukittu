@@ -16,11 +16,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ChevronLeft, Copy, ExternalLink, Logs } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   LogViewerLeftSkeleton,
@@ -30,6 +31,7 @@ import {
 export default function LogViewer() {
   const t = useTranslations();
   const locale = useLocale();
+  const teamCtx = useContext(TeamContext);
 
   const [hasMore, setHasMore] = useState(true);
   const [selectedLog, setSelectedLog] = useState<
@@ -39,76 +41,67 @@ export default function LogViewer() {
   const [totalLogs, setTotalLogs] = useState(1);
   const [logs, setLogs] = useState<ILogsGetSuccessResponse['logs'][]>([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
 
-  const loadSelectedTeam = useCallback(() => {
-    const cookies = document.cookie.split(';');
-    const selectedTeam = cookies.find((cookie) =>
-      cookie.includes('selectedTeam'),
-    );
-    return selectedTeam ? selectedTeam.split('=')[1] : null;
-  }, []);
-
-  const fetchLogs = useCallback(async () => {
-    try {
-      const searchParams = new URLSearchParams({
-        page: page.toString(),
-        pageSize: '10',
-      });
-
-      const response = await fetch(`/api/logs?${searchParams.toString()}`);
-
-      const data = (await response.json()) as ILogsGetResponse;
-
-      if ('message' in data) {
-        return toast.error(data.message);
-      }
-
-      setTotalLogs(data.totalResults);
-      setLogs((prevLogs) => {
-        const newLogs = [...prevLogs.flat(), ...data.logs];
-        const uniqueLogs = Array.from(
-          new Map(newLogs.map((log) => [log.id, log])).values(),
-        );
-
-        setHasMore(data.totalResults > uniqueLogs.length);
-
-        const groupedLogs = uniqueLogs.reduce(
-          (acc, log) => {
-            const date = new Date(log.createdAt).toDateString();
-            acc[date] = acc[date] ?? [];
-            acc[date].push(log);
-            return acc;
-          },
-          {} as Record<string, ILogsGetSuccessResponse['logs']>,
-        );
-
-        return Object.values(groupedLogs);
-      });
-    } catch (error: any) {
-      toast.error(error.message ?? t('general.server_error'));
-    } finally {
-      setLoading(false);
-      setFetchingMore(false);
-    }
-  }, [page, t]);
-
-  const teamId = loadSelectedTeam();
-
   useEffect(() => {
-    if (teamId) {
+    if (teamCtx.selectedTeam) {
       setSelectedLog(null);
       setLogs([]);
+      setPage(1);
+      setLoading(true);
     }
-
-    setPage(1);
-    setLoading(true);
-  }, [teamId]);
+  }, [teamCtx.selectedTeam]);
 
   useEffect(() => {
+    const fetchLogs = async () => {
+      if (!teamCtx.selectedTeam) return;
+
+      try {
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: '10',
+        });
+
+        const response = await fetch(`/api/logs?${searchParams.toString()}`);
+
+        const data = (await response.json()) as ILogsGetResponse;
+
+        if ('message' in data) {
+          return toast.error(data.message);
+        }
+
+        setTotalLogs(data.totalResults);
+        setLogs((prevLogs) => {
+          const newLogs = [...prevLogs.flat(), ...data.logs];
+          const uniqueLogs = Array.from(
+            new Map(newLogs.map((log) => [log.id, log])).values(),
+          );
+
+          setHasMore(data.totalResults > uniqueLogs.length);
+
+          const groupedLogs = uniqueLogs.reduce(
+            (acc, log) => {
+              const date = new Date(log.createdAt).toDateString();
+              acc[date] = acc[date] ?? [];
+              acc[date].push(log);
+              return acc;
+            },
+            {} as Record<string, ILogsGetSuccessResponse['logs']>,
+          );
+
+          return Object.values(groupedLogs);
+        });
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.server_error'));
+      } finally {
+        setLoading(false);
+        setFetchingMore(false);
+      }
+    };
+
     fetchLogs();
-  }, [page, fetchLogs]);
+  }, [page, teamCtx.selectedTeam, t]);
 
   useEffect(() => {
     if (!selectedLog && logs.length > 0) {
@@ -123,7 +116,7 @@ export default function LogViewer() {
 
   return (
     <Card className="flex flex-col md:flex-row">
-      {totalLogs ? (
+      {totalLogs && teamCtx.selectedTeam ? (
         <>
           <div
             className={`w-full border-r p-2 md:w-1/2 ${showDetails ? 'hidden md:block' : 'block'}`}
@@ -186,7 +179,7 @@ export default function LogViewer() {
                 ))
               )}
               <LoadingButton
-                disabled={!hasMore}
+                disabled={!hasMore || !teamCtx.selectedTeam}
                 pending={fetchingMore || loading}
                 variant="link"
                 onClick={() => {

@@ -16,9 +16,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Frown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Label, Pie, PieChart } from 'recharts';
 import { toast } from 'sonner';
 
@@ -60,8 +61,9 @@ const renderCustomizedLabel = ({
 
 export function ProductDivisionPieChart() {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<
     {
       id: string;
@@ -72,7 +74,13 @@ export function ProductDivisionPieChart() {
   >([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (initial?: boolean) => {
+      if (!teamCtx.selectedTeam) return;
+
+      if (initial) {
+        setLoading(true);
+      }
+
       try {
         const res = await fetch('/api/statistics/product-division');
         const data =
@@ -100,8 +108,13 @@ export function ProductDivisionPieChart() {
       }
     };
 
-    fetchData();
-  }, [t]);
+    fetchData(true);
+
+    // Fetch data every 60 seconds
+    const intervalId = setInterval(fetchData, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [t, teamCtx.selectedTeam]);
 
   const chartConfig = data.reduce<ChartConfig>((acc, { name, id }, index) => {
     acc[id] = {

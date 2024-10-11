@@ -21,11 +21,12 @@ import {
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { CustomerModalProvider } from '@/providers/CustomerModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp, Clock, Filter, Search, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CustomersActionDropdown } from '../CustomersActionDropdown';
 import AddCustomerButton from './AddCustomerButton';
@@ -36,9 +37,10 @@ export function CustomersTable() {
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
+  const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<
     ICustomersGetSuccessResponse['customers']
   >([]);
@@ -57,6 +59,8 @@ export function CustomersTable() {
 
   useEffect(() => {
     (async () => {
+      if (!teamCtx.selectedTeam) return;
+
       setLoading(true);
       try {
         const searchParams = new URLSearchParams({
@@ -86,7 +90,15 @@ export function CustomersTable() {
         setLoading(false);
       }
     })();
-  }, [page, pageSize, sortColumn, sortDirection, search, t]);
+  }, [
+    page,
+    pageSize,
+    sortColumn,
+    sortDirection,
+    search,
+    t,
+    teamCtx.selectedTeam,
+  ]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -124,7 +136,7 @@ export function CustomersTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {hasCustomers ? (
+          {hasCustomers && teamCtx.selectedTeam ? (
             <>
               <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />

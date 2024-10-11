@@ -10,7 +10,7 @@
     "react/react-in-jsx-scope": "off",
     "spaced-comment": "error",
     "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
     "@typescript-eslint/no-unnecessary-condition": "warn",
     "no-unused-expressions": "error",
