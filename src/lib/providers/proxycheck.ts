@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import 'server-only';
 
 export interface ProxyCheckResponse {
@@ -33,16 +34,20 @@ export interface Currency {
   symbol: string;
 }
 
-export const proxyCheck = async (ipAddress: string | null) => {
-  if (!ipAddress) {
-    return null;
-  }
-  const response = await fetch(
-    `http://proxycheck.io/v2/${ipAddress}?asn=1&key=${process.env.PROXYCHECK_API_KEY}`,
-  );
-  const data = (await response.json()) as ProxyCheckResponse;
+export const proxyCheck = unstable_cache(
+  async (ipAddress: string | null) => {
+    if (!ipAddress) {
+      return null;
+    }
+    const response = await fetch(
+      `http://proxycheck.io/v2/${ipAddress}?asn=1&key=${process.env.PROXYCHECK_API_KEY}`,
+    );
+    const data = (await response.json()) as ProxyCheckResponse;
 
-  const formatted = data[ipAddress] as ProxyCheckAsn;
+    const formatted = data[ipAddress] as ProxyCheckAsn;
 
-  return formatted;
-};
+    return formatted;
+  },
+  undefined,
+  { revalidate: 60 * 60 * 24 },
+); // 24 hours

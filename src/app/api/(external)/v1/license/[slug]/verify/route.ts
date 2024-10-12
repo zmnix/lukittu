@@ -12,7 +12,7 @@ import {
   verifyLicenseSchema,
 } from '@/lib/validation/licenses/verify-license-schema';
 import { HttpStatus } from '@/types/http-status';
-import { RequestMethod, RequestStatus } from '@prisma/client';
+import { BlacklistType, RequestMethod, RequestStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 type IExternalLicenseVerifyResponse = {
@@ -106,6 +106,7 @@ export async function POST(
             privateKey: false,
           },
         },
+        blacklist: true,
         settings: true,
       },
     });
@@ -188,6 +189,98 @@ export async function POST(
           },
         },
         httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    const blacklistedIps = team.blacklist.filter(
+      (b) => b.type === BlacklistType.IP_ADDRESS,
+    );
+    const blacklistedIpList = blacklistedIps.map((b) => b.value);
+
+    if (ip && blacklistedIpList.includes(ip)) {
+      return handleResponse({
+        body,
+        request,
+        requestTime,
+        teamId,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.IP_BLACKLISTED,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'IP address is blacklisted',
+          },
+        },
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
+    }
+
+    const blacklistedCountries = team.blacklist.filter(
+      (b) => b.type === BlacklistType.COUNTRY,
+    );
+    const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
+
+    if (blacklistedCountryList.length > 0) {
+      const geoData = await proxyCheck(ip);
+
+      if (geoData?.isocode) {
+        const inIso3 = iso2ToIso3Map[geoData.isocode!];
+
+        if (blacklistedCountryList.includes(inIso3)) {
+          return handleResponse({
+            body,
+            request,
+            requestTime,
+            teamId,
+            customerId: matchingCustomer ? customerId : undefined,
+            productId: matchingProduct ? productId : undefined,
+            status: RequestStatus.COUNTRY_BLACKLISTED,
+            response: {
+              data: null,
+              result: {
+                timestamp: new Date(),
+                valid: false,
+                details: 'Country is blacklisted',
+              },
+            },
+            httpStatus: HttpStatus.FORBIDDEN,
+          });
+        }
+      }
+    }
+
+    const blacklistedDeviceIdentifiers = team.blacklist.filter(
+      (b) => b.type === BlacklistType.DEVICE_IDENTIFIER,
+    );
+
+    const blacklistedDeviceIdentifierList = blacklistedDeviceIdentifiers.map(
+      (b) => b.value,
+    );
+
+    if (
+      deviceIdentifier &&
+      blacklistedDeviceIdentifierList.includes(deviceIdentifier)
+    ) {
+      return handleResponse({
+        body,
+        request,
+        requestTime,
+        teamId,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Device identifier is blacklisted',
+          },
+        },
+        httpStatus: HttpStatus.FORBIDDEN,
       });
     }
 

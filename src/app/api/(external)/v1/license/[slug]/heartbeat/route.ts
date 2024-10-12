@@ -1,5 +1,7 @@
+import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { proxyCheck } from '@/lib/providers/proxycheck';
 import { generateHMAC, signChallenge } from '@/lib/utils/crypto';
 import { getIp } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
@@ -9,7 +11,7 @@ import {
   LicenseHeartbeatSchema,
 } from '@/lib/validation/licenses/license-heartbeat-schema';
 import { HttpStatus } from '@/types/http-status';
-import { RequestStatus } from '@prisma/client';
+import { BlacklistType, RequestStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 type IExternalLicenseHeartbeatResponse = {
@@ -94,6 +96,7 @@ export async function POST(
           },
         },
         settings: true,
+        blacklist: true,
       },
     });
 
@@ -167,6 +170,83 @@ export async function POST(
         },
         {
           status: HttpStatus.NOT_FOUND,
+        },
+      );
+    }
+
+    const blacklistedIps = team.blacklist.filter(
+      (b) => b.type === BlacklistType.IP_ADDRESS,
+    );
+    const blacklistedIpList = blacklistedIps.map((b) => b.value);
+
+    if (ip && blacklistedIpList.includes(ip)) {
+      return NextResponse.json(
+        {
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'IP address is blacklisted',
+            code: RequestStatus.IP_BLACKLISTED,
+          },
+        },
+        {
+          status: HttpStatus.FORBIDDEN,
+        },
+      );
+    }
+
+    const blacklistedCountries = team.blacklist.filter(
+      (b) => b.type === BlacklistType.COUNTRY,
+    );
+    const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
+
+    if (blacklistedCountryList.length > 0) {
+      const geoData = await proxyCheck(ip);
+
+      if (geoData?.isocode) {
+        const inIso3 = iso2ToIso3Map[geoData.isocode!];
+
+        if (blacklistedCountryList.includes(inIso3)) {
+          return NextResponse.json(
+            {
+              result: {
+                timestamp: new Date(),
+                valid: false,
+                details: 'Country is blacklisted',
+                code: RequestStatus.COUNTRY_BLACKLISTED,
+              },
+            },
+            {
+              status: HttpStatus.FORBIDDEN,
+            },
+          );
+        }
+      }
+    }
+
+    const blacklistedDeviceIdentifiers = team.blacklist.filter(
+      (b) => b.type === BlacklistType.DEVICE_IDENTIFIER,
+    );
+
+    const blacklistedDeviceIdentifierList = blacklistedDeviceIdentifiers.map(
+      (b) => b.value,
+    );
+
+    if (
+      deviceIdentifier &&
+      blacklistedDeviceIdentifierList.includes(deviceIdentifier)
+    ) {
+      return NextResponse.json(
+        {
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Device identifier is blacklisted',
+            code: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
+          },
+        },
+        {
+          status: HttpStatus.FORBIDDEN,
         },
       );
     }
