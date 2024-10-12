@@ -54,14 +54,20 @@ export default function SetProductModal() {
 
   useEffect(() => {
     if (ctx.productToEdit) {
-      form.reset({
-        name: ctx.productToEdit.name,
-        url: ctx.productToEdit.url ?? '',
-        metadata:
-          (ctx.productToEdit.metadata as
-            | { key: string; value: string }[]
-            | null) ?? [],
-      });
+      form.setValue('name', ctx.productToEdit.name);
+      form.setValue('url', ctx.productToEdit.url ?? '');
+      form.setValue(
+        'metadata',
+        (
+          ctx.productToEdit.metadata as {
+            key: string;
+            value: string;
+          }[]
+        ).map((m) => ({
+          key: m.key,
+          value: m.value,
+        })),
+      );
     }
   }, [ctx.productToEdit, form]);
 
