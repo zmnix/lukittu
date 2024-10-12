@@ -148,7 +148,9 @@ export function TeamSelector({ fullWidth }: TeamSelectorProps) {
                               {getInitials(team.name)}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="line-clamp-2">{team.name}</span>
+                          <span className="line-clamp-2 break-all">
+                            {team.name}
+                          </span>
                         </div>
                         {team.id.toString() === ctx.selectedTeam && (
                           <Button

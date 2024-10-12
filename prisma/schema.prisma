@@ -33,6 +33,7 @@ model User {
   createdLicenses    License[]
   createdCustomers   Customer[]
   createdInvitations Invitation[]
+  blacklist          Blacklist[]
 }
 
 model Session {
@@ -62,12 +63,29 @@ model Team {
   invitations Invitation[]
   apiKeys     ApiKey[]
   heartbeats  Heartbeat[]
+  blacklist   Blacklist[]
   limits      Limits?
   settings    Settings?
   keyPair     KeyPair?
   deletedAt   DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Blacklist {
+  id              String        @id @default(uuid())
+  type            BlacklistType
+  value           String
+  hits            Int           @default(0)
+  metadata        Json
+  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime      @default(now())
+  teamId          String
+  createdByUserId String?
+  createdBy       User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  team            Team          @relation(fields: [teamId], references: [id])
+
+  @@index([teamId])
 }
 
 model Limits {
@@ -79,6 +97,7 @@ model Limits {
   logRetention   Int      @default(30)
   maxCustomers   Int      @default(100)
   maxTeamMembers Int      @default(10)
+  maxBlacklist   Int      @default(100)
   updatedAt      DateTime @updatedAt
   createdAt      DateTime @default(now())
 }
@@ -283,6 +302,11 @@ enum AuditLogAction {
   RESET_PUBLIC_KEY
   UPDATE_TEAM_SETTINGS
   UPDATE_TEAM_PICTURE
+  CREATE_BLACKLIST
+  DELETE_BLACKLIST
+  UPDATE_BLACKLIST
+  CREATE_API_KEY
+  DELETE_API_KEY
 }
 
 enum AuditLogTargetType {
@@ -290,6 +314,13 @@ enum AuditLogTargetType {
   CUSTOMER
   PRODUCT
   TEAM
+  BLACKLIST
+}
+
+enum BlacklistType {
+  DEVICE_IDENTIFIER
+  IP_ADDRESS
+  COUNTRY
 }
 
 enum Provider {

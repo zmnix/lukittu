@@ -94,7 +94,7 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
             ),
           })}
         </p>
-        <Button className="w-full">
+        <Button>
           <Mail className="mr-2 h-4 w-4" />
           {t('dashboard.settings.contact_support')}
         </Button>

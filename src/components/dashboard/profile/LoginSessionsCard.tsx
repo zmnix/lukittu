@@ -154,6 +154,11 @@ export default function SessionsTable() {
                         height={20}
                         src={`/countries/${session.alpha2.toLowerCase()}.svg`}
                         width={20}
+                        onError={(e) => {
+                          e.preventDefault();
+                          (e.target as HTMLImageElement).src =
+                            '/countries/unknown.svg';
+                        }}
                       />
                     )}
                     {session.ipAddress === '::1'

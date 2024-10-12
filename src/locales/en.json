@@ -71,11 +71,20 @@
     "too_many_requests": "Too many requests! Please try again later.",
     "max_licenses_reached": "Your team has reached the maximum number of licenses allowed for the current plan. Please upgrade to add more licenses.",
     "max_products_reached": "Your team has reached the maximum number of products allowed for the current plan. Please upgrade to add more products.",
+    "max_blacklist_reached": "Your team has reached the maximum number of blacklist values allowed for the current plan. Please upgrade to add more values.",
     "max_customers_reached": "Your team has reached the maximum number of customers allowed for the current plan. Please upgrade to add more customers.",
     "max_team_members_reached": "Your team has reached the maximum number of members allowed for the current plan. Please upgrade to add more members.",
-    "max_team_members_reached_invite": "The team has reached the maximum number of members allowed for the current plan. Please ask the team owner to upgrade the plan."
+    "max_team_members_reached_invite": "The team has reached the maximum number of members allowed for the current plan. Please ask the team owner to upgrade the plan.",
+    "blacklist_value_required": "Blacklist value is required!",
+    "blacklist_value_min_length": "Blacklist value must be at least 3 characters long!",
+    "blacklist_value_max_length": "Blacklist value must be at most 255 characters long!",
+    "invalid_country": "Invalid country!",
+    "invalid_ip": "Invalid IP address!",
+    "blacklist_exists": "This value is already in the blacklist!",
+    "blacklist_not_found": "Blacklist not found!"
   },
   "general": {
+    "country": "Country",
     "days": "Days",
     "heartbeats": "Heartbeats",
     "invitation_sent": "Invitation sent",
@@ -97,6 +106,7 @@
     "target": "Target",
     "or": "or",
     "error_occurred": "An error occurred",
+    "type": "Type",
     "login": "Login",
     "close": "Close",
     "light": "Light",
@@ -152,6 +162,7 @@
     "metadata": "Metadata",
     "key": "Key",
     "value": "Value",
+    "hits": "Hits",
     "add_metadata": "Add metadata",
     "active": "Active",
     "basic": "Basic",
@@ -493,6 +504,19 @@
       "log_retention": "Log retention",
       "need_increased_limits": "Need increased limits? Send us an email at <emailElement>support@lukittu.com</emailElement>!",
       "contact_support": "Contact support"
+    },
+    "blacklist": {
+      "blacklist_updated": "Blacklist updated",
+      "blacklist_created": "Blacklist created",
+      "blacklist_deleted": "Blacklist deleted",
+      "add_blacklist": "Add blacklist",
+      "blacklist_description": "Blacklist values are used to block specific values from being used in license verify requests. You can add, edit, and delete blacklist values here.",
+      "add_your_first_blacklist": "Add your first blacklist",
+      "edit_blacklist": "Edit blacklist",
+      "delete_blacklist": "Delete blacklist",
+      "search_blacklist": "Search blacklist...",
+      "delete_blacklist_confirm_title": "Delete blacklist",
+      "delete_blacklist_confirm_description": "You are about to delete blacklist value <strong>{value}</strong>! This will <strong>permanently delete</strong> this blacklist value. This action cannot be undone."
     }
   }
 }

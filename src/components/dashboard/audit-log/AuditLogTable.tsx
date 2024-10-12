@@ -237,6 +237,11 @@ export default function AuditLogTable() {
                                     height={20}
                                     src={`/countries/${auditLog.alpha2.toLowerCase()}.svg`}
                                     width={20}
+                                    onError={(e) => {
+                                      e.preventDefault();
+                                      (e.target as HTMLImageElement).src =
+                                        '/countries/unknown.svg';
+                                    }}
                                   />
                                 )}
                                 <span>
@@ -429,6 +434,12 @@ export default function AuditLogTable() {
                                             height={20}
                                             src={`/countries/${auditLog.alpha2.toLowerCase()}.svg`}
                                             width={20}
+                                            onError={(e) => {
+                                              e.preventDefault();
+                                              (
+                                                e.target as HTMLImageElement
+                                              ).src = '/countries/unknown.svg';
+                                            }}
                                           />
                                         )}
                                         {auditLog.ipAddress ??

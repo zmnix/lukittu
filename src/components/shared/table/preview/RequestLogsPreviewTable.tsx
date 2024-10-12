@@ -155,6 +155,11 @@ export default function RequestLogsPreviewTable({
                             height={20}
                             src={`/countries/${log.alpha2.toLowerCase()}.svg`}
                             width={20}
+                            onError={(e) => {
+                              e.preventDefault();
+                              (e.target as HTMLImageElement).src =
+                                '/countries/unknown.svg';
+                            }}
                           />
                         )}
                         {log.ipAddress}

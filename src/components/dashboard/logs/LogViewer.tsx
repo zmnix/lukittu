@@ -272,6 +272,11 @@ export default function LogViewer() {
                           height={20}
                           src={`/countries/${selectedLog.alpha2.toLowerCase()}.svg`}
                           width={20}
+                          onError={(e) => {
+                            e.preventDefault();
+                            (e.target as HTMLImageElement).src =
+                              '/countries/unknown.svg';
+                          }}
                         />
                       )}
                       {selectedLog.ipAddress ?? t('general.unknown')}
