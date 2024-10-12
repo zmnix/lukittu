@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { BlacklistModalContext } from '@/providers/BlacklistModalProvider';
 import { CustomerModalContext } from '@/providers/CustomerModalProvider';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { MemberModalContext } from '@/providers/MemberModalProvider';
@@ -33,6 +34,7 @@ export default function AddEntityButton({
   const customerModalCtx = useContext(CustomerModalContext);
   const memberModalCtx = useContext(MemberModalContext);
   const licenseModalCtx = useContext(LicenseModalContext);
+  const blacklistModalCtx = useContext(BlacklistModalContext);
 
   const translationKey = (() => {
     switch (entityType) {
@@ -64,6 +66,8 @@ export default function AddEntityButton({
         return memberModalCtx.setMemberModalOpen(true);
       case 'license':
         return licenseModalCtx.setLicenseModalOpen(true);
+      case 'blacklist':
+        return blacklistModalCtx.setBlacklistModalOpen(true);
     }
   };
 

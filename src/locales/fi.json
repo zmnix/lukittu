@@ -103,6 +103,7 @@
     "email": "Email",
     "full_name": "Full Name",
     "password": "Password",
+    "blacklist": "Blacklist",
     "action": "Action",
     "target": "Target",
     "or": "or",
@@ -274,6 +275,8 @@
   },
   "dashboard": {
     "dashboard": {
+      "no_recent_activity": "No recent activity",
+      "no_recent_activity_description": "No recent activity found. Recent activity will be shown here.",
       "active_licenses": "Active licenses",
       "requests": "Requests",
       "requests_description": "Showing license verify requests divided by status.",
@@ -461,7 +464,10 @@
         "accept_invitation": "accepted invitation",
         "reset_public_key": "reset public key",
         "update_team_settings": "updated team settings",
-        "update_team_picture": "updated team picture"
+        "update_team_picture": "updated team picture",
+        "create_blacklist": "created blacklist",
+        "delete_blacklist": "deleted blacklist",
+        "update_blacklist": "updated blacklist"
       }
     },
     "members": {
