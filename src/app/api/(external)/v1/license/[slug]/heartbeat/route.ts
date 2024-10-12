@@ -65,9 +65,9 @@ export async function POST(
       );
     }
 
-    const ip = getIp();
-    if (ip) {
-      const key = `license-heartbeat:${ip}`;
+    const ipAddress = getIp();
+    if (ipAddress) {
+      const key = `license-heartbeat:${ipAddress}`;
       const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
       if (isLimited) {
@@ -179,7 +179,7 @@ export async function POST(
     );
     const blacklistedIpList = blacklistedIps.map((b) => b.value);
 
-    if (ip && blacklistedIpList.includes(ip)) {
+    if (ipAddress && blacklistedIpList.includes(ipAddress)) {
       return NextResponse.json(
         {
           result: {
@@ -201,7 +201,7 @@ export async function POST(
     const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
 
     if (blacklistedCountryList.length > 0) {
-      const geoData = await proxyCheck(ip);
+      const geoData = await proxyCheck(ipAddress);
 
       if (geoData?.isocode) {
         const inIso3 = iso2ToIso3Map[geoData.isocode!];
@@ -367,7 +367,6 @@ export async function POST(
     }
 
     if (license.ipLimit) {
-      const ipAddress = getIp();
       const existingIps = license.requestLogs.map((log) => log.ipAddress);
       const ipLimitReached = existingIps.length >= license.ipLimit;
 
@@ -428,9 +427,10 @@ export async function POST(
       },
       update: {
         lastBeatAt: new Date(),
-        ipAddress: getIp(),
+        ipAddress,
       },
       create: {
+        ipAddress,
         teamId: team.id,
         deviceIdentifier,
         lastBeatAt: new Date(),
