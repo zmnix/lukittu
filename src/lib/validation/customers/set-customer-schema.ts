@@ -15,8 +15,7 @@ export const setCustomerSchema = (
         })
         .email({
           message: t('validation.invalid_email'),
-        })
-        .nullable(),
+        }),
       fullName: z
         .string({
           required_error: t('validation.full_name_required'),

@@ -177,10 +177,10 @@ export function CustomersTable() {
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
                           <p className="line-clamp-2 break-all font-medium">
-                            {customer.fullName ?? t('general.unknown')}
+                            {customer.email}
                           </p>
                           <div className="mb-1 line-clamp-1 break-all text-xs font-semibold text-muted-foreground">
-                            {customer.email ?? t('general.unknown')}
+                            {customer.fullName ?? t('general.unknown')}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -205,22 +205,6 @@ export function CustomersTable() {
                       <Button
                         variant="ghost"
                         onClick={() => {
-                          setSortColumn('fullName');
-                          setSortDirection(
-                            sortColumn === 'fullName' && sortDirection === 'asc'
-                              ? 'desc'
-                              : 'asc',
-                          );
-                        }}
-                      >
-                        {t('general.name')}
-                        <ArrowDownUp className="ml-2 h-4 w-4" />
-                      </Button>
-                    </TableHead>
-                    <TableHead className="truncate">
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
                           setSortColumn('email');
                           setSortDirection(
                             sortColumn === 'email' && sortDirection === 'asc'
@@ -230,6 +214,22 @@ export function CustomersTable() {
                         }}
                       >
                         {t('general.email')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="truncate">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('fullName');
+                          setSortDirection(
+                            sortColumn === 'fullName' && sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.name')}
                         <ArrowDownUp className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
@@ -290,10 +290,10 @@ export function CustomersTable() {
                         }
                       >
                         <TableCell className="truncate">
-                          {customer.fullName ?? 'N/A'}
+                          {customer.email ?? 'N/A'}
                         </TableCell>
                         <TableCell className="truncate">
-                          {customer.email ?? 'N/A'}
+                          {customer.fullName ?? 'N/A'}
                         </TableCell>
                         <TableCell
                           className="truncate"

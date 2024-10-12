@@ -165,7 +165,7 @@ model Product {
 
 model Customer {
   id              String       @id @default(uuid())
-  email           String?
+  email           String
   fullName        String?
   metadata        Json
   teamId          String

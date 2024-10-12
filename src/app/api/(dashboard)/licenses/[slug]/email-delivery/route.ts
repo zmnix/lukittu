@@ -11,6 +11,10 @@ import { render } from '@react-email/components';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+type ILicenseEmailDeliveryRequest = {
+  customerIds: string[] | null;
+};
+
 export type ILicenseEmailDeliverySuccessResponse = {
   success: boolean;
 };
@@ -27,6 +31,27 @@ export async function POST(
 
   try {
     const licenseId = params.slug;
+    const body = (await request.json()) as ILicenseEmailDeliveryRequest;
+
+    if (!body.customerIds?.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const customerIds = body.customerIds;
+
+    if (customerIds.some((id) => !regex.uuidV4.test(id))) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (!licenseId || !regex.uuidV4.test(licenseId)) {
       return NextResponse.json(
@@ -105,6 +130,7 @@ export async function POST(
     const license = team.licenses[0];
 
     const customerEmails = license.customers
+      .filter((customer) => customerIds.includes(customer.id))
       .map((customer) => customer.email)
       .filter(Boolean) as string[];
 

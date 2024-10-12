@@ -42,7 +42,7 @@ export default function SetCustomerModal() {
   const form = useForm<SetCustomerSchema>({
     resolver: zodResolver(setCustomerSchema(t)),
     defaultValues: {
-      email: null,
+      email: '',
       fullName: null,
       metadata: [],
     },
@@ -175,13 +175,7 @@ export default function SetCustomerModal() {
                       <Input
                         placeholder="support@lukittu.com"
                         {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => {
-                          if (!e.target.value) {
-                            return form.setValue('email', null);
-                          }
-                          return form.setValue('email', e.target.value);
-                        }}
+                        required
                       />
                     </FormControl>
                     <FormMessage />
