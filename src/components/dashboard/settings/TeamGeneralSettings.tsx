@@ -47,11 +47,13 @@ import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-interface GeneralSettingsProps {
+interface TeamGeneralSettingsProps {
   team: ITeamGetSuccessResponse['team'] | null;
 }
 
-export default function GeneralSettings({ team }: GeneralSettingsProps) {
+export default function TeamGeneralSettings({
+  team,
+}: TeamGeneralSettingsProps) {
   const t = useTranslations();
   const ctx = useContext(AuthContext);
 
@@ -68,6 +70,8 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
     defaultValues: {
       strictCustomers: false,
       strictProducts: false,
+      heartbeatTimeout: 60,
+      emailMessage: '',
     },
   });
 
@@ -212,8 +216,10 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
                       alt="Team image"
                       className="object-cover"
                       height={128}
+                      quality={100}
                       src={imageUrl}
                       width={128}
+                      priority
                     />
                   )}
                 </AvatarImage>
@@ -315,6 +321,7 @@ export default function GeneralSettings({ team }: GeneralSettingsProps) {
                       min={1}
                       placeholder={t('dashboard.settings.heartbeat_timeout')}
                       type="number"
+                      value={field.value}
                       onChange={(e) => {
                         if (!e.target.value || e.target.value === '0') {
                           e.target.value = '1';

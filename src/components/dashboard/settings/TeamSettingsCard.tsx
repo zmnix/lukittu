@@ -4,14 +4,16 @@ import {
   ITeamGetSuccessResponse,
 } from '@/app/api/(dashboard)/teams/[slug]/route';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import GeneralSettings from './GeneralSettings';
 import PublicKeysCard from './PublicKeysCard';
 import { TeamDetails } from './TeamDetails';
+import TeamGeneralSettings from './TeamGeneralSettings';
+import TeamLimits from './TeamLimits';
 
 export default function TeamSettingsCard() {
   const t = useTranslations();
@@ -44,8 +46,28 @@ export default function TeamSettingsCard() {
           <div className="flex w-full gap-4 max-xl:flex-col-reverse">
             <>
               <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-                <GeneralSettings team={team} />
-                <PublicKeysCard team={team} />
+                <Tabs className="w-full" defaultValue="generalSettings">
+                  <TabsList className="mb-4 grid h-auto w-full grid-cols-3">
+                    <TabsTrigger value="generalSettings">
+                      {t('dashboard.settings.general_settings')}
+                    </TabsTrigger>
+                    <TabsTrigger value="publicKeys">
+                      {t('dashboard.settings.public_keys')}
+                    </TabsTrigger>{' '}
+                    <TabsTrigger value="limits">
+                      {t('dashboard.settings.limits')}
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="generalSettings">
+                    <TeamGeneralSettings team={team} />
+                  </TabsContent>
+                  <TabsContent value="publicKeys">
+                    <PublicKeysCard team={team} />
+                  </TabsContent>
+                  <TabsContent value="limits">
+                    <TeamLimits team={team} />
+                  </TabsContent>
+                </Tabs>
               </div>
               <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
                 <TeamDetails team={team} />

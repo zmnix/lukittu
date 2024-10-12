@@ -43,7 +43,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
-  const isPro = false;
+  const isCustom = false;
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -148,16 +148,16 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                 >
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-bold">
-                      {isPro
-                        ? t('dashboard.subscriptions.pro_plan')
+                      {isCustom
+                        ? t('dashboard.subscriptions.custom_plan')
                         : t('dashboard.subscriptions.free_plan')}
                     </CardTitle>
                     <div className="flex items-center space-x-2">
                       <Badge
                         className="uppercase"
-                        variant={isPro ? 'default' : 'secondary'}
+                        variant={isCustom ? 'default' : 'secondary'}
                       >
-                        {isPro ? t('general.active') : t('general.basic')}
+                        {isCustom ? t('general.active') : t('general.basic')}
                       </Badge>
                       {isExpanded ? (
                         <ChevronUpIcon className="h-5 w-5" />
@@ -172,13 +172,13 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                 >
                   <CardContent className="px-4 pb-0 pt-0">
                     <CardDescription className="mb-4">
-                      {isPro
-                        ? t('dashboard.subscriptions.using_pro_description')
+                      {isCustom
+                        ? t('dashboard.subscriptions.using_custom_description')
                         : t('dashboard.subscriptions.using_free_description')}
                     </CardDescription>
                   </CardContent>
                   <CardFooter className="px-4">
-                    {!isPro ? (
+                    {!isCustom ? (
                       <ConfettiButton className="flex w-full items-center gap-2">
                         <Rocket className="h-5 w-5" />
                         {t('dashboard.subscriptions.upgrade_to_premium')}
@@ -208,7 +208,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                       className="flex w-full items-center justify-center"
                       size="sm"
                     >
-                      {isPro ? (
+                      {isCustom ? (
                         <CreditCard className="h-5 w-5" />
                       ) : (
                         <Rocket className="h-5 w-5" />
@@ -218,7 +218,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                 </TooltipTrigger>
                 {isOpen === false && (
                   <TooltipContent side="right">
-                    {isPro
+                    {isCustom
                       ? t('dashboard.subscriptions.manage_subscription')
                       : t('dashboard.subscriptions.upgrade_to_premium')}
                   </TooltipContent>

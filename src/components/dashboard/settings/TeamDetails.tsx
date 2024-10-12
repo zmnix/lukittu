@@ -73,8 +73,8 @@ export function TeamDetails({ team }: TeamDetailsProps) {
               {t('dashboard.navigation.members')}
             </h3>
             <div className="text-sm text-muted-foreground">
-              {team?.memberCount ? (
-                team.memberCount
+              {team?.counts.memberCount ? (
+                team.counts.memberCount
               ) : (
                 <Skeleton className="h-4 w-full" />
               )}

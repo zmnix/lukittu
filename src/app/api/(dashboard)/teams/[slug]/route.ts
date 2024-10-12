@@ -13,6 +13,7 @@ import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
   AuditLogTargetType,
+  Limits,
   Settings,
   Team,
   User,
@@ -253,9 +254,15 @@ export async function PUT(
 export type ITeamGetSuccessResponse = {
   team: Team & {
     owner: Omit<User, 'passwordHash'>;
-    memberCount: number;
     publicKey: string;
     settings: Settings;
+    limits: Limits;
+    counts: {
+      memberCount: number;
+      productCount: number;
+      licenseCount: number;
+      customerCount: number;
+    };
   };
 };
 
@@ -291,9 +298,13 @@ export async function GET(
               owner: true,
               keyPair: true,
               settings: true,
+              limits: true,
               _count: {
                 select: {
                   users: true,
+                  products: true,
+                  licenses: true,
+                  customers: true,
                 },
               },
             },
@@ -326,11 +337,17 @@ export async function GET(
       team: {
         ...team,
         owner: team.owner,
-        memberCount: team._count.users,
         publicKey: team.keyPair!.publicKey,
         _count: undefined,
         keyPair: undefined,
         settings: team.settings!,
+        limits: team.limits!,
+        counts: {
+          memberCount: team._count.users,
+          productCount: team._count.products,
+          licenseCount: team._count.licenses,
+          customerCount: team._count.customers,
+        },
       },
     });
   } catch (error) {
