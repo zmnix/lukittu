@@ -4,6 +4,7 @@ import {
   IBlacklistGetSuccessResponse,
 } from '@/app/api/(dashboard)/blacklist/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -28,7 +29,6 @@ import { ArrowDownUp, Ban, Clock, Filter, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import AddBlacklistButton from './AddBlacklistButton';
 import { BlacklistActionDropdown } from './BlacklistActionDropdown';
 
 export function BlacklistTable() {
@@ -137,7 +137,7 @@ export function BlacklistTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddBlacklistButton />
+              <AddEntityButton entityType="blacklist" />
             </div>
           </CardTitle>
         </CardHeader>
@@ -332,7 +332,7 @@ export function BlacklistTable() {
                   {t('dashboard.blacklist.blacklist_description')}
                 </p>
                 <div>
-                  <AddBlacklistButton displayText />
+                  <AddEntityButton entityType="blacklist" displayText />
                 </div>
               </div>
             </div>

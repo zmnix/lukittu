@@ -4,6 +4,7 @@ import {
   ICustomersGetSuccessResponse,
 } from '@/app/api/(dashboard)/customers/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -30,7 +31,6 @@ import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CustomersActionDropdown } from '../CustomersActionDropdown';
-import AddCustomerButton from './AddCustomerButton';
 
 export function CustomersTable() {
   const locale = useLocale();
@@ -139,7 +139,7 @@ export function CustomersTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddCustomerButton />
+              <AddEntityButton entityType="customer" />
             </div>
           </CardTitle>
         </CardHeader>
@@ -351,7 +351,7 @@ export function CustomersTable() {
                   {t('dashboard.customers.customer_description')}
                 </p>
                 <div>
-                  <AddCustomerButton displayText />
+                  <AddEntityButton entityType="customer" displayText />
                 </div>
               </div>
             </div>

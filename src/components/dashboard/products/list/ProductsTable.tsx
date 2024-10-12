@@ -4,6 +4,7 @@ import {
   IProductsGetSuccessResponse,
 } from '@/app/api/(dashboard)/products/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -30,7 +31,6 @@ import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ProductsActionDropdown } from '../ProductsActionDropdown';
-import AddProductButton from './AddProductButton';
 
 export function ProductsTable() {
   const locale = useLocale();
@@ -139,7 +139,7 @@ export function ProductsTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddProductButton />
+              <AddEntityButton entityType="product" />
             </div>
           </CardTitle>
         </CardHeader>
@@ -344,7 +344,7 @@ export function ProductsTable() {
                   {t('dashboard.products.product_description')}
                 </p>
                 <div>
-                  <AddProductButton displayText />
+                  <AddEntityButton entityType="product" displayText />
                 </div>
               </div>
             </div>

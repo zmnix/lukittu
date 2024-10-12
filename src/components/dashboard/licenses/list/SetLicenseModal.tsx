@@ -484,8 +484,8 @@ export default function SetLicenseModal() {
                   {t('dashboard.licenses.assigned_products')}
                 </FormLabel>
                 <ProductsMultiselect
-                  initialProductIds={form.getValues('productIds')}
-                  setProductIds={(productIds) =>
+                  initialValue={form.getValues('productIds')}
+                  onChange={(productIds) =>
                     form.setValue('productIds', productIds)
                   }
                 />
@@ -496,8 +496,8 @@ export default function SetLicenseModal() {
                   {t('dashboard.licenses.assigned_customers')}
                 </FormLabel>
                 <CustomersMultiselect
-                  initialCustomerIds={form.getValues('customerIds')}
-                  setCustomerIds={(customerIds) =>
+                  initialValue={form.getValues('customerIds')}
+                  onChange={(customerIds) =>
                     form.setValue('customerIds', customerIds)
                   }
                 />

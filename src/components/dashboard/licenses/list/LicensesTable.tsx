@@ -6,6 +6,7 @@ import {
 import { DateConverter } from '@/components/shared/DateConverter';
 import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
 import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
+import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -37,7 +38,6 @@ import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
-import AddLicenseButton from './AddLicenseButton';
 
 export function LicensesTable() {
   const locale = useLocale();
@@ -170,7 +170,7 @@ export function LicensesTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddLicenseButton />
+              <AddEntityButton entityType="license" />
             </div>
           </CardTitle>
         </CardHeader>
@@ -412,7 +412,7 @@ export function LicensesTable() {
                   {t('dashboard.licenses.license_description')}
                 </p>
                 <div>
-                  <AddLicenseButton displayText />
+                  <AddEntityButton entityType="license" displayText />
                 </div>
               </div>
             </div>

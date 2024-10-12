@@ -4,6 +4,7 @@ import {
   ITeamsMembersGetSuccessResponse,
 } from '@/app/api/(dashboard)/teams/members/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -32,7 +33,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import AddMemberButton from './AddMemberButton';
 import { MembersActionDropdown } from './MembersActionDropdown';
 
 export function MembersTable() {
@@ -132,7 +132,7 @@ export function MembersTable() {
               >
                 <Filter className="h-4 w-4" />
               </Button>
-              <AddMemberButton isTeamOwner={isTeamOwner} />
+              <AddEntityButton entityType="member" isTeamOwner={isTeamOwner} />
             </div>
           </CardTitle>
         </CardHeader>
@@ -351,7 +351,11 @@ export function MembersTable() {
                   {t('dashboard.members.no_members_description')}
                 </p>
                 <div>
-                  <AddMemberButton isTeamOwner={false} />
+                  <AddEntityButton
+                    entityType="member"
+                    isTeamOwner={isTeamOwner}
+                    displayText
+                  />
                 </div>
               </div>
             </div>
