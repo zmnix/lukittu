@@ -11,6 +11,8 @@ concurrency:
 
 jobs:
   check-translation:
+    name: Check translation keys
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,10 +26,9 @@ jobs:
       - name: Run translation key check
         run: node src/locales/checkTranslations.js
 
-  next:
+  build:
     needs: check-translation
-
-    name: Build and Deploy
+    name: Build Docker Image
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
@@ -45,13 +46,20 @@ jobs:
           echo NEXT_PUBLIC_GITHUB_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }} >> .env
         working-directory: .
 
-      - name: Build docker image
+      - name: Build and push docker image
         run: |
           echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
           docker build -t ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }} .
           docker push ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
         working-directory: .
 
+  deploy:
+    needs: build
+    name: Deploy to VM
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Deploy to VM
         uses: appleboy/ssh-action@master
         with:
