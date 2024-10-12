@@ -55,10 +55,6 @@ export default function SetBlacklistModal() {
     },
   });
 
-  useEffect(() => {
-    console.log(form.formState.errors);
-  }, [form.formState]);
-
   const type = form.watch('type');
 
   const { fields, append, remove } = useFieldArray({
@@ -69,7 +65,7 @@ export default function SetBlacklistModal() {
   useEffect(() => {
     if (ctx.blacklistToEdit) {
       form.setValue('type', ctx.blacklistToEdit.type);
-      form.setValue('value', ctx.blacklistToEdit.value ?? '');
+      form.setValue('value', ctx.blacklistToEdit.value);
       form.setValue(
         'metadata',
         (
@@ -186,10 +182,7 @@ export default function SetBlacklistModal() {
                     <FormLabel>
                       {t('dashboard.licenses.expiration_start')}
                     </FormLabel>
-                    <Select
-                      value={field.value ?? 'IP_ADDRESS'}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
