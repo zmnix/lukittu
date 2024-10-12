@@ -133,6 +133,9 @@ export default function SetProductModal() {
   const handleOpenChange = (open: boolean) => {
     ctx.setProductModalOpen(open);
     form.reset();
+    if (!open) {
+      ctx.setProductToEdit(null);
+    }
   };
 
   return (
