@@ -23,13 +23,13 @@ import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface ProductsMultiselectProps {
-  setProductIds: (productIds: string[]) => void;
-  initialProductIds?: string[];
+  onChange: (productIds: string[]) => void;
+  initialValue?: string[];
 }
 
 export const ProductsMultiselect = ({
-  setProductIds,
-  initialProductIds,
+  onChange,
+  initialValue,
 }: ProductsMultiselectProps) => {
   const t = useTranslations();
 
@@ -68,10 +68,10 @@ export const ProductsMultiselect = ({
   }, [searchQuery]);
 
   useEffect(() => {
-    if (initialProductIds?.length) {
-      setSelectedItems(initialProductIds);
+    if (initialValue?.length) {
+      setSelectedItems(initialValue);
     }
-  }, [initialProductIds]);
+  }, [initialValue]);
 
   useEffect(() => {
     if (open) {
@@ -87,7 +87,7 @@ export const ProductsMultiselect = ({
         }
       })();
     }
-  }, [open, debouncedSearchQuery, handleFetchProducts, setProductIds, t]);
+  }, [open, debouncedSearchQuery, handleFetchProducts, onChange, t]);
 
   const filteredProducts = useMemo(
     () =>
@@ -119,21 +119,21 @@ export const ProductsMultiselect = ({
       setSelectedItems((current) => {
         if (current.includes(productId)) {
           const newSelected = current.filter((i) => i !== productId);
-          setProductIds(newSelected);
+          onChange(newSelected);
           return newSelected;
         } else {
           const newSelected = [...current, productId];
-          setProductIds(newSelected);
+          onChange(newSelected);
           return newSelected;
         }
       });
     },
-    [setProductIds],
+    [onChange],
   );
 
   const handleReset = () => {
     setSelectedItems([]);
-    setProductIds([]);
+    onChange([]);
   };
 
   return (

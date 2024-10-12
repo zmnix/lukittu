@@ -23,13 +23,13 @@ import { toast } from 'sonner';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface CustomersMultiselectProps {
-  setCustomerIds: (customerIds: string[]) => void;
-  initialCustomerIds?: string[];
+  onChange: (customerIds: string[]) => void;
+  initialValue?: string[];
 }
 
 export const CustomersMultiselect = ({
-  setCustomerIds,
-  initialCustomerIds,
+  onChange,
+  initialValue,
 }: CustomersMultiselectProps) => {
   const t = useTranslations();
 
@@ -75,10 +75,10 @@ export const CustomersMultiselect = ({
   }, [searchQuery]);
 
   useEffect(() => {
-    if (initialCustomerIds?.length) {
-      setSelectedItems(initialCustomerIds);
+    if (initialValue?.length) {
+      setSelectedItems(initialValue);
     }
-  }, [initialCustomerIds]);
+  }, [initialValue]);
 
   useEffect(() => {
     if (open) {
@@ -94,7 +94,7 @@ export const CustomersMultiselect = ({
         }
       })();
     }
-  }, [open, debouncedSearchQuery, handleFetchCustomers, setCustomerIds, t]);
+  }, [open, debouncedSearchQuery, handleFetchCustomers, onChange, t]);
 
   const filteredCustomers = useMemo(
     () =>
@@ -130,21 +130,21 @@ export const CustomersMultiselect = ({
       setSelectedItems((current) => {
         if (current.includes(customerId)) {
           const newSelected = current.filter((i) => i !== customerId);
-          setCustomerIds(newSelected);
+          onChange(newSelected);
           return newSelected;
         } else {
           const newSelected = [...current, customerId];
-          setCustomerIds(newSelected);
+          onChange(newSelected);
           return newSelected;
         }
       });
     },
-    [setCustomerIds],
+    [onChange],
   );
 
   const handleReset = () => {
     setSelectedItems([]);
-    setCustomerIds([]);
+    onChange([]);
   };
   return (
     <Popover open={open} onOpenChange={setOpen}>

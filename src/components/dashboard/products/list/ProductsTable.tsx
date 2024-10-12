@@ -4,6 +4,7 @@ import {
   IProductsGetSuccessResponse,
 } from '@/app/api/(dashboard)/products/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,6 @@ import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ProductsActionDropdown } from '../ProductsActionDropdown';
 import AddProductButton from './AddProductButton';
-import ProductsMobileFiltersModal from './ProductsMobileFiltersModal';
 
 export function ProductsTable() {
   const locale = useLocale();
@@ -112,10 +112,18 @@ export function ProductsTable() {
 
   return (
     <ProductModalProvider>
-      <ProductsMobileFiltersModal
+      <MobileFilterModal
+        filterOptions={[
+          {
+            type: 'search',
+            key: 'search',
+            placeholder: t('dashboard.licenses.search_product'),
+          },
+        ]}
+        initialFilters={{ search }}
         open={mobileFiltersOpen}
-        search={debounceSearch}
-        setSearch={setSearch}
+        title={t('general.filters')}
+        onApply={(filters) => setSearch(filters.search)}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>

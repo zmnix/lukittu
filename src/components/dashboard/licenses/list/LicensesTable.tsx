@@ -6,6 +6,7 @@ import {
 import { DateConverter } from '@/components/shared/DateConverter';
 import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
 import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
+import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +38,6 @@ import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import AddLicenseButton from './AddLicenseButton';
-import MobileFiltersModal from './LicensesMobileFiltersModal';
 
 export function LicensesTable() {
   const locale = useLocale();
@@ -125,14 +125,36 @@ export function LicensesTable() {
 
   return (
     <LicenseModalProvider>
-      <MobileFiltersModal
-        customerIds={customerIds}
+      <MobileFilterModal
+        filterOptions={[
+          {
+            type: 'search',
+            key: 'search',
+            placeholder: t('dashboard.licenses.search_license'),
+          },
+          {
+            type: 'multiselect',
+            key: 'products',
+            component: ProductsMultiselect,
+          },
+          {
+            type: 'multiselect',
+            key: 'customers',
+            component: CustomersMultiselect,
+          },
+        ]}
+        initialFilters={{
+          search,
+          products: productIds,
+          customers: customerIds,
+        }}
         open={mobileFiltersOpen}
-        productIds={productIds}
-        search={search}
-        setCustomerIds={setCustomerIds}
-        setProductIds={setProductIds}
-        setSearch={setSearch}
+        title={t('general.filters')}
+        onApply={(filters) => {
+          setSearch(filters.search);
+          setProductIds(filters.products);
+          setCustomerIds(filters.customers);
+        }}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>
@@ -167,10 +189,13 @@ export function LicensesTable() {
                     }}
                   />
                 </div>
-                <ProductsMultiselect setProductIds={setProductIds} />
+                <ProductsMultiselect
+                  initialValue={productIds}
+                  onChange={setProductIds}
+                />
                 <CustomersMultiselect
-                  initialCustomerIds={customerIds}
-                  setCustomerIds={setCustomerIds}
+                  initialValue={customerIds}
+                  onChange={setCustomerIds}
                 />
               </div>
               <div className="flex flex-col md:hidden">

@@ -4,6 +4,7 @@ import {
   ICustomersGetSuccessResponse,
 } from '@/app/api/(dashboard)/customers/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,6 @@ import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CustomersActionDropdown } from '../CustomersActionDropdown';
 import AddCustomerButton from './AddCustomerButton';
-import CustomersMobileFiltersModal from './CustomersMobileFilters';
 
 export function CustomersTable() {
   const locale = useLocale();
@@ -112,10 +112,18 @@ export function CustomersTable() {
 
   return (
     <CustomerModalProvider>
-      <CustomersMobileFiltersModal
+      <MobileFilterModal
+        filterOptions={[
+          {
+            type: 'search',
+            key: 'search',
+            placeholder: t('general.search_customer'),
+          },
+        ]}
+        initialFilters={{ search }}
         open={mobileFiltersOpen}
-        search={debounceSearch}
-        setSearch={setSearch}
+        title={t('general.filters')}
+        onApply={(filters) => setSearch(filters.search)}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>

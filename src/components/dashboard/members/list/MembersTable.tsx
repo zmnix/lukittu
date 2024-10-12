@@ -4,6 +4,7 @@ import {
   ITeamsMembersGetSuccessResponse,
 } from '@/app/api/(dashboard)/teams/members/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,7 +34,6 @@ import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddMemberButton from './AddMemberButton';
 import { MembersActionDropdown } from './MembersActionDropdown';
-import MembersMobileFiltersModal from './MembersMobileFiltersModal';
 
 export function MembersTable() {
   const locale = useLocale();
@@ -105,10 +105,18 @@ export function MembersTable() {
 
   return (
     <MemberModalProvider>
-      <MembersMobileFiltersModal
+      <MobileFilterModal
+        filterOptions={[
+          {
+            type: 'search',
+            key: 'search',
+            placeholder: t('dashboard.licenses.search_product'),
+          },
+        ]}
+        initialFilters={{ search }}
         open={mobileFiltersOpen}
-        search={debounceSearch}
-        setSearch={setSearch}
+        title={t('general.filters')}
+        onApply={(filters) => setSearch(filters.search)}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>

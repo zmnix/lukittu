@@ -4,6 +4,7 @@ import {
   IBlacklistGetSuccessResponse,
 } from '@/app/api/(dashboard)/blacklist/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +30,6 @@ import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import AddBlacklistButton from './AddBlacklistButton';
 import { BlacklistActionDropdown } from './BlacklistActionDropdown';
-import BlacklistMobileFiltersModal from './BlacklistMobileFilter';
 
 export function BlacklistTable() {
   const locale = useLocale();
@@ -110,10 +110,18 @@ export function BlacklistTable() {
 
   return (
     <BlacklistModalProvider>
-      <BlacklistMobileFiltersModal
+      <MobileFilterModal
+        filterOptions={[
+          {
+            type: 'search',
+            key: 'search',
+            placeholder: t('dashboard.blacklist.search_blacklist'),
+          },
+        ]}
+        initialFilters={{ search }}
         open={mobileFiltersOpen}
-        search={debounceSearch}
-        setSearch={setSearch}
+        title={t('general.filters')}
+        onApply={(filters) => setSearch(filters.search)}
         onOpenChange={setMobileFiltersOpen}
       />
       <Card>
