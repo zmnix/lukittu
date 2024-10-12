@@ -167,7 +167,7 @@ export default function RegisterCard() {
                   <FormItem>
                     <FormLabel>{t('general.email')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="m@example.com" {...field} />
+                      <Input placeholder="support@lukittu.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

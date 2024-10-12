@@ -190,7 +190,7 @@ export default function SetProductModal() {
                   <FormItem>
                     <FormLabel>{t('general.url')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com" {...field} />
+                      <Input placeholder="https://lukittu.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

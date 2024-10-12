@@ -84,6 +84,7 @@
     "blacklist_not_found": "Blacklist not found!"
   },
   "general": {
+    "select_type": "Select type",
     "country": "Country",
     "days": "Days",
     "heartbeats": "Heartbeats",
@@ -170,6 +171,8 @@
     "expiring": "Expiring",
     "expired": "Expired",
     "suspended": "Suspended",
+    "search_country": "Search country...",
+    "select_country": "Select country",
     "no_name": "No name",
     "no_email": "No email",
     "show_more": "Show more",
@@ -367,6 +370,7 @@
       "no_licenses_assigned": "No licenses assigned"
     },
     "licenses": {
+      "select_expiration_start": "Select expiration start",
       "last_beat_at": "Last beat at",
       "delete_license": "Delete license",
       "add_license": "Add license",

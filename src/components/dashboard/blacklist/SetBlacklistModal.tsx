@@ -185,7 +185,7 @@ export default function SetBlacklistModal() {
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder={t('general.select_type')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

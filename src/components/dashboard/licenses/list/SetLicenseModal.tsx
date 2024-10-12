@@ -380,7 +380,11 @@ export default function SetLicenseModal() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select expiration start" />
+                              <SelectValue
+                                placeholder={t(
+                                  'dashboard.licenses.select_expiration_start',
+                                )}
+                              />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

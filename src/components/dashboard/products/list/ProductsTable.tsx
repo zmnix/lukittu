@@ -150,7 +150,7 @@ export function ProductsTable() {
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
                 <Input
                   className="pl-8"
-                  placeholder="Search products"
+                  placeholder={t('dashboard.licenses.search_product')}
                   value={debounceSearch}
                   onChange={(e) => {
                     setDebounceSearch(e.target.value);
