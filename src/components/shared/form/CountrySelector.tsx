@@ -63,13 +63,13 @@ export default function CountrySelector({
 
   return (
     <div className="flex w-full items-center gap-2">
-      <Popover open={open} onOpenChange={setOpen} modal>
+      <Popover open={open} modal onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
-            role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
+            role="combobox"
+            variant="outline"
           >
             {value
               ? countries.find((country) => country.name === value)?.flag +
@@ -112,14 +112,14 @@ export default function CountrySelector({
                       alt={country.name}
                       className="rounded-[2px]"
                       height={20}
+                      loading="lazy"
                       src={`/countries/${getIso2FromIso3(country.flag)}.svg`}
+                      width={20}
                       onError={(e) => {
                         e.preventDefault();
                         (e.target as HTMLImageElement).src =
                           '/countries/unknown.svg';
                       }}
-                      width={20}
-                      loading="lazy"
                     />
                     <span className="ml-2">{country.name}</span>
                   </CommandItem>
@@ -130,11 +130,11 @@ export default function CountrySelector({
         </PopoverContent>
       </Popover>
       <Button
+        type="button"
         onClick={() => {
           setValue('');
           onChange('');
         }}
-        type="button"
       >
         <X className="h-4 w-4" />
       </Button>
