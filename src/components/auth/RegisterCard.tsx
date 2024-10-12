@@ -236,7 +236,7 @@ export default function RegisterCard() {
                         {t('auth.register.agree')}{' '}
                         <Link
                           className="text-primary"
-                          href="#"
+                          href="https://lukittu.com/terms-of-service"
                           prefetch={false}
                         >
                           {t('auth.register.terms_of_service')}
@@ -244,7 +244,7 @@ export default function RegisterCard() {
                         {t('auth.register.and')}{' '}
                         <Link
                           className="text-primary"
-                          href="#"
+                          href="https://lukittu.com/privacy-policy"
                           prefetch={false}
                         >
                           {t('auth.register.privacy_policy')}
