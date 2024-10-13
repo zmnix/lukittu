@@ -119,7 +119,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', baseUrl));
     }
 
-    if (process.env.IS_WAITLIST_ONLY === 'true') {
+    const waitlistEmails = process.env.WAITLIST_EMAILS!.split(',');
+    if (
+      process.env.IS_WAITLIST_ONLY === 'true' &&
+      !waitlistEmails.includes(user.email)
+    ) {
       return NextResponse.redirect(
         new URL('/auth/login?error=waitlist_only', baseUrl),
       );
