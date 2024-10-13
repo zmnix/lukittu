@@ -72,6 +72,7 @@ export default function TeamGeneralSettings({
       strictProducts: false,
       heartbeatTimeout: 60,
       emailMessage: '',
+      ipLimitPeriod: 'DAY',
     },
   });
 
@@ -81,6 +82,7 @@ export default function TeamGeneralSettings({
       strictProducts: team?.settings.strictProducts ?? false,
       heartbeatTimeout: team?.settings.heartbeatTimeout ?? 60,
       emailMessage: team?.settings.emailMessage ?? '',
+      ipLimitPeriod: team?.settings.ipLimitPeriod ?? 'DAY',
     });
   }, [form, team]);
 
@@ -300,6 +302,35 @@ export default function TeamGeneralSettings({
                     <SelectContent>
                       <SelectItem value="true">True</SelectItem>
                       <SelectItem value="false">False</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="ipLimitPeriod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('dashboard.settings.ip_limit_period')}
+                  </FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value)}
+                  >
+                    <FormControl>
+                      <SelectTrigger disabled={!team || loading}>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="DAY">{t('general.day')}</SelectItem>
+                      <SelectItem value="WEEK">{t('general.week')}</SelectItem>
+                      <SelectItem value="MONTH">
+                        {t('general.month')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

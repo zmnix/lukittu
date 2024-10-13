@@ -107,6 +107,9 @@
     "action": "Action",
     "target": "Target",
     "or": "or",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
     "error_occurred": "An error occurred",
     "type": "Type",
     "login": "Login",
@@ -513,7 +516,8 @@
       "limits_description": "View and manage your team's limits. Upgrade your plan to increase the limits.",
       "log_retention": "Log retention",
       "need_increased_limits": "Need increased limits? Send us an email at <emailElement>support@lukittu.com</emailElement>!",
-      "contact_support": "Contact support"
+      "contact_support": "Contact support",
+      "ip_limit_period": "IP limit period"
     },
     "blacklist": {
       "blacklist_updated": "Blacklist updated",

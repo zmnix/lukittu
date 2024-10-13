@@ -103,15 +103,16 @@ model Limits {
 }
 
 model Settings {
-  id               String   @id @default(uuid())
-  teamId           String   @unique
-  team             Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  heartbeatTimeout Int      @default(60)
-  strictCustomers  Boolean  @default(false)
-  strictProducts   Boolean  @default(false)
+  id               String        @id @default(uuid())
+  teamId           String        @unique
+  team             Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  heartbeatTimeout Int           @default(60)
+  ipLimitPeriod    IpLimitPeriod @default(DAY)
+  strictCustomers  Boolean       @default(false)
+  strictProducts   Boolean       @default(false)
   emailMessage     String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model KeyPair {
@@ -338,6 +339,12 @@ enum LicenseExpirationType {
 enum LicenseExpirationStart {
   ACTIVATION
   CREATION
+}
+
+enum IpLimitPeriod {
+  DAY
+  WEEK
+  MONTH
 }
 
 enum RequestStatus {

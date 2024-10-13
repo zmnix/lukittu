@@ -11,11 +11,7 @@ export const setBlacklistSchema = (
 ) =>
   z
     .object({
-      type: z.enum([
-        BlacklistType.COUNTRY,
-        BlacklistType.IP_ADDRESS,
-        BlacklistType.DEVICE_IDENTIFIER,
-      ]),
+      type: z.enum(['COUNTRY', 'IP_ADDRESS', 'DEVICE_IDENTIFIER']),
       value: z
         .string({
           required_error: t('validation.blacklist_value_required'),
@@ -32,10 +28,7 @@ export const setBlacklistSchema = (
     .refine(
       (data) => {
         const countries = Object.keys(iso3ToName);
-        if (
-          data.type === BlacklistType.COUNTRY &&
-          !countries.includes(data.value)
-        ) {
+        if (data.type === 'COUNTRY' && !countries.includes(data.value)) {
           return false;
         }
         return true;

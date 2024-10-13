@@ -12,7 +12,12 @@ import {
   verifyLicenseSchema,
 } from '@/lib/validation/licenses/verify-license-schema';
 import { HttpStatus } from '@/types/http-status';
-import { BlacklistType, RequestMethod, RequestStatus } from '@prisma/client';
+import {
+  BlacklistType,
+  IpLimitPeriod,
+  RequestMethod,
+  RequestStatus,
+} from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 type IExternalLicenseVerifyResponse = {
@@ -136,6 +141,17 @@ export async function POST(
 
     const licenseKeyLookup = generateHMAC(`${licenseKey}:${teamId}`);
 
+    const ipLimitPeriodDays =
+      settings.ipLimitPeriod === IpLimitPeriod.DAY
+        ? 1
+        : settings.ipLimitPeriod === IpLimitPeriod.WEEK
+          ? 7
+          : 30;
+
+    const ipLimitPeriodDate = new Date(
+      new Date().getTime() - ipLimitPeriodDays * 24 * 60 * 60 * 1000,
+    );
+
     const license = await prisma.license.findUnique({
       where: {
         team: {
@@ -150,7 +166,7 @@ export async function POST(
         requestLogs: {
           where: {
             createdAt: {
-              gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000), // 6 months
+              gte: ipLimitPeriodDate,
             },
           },
         },
