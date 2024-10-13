@@ -304,7 +304,11 @@ export async function POST(
       );
     }
 
-    if (team.blacklist.find((blacklist) => blacklist.value === value)) {
+    if (
+      team.blacklist.find(
+        (blacklist) => blacklist.value === value && blacklist.type === type,
+      )
+    ) {
       return NextResponse.json(
         {
           message: t('validation.blacklist_exists'),

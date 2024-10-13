@@ -229,7 +229,9 @@ export async function PUT(
     if (
       team.blacklist.find(
         (blacklist) =>
-          blacklist.value === value && blacklist.id !== blacklistId,
+          blacklist.value === value &&
+          blacklist.id !== blacklistId &&
+          blacklist.type === type,
       )
     ) {
       return NextResponse.json(

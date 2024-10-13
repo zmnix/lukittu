@@ -85,7 +85,7 @@ model Blacklist {
   createdBy       User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   team            Team          @relation(fields: [teamId], references: [id])
 
-  @@index([teamId])
+  @@unique([teamId, type, value])
 }
 
 model Limits {

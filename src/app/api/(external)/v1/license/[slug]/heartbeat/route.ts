@@ -180,6 +180,7 @@ export async function POST(
     const blacklistedIpList = blacklistedIps.map((b) => b.value);
 
     if (ipAddress && blacklistedIpList.includes(ipAddress)) {
+      await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ipAddress);
       return NextResponse.json(
         {
           result: {
@@ -207,6 +208,7 @@ export async function POST(
         const inIso3 = iso2ToIso3Map[geoData.isocode!];
 
         if (blacklistedCountryList.includes(inIso3)) {
+          await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
           return NextResponse.json(
             {
               result: {
@@ -236,6 +238,11 @@ export async function POST(
       deviceIdentifier &&
       blacklistedDeviceIdentifierList.includes(deviceIdentifier)
     ) {
+      await updateBlacklistHits(
+        teamId,
+        BlacklistType.DEVICE_IDENTIFIER,
+        deviceIdentifier,
+      );
       return NextResponse.json(
         {
           result: {
@@ -478,4 +485,25 @@ export async function POST(
       },
     );
   }
+}
+
+async function updateBlacklistHits(
+  teamId: string,
+  type: BlacklistType,
+  value: string,
+) {
+  await prisma.blacklist.update({
+    where: {
+      teamId_type_value: {
+        teamId,
+        type,
+        value,
+      },
+    },
+    data: {
+      hits: {
+        increment: 1,
+      },
+    },
+  });
 }
