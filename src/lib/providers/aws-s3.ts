@@ -9,11 +9,11 @@ import 'server-only';
 import { logger } from '../utils/logger';
 
 const s3Client = new S3Client({
-  endpoint: process.env.CONTABO_STORAGE_ENDPOINT,
+  endpoint: process.env.OBJECT_STORAGE_ENDPOINT,
   region: 'default',
   credentials: {
-    accessKeyId: process.env.CONTABO_ACCESS_KEY!,
-    secretAccessKey: process.env.CONTABO_SECRET_KEY!,
+    accessKeyId: process.env.OBJECT_STORAGE_ACCESS_KEY!,
+    secretAccessKey: process.env.OBJECT_STORAGE_SECRET_KEY!,
   },
   forcePathStyle: true,
 });

@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     if (user.imageUrl) {
       const imageUrlParts = user.imageUrl.split('/');
       const fileKey = `users/${imageUrlParts[imageUrlParts.length - 1]}`;
-      await deleteFileFromS3(process.env.CONTABO_BUCKET_NAME!, fileKey);
+      await deleteFileFromS3(process.env.OBJECT_STORAGE_BUCKET_NAME!, fileKey);
     }
 
     const imageUuid = randomUUID();
@@ -100,13 +100,13 @@ export async function POST(request: NextRequest) {
     const fileKey = `users/${imageUuid}.${file.type.split('/')[1]}`;
 
     await uploadFileToS3(
-      process.env.CONTABO_BUCKET_NAME!,
+      process.env.OBJECT_STORAGE_BUCKET_NAME!,
       fileKey,
       processedImageBuffer,
       file.type,
     );
 
-    const imageUrl = `${process.env.CONTABO_PUBLIC_ENDPOINT}:${process.env.CONTABO_BUCKET_NAME}/${fileKey}`;
+    const imageUrl = `${process.env.OBJECT_STORAGE_PUBLIC_ENDPOINT}/${process.env.OBJECT_STORAGE_BUCKET_NAME}/${fileKey}`;
 
     await prisma.user.update({
       where: {
@@ -173,7 +173,7 @@ export async function DELETE(
     const imageUrlParts = user.imageUrl.split('/');
     const fileKey = `users/${imageUrlParts[imageUrlParts.length - 1]}`;
 
-    await deleteFileFromS3(process.env.CONTABO_BUCKET_NAME!, fileKey);
+    await deleteFileFromS3(process.env.OBJECT_STORAGE_BUCKET_NAME!, fileKey);
 
     await prisma.user.update({
       where: {

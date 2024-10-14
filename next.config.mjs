@@ -15,7 +15,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'eu2.contabostorage.com',
+        hostname: 'lukittu.fsn1.your-objectstorage.com',
         protocol: 'https',
       },
     ],
