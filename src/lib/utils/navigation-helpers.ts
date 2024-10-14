@@ -137,7 +137,7 @@ export function getMenuList(pathname: string): Group[] {
       groupTranslation: 'external_links',
       menus: [
         {
-          href: '#',
+          href: 'https://docs.lukittu.com',
           translation: 'documentation',
           active: pathname === '#',
           icon: BookOpenText,
