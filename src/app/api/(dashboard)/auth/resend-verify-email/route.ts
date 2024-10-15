@@ -138,7 +138,7 @@ export async function POST(
         {
           message: t('auth.emails.sending_failed_title'),
         },
-        { status: 500 },
+        { status: HttpStatus.INTERNAL_SERVER_ERROR },
       );
     }
 
