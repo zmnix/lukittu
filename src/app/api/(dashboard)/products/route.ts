@@ -30,11 +30,11 @@ export type IProductsGetResponse = ErrorResponse | IProductsGetSuccessResponse;
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<IProductsGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -187,7 +187,7 @@ export type IProductsCreateResponse =
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<IProductsCreateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as SetProductSchema;
@@ -205,7 +205,7 @@ export async function POST(
 
     const { name, url, metadata } = validated.data;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

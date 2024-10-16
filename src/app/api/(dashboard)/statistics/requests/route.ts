@@ -79,7 +79,7 @@ const groupByDateOrHour = (
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<IStatisticsRequestsGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
   const searchParams = request.nextUrl.searchParams;
 
   const licenseId = searchParams.get('licenseId');
@@ -98,7 +98,7 @@ export async function GET(
   }
 
   try {
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

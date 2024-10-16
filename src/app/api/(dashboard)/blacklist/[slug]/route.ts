@@ -24,9 +24,10 @@ export type IBlacklistDeleteResponse =
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IBlacklistDeleteResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const blacklistId = params.slug;
@@ -40,7 +41,7 @@ export async function DELETE(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -139,9 +140,10 @@ export type IBlacklistUpdateResponse =
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IBlacklistUpdateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const blacklistId = params.slug;
@@ -170,7 +172,7 @@ export async function PUT(
 
     const { value, type, metadata } = validated.data;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

@@ -25,9 +25,10 @@ export type ILicenseEmailDeliveryResponse =
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ILicenseEmailDeliveryResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const licenseId = params.slug;
@@ -62,7 +63,7 @@ export async function POST(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

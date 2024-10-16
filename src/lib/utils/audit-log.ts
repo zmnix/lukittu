@@ -25,8 +25,8 @@ export const createAuditLog = async ({
   requestBody,
   responseBody,
 }: CreateAuditLogProps) => {
-  const ipAddress = getIp();
-  const userAgent = getUserAgent();
+  const ipAddress = await getIp();
+  const userAgent = await getUserAgent();
   const geoData = await proxyCheck(ipAddress);
   const longitude = geoData?.longitude || null;
   const latitude = geoData?.latitude || null;

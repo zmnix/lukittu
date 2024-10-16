@@ -41,7 +41,7 @@ const getStartDate = (timeRange: '1h' | '24h' | '7d' | '30d') => {
 };
 
 export async function GET(request: NextRequest) {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
   const searchParams = request.nextUrl.searchParams;
 
   const licenseId = searchParams.get('licenseId');
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

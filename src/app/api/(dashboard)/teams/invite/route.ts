@@ -25,7 +25,7 @@ export type ITeamsInviteResponse = ErrorResponse | ITeamsInviteSuccessResponse;
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ITeamsInviteResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as InviteMemberSchema;
@@ -43,7 +43,7 @@ export async function POST(
 
     const email = body.email;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

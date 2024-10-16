@@ -34,8 +34,9 @@ type IExternalLicenseVerifyResponse = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IExternalLicenseVerifyResponse>> {
+  const params = await props.params;
   const requestTime = new Date();
   const teamId = params.slug;
 
@@ -79,7 +80,7 @@ export async function POST(
       });
     }
 
-    const ip = getIp();
+    const ip = await getIp();
     if (ip) {
       const key = `license-verify:${ip}`;
       const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
@@ -454,7 +455,7 @@ export async function POST(
     }
 
     if (license.ipLimit) {
-      const ipAddress = getIp();
+      const ipAddress = await getIp();
       const existingIps = license.requestLogs.map((log) => log.ipAddress);
       const ipLimitReached = existingIps.length >= license.ipLimit;
 
@@ -528,7 +529,7 @@ export async function POST(
         },
         update: {
           lastBeatAt: new Date(),
-          ipAddress: getIp(),
+          ipAddress: await getIp(),
         },
         create: {
           teamId,
@@ -635,8 +636,8 @@ async function logRequest({
   method,
 }: LogRequestProps) {
   try {
-    const origin = getOrigin();
-    const ipAddress = getIp();
+    const origin = await getOrigin();
+    const ipAddress = await getIp();
     const geoData = await proxyCheck(ipAddress);
     const longitude = geoData?.longitude || null;
     const latitude = geoData?.latitude || null;
@@ -650,7 +651,7 @@ async function logRequest({
         version: process.env.version!,
         method: method.toUpperCase() as RequestMethod,
         path: pathName,
-        userAgent: getUserAgent(),
+        userAgent: await getUserAgent(),
         origin,
         statusCode,
         longitude: hasBothLongitudeAndLatitude ? longitude : null,

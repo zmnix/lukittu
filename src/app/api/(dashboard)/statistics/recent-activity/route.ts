@@ -27,10 +27,10 @@ export type IStatisticsRecentActivityGetResponse =
 export async function GET(): Promise<
   NextResponse<IStatisticsRecentActivityGetResponse>
 > {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

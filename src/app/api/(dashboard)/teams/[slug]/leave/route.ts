@@ -18,9 +18,10 @@ export type ITeamsLeaveResponse = ErrorResponse | ITeamsLeaveSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ITeamsLeaveResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const teamId = params.slug;

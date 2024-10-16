@@ -8,7 +8,7 @@ export default async function ResetPassword() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: t('auth.reset_password.seo_title'),

@@ -8,7 +8,7 @@ export default async function VerifyEmail() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: t('auth.verify_email.seo_title'),

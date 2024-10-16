@@ -15,7 +15,7 @@ export type IWaitlistResponse = IWaitlistSuccessResponse | ErrorResponse;
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<IWaitlistResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as { email: string };
@@ -31,7 +31,7 @@ export async function POST(
       );
     }
 
-    const ip = getIp();
+    const ip = await getIp();
     if (ip) {
       const key = `waitlist:${email}`;
       const isLimited = await isRateLimited(key, 5, 1800); // 5 requests per 30 minutes

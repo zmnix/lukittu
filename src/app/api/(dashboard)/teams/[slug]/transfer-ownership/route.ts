@@ -24,9 +24,10 @@ export type ITeamsTransferOwnershipResponse =
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ITeamsTransferOwnershipResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as ITeamsTransferOwnershipRequest;

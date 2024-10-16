@@ -30,10 +30,10 @@ export type IStatisticsCardDataGetResponse =
 export async function GET(): Promise<
   NextResponse<IStatisticsCardDataGetResponse>
 > {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

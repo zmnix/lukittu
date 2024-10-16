@@ -4,9 +4,10 @@ import 'server-only';
 /**
  * Get the IP address from the headers
  */
-export const getIp = () => {
-  const forwardedFor = headers().get('x-forwarded-for');
-  const realIp = headers().get('x-real-ip');
+export const getIp = async () => {
+  const headersList = await headers();
+  const forwardedFor = headersList.get('x-forwarded-for');
+  const realIp = headersList.get('x-real-ip');
 
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
@@ -20,19 +21,26 @@ export const getIp = () => {
 /**
  * Get origin from the headers
  */
-export const getOrigin = () => headers().get('origin');
+export const getOrigin = async () => {
+  const headersList = await headers();
+  return headersList.get('origin');
+};
 
 /**
  * Get the user agent from the headers
  */
-export const getUserAgent = () => headers().get('user-agent');
+export const getUserAgent = async () => {
+  const headersList = await headers();
+  return headersList.get('user-agent');
+};
 
 /**
  * Get the language from the cookie or the accept-language header
  */
-export const getLanguage = () => {
-  const langCookie = cookies().get('lang')?.value;
-  const acceptedLang = headers().get('accept-language');
+export const getLanguage = async () => {
+  const headersList = await cookies();
+  const langCookie = headersList.get('lang')?.value;
+  const acceptedLang = headersList.get('accept-language');
 
   const allowedLangs = ['en', 'fi'];
 
@@ -42,15 +50,16 @@ export const getLanguage = () => {
     lang = langCookie;
   }
 
-  if (acceptedLang && allowedLangs.includes(acceptedLang)) {
-    lang = acceptedLang;
+  if (acceptedLang && allowedLangs.includes(acceptedLang.value)) {
+    lang = acceptedLang.value;
   }
 
   return lang;
 };
 
-export const getSelectedTeam = () => {
-  const selectedTeamCookie = cookies().get('selectedTeam')?.value;
+export const getSelectedTeam = async () => {
+  const cookieStore = await cookies();
+  const selectedTeamCookie = cookieStore.get('selectedTeam')?.value;
 
   if (!selectedTeamCookie) return null;
 

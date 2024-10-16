@@ -39,7 +39,7 @@ export default function Dashboard() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: `${t('dashboard.navigation.dashboard')} | Lukittu`,

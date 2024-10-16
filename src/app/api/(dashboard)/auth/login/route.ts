@@ -21,7 +21,7 @@ export type IAuthLoginResponse = ErrorResponse | IAuthLoginSuccessResponse;
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<IAuthLoginResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as LoginSchema;
@@ -37,7 +37,7 @@ export async function POST(
       );
     }
 
-    const ip = getIp();
+    const ip = await getIp();
     if (ip) {
       const key = `login:${ip}`;
       const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes

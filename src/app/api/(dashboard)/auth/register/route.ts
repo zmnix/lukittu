@@ -32,7 +32,7 @@ export type IAuthRegisterResponse =
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<IAuthRegisterResponse | unknown>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as RegisterSchema;
@@ -48,7 +48,7 @@ export async function POST(
       );
     }
 
-    const ip = getIp();
+    const ip = await getIp();
     if (ip) {
       const key = `register:${ip}`;
       const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes

@@ -8,7 +8,7 @@ export default function Login() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: t('auth.login.seo_title'),

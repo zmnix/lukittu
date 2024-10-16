@@ -26,10 +26,10 @@ export type ISessionsGetSuccessResponse = {
 export type ISessionsGetResponse = ErrorResponse | ISessionsGetSuccessResponse;
 
 export async function GET(): Promise<NextResponse<ISessionsGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const sessionId = cookies().get('session')?.value;
+    const sessionId = (await cookies()).get('session')?.value;
     const session = await getSession({
       user: {
         include: {
@@ -107,7 +107,7 @@ export type ISessionsSignOutAllResponse =
 export async function DELETE(): Promise<
   NextResponse<ISessionsSignOutAllResponse>
 > {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const session = await getSession({ user: true });

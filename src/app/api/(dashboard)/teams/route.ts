@@ -26,7 +26,7 @@ export type ITeamsGetResponse = ErrorResponse | ITeamsGetSuccessResponse;
 export async function GET(): Promise<
   NextResponse<ITeamsGetResponse | undefined>
 > {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const session = await getSession({
@@ -76,7 +76,7 @@ export type ITeamsCreateResponse = ErrorResponse | ITeamsCreateSuccessResponse;
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ITeamsCreateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as SetTeamSchema;
@@ -134,7 +134,7 @@ export async function POST(
       },
     });
 
-    cookies().set('selectedTeam', createdTeam.id.toString(), {
+    (await cookies()).set('selectedTeam', createdTeam.id.toString(), {
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 5),
     });
 

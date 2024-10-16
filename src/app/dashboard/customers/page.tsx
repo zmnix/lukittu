@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 export default async function CustomersPage() {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
   return (
     <div>
       <h1 className="text-2xl font-bold">
@@ -20,7 +20,7 @@ export default async function CustomersPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: `${t('dashboard.navigation.customers')} | Lukittu`,

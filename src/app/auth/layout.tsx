@@ -7,7 +7,7 @@ interface AuthLayoutProps {
 }
 
 export default async function AuthLayout({ children }: AuthLayoutProps) {
-  const sessionId = cookies().get('session')?.value;
+  const sessionId = (await cookies()).get('session')?.value;
 
   if (sessionId) {
     redirect('/dashboard');

@@ -11,8 +11,8 @@ import { logger } from './logger';
 
 export async function createSession(userId: string, rememberMe: boolean) {
   try {
-    const ipAddress = getIp();
-    const userAgent = getUserAgent();
+    const ipAddress = await getIp();
+    const userAgent = await getUserAgent();
 
     const geoData = await proxyCheck(ipAddress);
     const countryAlpha3: string | null = geoData?.isocode
@@ -36,7 +36,7 @@ export async function createSession(userId: string, rememberMe: boolean) {
       },
     });
 
-    cookies().set('session', sessionId, {
+    (await cookies()).set('session', sessionId, {
       expires: expiresAt,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -51,7 +51,7 @@ export async function createSession(userId: string, rememberMe: boolean) {
 
 export const getSession = cache(
   async <T extends Prisma.SessionInclude>(include: T | null = null) => {
-    const sessionId = cookies().get('session')?.value;
+    const sessionId = (await cookies()).get('session')?.value;
 
     if (!sessionId) return null;
 

@@ -38,9 +38,10 @@ export type ILicenseGetResponse = ILicenseGetSuccessResponse | ErrorResponse;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ILicenseGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const licenseId = params.slug;
@@ -54,7 +55,7 @@ export async function GET(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -155,9 +156,10 @@ export type ILicensesUpdateSuccessResponse = {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ILicensesUpdateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const licenseId = params.slug;
@@ -198,7 +200,7 @@ export async function PUT(
       seats,
     } = body;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -382,9 +384,10 @@ export type ILicensesDeleteResponse =
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ILicensesDeleteResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const licenseId = params.slug;
@@ -398,7 +401,7 @@ export async function DELETE(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

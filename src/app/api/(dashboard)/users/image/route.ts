@@ -23,7 +23,7 @@ export type IUsersImageSetResponse =
   | ErrorResponse;
 
 export async function POST(request: NextRequest) {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const formData = await request.formData();
@@ -145,7 +145,7 @@ export type IUsersImageDeleteResponse =
 export async function DELETE(
   request: NextRequest,
 ): Promise<NextResponse<IUsersImageDeleteResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const session = await getSession({ user: true });

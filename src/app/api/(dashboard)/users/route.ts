@@ -20,7 +20,7 @@ export type IUsersUpdateResponse = ErrorResponse | IUsersUpdateSuccessResponse;
 export async function PATCH(
   request: NextRequest,
 ): Promise<NextResponse<IUsersUpdateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as UpdateProfileSchema;

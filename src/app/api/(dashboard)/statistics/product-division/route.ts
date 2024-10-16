@@ -24,10 +24,10 @@ export type IStatisticsProductDivisionGetResponse =
 export async function GET(): Promise<
   NextResponse<IStatisticsProductDivisionGetResponse>
 > {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

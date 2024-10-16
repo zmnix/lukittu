@@ -8,7 +8,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export type ITeamsResetPublicKeySuccessResponse = {
   publicKey: string;
@@ -18,14 +18,11 @@ export type ITeamsResetPublicKeyResponse =
   | ErrorResponse
   | ITeamsResetPublicKeySuccessResponse;
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { slug: string } },
-) {
-  const t = await getTranslations({ locale: getLanguage() });
+export async function POST() {
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

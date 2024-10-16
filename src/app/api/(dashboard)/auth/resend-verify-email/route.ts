@@ -28,7 +28,7 @@ export type IAuthResendVerifyEmailResponse =
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<IAuthResendVerifyEmailResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as ResendVerifyEmailSchema;
@@ -46,7 +46,7 @@ export async function POST(
 
     const { email } = validated.data;
 
-    const ip = getIp();
+    const ip = await getIp();
     if (ip) {
       const key = `resend-verify-email:${email}`;
       const isLimited = await isRateLimited(key, 5, 1800); // 5 requests per 30 minutes

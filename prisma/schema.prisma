@@ -15,25 +15,26 @@ datasource db {
 }
 
 model User {
-  id                 String       @id @default(uuid())
-  email              String       @unique
-  emailVerified      Boolean      @default(false)
-  fullName           String
-  passwordHash       String?
-  imageUrl           String?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-  provider           Provider     @default(CREDENTIALS)
-  sessions           Session[]
-  createdProducts    Product[]
-  auditLogs          AuditLog[]
-  ownedTeams         Team[]       @relation("TeamOwner")
-  teams              Team[]       @relation("TeamUsers")
-  createdApiKeys     ApiKey[]
-  createdLicenses    License[]
-  createdCustomers   Customer[]
-  createdInvitations Invitation[]
-  blacklist          Blacklist[]
+  id                        String              @id @default(uuid())
+  email                     String              @unique
+  emailVerified             Boolean             @default(false)
+  fullName                  String
+  passwordHash              String?
+  imageUrl                  String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  provider                  Provider            @default(CREDENTIALS)
+  sessions                  Session[]
+  createdProducts           Product[]
+  auditLogs                 AuditLog[]
+  ownedTeams                Team[]              @relation("TeamOwner")
+  teams                     Team[]              @relation("TeamUsers")
+  createdApiKeys            ApiKey[]
+  createdLicenses           License[]
+  createdCustomers          Customer[]
+  createdStripeIntegrations StripeIntegration[]
+  createdInvitations        Invitation[]
+  blacklist                 Blacklist[]
 }
 
 model Session {
@@ -49,27 +50,40 @@ model Session {
 }
 
 model Team {
-  id          String       @id @default(uuid())
-  name        String
-  ownerId     String
-  imageUrl    String?
-  owner       User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  users       User[]       @relation("TeamUsers")
-  products    Product[]
-  licenses    License[]
-  customers   Customer[]
-  requestLogs RequestLog[]
-  auditLogs   AuditLog[]
-  invitations Invitation[]
-  apiKeys     ApiKey[]
-  heartbeats  Heartbeat[]
-  blacklist   Blacklist[]
-  limits      Limits?
-  settings    Settings?
-  keyPair     KeyPair?
-  deletedAt   DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                String             @id @default(uuid())
+  name              String
+  ownerId           String
+  imageUrl          String?
+  owner             User               @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  users             User[]             @relation("TeamUsers")
+  products          Product[]
+  licenses          License[]
+  customers         Customer[]
+  requestLogs       RequestLog[]
+  auditLogs         AuditLog[]
+  invitations       Invitation[]
+  apiKeys           ApiKey[]
+  heartbeats        Heartbeat[]
+  blacklist         Blacklist[]
+  limits            Limits?
+  stripeIntegration StripeIntegration?
+  settings          Settings?
+  keyPair           KeyPair?
+  deletedAt         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model StripeIntegration {
+  id              String   @id @default(uuid())
+  teamId          String   @unique
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  webhookSecret   String
+  apiKey          String
+  createdByUserId String?
+  createdBy       User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Blacklist {
@@ -164,6 +178,18 @@ model Product {
   @@index([teamId])
 }
 
+model Address {
+  id         String   @id @default(uuid())
+  city       String?
+  country    String?
+  line1      String?
+  line2      String?
+  postalCode String?
+  state      String?
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
 model Customer {
   id              String       @id @default(uuid())
   email           String
@@ -177,6 +203,7 @@ model Customer {
   createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  address         Address?
 
   @@unique([email, teamId])
 }

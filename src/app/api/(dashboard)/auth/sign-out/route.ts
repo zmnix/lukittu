@@ -15,11 +15,11 @@ type IAuthSignOutSuccessResponse = {
 export type IAuthSignOutResponse = ErrorResponse | IAuthSignOutSuccessResponse;
 
 export async function POST(): Promise<NextResponse<IAuthSignOutResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
-  const sessionId = cookies().get('session')?.value;
+  const sessionId = (await cookies()).get('session')?.value;
 
-  cookies().set('session', '', {
+  (await cookies()).set('session', '', {
     expires: new Date(0),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

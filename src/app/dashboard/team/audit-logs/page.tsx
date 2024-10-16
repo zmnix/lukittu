@@ -40,7 +40,7 @@ export default async function TeamAuditLogPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: `${t('dashboard.navigation.audit_logs')} | Lukittu`,

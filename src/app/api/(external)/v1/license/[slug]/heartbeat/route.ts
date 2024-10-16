@@ -25,8 +25,9 @@ type IExternalLicenseHeartbeatResponse = {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IExternalLicenseHeartbeatResponse>> {
+  const params = await props.params;
   const teamId = params.slug;
 
   try {
@@ -65,7 +66,7 @@ export async function POST(
       );
     }
 
-    const ipAddress = getIp();
+    const ipAddress = await getIp();
     if (ipAddress) {
       const key = `license-heartbeat:${ipAddress}`;
       const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute

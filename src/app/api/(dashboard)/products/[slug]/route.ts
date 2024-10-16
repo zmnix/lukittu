@@ -29,9 +29,10 @@ export type IProductGetResponse = IProductGetSuccessResponse | ErrorResponse;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IProductGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const productId = params.slug;
@@ -45,7 +46,7 @@ export async function GET(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -138,9 +139,10 @@ export type IProductsDeleteResponse =
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IProductsDeleteResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = await request.json();
@@ -156,7 +158,7 @@ export async function DELETE(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -265,9 +267,10 @@ export type IProductsUpdateResponse =
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<IProductsUpdateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const productId = params.slug;
@@ -296,7 +299,7 @@ export async function PUT(
 
     const { name, url, metadata } = validated.data;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

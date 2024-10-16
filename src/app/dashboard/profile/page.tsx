@@ -25,7 +25,7 @@ export default function ProfilePage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: `${t('general.profile')} | Lukittu`,

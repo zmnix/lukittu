@@ -33,9 +33,10 @@ export type ITeamsDeleteResponse = ErrorResponse | ITeamsDeleteSuccessResponse;
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ITeamsDeleteResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = await request.json();
@@ -153,9 +154,10 @@ export type ITeamsEditResponse = ErrorResponse | ITeamsEditSuccessResponse;
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ITeamsEditResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const teamId = params.slug;
@@ -270,9 +272,10 @@ export type ITeamGetResponse = ErrorResponse | ITeamGetSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } },
+  props: { params: Promise<{ slug: string }> },
 ): Promise<NextResponse<ITeamGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const teamId = params.slug;

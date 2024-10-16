@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 export default async function LicensesPage() {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return (
     <div>
@@ -21,7 +21,7 @@ export default async function LicensesPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: `${t('dashboard.navigation.licenses')} | Lukittu`,

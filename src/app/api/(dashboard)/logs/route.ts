@@ -28,11 +28,11 @@ export type ILogsGetResponse = ErrorResponse | ILogsGetSuccessResponse;
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<ILogsGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

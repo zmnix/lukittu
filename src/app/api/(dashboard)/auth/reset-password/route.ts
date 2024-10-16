@@ -25,7 +25,7 @@ export type IAuthResetPasswordResponse =
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<IAuthResetPasswordResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as ResetPasswordSchema & {

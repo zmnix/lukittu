@@ -50,7 +50,7 @@ export default async function RootLayout({
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   return {
     title: t('seo.title'),
@@ -60,7 +60,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: t('seo.title'),
       description: t('seo.description'),
       type: 'website',
-      locale: getLanguage(),
+      locale: await getLanguage(),
       siteName: 'Lukittu',
     },
   };

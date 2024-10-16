@@ -24,7 +24,7 @@ export type ITeamsSettingsEditResponse =
 export async function PUT(
   request: NextRequest,
 ): Promise<NextResponse<ITeamsSettingsEditResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as SetTeamSettingsSchema;
@@ -40,7 +40,7 @@ export async function PUT(
       );
     }
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

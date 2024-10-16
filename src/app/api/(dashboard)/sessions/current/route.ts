@@ -22,7 +22,7 @@ export type ISessionsGetCurrentResponse =
 export async function GET(): Promise<
   NextResponse<ISessionsGetCurrentResponse>
 > {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const session = await getSession({

@@ -32,11 +32,11 @@ export type ICustomersGetResponse =
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<ICustomersGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -199,7 +199,7 @@ export type ICustomersCreateResponse =
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ICustomersCreateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as SetCustomerSchema;
@@ -217,7 +217,7 @@ export async function POST(
 
     const { email, fullName, metadata } = validated.data;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

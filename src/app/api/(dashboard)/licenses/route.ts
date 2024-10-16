@@ -40,11 +40,11 @@ export type ILicensesGetResponse = ErrorResponse | ILicensesGetSuccessResponse;
 export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<ILicensesGetResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(
@@ -230,7 +230,7 @@ export type ILicensesCreateSuccessResponse = {
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ILicensesCreateResponse>> {
-  const t = await getTranslations({ locale: getLanguage() });
+  const t = await getTranslations({ locale: await getLanguage() });
 
   try {
     const body = (await request.json()) as SetLicenseScheama;
@@ -260,7 +260,7 @@ export async function POST(
       suspended,
     } = body;
 
-    const selectedTeam = getSelectedTeam();
+    const selectedTeam = await getSelectedTeam();
 
     if (!selectedTeam) {
       return NextResponse.json(

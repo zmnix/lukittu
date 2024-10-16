@@ -244,7 +244,7 @@ export function LicensesTable() {
               </div>
               <Table
                 className="relative max-md:hidden"
-                containerRef={containerRef}
+                containerRef={containerRef as React.RefObject<HTMLDivElement>}
               >
                 <TableHeader>
                   <TableRow>
