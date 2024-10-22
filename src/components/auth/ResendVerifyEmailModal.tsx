@@ -11,14 +11,6 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import LoadingButton from '../shared/LoadingButton';
 
-const initialState = {
-  message: '',
-  isError: false,
-} as {
-  message?: string;
-  isError: boolean;
-};
-
 interface ResendVerifyEmailModalProps {
   open: boolean;
   onOpenChange: (boolean: boolean) => void;
@@ -31,7 +23,10 @@ export default function ResendVerifyEmailModal({
   email,
 }: ResendVerifyEmailModalProps) {
   const t = useTranslations();
-  const [response, setResponse] = useState<typeof initialState | null>(null);
+  const [response, setResponse] = useState<{
+    isError: boolean;
+    message?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleResendVerifyEmail = async (email: string) => {

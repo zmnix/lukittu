@@ -5,11 +5,18 @@
     "project": ["tsconfig.json"],
     "sourceType": "module"
   },
+  "ignorePatterns": ["src/components/ui", "checkTranslations.js"],
   "rules": {
     "prefer-const": "error",
     "react/react-in-jsx-scope": "off",
     "spaced-comment": "error",
-    "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "args": "none",
+        "caughtErrors": "none"
+      }
+    ],
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
     "@typescript-eslint/no-unnecessary-condition": "warn",
