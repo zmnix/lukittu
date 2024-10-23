@@ -1,11 +1,11 @@
 import { withSentryConfig } from '@sentry/nextjs';
+import { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 import pkg from './package.json' with { type: 'json' };
 
 const withNextIntl = createNextIntlPlugin();
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: false, // TODO: Enable, fixes react-leaflet for nextjs 15
   output: 'standalone',
   poweredByHeader: false,
