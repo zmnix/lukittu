@@ -319,7 +319,8 @@
       "discord": "Discord",
       "logs": "Logs",
       "blacklist": "Blacklist",
-      "settings": "Settings"
+      "settings": "Settings",
+      "integrations": "Integrations"
     },
     "teams": {
       "create_team": "Create a team",
@@ -491,6 +492,9 @@
       "send_invite": "Send invite",
       "no_members": "No members",
       "no_members_description": "No members found. Members are the users who have access to the team and its resources."
+    },
+    "integrations": {
+      "need_integrations": "<strong>Need integrations?</strong> We are working on integrations with popular services. If you have a specific service in mind, send us an email at <emailElement>support@lukittu.com</emailElement>!"
     },
     "settings": {
       "general_settings": "General settings",

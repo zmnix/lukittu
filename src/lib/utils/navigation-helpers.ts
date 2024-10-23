@@ -120,6 +120,11 @@ export function getMenuList(pathname: string): Group[] {
               active: pathname === '/dashboard/team/settings',
             },
             {
+              href: '/dashboard/team/integrations',
+              translation: 'integrations',
+              active: pathname === '/dashboard/team/integrations',
+            },
+            {
               href: '/dashboard/team/members',
               translation: 'members',
               active: pathname === '/dashboard/team/members',
