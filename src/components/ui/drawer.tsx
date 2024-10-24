@@ -67,7 +67,7 @@ const DrawerHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'grid gap-1.5 p-4 text-center max-md:p-2 sm:text-left',
+      'grid gap-1.5 p-4 text-center max-md:p-2 max-md:pt-4 sm:text-left',
       className,
     )}
     {...props}
@@ -80,7 +80,10 @@ const DrawerFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('mt-auto flex flex-col gap-2 p-4 max-md:p-2', className)}
+    className={cn(
+      'mt-auto flex flex-col gap-2 p-4 max-md:p-2 max-md:pb-4',
+      className,
+    )}
     {...props}
   />
 );
