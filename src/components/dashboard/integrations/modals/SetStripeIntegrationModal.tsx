@@ -1,6 +1,7 @@
 import { ITeamsIntegrationsGetSuccessResponse } from '@/app/api/(dashboard)/teams/integrations/route';
 import { ITeamsIntegrationsStripeSetResponse } from '@/app/api/(dashboard)/teams/integrations/stripe/route';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -24,6 +25,7 @@ import {
   setStripeIntegrationSchema,
 } from '@/lib/validation/integrations/set-stripe-integration-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -43,6 +45,8 @@ export default function SetStripeIntegrationModal({
   const t = useTranslations();
 
   const [loading, setLoading] = useState(false);
+  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const form = useForm<SetStripeIntegrationSchema>({
     resolver: zodResolver(setStripeIntegrationSchema(t)),
@@ -126,12 +130,27 @@ export default function SetStripeIntegrationModal({
                 <FormItem>
                   <FormLabel>{t('general.api_key')}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={t(
-                        'dashboard.integrations.stripe_api_key_placeholder',
-                      )}
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        autoComplete="off"
+                        placeholder="sk_test_..."
+                        type={showApiKey ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        className="absolute bottom-1 right-1 h-7 w-7"
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                      >
+                        {showApiKey ? (
+                          <EyeOffIcon className="bg-background" />
+                        ) : (
+                          <EyeIcon className="bg-background" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,12 +165,27 @@ export default function SetStripeIntegrationModal({
                     {t('dashboard.integrations.webhook_secret')}
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={t(
-                        'dashboard.integrations.stripe_webhook_secret_placeholder',
-                      )}
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        autoComplete="off"
+                        placeholder="whsec_..."
+                        type={showWebhookSecret ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        className="absolute bottom-1 right-1 h-7 w-7"
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setShowWebhookSecret(!showWebhookSecret)}
+                      >
+                        {showWebhookSecret ? (
+                          <EyeOffIcon className="bg-background" />
+                        ) : (
+                          <EyeIcon className="bg-background" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

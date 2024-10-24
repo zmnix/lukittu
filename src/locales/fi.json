@@ -503,8 +503,6 @@
       "setup_integration": "Setup integration",
       "manage_integration": "Manage integration",
       "stripe_integration_description": "For automatic license generation and distribution, you can integrate Lukittu with Stripe. When a customer purchases a product, a license will be automatically generated and sent to the customer.",
-      "stripe_api_key_placeholder": "sk_1234567890",
-      "stripe_webhook_secret_placeholder": "whsec_1234567890",
       "webhook_secret": "Webhook secret",
       "stripe_integration_updated": "Stripe integration updated",
       "stripe_integration_created": "Stripe integration created"
