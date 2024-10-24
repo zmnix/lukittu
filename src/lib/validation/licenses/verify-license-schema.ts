@@ -31,6 +31,7 @@ export const verifyLicenseSchema = () =>
       challenge: z
         .string({ message: 'Challenge must be a string' })
         .max(1000, { message: 'Challenge must be less than 1000 characters' })
+        .regex(/^[^\s]+$/, { message: 'Challenge must not contain spaces' })
         .optional(),
       deviceIdentifier: z
         .string({
@@ -41,6 +42,9 @@ export const verifyLicenseSchema = () =>
         })
         .max(1000, {
           message: 'Device identifier must be less than 1000 characters',
+        })
+        .regex(/^[^\s]+$/, {
+          message: 'Device identifier must not contain spaces',
         })
         .optional(),
     })

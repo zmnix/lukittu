@@ -16,16 +16,6 @@ export const licenseHeartbeatSchema = () =>
               'License key must be in the format of XXXXX-XXXXX-XXXXX-XXXXX-XXXXX',
           },
         ),
-      deviceIdentifier: z
-        .string({
-          message: 'Device identifier must be a string',
-        })
-        .min(10, {
-          message: 'Device identifier must be at least 10 characters',
-        })
-        .max(1000, {
-          message: 'Device identifier must be less than 1000 characters',
-        }),
       customerId: z
         .string({ message: 'Customer UUID must be a string' })
         .uuid({
@@ -41,6 +31,20 @@ export const licenseHeartbeatSchema = () =>
       challenge: z
         .string({ message: 'Challenge must be a string' })
         .max(1000, { message: 'Challenge must be less than 1000 characters' })
+        .regex(/^[^\s]+$/, { message: 'Challenge must not contain spaces' })
         .optional(),
+      deviceIdentifier: z
+        .string({
+          message: 'Device identifier must be a string',
+        })
+        .min(10, {
+          message: 'Device identifier must be at least 10 characters',
+        })
+        .max(1000, {
+          message: 'Device identifier must be less than 1000 characters',
+        })
+        .regex(/^[^\s]+$/, {
+          message: 'Device identifier must not contain spaces',
+        }),
     })
     .strict({ message: 'Invalid payload' });

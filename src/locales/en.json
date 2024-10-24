@@ -81,7 +81,11 @@
     "invalid_country": "Invalid country!",
     "invalid_ip": "Invalid IP address!",
     "blacklist_exists": "This value is already in the blacklist!",
-    "blacklist_not_found": "Blacklist not found!"
+    "blacklist_not_found": "Blacklist not found!",
+    "stripe_api_key_required": "Stripe API key is required!",
+    "stripe_api_key_invalid": "Stripe API key is invalid!",
+    "stripe_webhook_secret_required": "Stripe webhook secret is required!",
+    "stripe_webhook_secret_invalid": "Stripe webhook secret is invalid!"
   },
   "general": {
     "select_type": "Select type",
@@ -105,6 +109,7 @@
     "password": "Password",
     "blacklist": "Blacklist",
     "action": "Action",
+    "api_key": "API key",
     "target": "Target",
     "or": "or",
     "day": "Day",
@@ -494,7 +499,15 @@
       "no_members_description": "No members found. Members are the users who have access to the team and its resources."
     },
     "integrations": {
-      "need_integrations": "<strong>Need integrations?</strong> We are working on integrations with popular services. If you have a specific service in mind, send us an email at <emailElement>support@lukittu.com</emailElement>!"
+      "need_integrations": "<strong>Need integrations?</strong> We are working on integrations with popular services. If you have a specific service in mind, send us an email at <emailElement>support@lukittu.com</emailElement>!",
+      "setup_integration": "Setup integration",
+      "manage_integration": "Manage integration",
+      "stripe_integration_description": "For automatic license generation and distribution, you can integrate Lukittu with Stripe. When a customer purchases a product, a license will be automatically generated and sent to the customer.",
+      "stripe_api_key_placeholder": "sk_1234567890",
+      "stripe_webhook_secret_placeholder": "whsec_1234567890",
+      "webhook_secret": "Webhook secret",
+      "stripe_integration_updated": "Stripe integration updated",
+      "stripe_integration_created": "Stripe integration created"
     },
     "settings": {
       "general_settings": "General settings",

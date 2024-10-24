@@ -24,7 +24,9 @@ export type ITeamsImageSetResponse =
   | ITeamsImageSetSuccessResponse
   | ErrorResponse;
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<ITeamsImageSetResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {

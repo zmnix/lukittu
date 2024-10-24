@@ -80,6 +80,7 @@ model StripeIntegration {
   team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   webhookSecret   String
   apiKey          String
+  active          Boolean  @default(true)
   createdByUserId String?
   createdBy       User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())

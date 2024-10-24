@@ -1,4 +1,3 @@
-'use client';
 import { ITeamsCreateResponse } from '@/app/api/(dashboard)/teams/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import {

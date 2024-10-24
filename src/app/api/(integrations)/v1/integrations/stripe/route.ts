@@ -62,6 +62,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const integration = team.stripeIntegration;
+
+    if (!integration.active) {
+      return NextResponse.json(
+        {
+          message: 'Stripe integration is not active',
+        },
+        { status: HttpStatus.OK }, // Return 200 to prevent Stripe from retrying the request
+      );
+    }
+
     const stripe = new Stripe(team.stripeIntegration.apiKey, {
       apiVersion: '2024-09-30.acacia',
     });
