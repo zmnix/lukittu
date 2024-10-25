@@ -1,8 +1,8 @@
 import prisma from '@/lib/database/prisma';
-import { sendResetPasswordEmail } from '@/lib/emails/send-forgot-password-email';
+import { sendResetPasswordEmail } from '@/lib/emails/templates/send-forgot-password-email';
+import { logger } from '@/lib/logging/logger';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
-import { isRateLimited } from '@/lib/utils/rate-limit';
 import {
   forgotPasswordSchema,
   IForgotPasswordSchema,

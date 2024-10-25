@@ -1,7 +1,7 @@
 import prisma from '@/lib/database/prisma';
-import { createSession } from '@/lib/utils/auth';
-import { generateKeyPair } from '@/lib/utils/crypto';
-import { logger } from '@/lib/utils/logger';
+import { logger } from '@/lib/logging/logger';
+import { createSession } from '@/lib/security/auth';
+import { generateKeyPair } from '@/lib/security/crypto';
 import { Provider } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 

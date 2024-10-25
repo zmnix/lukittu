@@ -5,9 +5,9 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 import 'server-only';
 import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
+import { logger } from '../logging/logger';
 import { proxyCheck } from '../providers/proxycheck';
-import { getIp, getUserAgent } from './header-helpers';
-import { logger } from './logger';
+import { getIp, getUserAgent } from '../utils/header-helpers';
 
 export async function createSession(userId: string, rememberMe: boolean) {
   try {

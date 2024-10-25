@@ -6,7 +6,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import 'server-only';
-import { logger } from '../utils/logger';
+import { logger } from '../logging/logger';
 
 const s3Client = new S3Client({
   endpoint: process.env.OBJECT_STORAGE_ENDPOINT,

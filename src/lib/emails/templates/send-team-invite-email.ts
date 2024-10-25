@@ -2,8 +2,8 @@ import TeamInviteEmailTemplate from '@/emails/TeamInviteTemplate';
 import { Session, Team } from '@prisma/client';
 import { render } from '@react-email/components';
 import 'server-only';
-import { logger } from '../utils/logger';
-import { sendEmail } from '../utils/nodemailer';
+import { logger } from '../../logging/logger';
+import { sendEmail } from '../nodemailer';
 
 interface SendTeamInviteEmailProps {
   email: string;

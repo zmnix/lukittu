@@ -1,10 +1,10 @@
 import prisma from '@/lib/database/prisma';
-import { sendVerifyEmailEmail } from '@/lib/emails/send-verify-email-email';
+import { sendVerifyEmailEmail } from '@/lib/emails/templates/send-verify-email-email';
+import { logger } from '@/lib/logging/logger';
 import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
-import { generateKeyPair, hashPassword } from '@/lib/utils/crypto';
+import { generateKeyPair, hashPassword } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
-import { isRateLimited } from '@/lib/utils/rate-limit';
 import {
   registerSchema,
   RegisterSchema,

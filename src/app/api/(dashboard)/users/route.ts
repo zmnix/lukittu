@@ -1,7 +1,7 @@
 import prisma from '@/lib/database/prisma';
-import { getSession } from '@/lib/utils/auth';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import {
   UpdateProfileSchema,
   updateProfileSchema,

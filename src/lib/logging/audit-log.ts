@@ -3,7 +3,7 @@ import 'server-only';
 import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
 import prisma from '../database/prisma';
 import { proxyCheck } from '../providers/proxycheck';
-import { getIp, getUserAgent } from './header-helpers';
+import { getIp, getUserAgent } from '../utils/header-helpers';
 import { logger } from './logger';
 
 interface CreateAuditLogProps {

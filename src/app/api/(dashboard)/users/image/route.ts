@@ -1,8 +1,8 @@
 import prisma from '@/lib/database/prisma';
+import { logger } from '@/lib/logging/logger';
 import { deleteFileFromS3, uploadFileToS3 } from '@/lib/providers/aws-s3';
-import { getSession } from '@/lib/utils/auth';
+import { getSession } from '@/lib/security/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { randomUUID } from 'crypto';

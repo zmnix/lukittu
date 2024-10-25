@@ -13,7 +13,7 @@ import {
 import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
-} from '@/lib/utils/license-helpers';
+} from '@/lib/licenses/license-status';
 import { Copy, Infinity, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';

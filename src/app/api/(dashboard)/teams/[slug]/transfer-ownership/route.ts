@@ -1,9 +1,9 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
-import { createAuditLog } from '@/lib/utils/audit-log';
-import { getSession } from '@/lib/utils/auth';
+import { createAuditLog } from '@/lib/logging/audit-log';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';

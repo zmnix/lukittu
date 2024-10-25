@@ -1,10 +1,10 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
-import { sendLicenseDistributionEmail } from '@/lib/emails/send-license-distribution-email';
+import { sendLicenseDistributionEmail } from '@/lib/emails/templates/send-license-distribution-email';
 import { generateUniqueLicense } from '@/lib/licenses/generate-license';
-import { encryptLicenseKey, generateHMAC } from '@/lib/utils/crypto';
-import { logger } from '@/lib/utils/logger';
-import { isRateLimited } from '@/lib/utils/rate-limit';
+import { logger } from '@/lib/logging/logger';
+import { encryptLicenseKey, generateHMAC } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { HttpStatus } from '@/types/http-status';
 import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';

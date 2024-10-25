@@ -1,4 +1,5 @@
-import { logger } from '../utils/logger';
+import 'server-only';
+import { logger } from '../logging/logger';
 
 export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
   try {

@@ -1,9 +1,9 @@
 import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import prisma from '@/lib/database/prisma';
-import { getSession } from '@/lib/utils/auth';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { Session } from '@prisma/client';

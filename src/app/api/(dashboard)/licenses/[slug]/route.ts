@@ -1,14 +1,14 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
-import { createAuditLog } from '@/lib/utils/audit-log';
-import { getSession } from '@/lib/utils/auth';
+import { createAuditLog } from '@/lib/logging/audit-log';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
 import {
   decryptLicenseKey,
   encryptLicenseKey,
   generateHMAC,
-} from '@/lib/utils/crypto';
+} from '@/lib/security/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import {
   SetLicenseScheama,
   setLicenseSchema,

@@ -1,5 +1,6 @@
+import 'server-only';
 import { redisClient } from '../database/redis';
-import { logger } from './logger';
+import { logger } from '../logging/logger';
 
 export async function isRateLimited(
   key: string,

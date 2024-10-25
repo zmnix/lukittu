@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
-import { logger } from '../utils/logger';
+import 'server-only';
+import { logger } from '../logging/logger';
 
 const redisClient = new Redis({
   host: process.env.REDIS_HOST,

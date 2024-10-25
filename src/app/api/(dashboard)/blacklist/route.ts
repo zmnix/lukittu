@@ -1,10 +1,10 @@
 import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import prisma from '@/lib/database/prisma';
-import { createAuditLog } from '@/lib/utils/audit-log';
-import { getSession } from '@/lib/utils/auth';
+import { createAuditLog } from '@/lib/logging/audit-log';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import {
   setBlacklistSchema,
   SetBlacklistSchema,

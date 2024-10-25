@@ -1,6 +1,6 @@
 import prisma from '@/lib/database/prisma';
+import { logger } from '@/lib/logging/logger';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';

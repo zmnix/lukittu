@@ -2,11 +2,11 @@
 import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { logger } from '@/lib/logging/logger';
 import { proxyCheck } from '@/lib/providers/proxycheck';
-import { generateHMAC, signChallenge } from '@/lib/utils/crypto';
+import { generateHMAC, signChallenge } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getIp, getOrigin, getUserAgent } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
-import { isRateLimited } from '@/lib/utils/rate-limit';
 import {
   VerifyLicenseSchema,
   verifyLicenseSchema,

@@ -1,9 +1,9 @@
 import { regex } from '@/lib/constants/regex';
-import { sendLicenseDistributionEmail } from '@/lib/emails/send-license-distribution-email';
-import { getSession } from '@/lib/utils/auth';
-import { decryptLicenseKey } from '@/lib/utils/crypto';
+import { sendLicenseDistributionEmail } from '@/lib/emails/templates/send-license-distribution-email';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
+import { decryptLicenseKey } from '@/lib/security/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { getTranslations } from 'next-intl/server';

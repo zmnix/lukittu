@@ -1,8 +1,8 @@
 import prisma from '@/lib/database/prisma';
-import { getSession } from '@/lib/utils/auth';
-import { hashPassword, verifyPassword } from '@/lib/utils/crypto';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
+import { hashPassword, verifyPassword } from '@/lib/security/crypto';
 import { getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import {
   changePasswordSchema,
   ChangePasswordSchema,

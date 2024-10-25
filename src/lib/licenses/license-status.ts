@@ -12,7 +12,6 @@ type LicenseStatus =
 export const getLicenseStatus = (
   license: Omit<License, 'licenseKeyLookup'>,
 ): LicenseStatus => {
-  // ACTIVE, INACTIVE, EXPIRING, EXPIRED, SUSPENDED
   const currentDate = new Date();
 
   if (license.suspended) {

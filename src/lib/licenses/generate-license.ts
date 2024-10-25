@@ -1,6 +1,6 @@
 import 'server-only';
 import prisma from '../database/prisma';
-import { generateHMAC } from '../utils/crypto';
+import { generateHMAC } from '../security/crypto';
 
 const generateRandomString = (length: number): string => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

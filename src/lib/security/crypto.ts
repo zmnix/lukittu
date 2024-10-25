@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import 'server-only';
-import { logger } from './logger';
+import { logger } from '../logging/logger';
 
 export function hashPassword(password: string) {
   const iterations = 100000;

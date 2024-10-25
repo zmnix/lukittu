@@ -1,7 +1,7 @@
-import { getSession } from '@/lib/utils/auth';
-import { decryptLicenseKey } from '@/lib/utils/crypto';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
+import { decryptLicenseKey } from '@/lib/security/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { RequestStatus } from '@prisma/client';

@@ -1,7 +1,7 @@
 import prisma from '@/lib/database/prisma';
-import { getSession } from '@/lib/utils/auth';
+import { logger } from '@/lib/logging/logger';
+import { getSession } from '@/lib/security/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { Prisma, User } from '@prisma/client';

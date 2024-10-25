@@ -1,6 +1,6 @@
+import { logger } from '@/lib/logging/logger';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
-import { isRateLimited } from '@/lib/utils/rate-limit';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { getTranslations } from 'next-intl/server';

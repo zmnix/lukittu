@@ -27,7 +27,7 @@ import { useTableScroll } from '@/hooks/useTableScroll';
 import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
-} from '@/lib/utils/license-helpers';
+} from '@/lib/licenses/license-status';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';

@@ -1,10 +1,10 @@
 import prisma from '@/lib/database/prisma';
+import { logger } from '@/lib/logging/logger';
 import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
-import { createSession } from '@/lib/utils/auth';
-import { verifyPassword } from '@/lib/utils/crypto';
+import { createSession } from '@/lib/security/auth';
+import { verifyPassword } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
-import { logger } from '@/lib/utils/logger';
-import { isRateLimited } from '@/lib/utils/rate-limit';
 import { loginSchema, LoginSchema } from '@/lib/validation/auth/login-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
