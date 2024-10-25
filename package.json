@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "email-dev": "email dev --dir ./src/emails",
     "type-check": "tsc --noEmit --incremental",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch"
   },
   "dependencies": {
