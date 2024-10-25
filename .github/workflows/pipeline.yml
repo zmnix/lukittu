@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 concurrency:
   group: build-deploy-${{ github.ref }}
@@ -97,13 +94,13 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Build and push docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
-          cache-from: type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:latest
-          cache-to: type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:latest,mode=max
+          tags: ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build
