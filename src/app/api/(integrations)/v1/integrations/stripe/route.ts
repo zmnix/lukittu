@@ -1,5 +1,7 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { generateUniqueLicense } from '@/lib/licenses/generate-license';
+import { encryptLicenseKey, generateHMAC } from '@/lib/utils/crypto';
 import { logger } from '@/lib/utils/logger';
 import { isRateLimited } from '@/lib/utils/rate-limit';
 import { HttpStatus } from '@/types/http-status';
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const key = `stripe-integration:${teamId}`;
-    const isLimited = await isRateLimited(key, 30, 60); // 30 requests per 60 seconds
+    const isLimited = await isRateLimited(key, 60, 10); // 60 requests per 10 seconds
 
     if (isLimited) {
       return NextResponse.json(
@@ -88,13 +90,13 @@ export async function POST(request: NextRequest) {
         await handleSubscriptionCreated(event.data.object, teamId, stripe);
         break;
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object, teamId);
+        await handleSubscriptionUpdated(event.data.object, teamId, stripe);
         break;
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object, teamId);
+        await handleSubscriptionDeleted(event.data.object, teamId, stripe);
         break;
       case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(event.data.object, teamId);
+        await handleCheckoutSessionCompleted(event.data.object, teamId, stripe);
         break;
       default:
         return NextResponse.json({ success: true });
@@ -129,6 +131,7 @@ async function handleSubscriptionCreated(
 async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
   teamId: string,
+  stripe: Stripe,
 ) {
   // TODO:
 }
@@ -136,6 +139,7 @@ async function handleSubscriptionUpdated(
 async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
   teamId: string,
+  stripe: Stripe,
 ) {
   // TODO:
 }
@@ -143,6 +147,142 @@ async function handleSubscriptionDeleted(
 async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
   teamId: string,
+  stripe: Stripe,
 ) {
-  // TODO:
+  try {
+    if (session.payment_status !== 'paid' || session.mode !== 'payment') {
+      logger.info(
+        "Skipping: Payment status is not 'paid' or session is not a payment session.",
+      );
+      return;
+    }
+
+    const customer = session.customer_details;
+
+    if (!customer || !customer.email) {
+      logger.info('Skipping: No customer email found in the checkout session.');
+      return;
+    }
+
+    const lineItems = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ['line_items'],
+    });
+
+    const item = lineItems.line_items?.data[0];
+    if (!item || !item.price) {
+      logger.info(
+        'Skipping: No line items or price found in the checkout session.',
+      );
+      return;
+    }
+
+    if (item.price.type !== 'one_time') {
+      logger.info('Skipping: Price type is not one_time.');
+      return;
+    }
+
+    const product = await stripe.products.retrieve(
+      item.price.product as string,
+    );
+    const lukittuProductId = product.metadata.product_id;
+
+    if (!lukittuProductId || !regex.uuidV4.test(lukittuProductId)) {
+      logger.info(
+        'Skipping: No product_id found in the product metadata or inva lid product_id.',
+      );
+      return;
+    }
+
+    // TODO: Other data from metadata
+    const metadata = [
+      {
+        key: 'Stripe cs',
+        value: session.id,
+      },
+      {
+        key: 'Stripe pi',
+        value: item.price!.id,
+      },
+      {
+        key: 'Stripe prod',
+        value: product.id,
+      },
+    ];
+
+    const license = await prisma.$transaction(async (prisma) => {
+      const lukittuCustomer = await prisma.customer.upsert({
+        where: {
+          email_teamId: {
+            email: customer.email!,
+            teamId,
+          },
+        },
+        create: {
+          email: customer.email!,
+          fullName: customer.name,
+          address: customer.address
+            ? {
+                create: {
+                  city: customer.address.city,
+                  country: customer.address.country,
+                  line1: customer.address.line1,
+                  line2: customer.address.line2,
+                  postalCode: customer.address.postal_code,
+                  state: customer.address.state,
+                },
+              }
+            : undefined,
+          teamId,
+          metadata,
+        },
+        update: {},
+      });
+
+      const licenseKey = await generateUniqueLicense(teamId);
+      const hmac = generateHMAC(`${licenseKey}:${teamId}`);
+
+      if (!licenseKey) {
+        logger.error('Failed to generate a unique license key');
+        return;
+      }
+
+      const encryptedLicenseKey = encryptLicenseKey(licenseKey);
+
+      const license = await prisma.license.create({
+        data: {
+          licenseKey: encryptedLicenseKey,
+          teamId,
+          customers: {
+            connect: {
+              id: lukittuCustomer.id,
+            },
+          },
+          licenseKeyLookup: hmac,
+          metadata,
+          products: {
+            connect: {
+              id: lukittuProductId,
+            },
+          },
+        },
+      });
+
+      return license;
+    });
+
+    if (!license) {
+      logger.error('Failed to create a license');
+      return;
+    }
+
+    logger.info('Stripe checkout session completed', {
+      licenseId: license.id,
+      licenseKey: license.licenseKey,
+      teamId: license.teamId,
+    });
+
+    return license;
+  } catch (error) {
+    logger.error('Error occurred in handleCheckoutSessionCompleted', error);
+  }
 }
