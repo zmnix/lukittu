@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/emails/VerifyEmailTemplate"
+    "global.d.ts"
   ],
   "exclude": ["node_modules"]
 }
