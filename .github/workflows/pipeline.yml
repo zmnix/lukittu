@@ -90,22 +90,20 @@ jobs:
           NEXT_PUBLIC_GITHUB_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }}
           EOF
 
-      - uses: docker/login-action@v3
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - uses: docker/build-push-action@v5
+      - name: Build and push docker image
+        uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
-          cache-from: |
-            type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:buildcache
-            type=gha,scope=main
-          cache-to: |
-            type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:buildcache,mode=max
-            type=gha,scope=main,mode=max
+          cache-from: type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:latest
+          cache-to: type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:latest,mode=max
 
   deploy:
     needs: build
