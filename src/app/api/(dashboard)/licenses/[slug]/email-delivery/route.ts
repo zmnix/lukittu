@@ -1,13 +1,11 @@
-import LicenseDistributionEmailTemplate from '@/emails/LicenseDistributionTemplate';
 import { regex } from '@/lib/constants/regex';
+import { sendLicenseDistributionEmail } from '@/lib/emails/send-license-distribution-email';
 import { getSession } from '@/lib/utils/auth';
 import { decryptLicenseKey } from '@/lib/utils/crypto';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
-import { sendEmail } from '@/lib/utils/nodemailer';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { render } from '@react-email/components';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -148,40 +146,15 @@ export async function POST(
 
     const emails = license.customers
       .filter((customer) => customer.email)
-      .map(async (customer) => {
-        const html = await render(
-          LicenseDistributionEmailTemplate({
-            customerName: customer.fullName ?? customer.email!,
+      .map(
+        async (customer) =>
+          await sendLicenseDistributionEmail({
+            customer,
             licenseKey,
-            businessLogoUrl: 'https://app.lukittu.com/customers/karhu.png',
-            products: license.products.map((product) => product.name),
-            teamName: team.name,
-            businessMessage: team.settings?.emailMessage ?? undefined,
+            license,
+            team,
           }),
-        );
-
-        const text = await render(
-          LicenseDistributionEmailTemplate({
-            customerName: customer.fullName ?? customer.email!,
-            licenseKey,
-            businessLogoUrl: 'https://app.lukittu.com/customers/karhu.png',
-            products: license.products.map((product) => product.name),
-            teamName: team.name,
-            businessMessage: team.settings?.emailMessage ?? undefined,
-          }),
-          {
-            plainText: true,
-          },
-        );
-
-        return await sendEmail({
-          to: customer.email!,
-          subject: `${team.name} | Your License Key`,
-          fromName: `${team.name} (via Lukittu)`,
-          html,
-          text,
-        });
-      });
+      );
 
     await Promise.all(emails);
 

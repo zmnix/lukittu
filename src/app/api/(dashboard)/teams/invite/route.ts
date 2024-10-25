@@ -1,10 +1,9 @@
-import TeamInviteEmailTemplate from '@/emails/TeamInviteTemplate';
 import prisma from '@/lib/database/prisma';
+import { sendTeamInviteEmail } from '@/lib/emails/send-team-invite-email';
 import { createAuditLog } from '@/lib/utils/audit-log';
 import { getSession } from '@/lib/utils/auth';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
-import { sendEmail } from '@/lib/utils/nodemailer';
 import {
   inviteMemberSchema,
   InviteMemberSchema,
@@ -12,7 +11,6 @@ import {
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
-import { render } from '@react-email/components';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -175,30 +173,11 @@ export async function POST(
 
     const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?invite=${invitation.id}`;
 
-    const html = await render(
-      TeamInviteEmailTemplate({
-        inviteLink,
-        senderName: session.user.fullName,
-        teamName: team.name,
-      }),
-    );
-
-    const text = await render(
-      TeamInviteEmailTemplate({
-        inviteLink,
-        senderName: session.user.fullName,
-        teamName: team.name,
-      }),
-      {
-        plainText: true,
-      },
-    );
-
-    const success = await sendEmail({
-      to: email,
-      subject: 'You have been invited to join a team on Lukittu',
-      html,
-      text,
+    const success = await sendTeamInviteEmail({
+      email,
+      inviteLink,
+      session,
+      team,
     });
 
     if (!success) {

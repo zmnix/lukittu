@@ -1,8 +1,7 @@
-import VerifyEmailTemplate from '@/emails/VerifyEmailTemplate';
 import prisma from '@/lib/database/prisma';
+import { sendVerifyEmailEmail } from '@/lib/emails/send-verify-email-email';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
 import { logger } from '@/lib/utils/logger';
-import { sendEmail } from '@/lib/utils/nodemailer';
 import { isRateLimited } from '@/lib/utils/rate-limit';
 import {
   resendVerifyEmailSchema,
@@ -12,7 +11,6 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { JwtTypes } from '@/types/jwt-types-enum';
 import { Provider } from '@prisma/client';
-import { render } from '@react-email/components';
 import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -109,28 +107,10 @@ export async function POST(
 
     const verifyLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email?token=${token}`;
 
-    const html = await render(
-      VerifyEmailTemplate({
-        fullName: user.fullName,
-        link: verifyLink,
-      }),
-    );
-
-    const text = await render(
-      VerifyEmailTemplate({
-        fullName: user.fullName,
-        link: verifyLink,
-      }),
-      {
-        plainText: true,
-      },
-    );
-
-    const success = await sendEmail({
-      to: email,
-      subject: 'Verify your email address',
-      html,
-      text,
+    const success = await sendVerifyEmailEmail({
+      email,
+      user,
+      verifyLink,
     });
 
     if (!success) {

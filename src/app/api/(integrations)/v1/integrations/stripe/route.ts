@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { sendLicenseDistributionEmail } from '@/lib/emails/send-license-distribution-email';
 import { generateUniqueLicense } from '@/lib/licenses/generate-license';
 import { encryptLicenseKey, generateHMAC } from '@/lib/utils/crypto';
 import { logger } from '@/lib/utils/logger';
@@ -265,6 +266,17 @@ async function handleCheckoutSessionCompleted(
             },
           },
         },
+        include: {
+          team: true,
+          products: true,
+        },
+      });
+
+      await sendLicenseDistributionEmail({
+        customer: lukittuCustomer,
+        licenseKey,
+        license,
+        team: license.team,
       });
 
       return license;
