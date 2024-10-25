@@ -109,16 +109,16 @@ jobs:
         id: pnpm-cache
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v4
+      - name: Cache dependencies and build outputs
+        uses: actions/cache@v4
         with:
           path: |
             ${{ steps.pnpm-cache.outputs.STORE_PATH }}
             .next/cache
-            public
-            .next/static
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          key: ${{ runner.os }}-nextjs-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-nextjs-pnpm-
+            ${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
