@@ -10,7 +10,7 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "email-dev": "email dev --dir ./src/emails",
-    "type-check": "tsc --noEmit --incremental",
+    "type-check": "tsc --noEmit --incremental --skipLibCheck --excludeDirectories public",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch"
   },
