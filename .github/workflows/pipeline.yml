@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 concurrency:
   group: build-deploy-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
 
 jobs:
   check-translation:
@@ -26,8 +32,44 @@ jobs:
       - name: Run translation key check
         run: node src/locales/checkTranslations.js
 
+  test:
+    name: Run Tests
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 'latest'
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+            .next/cache
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: coverage/
+          retention-days: 7
+
   build:
-    needs: check-translation
+    needs: [check-translation, test]
     name: Build Docker Image
     timeout-minutes: 15
     runs-on: ubuntu-latest
@@ -35,23 +77,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Add environment variables
-        run: |
-          touch .env
-          echo NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }} >> .env
-          echo NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }} >> .env
-          echo NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }} >> .env
-          echo NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GOOGLE_REDIRECT_URI }} >> .env
-          echo NEXT_PUBLIC_GITHUB_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }} >> .env
-          echo NEXT_PUBLIC_GITHUB_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }} >> .env
-        working-directory: .
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Build and push docker image
+      - name: Configure environment
         run: |
-          echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
-          docker build -t ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }} .
-          docker push ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
-        working-directory: .
+          cat << EOF > .env
+          NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GOOGLE_REDIRECT_URI }}
+          NEXT_PUBLIC_GITHUB_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }}
+          NEXT_PUBLIC_GITHUB_REDIRECT_URI=${{ secrets.NEXT_PUBLIC_GITHUB_REDIRECT_URI }}
+          EOF
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
+          cache-from: |
+            type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:buildcache
+            type=gha,scope=main
+          cache-to: |
+            type=registry,ref=${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}:buildcache,mode=max
+            type=gha,scope=main,mode=max
 
   deploy:
     needs: build
@@ -68,13 +123,39 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            # Exit on any error
+            set -e
+
             cd lukittu
+
+            echo "📥 Updating repository..."
             git fetch --all
             git reset --hard origin/main
+
+            echo "🔐 Logging into Docker registry..."
             docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} ${{ secrets.REGISTRY }}
+
+            echo "📦 Pulling latest image..."
             docker pull ${{ secrets.REGISTRY }}/${{ secrets.IMAGE }}
+
+            echo "🔄 Restarting containers..."
             docker compose -f docker-compose-prod.yml down
             docker compose -f docker-compose-prod.yml up -d
-            echo "Sleeping for 10 seconds"
-            sleep 10
-            docker compose -f docker-compose-migrate.yml up -d
+
+            # Wait for application to be ready
+            echo "⏳ Waiting for application to start..."
+            for i in {1..12}; do
+              if curl -s http://localhost:3000/api/health > /dev/null; then
+                echo "✅ Application is ready!"
+                
+                echo "📝 Running migrations..."
+                docker compose -f docker-compose-migrate.yml up -d
+                exit 0
+              fi
+              echo "Attempt $i/12: Application not ready, waiting..."
+              sleep 5
+            done
+
+            echo "❌ Application failed to start"
+            docker compose -f docker-compose-prod.yml logs
+            exit 1
