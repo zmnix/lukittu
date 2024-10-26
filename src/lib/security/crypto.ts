@@ -44,8 +44,14 @@ export function verifyPassword(password: string, storedHash: string) {
   }
 }
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY!;
-const HMAC_KEY = process.env.HMAC_KEY!;
+const ENCRYPTION_KEY =
+  process.env.NODE_ENV === 'test'
+    ? 'test-encryption-key'.padEnd(32, '0')
+    : process.env.ENCRYPTION_KEY!;
+
+const HMAC_KEY =
+  process.env.NODE_ENV === 'test' ? 'test-hmac-key' : process.env.HMAC_KEY!;
+
 const IV_LENGTH = 16;
 
 export function encryptLicenseKey(licenseKey: string): string {
