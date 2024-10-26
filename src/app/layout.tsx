@@ -63,6 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: await getLanguage(),
       siteName: 'Lukittu',
     },
+    referrer: 'no-referrer',
   };
 }
 

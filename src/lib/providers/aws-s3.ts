@@ -10,7 +10,7 @@ import { logger } from '../logging/logger';
 
 const s3Client = new S3Client({
   endpoint: process.env.OBJECT_STORAGE_ENDPOINT,
-  region: 'default',
+  region: 'auto',
   credentials: {
     accessKeyId: process.env.OBJECT_STORAGE_ACCESS_KEY!,
     secretAccessKey: process.env.OBJECT_STORAGE_SECRET_KEY!,

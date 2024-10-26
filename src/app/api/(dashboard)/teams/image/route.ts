@@ -140,7 +140,7 @@ export async function POST(
       file.type,
     );
 
-    const imageUrl = `${process.env.OBJECT_STORAGE_ENDPOINT}/${process.env.OBJECT_STORAGE_BUCKET_NAME}/${fileKey}`;
+    const imageUrl = `${process.env.OBJECT_STORAGE_BASE_URL}/${fileKey}`;
 
     await prisma.team.update({
       where: {
