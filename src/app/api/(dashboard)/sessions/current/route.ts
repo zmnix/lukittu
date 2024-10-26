@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
+import { getSession } from '@/lib/security/session';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';

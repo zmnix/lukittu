@@ -2,7 +2,7 @@ import prisma from '@/lib/database/prisma';
 import { sendTeamInviteEmail } from '@/lib/emails/templates/send-team-invite-email';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
+import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
   inviteMemberSchema,

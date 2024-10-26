@@ -1,6 +1,6 @@
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
+import { getSession } from '@/lib/security/session';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import {
   UpdateProfileSchema,

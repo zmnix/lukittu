@@ -30,7 +30,7 @@ jest.mock('../emails/templates/send-license-distribution-email', () => ({
   sendLicenseDistributionEmail: jest.fn(),
 }));
 
-describe('handleCheckoutSessionCompleted', () => {
+describe('Stripe Integration', () => {
   let mockStripe: jest.Mocked<Stripe>;
   const teamId = 'team-123';
   const mockSession = {

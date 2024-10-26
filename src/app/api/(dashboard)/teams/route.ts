@@ -1,8 +1,8 @@
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
 import { generateKeyPair } from '@/lib/security/crypto';
+import { getSession } from '@/lib/security/session';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import {
   setTeamSchema,

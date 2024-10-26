@@ -1,8 +1,8 @@
 import { regex } from '@/lib/constants/regex';
 import { sendLicenseDistributionEmail } from '@/lib/emails/templates/send-license-distribution-email';
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
 import { decryptLicenseKey } from '@/lib/security/crypto';
+import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';

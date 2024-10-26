@@ -1,7 +1,7 @@
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
 import { hashPassword, verifyPassword } from '@/lib/security/crypto';
+import { getSession } from '@/lib/security/session';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import {
   changePasswordSchema,

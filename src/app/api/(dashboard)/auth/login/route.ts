@@ -1,9 +1,9 @@
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
 import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
-import { createSession } from '@/lib/security/auth';
 import { verifyPassword } from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
+import { createSession } from '@/lib/security/session';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
 import { loginSchema, LoginSchema } from '@/lib/validation/auth/login-schema';
 import { ErrorResponse } from '@/types/common-api-types';

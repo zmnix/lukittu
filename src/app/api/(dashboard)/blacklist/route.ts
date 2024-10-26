@@ -3,7 +3,7 @@ import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
-import { getSession } from '@/lib/security/auth';
+import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
   setBlacklistSchema,
