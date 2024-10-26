@@ -294,7 +294,7 @@ export default function SetLicenseModal() {
                     variant="outline"
                     onClick={() => handleExpirationTypeChange('NEVER')}
                   >
-                    {t('dashboard.licenses.never')}
+                    {t('general.never')}
                   </Button>
                   <Button
                     className={cn(

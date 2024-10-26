@@ -94,10 +94,10 @@ export async function POST(request: NextRequest) {
         await handleSubscriptionCreated(event.data.object, teamId, stripe);
         break;
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object, teamId, stripe);
+        await handleSubscriptionUpdated(event.data.object, teamId);
         break;
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object, teamId, stripe);
+        await handleSubscriptionDeleted(event.data.object, teamId);
         break;
       case 'checkout.session.completed':
         await handleCheckoutSessionCompleted(event.data.object, teamId, stripe);

@@ -96,9 +96,7 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
             </h3>
             <div className="text-sm text-muted-foreground">
               {license ? (
-                t(
-                  `dashboard.licenses.${license.expirationType.toLowerCase()}` as any,
-                )
+                t(`general.${license.expirationType.toLowerCase()}` as any)
               ) : (
                 <Skeleton className="h-4 w-full" />
               )}
