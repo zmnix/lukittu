@@ -1,4 +1,3 @@
-import { mockReset } from 'jest-mock-extended';
 import { Stripe } from 'stripe';
 import { prismaMock } from '../../../jest.setup';
 import { sendLicenseDistributionEmail } from '../emails/templates/send-license-distribution-email';
@@ -53,8 +52,6 @@ describe('handleCheckoutSessionCompleted', () => {
   } as unknown as Stripe.Checkout.Session;
 
   beforeEach(() => {
-    mockReset(prismaMock);
-
     mockStripe = {
       checkout: {
         sessions: {
