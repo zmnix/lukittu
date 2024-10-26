@@ -341,13 +341,13 @@ export function LicensesTable() {
                               ? new Date(license.expirationDate).toLocaleString(
                                   locale,
                                 )
-                              : t('dashboard.licenses.never')
+                              : t('general.never')
                           }
                         >
                           {license.expirationDate ? (
                             <DateConverter date={license.expirationDate} />
                           ) : (
-                            t('dashboard.licenses.never')
+                            t('general.never')
                           )}
                         </TableCell>
                         <TableCell className="truncate">
