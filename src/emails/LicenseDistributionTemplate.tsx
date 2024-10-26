@@ -77,7 +77,7 @@ export const LicenseDistributionEmailTemplate = ({
           <Section style={licenseKeyContainer}>
             <Text style={licenseKeyText}>{licenseKey}</Text>
           </Section>
-          {products.length > 1 && (
+          {products.length >= 1 && (
             <>
               <Text style={paragraph}>
                 This license key can be used with the following products:

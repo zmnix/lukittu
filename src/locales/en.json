@@ -85,7 +85,8 @@
     "stripe_api_key_required": "Stripe API key is required!",
     "stripe_api_key_invalid": "Stripe API key is invalid!",
     "stripe_webhook_secret_required": "Stripe webhook secret is required!",
-    "stripe_webhook_secret_invalid": "Stripe webhook secret is invalid!"
+    "stripe_webhook_secret_invalid": "Stripe webhook secret is invalid!",
+    "stripe_integration_not_found": "Stripe integration not found!"
   },
   "general": {
     "select_type": "Select type",
@@ -93,6 +94,7 @@
     "days": "Days",
     "heartbeats": "Heartbeats",
     "invitation_sent": "Invitation sent",
+    "delete": "Delete",
     "selected": "Selected",
     "avatar": "Avatar",
     "code": "Code",
@@ -505,7 +507,8 @@
       "stripe_integration_description": "For automatic license generation and distribution, you can integrate Lukittu with Stripe. When a customer purchases a product, a license will be automatically generated and sent to the customer.",
       "webhook_secret": "Webhook secret",
       "stripe_integration_updated": "Stripe integration updated",
-      "stripe_integration_created": "Stripe integration created"
+      "stripe_integration_created": "Stripe integration created",
+      "stripe_integration_deleted": "Stripe integration deleted"
     },
     "settings": {
       "general_settings": "General settings",

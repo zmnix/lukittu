@@ -1,5 +1,8 @@
 import { ITeamsIntegrationsGetSuccessResponse } from '@/app/api/(dashboard)/teams/integrations/route';
-import { ITeamsIntegrationsStripeSetResponse } from '@/app/api/(dashboard)/teams/integrations/stripe/route';
+import {
+  ITeamsIntegrationsStripeDeleteResponse,
+  ITeamsIntegrationsStripeSetResponse,
+} from '@/app/api/(dashboard)/teams/integrations/stripe/route';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,7 +47,8 @@ export default function SetStripeIntegrationModal({
 }: SetStripeIntegrationModalProps) {
   const t = useTranslations();
 
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showWebhookSecret, setShowWebhookSecret] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -62,6 +66,10 @@ export default function SetStripeIntegrationModal({
       form.setValue('active', stripeIntegration.active);
       form.setValue('apiKey', stripeIntegration.apiKey);
       form.setValue('webhookSecret', stripeIntegration.webhookSecret);
+    } else {
+      form.setValue('active', true);
+      form.setValue('apiKey', '');
+      form.setValue('webhookSecret', '');
     }
   }, [stripeIntegration, form, open]);
 
@@ -83,8 +91,37 @@ export default function SetStripeIntegrationModal({
     return data;
   };
 
+  const handleStripeIntegrationDelete = async () => {
+    const response = await fetch('/api/teams/integrations/stripe', {
+      method: 'DELETE',
+    });
+
+    const data =
+      (await response.json()) as ITeamsIntegrationsStripeDeleteResponse;
+
+    return data;
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await handleStripeIntegrationDelete();
+      if ('message' in res) {
+        toast.error(res.message);
+        return;
+      }
+
+      toast.success(t('dashboard.integrations.stripe_integration_deleted'));
+      handleOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const onSubmit = async (payload: SetStripeIntegrationSchema) => {
-    setLoading(true);
+    setSubmitting(true);
     try {
       const res = await handleStripeIntegrationSet(payload);
       if ('message' in res) {
@@ -101,7 +138,7 @@ export default function SetStripeIntegrationModal({
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -221,10 +258,23 @@ export default function SetStripeIntegrationModal({
               {t('general.close')}
             </LoadingButton>
           </div>
+          {Boolean(stripeIntegration) && (
+            <div>
+              <LoadingButton
+                className="w-full"
+                pending={deleting}
+                type="submit"
+                variant="destructive"
+                onClick={handleDelete}
+              >
+                {t('general.delete')}
+              </LoadingButton>
+            </div>
+          )}
           <div>
             <LoadingButton
               className="w-full"
-              pending={loading}
+              pending={submitting}
               type="submit"
               onClick={() => form.handleSubmit(onSubmit)()}
             >
