@@ -32,7 +32,6 @@ interface ZipEntry {
  */
 function parseYaml(yaml: string): PluginYaml {
   const result: Record<string, any> = {};
-  let currentKey: string | null = null;
 
   const lines = yaml.split('\n');
 
@@ -51,21 +50,6 @@ function parseYaml(yaml: string): PluginYaml {
       if (value) {
         // Remove quotes if present
         result[key] = value.replace(/^['"](.*)['"]$/, '$1');
-      }
-      currentKey = key;
-    } else {
-      // Nested structure
-      if (!content.includes(':')) continue;
-
-      const [key, ...valueParts] = content.split(':');
-      const value = valueParts.join(':').trim();
-
-      if (!result[currentKey!]) {
-        result[currentKey!] = {};
-      }
-
-      if (value) {
-        result[currentKey!][key.trim()] = value.replace(/^['"](.*)['"]$/, '$1');
       }
     }
   }
@@ -104,7 +88,7 @@ async function readZipEntries(data: Buffer): Promise<Map<string, ZipEntry>> {
       .toString();
 
     const localOffset = localHeaderOffset + 30 + fileNameLength;
-    const compressed = data.slice(localOffset, localOffset + compressedSize);
+    const compressed = data.subarray(localOffset, localOffset + compressedSize);
 
     entries.set(filename, {
       filename,

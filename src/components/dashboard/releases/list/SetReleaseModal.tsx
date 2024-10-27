@@ -104,10 +104,6 @@ export default function SetReleaseModal() {
     return data;
   };
 
-  const handleProductEdit = async (payload: SetReleaseSchema) => {
-    //
-  };
-
   const handleFileSelect = () => {
     const input = document.createElement('input');
     input.type = 'file';
