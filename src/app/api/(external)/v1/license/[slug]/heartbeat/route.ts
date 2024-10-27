@@ -2,6 +2,10 @@ import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
+import {
+  ExternalVerifyResponse,
+  loggedResponse,
+} from '@/lib/logging/request-log';
 import { proxyCheck } from '@/lib/providers/proxycheck';
 import { generateHMAC, signChallenge } from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
@@ -14,56 +18,54 @@ import { HttpStatus } from '@/types/http-status';
 import { BlacklistType, IpLimitPeriod, RequestStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-type IExternalLicenseHeartbeatResponse = {
-  result: {
-    timestamp: Date;
-    valid: boolean;
-    details: string;
-    code: RequestStatus;
-  };
-};
-
 export async function POST(
   request: NextRequest,
   props: { params: Promise<{ slug: string }> },
-): Promise<NextResponse<IExternalLicenseHeartbeatResponse>> {
+): Promise<NextResponse<ExternalVerifyResponse>> {
   const params = await props.params;
+  const requestTime = new Date();
   const teamId = params.slug;
+
+  const loggedResponseBase = {
+    body: null,
+    request,
+    requestTime,
+  };
 
   try {
     if (!teamId || !regex.uuidV4.test(teamId)) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        status: RequestStatus.BAD_REQUEST,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'Invalid team UUID',
-            code: RequestStatus.BAD_REQUEST,
           },
         },
-        {
-          status: HttpStatus.BAD_REQUEST,
-        },
-      );
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
     }
 
     const body = (await request.json()) as LicenseHeartbeatSchema;
     const validated = await licenseHeartbeatSchema().safeParseAsync(body);
 
     if (!validated.success) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        status: RequestStatus.BAD_REQUEST,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: validated.error.errors[0].message,
-            code: RequestStatus.BAD_REQUEST,
           },
         },
-        {
-          status: HttpStatus.BAD_REQUEST,
-        },
-      );
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
     }
 
     const ipAddress = await getIp();
@@ -72,19 +74,19 @@ export async function POST(
       const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
       if (isLimited) {
-        return NextResponse.json(
-          {
+        return loggedResponse({
+          ...loggedResponseBase,
+          status: RequestStatus.RATE_LIMIT,
+          response: {
+            data: null,
             result: {
               timestamp: new Date(),
               valid: false,
               details: 'Rate limited',
-              code: RequestStatus.RATE_LIMIT,
             },
           },
-          {
-            status: HttpStatus.TOO_MANY_REQUESTS,
-          },
-        );
+          httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+        });
       }
     }
 
@@ -104,19 +106,19 @@ export async function POST(
     const settings = team?.settings;
 
     if (!team || !settings) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        status: RequestStatus.TEAM_NOT_FOUND,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'Team not found',
-            code: RequestStatus.TEAM_NOT_FOUND,
           },
         },
-        {
-          status: HttpStatus.NOT_FOUND,
-        },
-      );
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     const { licenseKey, deviceIdentifier, customerId, productId, challenge } =
@@ -171,19 +173,22 @@ export async function POST(
     );
 
     if (!license) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.LICENSE_NOT_FOUND,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'License not found',
-            code: RequestStatus.LICENSE_NOT_FOUND,
           },
         },
-        {
-          status: HttpStatus.NOT_FOUND,
-        },
-      );
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     const blacklistedIps = team.blacklist.filter(
@@ -193,19 +198,22 @@ export async function POST(
 
     if (ipAddress && blacklistedIpList.includes(ipAddress)) {
       await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ipAddress);
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.IP_BLACKLISTED,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'IP address is blacklisted',
-            code: RequestStatus.IP_BLACKLISTED,
           },
         },
-        {
-          status: HttpStatus.FORBIDDEN,
-        },
-      );
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
     }
 
     const blacklistedCountries = team.blacklist.filter(
@@ -221,19 +229,22 @@ export async function POST(
 
         if (blacklistedCountryList.includes(inIso3)) {
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
-          return NextResponse.json(
-            {
+          return loggedResponse({
+            ...loggedResponseBase,
+            teamId,
+            customerId: matchingCustomer ? customerId : undefined,
+            productId: matchingProduct ? productId : undefined,
+            status: RequestStatus.COUNTRY_BLACKLISTED,
+            response: {
+              data: null,
               result: {
                 timestamp: new Date(),
                 valid: false,
                 details: 'Country is blacklisted',
-                code: RequestStatus.COUNTRY_BLACKLISTED,
               },
             },
-            {
-              status: HttpStatus.FORBIDDEN,
-            },
-          );
+            httpStatus: HttpStatus.FORBIDDEN,
+          });
         }
       }
     }
@@ -255,19 +266,22 @@ export async function POST(
         BlacklistType.DEVICE_IDENTIFIER,
         deviceIdentifier,
       );
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'Device identifier is blacklisted',
-            code: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
           },
         },
-        {
-          status: HttpStatus.FORBIDDEN,
-        },
-      );
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
     }
 
     const strictModeNoCustomerId =
@@ -276,19 +290,23 @@ export async function POST(
       licenseHasCustomers && customerId && !matchingCustomer;
 
     if (strictModeNoCustomerId || noCustomerMatch) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        licenseKeyLookup,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.CUSTOMER_NOT_FOUND,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'Customer not found',
-            code: RequestStatus.CUSTOMER_NOT_FOUND,
           },
         },
-        {
-          status: HttpStatus.NOT_FOUND,
-        },
-      );
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     const strictModeNoProductId =
@@ -296,35 +314,43 @@ export async function POST(
     const noProductMatch = licenseHasProducts && productId && !matchingProduct;
 
     if (strictModeNoProductId || noProductMatch) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        licenseKeyLookup,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.PRODUCT_NOT_FOUND,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'Product not found',
-            code: RequestStatus.PRODUCT_NOT_FOUND,
           },
         },
-        {
-          status: HttpStatus.NOT_FOUND,
-        },
-      );
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
     }
 
     if (license.suspended) {
-      return NextResponse.json(
-        {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        licenseKeyLookup,
+        customerId: matchingCustomer ? customerId : undefined,
+        productId: matchingProduct ? productId : undefined,
+        status: RequestStatus.LICENSE_SUSPENDED,
+        response: {
+          data: null,
           result: {
             timestamp: new Date(),
             valid: false,
             details: 'License suspended',
-            code: RequestStatus.LICENSE_SUSPENDED,
           },
         },
-        {
-          status: HttpStatus.FORBIDDEN,
-        },
-      );
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
     }
 
     if (license.expirationType === 'DATE') {
@@ -332,19 +358,23 @@ export async function POST(
       const currentDate = new Date();
 
       if (currentDate.getTime() > expirationDate.getTime()) {
-        return NextResponse.json(
-          {
+        return loggedResponse({
+          ...loggedResponseBase,
+          teamId,
+          licenseKeyLookup,
+          customerId: matchingCustomer ? customerId : undefined,
+          productId: matchingProduct ? productId : undefined,
+          status: RequestStatus.LICENSE_EXPIRED,
+          response: {
+            data: null,
             result: {
               timestamp: new Date(),
               valid: false,
               details: 'License expired',
-              code: RequestStatus.LICENSE_EXPIRED,
             },
           },
-          {
-            status: HttpStatus.FORBIDDEN,
-          },
-        );
+          httpStatus: HttpStatus.FORBIDDEN,
+        });
       }
     }
 
@@ -368,19 +398,23 @@ export async function POST(
         const currentDate = new Date();
 
         if (currentDate.getTime() > expirationDate.getTime()) {
-          return NextResponse.json(
-            {
+          return loggedResponse({
+            ...loggedResponseBase,
+            teamId,
+            licenseKeyLookup,
+            customerId: matchingCustomer ? customerId : undefined,
+            productId: matchingProduct ? productId : undefined,
+            status: RequestStatus.LICENSE_EXPIRED,
+            response: {
+              data: null,
               result: {
                 timestamp: new Date(),
                 valid: false,
                 details: 'License expired',
-                code: RequestStatus.LICENSE_EXPIRED,
               },
             },
-            {
-              status: HttpStatus.FORBIDDEN,
-            },
-          );
+            httpStatus: HttpStatus.FORBIDDEN,
+          });
         }
       }
     }
@@ -391,19 +425,23 @@ export async function POST(
 
       // TODO: @KasperiP: Maybe add separate table for storing IP addresses because user's probably want to also remove old IP addresses
       if (!existingIps.includes(ipAddress) && ipLimitReached) {
-        return NextResponse.json(
-          {
+        return loggedResponse({
+          ...loggedResponseBase,
+          teamId,
+          licenseKeyLookup,
+          customerId: matchingCustomer ? customerId : undefined,
+          productId: matchingProduct ? productId : undefined,
+          status: RequestStatus.IP_LIMIT_REACHED,
+          response: {
+            data: null,
             result: {
               timestamp: new Date(),
               valid: false,
               details: 'IP limit reached',
-              code: RequestStatus.IP_LIMIT_REACHED,
             },
           },
-          {
-            status: HttpStatus.FORBIDDEN,
-          },
-        );
+          httpStatus: HttpStatus.FORBIDDEN,
+        });
       }
     }
 
@@ -421,19 +459,23 @@ export async function POST(
       );
 
       if (!seatsIncludesClient && activeSeats.length >= license.seats) {
-        return NextResponse.json(
-          {
+        return loggedResponse({
+          ...loggedResponseBase,
+          teamId,
+          licenseKeyLookup,
+          customerId: matchingCustomer ? customerId : undefined,
+          productId: matchingProduct ? productId : undefined,
+          status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
+          response: {
+            data: null,
             result: {
               timestamp: new Date(),
               valid: false,
               details: 'License seat limit reached',
-              code: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
             },
           },
-          {
-            status: HttpStatus.FORBIDDEN,
-          },
-        );
+          httpStatus: HttpStatus.FORBIDDEN,
+        });
       }
     }
 
@@ -463,39 +505,59 @@ export async function POST(
       ? signChallenge(challenge, privateKey)
       : undefined;
 
-    return NextResponse.json(
-      {
+    return loggedResponse({
+      ...loggedResponseBase,
+      teamId,
+      licenseKeyLookup,
+      customerId: matchingCustomer ? customerId : undefined,
+      productId: matchingProduct ? productId : undefined,
+      status: RequestStatus.VALID,
+      response: {
+        data: null,
         result: {
           timestamp: new Date(),
           valid: true,
           details: 'License heartbeat successful',
-          code: RequestStatus.VALID,
+          challengeResponse,
         },
-        challengeResponse,
       },
-      {
-        status: HttpStatus.OK,
-      },
-    );
+      httpStatus: HttpStatus.OK,
+    });
   } catch (error) {
     logger.error(
       "Error occurred in '(external)/v1/license/[slug]/heartbeat' route",
       error,
     );
 
-    return NextResponse.json(
-      {
+    if (error instanceof SyntaxError) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        status: RequestStatus.BAD_REQUEST,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Invalid JSON payload',
+          },
+        },
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    return loggedResponse({
+      ...loggedResponseBase,
+      status: RequestStatus.INTERNAL_SERVER_ERROR,
+      response: {
+        data: null,
         result: {
           timestamp: new Date(),
           valid: false,
           details: 'Internal server error',
-          code: RequestStatus.INTERNAL_SERVER_ERROR,
         },
       },
-      {
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-      },
-    );
+      httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+    });
   }
 }
 

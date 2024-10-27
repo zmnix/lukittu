@@ -1,51 +1,41 @@
-/* eslint-disable lines-around-comment */
 import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
+import {
+  ExternalVerifyResponse,
+  loggedResponse,
+} from '@/lib/logging/request-log';
 import { proxyCheck } from '@/lib/providers/proxycheck';
 import { generateHMAC, signChallenge } from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
-import { getIp, getOrigin, getUserAgent } from '@/lib/utils/header-helpers';
+import { getIp } from '@/lib/utils/header-helpers';
 import {
   VerifyLicenseSchema,
   verifyLicenseSchema,
 } from '@/lib/validation/licenses/verify-license-schema';
 import { HttpStatus } from '@/types/http-status';
-import {
-  BlacklistType,
-  IpLimitPeriod,
-  RequestMethod,
-  RequestStatus,
-} from '@prisma/client';
+import { BlacklistType, IpLimitPeriod, RequestStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
-
-type IExternalLicenseVerifyResponse = {
-  // TODO: @KasperiP: Return license data
-  data: any;
-  result: {
-    timestamp: Date;
-    valid: boolean;
-    details: string;
-    code: RequestStatus;
-    challengeResponse?: string;
-  };
-};
 
 export async function POST(
   request: NextRequest,
   props: { params: Promise<{ slug: string }> },
-): Promise<NextResponse<IExternalLicenseVerifyResponse>> {
+): Promise<NextResponse<ExternalVerifyResponse>> {
   const params = await props.params;
   const requestTime = new Date();
   const teamId = params.slug;
 
+  const loggedResponseBase = {
+    body: null,
+    request,
+    requestTime,
+  };
+
   try {
     if (!teamId || !regex.uuidV4.test(teamId)) {
-      return handleResponse({
-        body: null,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         status: RequestStatus.BAD_REQUEST,
         response: {
           data: null,
@@ -63,10 +53,8 @@ export async function POST(
     const validated = await verifyLicenseSchema().safeParseAsync(body);
 
     if (!validated.success) {
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         status: RequestStatus.BAD_REQUEST,
         response: {
           data: null,
@@ -86,10 +74,8 @@ export async function POST(
       const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
 
       if (isLimited) {
-        return handleResponse({
-          body,
-          request,
-          requestTime,
+        return loggedResponse({
+          ...loggedResponseBase,
           status: RequestStatus.RATE_LIMIT,
           response: {
             data: null,
@@ -120,10 +106,8 @@ export async function POST(
     const settings = team?.settings;
 
     if (!team || !settings) {
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         status: RequestStatus.TEAM_NOT_FOUND,
         response: {
           data: null,
@@ -189,10 +173,8 @@ export async function POST(
     );
 
     if (!license) {
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         teamId,
         customerId: matchingCustomer ? customerId : undefined,
         productId: matchingProduct ? productId : undefined,
@@ -217,10 +199,8 @@ export async function POST(
     if (ip && blacklistedIpList.includes(ip)) {
       await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ip);
 
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         teamId,
         customerId: matchingCustomer ? customerId : undefined,
         productId: matchingProduct ? productId : undefined,
@@ -250,10 +230,8 @@ export async function POST(
 
         if (blacklistedCountryList.includes(inIso3)) {
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
-          return handleResponse({
-            body,
-            request,
-            requestTime,
+          return loggedResponse({
+            ...loggedResponseBase,
             teamId,
             customerId: matchingCustomer ? customerId : undefined,
             productId: matchingProduct ? productId : undefined,
@@ -289,10 +267,8 @@ export async function POST(
         BlacklistType.DEVICE_IDENTIFIER,
         deviceIdentifier,
       );
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         teamId,
         customerId: matchingCustomer ? customerId : undefined,
         productId: matchingProduct ? productId : undefined,
@@ -315,10 +291,8 @@ export async function POST(
       licenseHasCustomers && customerId && !matchingCustomer;
 
     if (strictModeNoCustomerId || noCustomerMatch) {
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         teamId,
         licenseKeyLookup,
         customerId: matchingCustomer ? customerId : undefined,
@@ -341,10 +315,8 @@ export async function POST(
     const noProductMatch = licenseHasProducts && productId && !matchingProduct;
 
     if (strictModeNoProductId || noProductMatch) {
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         teamId,
         licenseKeyLookup,
         customerId: matchingCustomer ? customerId : undefined,
@@ -363,10 +335,8 @@ export async function POST(
     }
 
     if (license.suspended) {
-      return handleResponse({
-        body,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         teamId,
         licenseKeyLookup,
         customerId: matchingCustomer ? customerId : undefined,
@@ -389,10 +359,8 @@ export async function POST(
       const currentDate = new Date();
 
       if (currentDate.getTime() > expirationDate.getTime()) {
-        return handleResponse({
-          body,
-          request,
-          requestTime,
+        return loggedResponse({
+          ...loggedResponseBase,
           teamId,
           licenseKeyLookup,
           customerId: matchingCustomer ? customerId : undefined,
@@ -431,10 +399,8 @@ export async function POST(
         const currentDate = new Date();
 
         if (currentDate.getTime() > expirationDate.getTime()) {
-          return handleResponse({
-            body,
-            request,
-            requestTime,
+          return loggedResponse({
+            ...loggedResponseBase,
             teamId,
             licenseKeyLookup,
             customerId: matchingCustomer ? customerId : undefined,
@@ -461,10 +427,8 @@ export async function POST(
 
       // TODO: @KasperiP: Maybe add separate table for storing IP addresses because user's probably want to also remove old IP addresses
       if (!existingIps.includes(ipAddress) && ipLimitReached) {
-        return handleResponse({
-          body,
-          request,
-          requestTime,
+        return loggedResponse({
+          ...loggedResponseBase,
           teamId,
           licenseKeyLookup,
           customerId: matchingCustomer ? customerId : undefined,
@@ -498,10 +462,8 @@ export async function POST(
         );
 
         if (!seatsIncludesClient && activeSeats.length >= license.seats) {
-          return handleResponse({
-            body,
-            request,
-            requestTime,
+          return loggedResponse({
+            ...loggedResponseBase,
             teamId,
             licenseKeyLookup,
             customerId: matchingCustomer ? customerId : undefined,
@@ -546,10 +508,8 @@ export async function POST(
       ? signChallenge(challenge, privateKey)
       : undefined;
 
-    return handleResponse({
-      body,
-      request,
-      requestTime,
+    return loggedResponse({
+      ...loggedResponseBase,
       teamId,
       licenseKeyLookup,
       customerId: matchingCustomer ? customerId : undefined,
@@ -573,10 +533,8 @@ export async function POST(
     );
 
     if (error instanceof SyntaxError) {
-      return handleResponse({
-        body: null,
-        request,
-        requestTime,
+      return loggedResponse({
+        ...loggedResponseBase,
         status: RequestStatus.BAD_REQUEST,
         response: {
           data: null,
@@ -590,10 +548,8 @@ export async function POST(
       });
     }
 
-    return handleResponse({
-      body: null,
-      request,
-      requestTime,
+    return loggedResponse({
+      ...loggedResponseBase,
       status: RequestStatus.INTERNAL_SERVER_ERROR,
       response: {
         data: null,
@@ -605,81 +561,6 @@ export async function POST(
       },
       httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
     });
-  }
-}
-
-interface LogRequestProps {
-  requestBody: any;
-  responseBody: any;
-  requestTime: Date;
-  statusCode: number;
-  status: RequestStatus;
-  customerId?: string;
-  productId?: string;
-  licenseKeyLookup?: string;
-  teamId?: string;
-  pathName: string;
-  method: string;
-}
-
-async function logRequest({
-  requestBody,
-  responseBody,
-  requestTime,
-  status,
-  statusCode,
-  customerId,
-  productId,
-  licenseKeyLookup,
-  teamId,
-  pathName,
-  method,
-}: LogRequestProps) {
-  try {
-    const origin = await getOrigin();
-    const ipAddress = await getIp();
-    const geoData = await proxyCheck(ipAddress);
-    const longitude = geoData?.longitude || null;
-    const latitude = geoData?.latitude || null;
-    const hasBothLongitudeAndLatitude = longitude && latitude;
-    const countryAlpha3: string | null = geoData?.isocode
-      ? iso2ToIso3Map[geoData.isocode]
-      : null;
-
-    await prisma.requestLog.create({
-      data: {
-        version: process.env.version!,
-        method: method.toUpperCase() as RequestMethod,
-        path: pathName,
-        userAgent: await getUserAgent(),
-        origin,
-        statusCode,
-        longitude: hasBothLongitudeAndLatitude ? longitude : null,
-        latitude: hasBothLongitudeAndLatitude ? latitude : null,
-        responseTime: new Date().getTime() - requestTime.getTime(),
-        status,
-        requestBody,
-        responseBody,
-        ipAddress,
-        country: countryAlpha3,
-        team: { connect: { id: teamId } },
-        customer: customerId ? { connect: { id: customerId } } : undefined,
-        product: productId ? { connect: { id: productId } } : undefined,
-        license:
-          licenseKeyLookup && teamId
-            ? {
-                connect: {
-                  teamId_licenseKeyLookup: {
-                    teamId,
-                    licenseKeyLookup,
-                  },
-                },
-              }
-            : undefined,
-      },
-    });
-  } catch (error) {
-    logger.error("Error logging request in 'license/verify' route", error);
   }
 }
 
@@ -702,67 +583,4 @@ async function updateBlacklistHits(
       },
     },
   });
-}
-
-interface HandleResponseProps {
-  body: any;
-  request: NextRequest;
-  requestTime: Date;
-  status: RequestStatus;
-  response: {
-    data: any;
-    result: {
-      timestamp: Date;
-      valid: boolean;
-      details: string;
-      challengeResponse?: string;
-    };
-  };
-  httpStatus: HttpStatus;
-  customerId?: string;
-  productId?: string;
-  teamId?: string;
-  licenseKeyLookup?: string;
-}
-
-async function handleResponse({
-  body,
-  request,
-  requestTime,
-  status,
-  teamId,
-  response,
-  httpStatus,
-  customerId,
-  productId,
-  licenseKeyLookup,
-}: HandleResponseProps): Promise<NextResponse<IExternalLicenseVerifyResponse>> {
-  const responseBody = {
-    data: response.data,
-    result: {
-      timestamp: response.result.timestamp,
-      valid: response.result.valid,
-      details: response.result.details,
-      code: status,
-      challengeResponse: response.result.challengeResponse,
-    },
-  };
-
-  if (teamId) {
-    logRequest({
-      requestBody: body,
-      responseBody,
-      requestTime,
-      status,
-      customerId,
-      productId,
-      licenseKeyLookup,
-      teamId,
-      statusCode: httpStatus,
-      pathName: request.nextUrl.pathname,
-      method: request.method,
-    });
-  }
-
-  return NextResponse.json(responseBody, { status: httpStatus });
 }
