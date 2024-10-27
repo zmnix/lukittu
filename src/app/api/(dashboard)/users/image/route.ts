@@ -1,8 +1,12 @@
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
-import { deleteFileFromS3, uploadFileToS3 } from '@/lib/providers/aws-s3';
+import {
+  deleteFileFromPublicS3,
+  uploadFileToPublicS3,
+} from '@/lib/providers/aws-s3';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getSession } from '@/lib/security/session';
-import { getLanguage } from '@/lib/utils/header-helpers';
+import { getIp, getLanguage } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { randomUUID } from 'crypto';
@@ -29,7 +33,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -54,6 +58,21 @@ export async function POST(request: NextRequest) {
         },
         { status: HttpStatus.BAD_REQUEST },
       );
+    }
+
+    const ip = await getIp();
+    if (ip) {
+      const key = `user-image:${ip}`;
+      const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes
+
+      if (isLimited) {
+        return NextResponse.json(
+          {
+            message: t('validation.too_many_requests'),
+          },
+          { status: HttpStatus.TOO_MANY_REQUESTS },
+        );
+      }
     }
 
     const session = await getSession({ user: true });
@@ -92,21 +111,24 @@ export async function POST(request: NextRequest) {
     if (user.imageUrl) {
       const imageUrlParts = user.imageUrl.split('/');
       const fileKey = `users/${imageUrlParts[imageUrlParts.length - 1]}`;
-      await deleteFileFromS3(process.env.OBJECT_STORAGE_BUCKET_NAME!, fileKey);
+      await deleteFileFromPublicS3(
+        process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
+        fileKey,
+      );
     }
 
     const imageUuid = randomUUID();
 
     const fileKey = `users/${imageUuid}.${file.type.split('/')[1]}`;
 
-    await uploadFileToS3(
-      process.env.OBJECT_STORAGE_BUCKET_NAME!,
+    await uploadFileToPublicS3(
+      process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
       fileKey,
       processedImageBuffer,
       file.type,
     );
 
-    const imageUrl = `${process.env.OBJECT_STORAGE_BASE_URL}/${fileKey}`;
+    const imageUrl = `${process.env.PUBLIC_OBJECT_STORAGE_BASE_URL}/${fileKey}`;
 
     await prisma.user.update({
       where: {
@@ -173,7 +195,10 @@ export async function DELETE(
     const imageUrlParts = user.imageUrl.split('/');
     const fileKey = `users/${imageUrlParts[imageUrlParts.length - 1]}`;
 
-    await deleteFileFromS3(process.env.OBJECT_STORAGE_BUCKET_NAME!, fileKey);
+    await deleteFileFromPublicS3(
+      process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
+      fileKey,
+    );
 
     await prisma.user.update({
       where: {

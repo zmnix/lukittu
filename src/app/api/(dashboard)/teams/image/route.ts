@@ -1,9 +1,17 @@
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
-import { deleteFileFromS3, uploadFileToS3 } from '@/lib/providers/aws-s3';
+import {
+  deleteFileFromPublicS3,
+  uploadFileToPublicS3,
+} from '@/lib/providers/aws-s3';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getSession } from '@/lib/security/session';
-import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
+import {
+  getIp,
+  getLanguage,
+  getSelectedTeam,
+} from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
@@ -33,7 +41,7 @@ export async function POST(
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -58,6 +66,21 @@ export async function POST(
         },
         { status: HttpStatus.BAD_REQUEST },
       );
+    }
+
+    const ip = await getIp();
+    if (ip) {
+      const key = `team-image:${ip}`;
+      const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes
+
+      if (isLimited) {
+        return NextResponse.json(
+          {
+            message: t('validation.too_many_requests'),
+          },
+          { status: HttpStatus.TOO_MANY_REQUESTS },
+        );
+      }
     }
 
     const selectedTeam = await getSelectedTeam();
@@ -127,20 +150,23 @@ export async function POST(
     if (team.imageUrl) {
       const imageUrlParts = team.imageUrl.split('/');
       const fileKey = `teams/${imageUrlParts[imageUrlParts.length - 1]}`;
-      await deleteFileFromS3(process.env.OBJECT_STORAGE_BUCKET_NAME!, fileKey);
+      await deleteFileFromPublicS3(
+        process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
+        fileKey,
+      );
     }
 
     const imageUuid = randomUUID();
 
     const fileKey = `teams/${imageUuid}.${file.type.split('/')[1]}`;
-    await uploadFileToS3(
-      process.env.OBJECT_STORAGE_BUCKET_NAME!,
+    await uploadFileToPublicS3(
+      process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
       fileKey,
       processedImageBuffer,
       file.type,
     );
 
-    const imageUrl = `${process.env.OBJECT_STORAGE_BASE_URL}/${fileKey}`;
+    const imageUrl = `${process.env.PUBLIC_OBJECT_STORAGE_BASE_URL}/${fileKey}`;
 
     await prisma.team.update({
       where: {
@@ -236,7 +262,10 @@ export async function DELETE(request: NextRequest) {
 
     const imageUrlParts = team.imageUrl.split('/');
     const fileKey = `teams/${imageUrlParts[imageUrlParts.length - 1]}`;
-    await deleteFileFromS3(process.env.OBJECT_STORAGE_BUCKET_NAME!, fileKey);
+    await deleteFileFromPublicS3(
+      process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
+      fileKey,
+    );
 
     await prisma.team.update({
       where: {

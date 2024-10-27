@@ -63,9 +63,20 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: '/dashboard/products',
           translation: 'products',
-          active: pathname === '/dashboard/products',
+          active: pathname.startsWith('/dashboard/products'),
           icon: Package,
-          submenus: [],
+          submenus: [
+            {
+              href: '/dashboard/products',
+              translation: 'list',
+              active: pathname === '/dashboard/products',
+            },
+            {
+              href: '/dashboard/products/releases',
+              translation: 'releases',
+              active: pathname === '/dashboard/products/releases',
+            },
+          ],
         },
       ],
     },
@@ -111,7 +122,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: '',
           translation: 'team',
-          active: pathname === '/dashboard/team',
+          active: pathname.startsWith('/dashboard/team'),
           icon: Shield,
           submenus: [
             {

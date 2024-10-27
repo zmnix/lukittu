@@ -135,7 +135,7 @@ export async function POST(
       action: AuditLogAction.SET_STRIPE_INTEGRATION,
       targetId: selectedTeam,
       targetType: AuditLogTargetType.TEAM,
-      requestBody: null,
+      requestBody: body,
       responseBody: response,
     });
 

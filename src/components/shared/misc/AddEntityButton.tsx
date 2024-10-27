@@ -11,13 +11,20 @@ import { CustomerModalContext } from '@/providers/CustomerModalProvider';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { MemberModalContext } from '@/providers/MemberModalProvider';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
+import { ReleaseModalContext } from '@/providers/ReleasesModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
 
 interface AddEntityButtonProps {
-  entityType: 'product' | 'customer' | 'member' | 'license' | 'blacklist';
+  entityType:
+    | 'product'
+    | 'customer'
+    | 'member'
+    | 'license'
+    | 'blacklist'
+    | 'release';
   displayText?: boolean;
   isTeamOwner?: boolean;
 }
@@ -35,6 +42,7 @@ export default function AddEntityButton({
   const memberModalCtx = useContext(MemberModalContext);
   const licenseModalCtx = useContext(LicenseModalContext);
   const blacklistModalCtx = useContext(BlacklistModalContext);
+  const releaseModalCtx = useContext(ReleaseModalContext);
 
   const translationKey = (() => {
     switch (entityType) {
@@ -48,6 +56,8 @@ export default function AddEntityButton({
         return 'dashboard.licenses.add_license';
       case 'blacklist':
         return 'dashboard.blacklist.add_blacklist';
+      case 'release':
+        return 'dashboard.releases.create_release';
       default:
         throw new Error(`Unsupported entity type: ${entityType}`);
     }
@@ -68,6 +78,8 @@ export default function AddEntityButton({
         return licenseModalCtx.setLicenseModalOpen(true);
       case 'blacklist':
         return blacklistModalCtx.setBlacklistModalOpen(true);
+      case 'release':
+        return releaseModalCtx.setReleaseModalOpen(true);
     }
   };
 

@@ -185,10 +185,14 @@ export default function TeamGeneralSettings({
   const handleFileSelect = () => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.multiple = false;
     input.accept = 'image/jpeg, image/png, image/webp';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        if (file.size > 1048576) {
+          return toast.error(t('validation.file_too_large'));
+        }
         await handleUpload(file);
       }
     };

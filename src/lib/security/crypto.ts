@@ -2,6 +2,16 @@ import crypto from 'crypto';
 import 'server-only';
 import { logger } from '../logging/logger';
 
+const ENCRYPTION_KEY =
+  process.env.NODE_ENV === 'test'
+    ? 'test-encryption-key'.padEnd(32, '0')
+    : process.env.ENCRYPTION_KEY!;
+
+const HMAC_KEY =
+  process.env.NODE_ENV === 'test' ? 'test-hmac-key' : process.env.HMAC_KEY!;
+
+const IV_LENGTH = 16;
+
 export function hashPassword(password: string) {
   const iterations = 100000;
   const keyLength = 64;
@@ -43,16 +53,6 @@ export function verifyPassword(password: string, storedHash: string) {
     throw new Error('Verification failed');
   }
 }
-
-const ENCRYPTION_KEY =
-  process.env.NODE_ENV === 'test'
-    ? 'test-encryption-key'.padEnd(32, '0')
-    : process.env.ENCRYPTION_KEY!;
-
-const HMAC_KEY =
-  process.env.NODE_ENV === 'test' ? 'test-hmac-key' : process.env.HMAC_KEY!;
-
-const IV_LENGTH = 16;
 
 export function encryptLicenseKey(licenseKey: string): string {
   try {
@@ -137,4 +137,36 @@ export function signChallenge(challenge: string, privateKey: string) {
     logger.error('Error occurred in signChallenge:', error);
     throw new Error('Signing failed');
   }
+}
+
+export async function generateMD5Hash(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('md5');
+    const stream = file.stream();
+    const reader = stream.getReader();
+
+    async function processStream() {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            hash.end();
+            const hashHex = hash.digest('hex');
+            resolve(hashHex);
+            return;
+          }
+
+          hash.update(value);
+        }
+      } catch (error) {
+        reader.releaseLock();
+        reject(error);
+      } finally {
+        reader.releaseLock();
+      }
+    }
+
+    processStream().catch(reject);
+  });
 }

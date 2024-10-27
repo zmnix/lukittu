@@ -37,7 +37,11 @@ export function Sidebar() {
           variant="link"
           asChild
         >
-          <Link className="flex items-center gap-2" href="/dashboard">
+          <Link
+            className="flex items-center gap-2"
+            href="/dashboard"
+            tabIndex={0}
+          >
             <Image
               alt="Lukittu"
               className={ctx.open ? '' : 'hidden'}

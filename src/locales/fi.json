@@ -86,10 +86,20 @@
     "stripe_api_key_invalid": "Stripe API key is invalid!",
     "stripe_webhook_secret_required": "Stripe webhook secret is required!",
     "stripe_webhook_secret_invalid": "Stripe webhook secret is invalid!",
-    "stripe_integration_not_found": "Stripe integration not found!"
+    "stripe_integration_not_found": "Stripe integration not found!",
+    "release_version_required": "Version is required!",
+    "release_version_min_length": "Version number must be at least 3 characters long!",
+    "release_version_max_length": "Version number must be at most 255 characters long!",
+    "release_product_required": "Product is required!",
+    "release_exists": "Release with this version already exists!",
+    "invalid_release_version": "Invalid version!",
+    "main_class_not_found": "Uploaded file is JAR but extracting the main class failed! Please contact support."
   },
   "general": {
     "select_type": "Select type",
+    "menu": "Menu",
+    "release": "Release",
+    "version": "Version",
     "country": "Country",
     "days": "Days",
     "heartbeats": "Heartbeats",
@@ -100,6 +110,16 @@
     "code": "Code",
     "origin": "Origin",
     "load_more": "Load more",
+    "major": "Major",
+    "minor": "Minor",
+    "patch": "Patch",
+    "draft": "Draft",
+    "published": "Published",
+    "select_status": "Select status",
+    "status": "Status",
+    "deprecated": "Deprecated",
+    "file": "File",
+    "archived": "Archived",
     "time_conversion": "Time conversion",
     "details": "Details",
     "no_data": "No data",
@@ -168,6 +188,7 @@
     "showing_of_results": "Showing {start}-{end} of {total} results",
     "rows_per_page": "Rows per page",
     "select_products": "Select products",
+    "select_product": "Select product",
     "select_customers": "Select customers",
     "loading": "Loading...",
     "no_results": "No results",
@@ -328,6 +349,8 @@
       "logs": "Logs",
       "blacklist": "Blacklist",
       "settings": "Settings",
+      "releases": "Releases",
+      "list": "List",
       "integrations": "Integrations"
     },
     "teams": {
@@ -478,7 +501,12 @@
         "update_team_picture": "updated team picture",
         "create_blacklist": "created blacklist",
         "delete_blacklist": "deleted blacklist",
-        "update_blacklist": "updated blacklist"
+        "update_blacklist": "updated blacklist",
+        "delete_stripe_integration": "deleted Stripe integration",
+        "set_stripe_integration": "set Stripe integration",
+        "create_release": "created release",
+        "delete_release": "deleted release",
+        "update_release": "updated release"
       }
     },
     "members": {
@@ -509,6 +537,15 @@
       "stripe_integration_updated": "Stripe integration updated",
       "stripe_integration_created": "Stripe integration created",
       "stripe_integration_deleted": "Stripe integration deleted"
+    },
+    "releases": {
+      "release_description": "Releases are the versions of your software that you distribute to your customers. You can add, edit, and delete releases here.",
+      "create_release": "Create release",
+      "update_release": "Update release",
+      "release_updated": "Release updated",
+      "release_created": "Release created",
+      "click_here_to_upload": "Click here to browse and upload a file",
+      "supported_file_types": "Any file type (max 1MB)"
     },
     "settings": {
       "general_settings": "General settings",
