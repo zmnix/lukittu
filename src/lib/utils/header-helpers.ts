@@ -1,5 +1,6 @@
 import { cookies, headers } from 'next/headers';
 import 'server-only';
+import { regex } from '../constants/regex';
 
 /**
  * Get the IP address from the headers
@@ -46,12 +47,12 @@ export const getLanguage = async () => {
 
   let lang = 'en';
 
-  if (langCookie && allowedLangs.includes(langCookie)) {
-    lang = langCookie;
-  }
-
   if (acceptedLang && allowedLangs.includes(acceptedLang.value)) {
     lang = acceptedLang.value;
+  }
+
+  if (langCookie && allowedLangs.includes(langCookie)) {
+    lang = langCookie;
   }
 
   return lang;
@@ -63,9 +64,7 @@ export const getSelectedTeam = async () => {
 
   if (!selectedTeamCookie) return null;
 
-  const validUuid =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-  if (!validUuid.test(selectedTeamCookie)) return null;
+  if (!regex.uuidV4.test(selectedTeamCookie)) return null;
 
   return selectedTeamCookie;
 };

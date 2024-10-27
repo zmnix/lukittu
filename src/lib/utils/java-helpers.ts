@@ -114,7 +114,8 @@ export async function getMainClassFromJar(file: File): Promise<string | null> {
 
     const pluginYmlEntry = entries.get('plugin.yml');
     if (!pluginYmlEntry) {
-      throw new Error('plugin.yml not found in JAR file');
+      logger.error('Invalid JAR file: plugin.yml not found');
+      return null;
     }
 
     let content: Buffer;
