@@ -68,9 +68,9 @@ export async function POST(
       });
     }
 
-    const ip = await getIp();
-    if (ip) {
-      const key = `license-verify:${ip}`;
+    const ipAddress = await getIp();
+    if (ipAddress) {
+      const key = `license-verify:${ipAddress}`;
       const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
 
       if (isLimited) {
@@ -196,8 +196,8 @@ export async function POST(
     );
     const blacklistedIpList = blacklistedIps.map((b) => b.value);
 
-    if (ip && blacklistedIpList.includes(ip)) {
-      await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ip);
+    if (ipAddress && blacklistedIpList.includes(ipAddress)) {
+      await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ipAddress);
 
       return loggedResponse({
         ...loggedResponseBase,
@@ -223,7 +223,7 @@ export async function POST(
     const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
 
     if (blacklistedCountryList.length > 0) {
-      const geoData = await proxyCheck(ip);
+      const geoData = await proxyCheck(ipAddress);
 
       if (geoData?.isocode) {
         const inIso3 = iso2ToIso3Map[geoData.isocode!];
