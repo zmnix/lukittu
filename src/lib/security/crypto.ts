@@ -218,9 +218,11 @@ export function createEncryptionStream(sessionKey: string) {
       const { authTag, encryptedChunk, iv } = encryptChunk(chunk, sessionKey);
 
       // Combine in specific order: IV + Auth Tag + Encrypted Data
+      const length = Buffer.alloc(4);
       const encryptedData = Buffer.concat([iv, authTag, encryptedChunk]);
+      length.writeUInt32BE(encryptedData.length);
 
-      controller.enqueue(encryptedData);
+      controller.enqueue(Buffer.concat([length, encryptedData]));
     },
   });
 }
