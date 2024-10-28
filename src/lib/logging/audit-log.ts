@@ -1,8 +1,8 @@
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import 'server-only';
-import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
 import prisma from '../database/prisma';
 import { proxyCheck } from '../providers/proxycheck';
+import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getUserAgent } from '../utils/header-helpers';
 import { logger } from './logger';
 
@@ -32,7 +32,7 @@ export const createAuditLog = async ({
   const latitude = geoData?.latitude || null;
   const hasBothLongitudeAndLatitude = longitude && latitude;
   const countryAlpha3: string | null = geoData?.isocode
-    ? iso2ToIso3Map[geoData.isocode]
+    ? iso2toIso3(geoData.isocode!)
     : null;
 
   try {

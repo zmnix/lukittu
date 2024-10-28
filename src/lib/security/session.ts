@@ -4,9 +4,9 @@ import { randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import 'server-only';
-import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
 import { logger } from '../logging/logger';
 import { proxyCheck } from '../providers/proxycheck';
+import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getUserAgent } from '../utils/header-helpers';
 
 export async function createSession(userId: string, rememberMe: boolean) {
@@ -16,7 +16,7 @@ export async function createSession(userId: string, rememberMe: boolean) {
 
     const geoData = await proxyCheck(ipAddress);
     const countryAlpha3: string | null = geoData?.isocode
-      ? iso2ToIso3Map[geoData.isocode]
+      ? iso2toIso3(geoData.isocode!)!
       : null;
 
     const sessionId = randomBytes(16).toString('hex');

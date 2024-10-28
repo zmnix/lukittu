@@ -1,7 +1,7 @@
-import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import { regex } from '@/lib/constants/regex';
 import { logger } from '@/lib/logging/logger';
 import { getSession } from '@/lib/security/session';
+import { iso3ToName } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       } else {
         acc.push({
           alpha_3: country!,
-          name: iso3ToName[country!],
+          name: iso3ToName(country) ?? t('general.unknown'),
           requests: 1,
         });
       }

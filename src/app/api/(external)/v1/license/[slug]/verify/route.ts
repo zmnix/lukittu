@@ -1,4 +1,3 @@
-import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
@@ -9,6 +8,7 @@ import {
 import { proxyCheck } from '@/lib/providers/proxycheck';
 import { generateHMAC, signChallenge } from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
+import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getIp } from '@/lib/utils/header-helpers';
 import {
   VerifyLicenseSchema,
@@ -226,7 +226,7 @@ export async function POST(
       const geoData = await proxyCheck(ipAddress);
 
       if (geoData?.isocode) {
-        const inIso3 = iso2ToIso3Map[geoData.isocode!];
+        const inIso3 = iso2toIso3(geoData.isocode!)!;
 
         if (blacklistedCountryList.includes(inIso3)) {
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);

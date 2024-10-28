@@ -1,9 +1,9 @@
-import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
-import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
+import { countries } from '@/lib/constants/countries';
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
 import { getSession } from '@/lib/security/session';
+import { iso3toIso2, iso3ToName } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
   setBlacklistSchema,
@@ -84,20 +84,12 @@ export async function GET(
     let additionalCountrySearch: string | undefined;
     const lowercaseSearch = search.toLowerCase();
 
-    const lowercaseCountryMap = Object.entries(iso3ToName).reduce(
-      (acc, [iso3, name]) => {
-        acc[name.toLowerCase()] = iso3;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-
-    const matchingCountry = Object.keys(lowercaseCountryMap).find((name) =>
-      name.includes(lowercaseSearch),
+    const matchingCountry = countries.find(({ en_short_name }) =>
+      en_short_name.includes(lowercaseSearch),
     );
 
     if (matchingCountry) {
-      additionalCountrySearch = lowercaseCountryMap[matchingCountry];
+      additionalCountrySearch = matchingCountry.alpha_3_code;
     }
 
     const whereWithoutTeamCheck = (
@@ -186,13 +178,8 @@ export async function GET(
       blacklist: blacklist.map((blacklist) => ({
         ...blacklist,
         alpha2:
-          blacklist.type === 'COUNTRY'
-            ? (Object.keys(iso2ToIso3Map).find(
-                (key) => iso2ToIso3Map[key] === blacklist.value,
-              ) ?? null)
-            : null,
-        country:
-          blacklist.type === 'COUNTRY' ? iso3ToName[blacklist.value] : null,
+          blacklist.type === 'COUNTRY' ? iso3toIso2(blacklist.value) : null,
+        country: iso3ToName(blacklist.value),
       })),
       totalResults,
       hasResults: Boolean(hasResults),

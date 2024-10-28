@@ -2,9 +2,9 @@ import { HttpStatus } from '@/types/http-status';
 import { RequestMethod, RequestStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import 'server-only';
-import { iso2ToIso3Map } from '../constants/country-alpha-2-to-3';
 import prisma from '../database/prisma';
 import { proxyCheck } from '../providers/proxycheck';
+import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getOrigin, getUserAgent } from '../utils/header-helpers';
 import { logger } from './logger';
 
@@ -43,7 +43,7 @@ export async function logRequest({
     const latitude = geoData?.latitude || null;
     const hasBothLongitudeAndLatitude = longitude && latitude;
     const countryAlpha3: string | null = geoData?.isocode
-      ? iso2ToIso3Map[geoData.isocode]
+      ? iso2toIso3(geoData.isocode!)
       : null;
 
     await prisma.requestLog.create({

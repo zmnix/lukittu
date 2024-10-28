@@ -1,4 +1,3 @@
-'use client';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -13,7 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
+import { countries as initialCountries } from '@/lib/constants/countries';
+import { iso3ToName } from '@/lib/utils/country-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -33,7 +33,7 @@ export default function CountrySelector({
 }: CountrySelectorProps) {
   const t = useTranslations();
 
-  const initialCountry = iso3ToName[initialValue];
+  const initialCountry = iso3ToName(initialValue);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initialCountry || '');
@@ -41,9 +41,9 @@ export default function CountrySelector({
 
   const countries = useMemo(
     () =>
-      Object.entries(iso3ToName).map(([iso3, name]) => ({
-        name,
-        flag: iso3,
+      initialCountries.map(({ en_short_name, alpha_3_code }) => ({
+        name: en_short_name,
+        flag: alpha_3_code,
       })),
     [],
   );
@@ -94,9 +94,9 @@ export default function CountrySelector({
                     key={country.name}
                     value={country.name}
                     onSelect={(currentValue) => {
-                      const iso3 = Object.keys(iso3ToName).find(
-                        (key) => iso3ToName[key] === currentValue,
-                      );
+                      const iso3 = countries.find(
+                        (c) => c.name === currentValue,
+                      )?.flag;
                       setValue(currentValue === value ? '' : currentValue);
                       onChange(currentValue === value ? '' : iso3!);
                       setOpen(false);

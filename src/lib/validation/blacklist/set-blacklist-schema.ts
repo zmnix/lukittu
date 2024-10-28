@@ -1,4 +1,4 @@
-import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
+import { countries } from '@/lib/constants/countries';
 import { BlacklistType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
@@ -27,8 +27,8 @@ export const setBlacklistSchema = (
     .strict()
     .refine(
       (data) => {
-        const countries = Object.keys(iso3ToName);
-        if (data.type === 'COUNTRY' && !countries.includes(data.value)) {
+        const iso3list = countries.map((country) => country.alpha_3_code);
+        if (data.type === 'COUNTRY' && !iso3list.includes(data.value)) {
           return false;
         }
         return true;

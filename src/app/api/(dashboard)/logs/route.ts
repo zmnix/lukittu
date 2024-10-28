@@ -1,9 +1,8 @@
-import { iso2ToIso3Map } from '@/lib/constants/country-alpha-2-to-3';
-import { iso3ToName } from '@/lib/constants/country-alpha-3-to-name';
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
 import { getSession } from '@/lib/security/session';
+import { iso3toIso2, iso3ToName } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
@@ -223,12 +222,9 @@ export async function GET(
 
       return {
         ...log,
-        country: log.country ? iso3ToName[log.country] : null,
+        country: iso3ToName(log.country),
         alpha3: log.country ?? null,
-        alpha2:
-          Object.keys(iso2ToIso3Map).find(
-            (key) => iso2ToIso3Map[key] === log.country,
-          ) ?? null,
+        alpha2: iso3toIso2(log.country),
         browser,
         os,
       };
