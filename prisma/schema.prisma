@@ -100,7 +100,7 @@ model Blacklist {
   teamId          String
   createdByUserId String?
   createdBy       User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
-  team            Team          @relation(fields: [teamId], references: [id])
+  team            Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, type, value])
 }
@@ -194,7 +194,7 @@ model Release {
   createdBy       User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  product         Product       @relation(fields: [productId], references: [id])
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId       String
   file            ReleaseFile?
 
@@ -210,6 +210,7 @@ model ReleaseFile {
   size          Int
   name          String
   checksum      String
+  latest        Boolean  @default(false)
   mainClassName String?
   createdAt     DateTime @default(now())
 }
@@ -447,4 +448,5 @@ enum RequestStatus {
   COUNTRY_BLACKLISTED
   IP_BLACKLISTED
   RELEASE_NOT_FOUND
+  INVALID_SESSION_KEY
 }

@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "RequestStatus" ADD VALUE 'INVALID_SESSION_KEY';

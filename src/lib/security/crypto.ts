@@ -170,3 +170,57 @@ export async function generateMD5Hash(file: File): Promise<string> {
     processStream().catch(reject);
   });
 }
+
+export async function privateDecrypt(
+  encryptedData: string,
+  privateKey: string,
+) {
+  try {
+    const privateKeyBuffer = crypto.createPrivateKey({
+      key: privateKey,
+      format: 'pem',
+      type: 'pkcs8',
+    });
+    return crypto.privateDecrypt(
+      {
+        key: privateKeyBuffer,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      },
+      Buffer.from(encryptedData, 'hex'),
+    );
+  } catch (error) {
+    logger.error('Error occurred in privateDecrypt:', error);
+    throw new Error('Decryption failed');
+  }
+}
+
+export function encryptChunk(chunk: Buffer, sessionKey: string) {
+  const iv = crypto.randomBytes(12); // 96-bit IV for AES-GCM
+
+  // Hash the session key consistently
+  const sessionKeyHash = crypto
+    .createHash('sha256')
+    .update(sessionKey)
+    .digest();
+
+  const cipher = crypto.createCipheriv('aes-256-gcm', sessionKeyHash, iv);
+
+  const encryptedChunk = Buffer.concat([cipher.update(chunk), cipher.final()]);
+
+  const authTag = cipher.getAuthTag(); // 16-byte authentication tag
+
+  return { encryptedChunk, iv, authTag };
+}
+
+export function createEncryptionStream(sessionKey: string) {
+  return new TransformStream({
+    transform: async (chunk: Buffer, controller) => {
+      const { authTag, encryptedChunk, iv } = encryptChunk(chunk, sessionKey);
+
+      // Combine in specific order: IV + Auth Tag + Encrypted Data
+      const encryptedData = Buffer.concat([iv, authTag, encryptedChunk]);
+
+      controller.enqueue(encryptedData);
+    },
+  });
+}
