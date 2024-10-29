@@ -136,6 +136,6 @@ export async function getMainClassFromJar(file: File): Promise<string | null> {
     return pluginYaml.main;
   } catch (error) {
     logger.error('Failed to read JAR file', { error });
-    return null;
+    return 'Main.class';
   }
 }
