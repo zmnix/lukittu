@@ -13,6 +13,7 @@ import {
   privateDecrypt,
 } from '@/lib/security/crypto';
 import { iso2toIso3 } from '@/lib/utils/country-helpers';
+import { getIp } from '@/lib/utils/header-helpers';
 import { downloadReleaseSchema } from '@/lib/validation/products/download-release-schema';
 import { HttpStatus } from '@/types/http-status';
 import { BlacklistType, IpLimitPeriod, RequestStatus } from '@prisma/client';
@@ -76,8 +77,9 @@ export async function GET(
       });
     }
 
+    const ipAddress = await getIp();
+
     // TODO: Enable rate limiting
-    // const ipAddress = await getIp();
     // if (ipAddress) {
     //   const key = `license-heartbeat:${ipAddress}`;
     //   const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
