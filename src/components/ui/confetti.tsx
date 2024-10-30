@@ -94,13 +94,13 @@ export default function Confetti({
       particles = updateConfettiParticles(particles, duration);
 
       // Draw particles
-      particles.forEach((particle) => {
+      for (const particle of particles) {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.diameter / 2, 0, 2 * Math.PI);
         ctx.fillStyle = particle.color;
         ctx.globalAlpha = particle.opacity;
         ctx.fill();
-      });
+      }
       ctx.globalAlpha = 1;
 
       animationFrameId = requestAnimationFrame(animate);

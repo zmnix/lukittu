@@ -88,19 +88,21 @@ export async function GET(
     }
 
     if (productIds) {
-      productIds.split(',').forEach((id) => {
+      const productIdArray = productIds.split(',');
+      for (const id of productIdArray) {
         if (regex.uuidV4.test(id)) {
           productIdsFormatted.push(id);
         }
-      });
+      }
     }
 
     if (customerIds) {
-      customerIds.split(',').forEach((id) => {
+      const customerIdArray = customerIds.split(',');
+      for (const id of customerIdArray) {
         if (regex.uuidV4.test(id)) {
           customerIdsFormatted.push(id);
         }
-      });
+      }
     }
 
     const skip = (page - 1) * pageSize;
