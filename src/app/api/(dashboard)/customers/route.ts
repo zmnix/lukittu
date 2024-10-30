@@ -11,6 +11,7 @@ import {
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
+  Address,
   AuditLogAction,
   AuditLogTargetType,
   Customer,
@@ -20,7 +21,7 @@ import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export type ICustomersGetSuccessResponse = {
-  customers: Customer[];
+  customers: (Customer & { address: Address | null })[];
   totalResults: number;
   hasResults: boolean;
 };
@@ -129,6 +130,9 @@ export async function GET(
                 },
                 skip,
                 take,
+                include: {
+                  address: true,
+                },
               },
             },
           },
@@ -215,7 +219,7 @@ export async function POST(
       );
     }
 
-    const { email, fullName, metadata } = validated.data;
+    const { email, fullName, metadata, address } = validated.data;
 
     const selectedTeam = await getSelectedTeam();
 
@@ -302,6 +306,9 @@ export async function POST(
         email,
         fullName,
         metadata,
+        address: {
+          create: address,
+        },
         createdBy: {
           connect: {
             id: session.user.id,

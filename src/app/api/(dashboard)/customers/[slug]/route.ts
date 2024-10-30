@@ -168,7 +168,7 @@ export async function PUT(
       );
     }
 
-    const { email, fullName, metadata } = validated.data;
+    const { email, fullName, metadata, address } = validated.data;
 
     const selectedTeam = await getSelectedTeam();
 
@@ -259,6 +259,16 @@ export async function PUT(
         email,
         fullName,
         metadata,
+        address: {
+          upsert: {
+            create: {
+              ...address,
+            },
+            update: {
+              ...address,
+            },
+          },
+        },
       },
     });
 

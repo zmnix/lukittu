@@ -44,6 +44,14 @@ export default function SetCustomerModal() {
     defaultValues: {
       email: '',
       fullName: null,
+      address: {
+        city: null,
+        country: null,
+        line1: null,
+        line2: null,
+        postalCode: null,
+        state: null,
+      },
       metadata: [],
     },
   });
@@ -57,6 +65,18 @@ export default function SetCustomerModal() {
     if (ctx.customerToEdit) {
       form.setValue('email', ctx.customerToEdit.email);
       form.setValue('fullName', ctx.customerToEdit.fullName);
+      form.setValue('address.city', ctx.customerToEdit.address?.city ?? null);
+      form.setValue(
+        'address.country',
+        ctx.customerToEdit.address?.country ?? null,
+      );
+      form.setValue('address.line1', ctx.customerToEdit.address?.line1 ?? null);
+      form.setValue('address.line2', ctx.customerToEdit.address?.line2 ?? null);
+      form.setValue(
+        'address.postalCode',
+        ctx.customerToEdit.address?.postalCode ?? null,
+      );
+      form.setValue('address.state', ctx.customerToEdit.address?.state ?? null);
       form.setValue(
         'metadata',
         (
@@ -146,145 +166,298 @@ export default function SetCustomerModal() {
   };
 
   return (
-    <>
-      <ResponsiveDialog
-        open={ctx.customerModalOpen}
-        onOpenChange={handleOpenChange}
-      >
-        <ResponsiveDialogContent className="sm:max-w-[625px]">
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle>
-              {t('dashboard.customers.add_customer')}
-            </ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>
-              {t('dashboard.customers.customer_description')}
-            </ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
-          <Form {...form}>
-            <form
-              className="space-y-4 max-md:px-2"
-              onSubmit={form.handleSubmit(onSubmit)}
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('general.email')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="support@lukittu.com"
-                        {...field}
-                        required
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('general.full_name')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => {
-                          if (!e.target.value) {
-                            return form.setValue('fullName', null);
-                          }
-                          return form.setValue('fullName', e.target.value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`metadata.${index}.key`}
-                    render={({ field }) => (
-                      <FormItem className="w-[calc(100%-90px)]">
-                        <FormLabel>
-                          {t('general.key')} {index + 1}
-                        </FormLabel>
-                        <FormControl>
+    <ResponsiveDialog
+      open={ctx.customerModalOpen}
+      onOpenChange={handleOpenChange}
+    >
+      <ResponsiveDialogContent className="sm:max-w-[625px]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            {t('dashboard.customers.add_customer')}
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
+            {t('dashboard.customers.customer_description')}
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <Form {...form}>
+          <form
+            className="space-y-4 max-md:px-2"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('general.email')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="support@lukittu.com"
+                      {...field}
+                      required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('general.full_name')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(e) => {
+                        if (!e.target.value) {
+                          return form.setValue('fullName', null);
+                        }
+                        return form.setValue('fullName', e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">{t('general.address')}</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="address.line1"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('general.address_line1')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              return form.setValue('address.line1', null);
+                            }
+                            return form.setValue(
+                              'address.line1',
+                              e.target.value,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address.line2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('general.address_line2')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              return form.setValue('address.line2', null);
+                            }
+                            return form.setValue(
+                              'address.line2',
+                              e.target.value,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address.city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('general.city')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              return form.setValue('address.city', null);
+                            }
+                            return form.setValue(
+                              'address.city',
+                              e.target.value,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address.state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('general.state')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              return form.setValue('address.state', null);
+                            }
+                            return form.setValue(
+                              'address.state',
+                              e.target.value,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address.postalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('general.postal_code')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              return form.setValue('address.postalCode', null);
+                            }
+                            return form.setValue(
+                              'address.postalCode',
+                              e.target.value,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address.country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('general.country')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              return form.setValue('address.country', null);
+                            }
+                            return form.setValue(
+                              'address.country',
+                              e.target.value,
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex items-start gap-2">
+                <FormField
+                  control={form.control}
+                  name={`metadata.${index}.key`}
+                  render={({ field }) => (
+                    <FormItem className="w-[calc(100%-90px)]">
+                      <FormLabel>
+                        {t('general.key')} {index + 1}
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`metadata.${index}.value`}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>
+                        {t('general.value')} {index + 1}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
                           <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`metadata.${index}.value`}
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>
-                          {t('general.value')} {index + 1}
-                        </FormLabel>
-                        <FormControl>
-                          <div className="flex items-center gap-2">
-                            <Input {...field} />
-                            <Button
-                              className="shrink-0 pl-0"
-                              size="icon"
-                              type="button"
-                              variant="secondary"
-                              onClick={() => remove(index)}
-                            >
-                              <X size={24} />
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              ))}
-              <Button
-                className="pl-0"
-                size="sm"
-                type="button"
-                variant="link"
-                onClick={handleAddMetadata}
-              >
-                {t('general.add_metadata')}
-              </Button>
-              <button className="hidden" type="submit" />
-            </form>
-          </Form>
-          <ResponsiveDialogFooter>
-            <div>
-              <LoadingButton
-                className="w-full"
-                type="submit"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
-                {t('general.close')}
-              </LoadingButton>
-            </div>
-            <div>
-              <LoadingButton
-                className="w-full"
-                pending={loading}
-                type="submit"
-                onClick={() => form.handleSubmit(onSubmit)()}
-              >
-                {t('dashboard.customers.add_customer')}
-              </LoadingButton>
-            </div>
-          </ResponsiveDialogFooter>
-        </ResponsiveDialogContent>
-      </ResponsiveDialog>
-    </>
+                          <Button
+                            className="shrink-0 pl-0"
+                            size="icon"
+                            type="button"
+                            variant="secondary"
+                            onClick={() => remove(index)}
+                          >
+                            <X size={24} />
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
+            <Button
+              className="pl-0"
+              size="sm"
+              type="button"
+              variant="link"
+              onClick={handleAddMetadata}
+            >
+              {t('general.add_metadata')}
+            </Button>
+            <button className="hidden" type="submit" />
+          </form>
+        </Form>
+        <ResponsiveDialogFooter>
+          <div>
+            <LoadingButton
+              className="w-full"
+              type="submit"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+            >
+              {t('general.close')}
+            </LoadingButton>
+          </div>
+          <div>
+            <LoadingButton
+              className="w-full"
+              pending={loading}
+              type="submit"
+              onClick={() => form.handleSubmit(onSubmit)()}
+            >
+              {t('dashboard.customers.add_customer')}
+            </LoadingButton>
+          </div>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
