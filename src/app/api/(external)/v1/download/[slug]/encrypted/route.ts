@@ -685,6 +685,12 @@ export async function GET(
         'Content-Type': 'application/octet-stream',
         'Content-Security-Policy': "default-src 'none'",
         'X-Content-Type-Options': 'nosniff',
+        'X-File-Size': fileToUse.size.toString(),
+        ...(fileToUse.mainClassName
+          ? {
+              'X-Main-Class': fileToUse.mainClassName,
+            }
+          : {}),
       },
     });
   } catch (error) {
