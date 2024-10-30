@@ -309,30 +309,31 @@ model AuditLog {
 }
 
 model RequestLog {
-  id           String        @id @default(uuid())
-  responseTime Int
-  ipAddress    String?
-  longitude    Float?
-  latitude     Float?
-  country      String?
-  status       RequestStatus
-  statusCode   Int
-  version      String
-  userAgent    String?
-  origin       String?
-  path         String
-  method       RequestMethod
-  requestBody  Json?
-  responseBody Json?
-  teamId       String
-  team         Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  licenseId    String?
-  license      License?      @relation(fields: [licenseId], references: [id], onDelete: Cascade)
-  productId    String?
-  product      Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
-  customerId   String?
-  customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  createdAt    DateTime      @default(now())
+  id               String        @id @default(uuid())
+  responseTime     Int
+  ipAddress        String?
+  longitude        Float?
+  latitude         Float?
+  country          String?
+  status           RequestStatus
+  statusCode       Int
+  version          String
+  userAgent        String?
+  origin           String?
+  deviceIdentifier String?
+  path             String
+  method           RequestMethod
+  requestBody      Json?
+  responseBody     Json?
+  teamId           String
+  team             Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  licenseId        String?
+  license          License?      @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  productId        String?
+  product          Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  customerId       String?
+  customer         Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt        DateTime      @default(now())
 
   @@index([teamId, createdAt])
 }

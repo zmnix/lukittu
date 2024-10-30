@@ -229,12 +229,22 @@ export async function GET(
       (customer) => customer.id === customerId,
     );
 
+    const matchingProduct = license?.products.find(
+      (product) => product.id === productId,
+    );
+
+    const commonBase = {
+      teamId,
+      customerId: matchingCustomer ? customerId : undefined,
+      productId: matchingProduct ? productId : undefined,
+      deviceIdentifier,
+      licenseKeyLookup: undefined as string | undefined,
+    };
+
     if (!license) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.LICENSE_NOT_FOUND,
         response: {
           data: null,
@@ -248,17 +258,12 @@ export async function GET(
       });
     }
 
-    const productMatch = license.products.find(
-      (product) => product.id === productId,
-    );
+    commonBase.licenseKeyLookup = licenseKeyLookup;
 
-    if (!productMatch) {
+    if (!matchingProduct) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.PRODUCT_NOT_FOUND,
         response: {
           data: null,
@@ -272,17 +277,14 @@ export async function GET(
       });
     }
 
-    const versionMatchRelease = productMatch.releases.find(
+    const versionMatchRelease = matchingProduct.releases.find(
       (v) => v.version === version,
     );
     if (version) {
       if (!versionMatchRelease) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId,
+          ...commonBase,
           status: RequestStatus.RELEASE_NOT_FOUND,
           response: {
             data: null,
@@ -297,7 +299,7 @@ export async function GET(
       }
     }
 
-    const latestRelease = productMatch.releases.find(
+    const latestRelease = matchingProduct.releases.find(
       (release) => release.file?.latest,
     );
 
@@ -305,10 +307,7 @@ export async function GET(
     if (!latestRelease) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.INTERNAL_SERVER_ERROR,
         response: {
           data: null,
@@ -328,10 +327,7 @@ export async function GET(
     if (!fileToUse) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.INTERNAL_SERVER_ERROR,
         response: {
           data: null,
@@ -354,9 +350,7 @@ export async function GET(
       await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ipAddress);
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.IP_BLACKLISTED,
         response: {
           data: null,
@@ -385,9 +379,7 @@ export async function GET(
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
           return loggedResponse({
             ...loggedResponseBase,
-            teamId,
-            customerId: matchingCustomer ? customerId : undefined,
-            productId,
+            ...commonBase,
             status: RequestStatus.COUNTRY_BLACKLISTED,
             response: {
               data: null,
@@ -422,9 +414,7 @@ export async function GET(
       );
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
         response: {
           data: null,
@@ -446,10 +436,7 @@ export async function GET(
     if (strictModeNoCustomerId || noCustomerMatch) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.CUSTOMER_NOT_FOUND,
         response: {
           data: null,
@@ -466,10 +453,7 @@ export async function GET(
     if (license.suspended) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.LICENSE_SUSPENDED,
         response: {
           data: null,
@@ -490,10 +474,7 @@ export async function GET(
       if (currentDate.getTime() > expirationDate.getTime()) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId,
+          ...commonBase,
           status: RequestStatus.LICENSE_EXPIRED,
           response: {
             data: null,
@@ -530,10 +511,7 @@ export async function GET(
         if (currentDate.getTime() > expirationDate.getTime()) {
           return loggedResponse({
             ...loggedResponseBase,
-            teamId,
-            licenseKeyLookup,
-            customerId: matchingCustomer ? customerId : undefined,
-            productId,
+            ...commonBase,
             status: RequestStatus.LICENSE_EXPIRED,
             response: {
               data: null,
@@ -557,10 +535,7 @@ export async function GET(
       if (!existingIps.includes(ipAddress) && ipLimitReached) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId,
+          ...commonBase,
           status: RequestStatus.IP_LIMIT_REACHED,
           response: {
             data: null,
@@ -591,10 +566,7 @@ export async function GET(
       if (!seatsIncludesClient && activeSeats.length >= license.seats) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId,
+          ...commonBase,
           status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
           response: {
             data: null,
@@ -637,10 +609,7 @@ export async function GET(
     if (!file) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.RELEASE_NOT_FOUND,
         response: {
           data: null,
@@ -659,10 +628,7 @@ export async function GET(
     if (!fileStream) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId,
+        ...commonBase,
         status: RequestStatus.INTERNAL_SERVER_ERROR,
         response: {
           data: null,

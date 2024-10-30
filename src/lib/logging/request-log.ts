@@ -20,6 +20,7 @@ interface LogRequestProps {
   licenseKeyLookup?: string;
   teamId?: string;
   method: string;
+  deviceIdentifier?: string;
 }
 
 export async function logRequest({
@@ -31,6 +32,7 @@ export async function logRequest({
   customerId,
   productId,
   licenseKeyLookup,
+  deviceIdentifier,
   teamId,
   method,
   pathname,
@@ -60,6 +62,7 @@ export async function logRequest({
         status,
         requestBody,
         responseBody,
+        deviceIdentifier,
         ipAddress,
         country: countryAlpha3,
         team: { connect: { id: teamId } },
@@ -88,6 +91,7 @@ interface HandleLoggedRequestResponse {
   request: NextRequest;
   requestTime: Date;
   status: RequestStatus;
+  deviceIdentifier?: string;
   response: {
     data: any;
     result: {
@@ -126,6 +130,7 @@ export async function loggedResponse({
   customerId,
   productId,
   licenseKeyLookup,
+  deviceIdentifier,
 }: HandleLoggedRequestResponse): Promise<NextResponse<ExternalVerifyResponse>> {
   const responseBody = {
     data: response.data,
@@ -140,6 +145,7 @@ export async function loggedResponse({
 
   if (teamId) {
     logRequest({
+      deviceIdentifier,
       pathname: request.nextUrl.pathname,
       requestBody: body,
       responseBody,

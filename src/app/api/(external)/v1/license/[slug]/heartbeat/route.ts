@@ -172,12 +172,18 @@ export async function POST(
       (product) => product.id === productId,
     );
 
+    const commonBase = {
+      teamId,
+      customerId: matchingCustomer ? customerId : undefined,
+      productId: matchingProduct ? productId : undefined,
+      deviceIdentifier,
+      licenseKeyLookup: undefined as string | undefined,
+    };
+
     if (!license) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId: matchingProduct ? productId : undefined,
+        ...commonBase,
         status: RequestStatus.LICENSE_NOT_FOUND,
         response: {
           data: null,
@@ -191,6 +197,8 @@ export async function POST(
       });
     }
 
+    commonBase.licenseKeyLookup = licenseKeyLookup;
+
     const blacklistedIps = team.blacklist.filter(
       (b) => b.type === BlacklistType.IP_ADDRESS,
     );
@@ -200,9 +208,7 @@ export async function POST(
       await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ipAddress);
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId: matchingProduct ? productId : undefined,
+        ...commonBase,
         status: RequestStatus.IP_BLACKLISTED,
         response: {
           data: null,
@@ -231,9 +237,7 @@ export async function POST(
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
           return loggedResponse({
             ...loggedResponseBase,
-            teamId,
-            customerId: matchingCustomer ? customerId : undefined,
-            productId: matchingProduct ? productId : undefined,
+            ...commonBase,
             status: RequestStatus.COUNTRY_BLACKLISTED,
             response: {
               data: null,
@@ -268,9 +272,7 @@ export async function POST(
       );
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId: matchingProduct ? productId : undefined,
+        ...commonBase,
         status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
         response: {
           data: null,
@@ -292,10 +294,7 @@ export async function POST(
     if (strictModeNoCustomerId || noCustomerMatch) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId: matchingProduct ? productId : undefined,
+        ...commonBase,
         status: RequestStatus.CUSTOMER_NOT_FOUND,
         response: {
           data: null,
@@ -316,10 +315,7 @@ export async function POST(
     if (strictModeNoProductId || noProductMatch) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId: matchingProduct ? productId : undefined,
+        ...commonBase,
         status: RequestStatus.PRODUCT_NOT_FOUND,
         response: {
           data: null,
@@ -336,10 +332,7 @@ export async function POST(
     if (license.suspended) {
       return loggedResponse({
         ...loggedResponseBase,
-        teamId,
-        licenseKeyLookup,
-        customerId: matchingCustomer ? customerId : undefined,
-        productId: matchingProduct ? productId : undefined,
+        ...commonBase,
         status: RequestStatus.LICENSE_SUSPENDED,
         response: {
           data: null,
@@ -360,10 +353,7 @@ export async function POST(
       if (currentDate.getTime() > expirationDate.getTime()) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId: matchingProduct ? productId : undefined,
+          ...commonBase,
           status: RequestStatus.LICENSE_EXPIRED,
           response: {
             data: null,
@@ -400,10 +390,7 @@ export async function POST(
         if (currentDate.getTime() > expirationDate.getTime()) {
           return loggedResponse({
             ...loggedResponseBase,
-            teamId,
-            licenseKeyLookup,
-            customerId: matchingCustomer ? customerId : undefined,
-            productId: matchingProduct ? productId : undefined,
+            ...commonBase,
             status: RequestStatus.LICENSE_EXPIRED,
             response: {
               data: null,
@@ -427,10 +414,7 @@ export async function POST(
       if (!existingIps.includes(ipAddress) && ipLimitReached) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId: matchingProduct ? productId : undefined,
+          ...commonBase,
           status: RequestStatus.IP_LIMIT_REACHED,
           response: {
             data: null,
@@ -461,10 +445,7 @@ export async function POST(
       if (!seatsIncludesClient && activeSeats.length >= license.seats) {
         return loggedResponse({
           ...loggedResponseBase,
-          teamId,
-          licenseKeyLookup,
-          customerId: matchingCustomer ? customerId : undefined,
-          productId: matchingProduct ? productId : undefined,
+          ...commonBase,
           status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
           response: {
             data: null,
@@ -507,10 +488,7 @@ export async function POST(
 
     return loggedResponse({
       ...loggedResponseBase,
-      teamId,
-      licenseKeyLookup,
-      customerId: matchingCustomer ? customerId : undefined,
-      productId: matchingProduct ? productId : undefined,
+      ...commonBase,
       status: RequestStatus.VALID,
       response: {
         data: null,
