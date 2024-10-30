@@ -11,6 +11,7 @@ import {
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
+  Address,
   AuditLogAction,
   AuditLogTargetType,
   Customer,
@@ -21,6 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export type ICustomerGetSuccessResponse = {
   customer: Customer & {
+    address: Address | null;
     createdBy: Omit<User, 'passwordHash'> | null;
   };
 };
@@ -72,6 +74,7 @@ export async function GET(
                 },
                 include: {
                   createdBy: true,
+                  address: true,
                 },
               },
             },
