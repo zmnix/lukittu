@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ReleasesTable } from '../../releases/list/ReleasesTable';
 import { ProductsActionDropdown } from '../ProductsActionDropdown';
 import { ProductDetails } from './ProductDetails';
 
@@ -63,6 +64,7 @@ export default function ProductView() {
           <div className="flex w-full gap-4 max-xl:flex-col-reverse">
             <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
               <LicensesPreviewTable productId={productId} />
+              <ReleasesTable productId={productId} />
             </div>
             <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
               <ProductDetails product={product} />

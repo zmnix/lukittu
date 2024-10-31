@@ -65,18 +65,7 @@ export function getMenuList(pathname: string): Group[] {
           translation: 'products',
           active: pathname.startsWith('/dashboard/products'),
           icon: Package,
-          submenus: [
-            {
-              href: '/dashboard/products',
-              translation: 'list',
-              active: pathname === '/dashboard/products',
-            },
-            {
-              href: '/dashboard/products/releases',
-              translation: 'releases',
-              active: pathname === '/dashboard/products/releases',
-            },
-          ],
+          submenus: [],
         },
       ],
     },

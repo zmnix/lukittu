@@ -29,7 +29,6 @@ export const setReleaseSchema = (
         .uuid({
           message: t('validation.release_product_required'),
         }),
-      type: z.enum(['MAJOR', 'MINOR', 'PATCH', 'OTHER']),
       status: z.enum(['PUBLISHED', 'DRAFT', 'DEPRECATED', 'ARCHIVED']),
       metadata: metadataSchema(t),
     })

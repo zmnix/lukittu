@@ -30,17 +30,15 @@ export default function CustomersPreviewTable({
   const t = useTranslations();
   const router = useRouter();
 
-  const [customers, SetCustomers] = useState<
+  const [customers, setCustomers] = useState<
     ICustomersGetSuccessResponse['customers']
   >([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<
-    'createdAt' | 'name' | 'email' | null
-  >(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
-    null,
+  const [sortColumn, setSortColumn] = useState<'createdAt' | 'name' | 'email'>(
+    'createdAt',
   );
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [totalCustomers, setTotalCustomers] = useState(1);
 
   useEffect(() => {
@@ -50,9 +48,9 @@ export default function CustomersPreviewTable({
         const searchParams = new URLSearchParams({
           page: page.toString(),
           pageSize: '10',
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(licenseId && { licenseId }),
+          sortColumn,
+          sortDirection,
+          licenseId,
         });
 
         const response = await fetch(
@@ -65,7 +63,7 @@ export default function CustomersPreviewTable({
           return toast.error(data.message);
         }
 
-        SetCustomers(data.customers);
+        setCustomers(data.customers);
         setTotalCustomers(data.totalResults);
       } catch (error: any) {
         toast.error(error.message ?? t('general.server_error'));
@@ -154,7 +152,7 @@ export default function CustomersPreviewTable({
                         {customer.fullName ?? 'N/A'}
                       </TableCell>
                       <TableCell className="truncate">
-                        {customer.email ?? 'N/A'}
+                        {customer.email}
                       </TableCell>
                       <TableCell className="truncate">
                         <DateConverter date={customer.createdAt} />

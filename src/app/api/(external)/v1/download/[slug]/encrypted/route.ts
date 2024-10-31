@@ -300,7 +300,7 @@ export async function GET(
     }
 
     const latestRelease = matchingProduct.releases.find(
-      (release) => release.file?.latest,
+      (release) => release.latest,
     );
 
     // Should never happen

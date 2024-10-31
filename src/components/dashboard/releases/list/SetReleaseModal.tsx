@@ -51,7 +51,6 @@ export default function SetReleaseModal() {
   const form = useForm<SetReleaseSchema>({
     resolver: zodResolver(setReleaseSchema(t)),
     defaultValues: {
-      type: 'OTHER',
       status: 'DRAFT',
       version: '',
       metadata: [],
@@ -67,7 +66,6 @@ export default function SetReleaseModal() {
   useEffect(() => {
     if (ctx.releaseToEdit) {
       form.setValue('version', ctx.releaseToEdit.version);
-      form.setValue('type', ctx.releaseToEdit.type);
       form.setValue('status', ctx.releaseToEdit.status);
       form.setValue('productId', ctx.releaseToEdit.productId);
       form.setValue(
@@ -193,7 +191,7 @@ export default function SetReleaseModal() {
                   {t('general.product')} *
                 </Label>
                 <ProductSelector
-                  initialValue=""
+                  initialValue={ctx.releaseToEdit?.productId}
                   onChange={(productId) =>
                     form.setValue('productId', productId ?? '', {
                       shouldValidate: true,
@@ -215,37 +213,6 @@ export default function SetReleaseModal() {
                     <FormControl>
                       <Input placeholder="v1.0.0" required {...field} />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('general.type')} *</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('general.select_type')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="OTHER">
-                          {t('general.other')}
-                        </SelectItem>
-                        <SelectItem value="MAJOR">
-                          {t('general.major')}
-                        </SelectItem>
-                        <SelectItem value="MINOR">
-                          {t('general.minor')}
-                        </SelectItem>
-                        <SelectItem value="PATCH">
-                          {t('general.patch')}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -72,20 +72,20 @@ export const ProductSelector = ({
   }, [initialValue]);
 
   useEffect(() => {
-    if (open) {
-      (async () => {
-        setLoading(true);
-        try {
-          const results = await handleFetchProducts();
-          setProducts(results);
-        } catch (error: any) {
-          toast.error(error.message ?? t('general.error'));
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
-  }, [open, debouncedSearchQuery, handleFetchProducts, t]);
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const results = await handleFetchProducts();
+        setProducts(results);
+      } catch (error: any) {
+        toast.error(error.message ?? t('general.error'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [handleFetchProducts, t]);
 
   const filteredProducts = useMemo(
     () =>
@@ -138,6 +138,7 @@ export const ProductSelector = ({
           className={cn('w-full justify-between font-normal', {
             'text-muted-foreground': !selectedProduct,
           })}
+          disabled={loading}
           role="combobox"
           variant="outline"
         >

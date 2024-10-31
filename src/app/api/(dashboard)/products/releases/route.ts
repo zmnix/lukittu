@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
@@ -17,7 +18,14 @@ import {
 } from '@/lib/validation/products/set-release-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Release } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Prisma,
+  Product,
+  Release,
+  ReleaseFile,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -61,7 +69,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { metadata, productId, status, type, version } = body;
+    const { metadata, productId, status, version } = body;
 
     if (file && !(file instanceof File)) {
       return NextResponse.json(
@@ -220,7 +228,6 @@ export async function POST(request: NextRequest) {
         metadata,
         productId,
         status,
-        type,
         version,
         teamId: team.id,
         file: file
@@ -259,6 +266,164 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     logger.error("Error occurred in '/api/products/releases' route", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
+
+export type IProductsReleasesGetSuccessResponse = {
+  releases: (Release & {
+    file: ReleaseFile | null;
+    product: Product;
+  })[];
+  totalResults: number;
+  hasResults: boolean;
+};
+
+export type IProductsReleasesGetResponse =
+  | ErrorResponse
+  | IProductsReleasesGetSuccessResponse;
+
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<IProductsReleasesGetResponse>> {
+  const t = await getTranslations({ locale: await getLanguage() });
+
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const selectedTeam = await getSelectedTeam();
+
+    if (!selectedTeam) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const allowedPageSizes = [10, 25, 50, 100];
+    const allowedSortDirections = ['asc', 'desc'];
+    const allowedSortColumns = ['version', 'createdAt', 'updatedAt', 'latest'];
+
+    const search = (searchParams.get('search') as string) || '';
+
+    const productId = searchParams.get('productId') as string;
+    let page = parseInt(searchParams.get('page') as string) || 1;
+    let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
+    let sortColumn = searchParams.get('sortColumn') as string;
+    let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
+
+    if (productId && !regex.uuidV4.test(productId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (!allowedSortDirections.includes(sortDirection)) {
+      sortDirection = 'desc';
+    }
+
+    if (!sortColumn || !allowedSortColumns.includes(sortColumn)) {
+      sortColumn = 'createdAt';
+    }
+
+    if (!allowedPageSizes.includes(pageSize)) {
+      pageSize = 25;
+    }
+
+    if (page < 1) {
+      page = 1;
+    }
+
+    const skip = (page - 1) * pageSize;
+    const take = pageSize;
+
+    const where = {
+      teamId: selectedTeam,
+      productId: productId || undefined,
+      version: search
+        ? {
+            contains: search,
+            mode: 'insensitive',
+          }
+        : undefined,
+    } as Prisma.ReleaseWhereInput;
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              deletedAt: null,
+              id: selectedTeam,
+            },
+            include: {
+              releases: {
+                where,
+                include: {
+                  product: true,
+                  file: true,
+                },
+                skip,
+                take,
+                orderBy: {
+                  [sortColumn]: sortDirection,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.unauthorized'),
+        },
+        { status: HttpStatus.UNAUTHORIZED },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const [hasResults, totalResults] = await prisma.$transaction([
+      prisma.release.findFirst({
+        where: {
+          teamId: selectedTeam,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      prisma.release.count({
+        where,
+      }),
+    ]);
+    const releases = session.user.teams[0].releases;
+
+    return NextResponse.json({
+      releases,
+      totalResults,
+      hasResults: Boolean(hasResults),
+    });
+  } catch (error) {
+    logger.error("Error occurred in 'products' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

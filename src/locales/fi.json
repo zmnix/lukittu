@@ -115,6 +115,7 @@
   "general": {
     "address": "Address",
     "city": "City",
+    "latest": "Latest",
     "address_line1": "Address line 1",
     "address_line2": "Address line 2",
     "postal_code": "Postal code",
@@ -562,13 +563,16 @@
       "stripe_integration_deleted": "Stripe integration deleted"
     },
     "releases": {
+      "search_release": "Search release...",
       "release_description": "Releases are the versions of your software that you distribute to your customers. You can add, edit, and delete releases here.",
       "create_release": "Create release",
       "update_release": "Update release",
+      "delete_release": "Delete release",
       "release_updated": "Release updated",
       "release_created": "Release created",
       "click_here_to_upload": "Click here to browse and upload a file",
-      "supported_file_types": "Any file type (max 1MB)"
+      "supported_file_types": "Any file type (max 1MB)",
+      "no_releases_assigned": "No releases assigned"
     },
     "settings": {
       "general_settings": "General settings",
