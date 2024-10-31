@@ -321,6 +321,7 @@ export async function GET(
       });
     }
 
+    const releaseToUse = version ? versionMatchRelease : latestRelease;
     const fileToUse = version ? versionMatchRelease?.file : latestRelease.file;
 
     // Should never happen
@@ -652,6 +653,11 @@ export async function GET(
         'Content-Security-Policy': "default-src 'none'",
         'X-Content-Type-Options': 'nosniff',
         'X-File-Size': fileToUse.size.toString(),
+        'X-Product-Name': matchingProduct.name,
+        ...(releaseToUse?.version ? { 'X-Version': releaseToUse.version } : {}),
+        ...(process.env.version
+          ? { 'X-Lukittu-Version': process.env.version }
+          : {}),
         ...(fileToUse.mainClassName
           ? {
               'X-Main-Class': fileToUse.mainClassName,
