@@ -7,6 +7,7 @@ import {
 } from '@/app/api/(dashboard)/sessions/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -19,7 +20,6 @@ import {
 } from '@/components/ui/table';
 import { LogOut } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -148,17 +148,9 @@ export default function SessionsTable() {
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
                     {session.alpha2 && (
-                      <Image
-                        alt={session.alpha3 ?? t('general.unknown')}
-                        className="rounded-[2px]"
-                        height={20}
-                        src={`/countries/${session.alpha2.toLowerCase()}.svg`}
-                        width={20}
-                        onError={(e) => {
-                          e.preventDefault();
-                          (e.target as HTMLImageElement).src =
-                            '/countries/unknown.svg';
-                        }}
+                      <CountryFlag
+                        countryCode={session.alpha2}
+                        countryName={session.country}
                       />
                     )}
                     {session.ipAddress === '::1'

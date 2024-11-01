@@ -25,11 +25,11 @@ import {
 } from '@/components/ui/table';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { DateConverter } from '../../DateConverter';
+import { CountryFlag } from '../../misc/CountryFlag';
 
 interface RequestLogsPreviewTableProps {
   licenseId: string;
@@ -149,17 +149,9 @@ export default function RequestLogsPreviewTable({
                     >
                       <TableCell className="flex items-center gap-2 truncate">
                         {log.alpha2 && (
-                          <Image
-                            alt={log.alpha3 ?? t('general.unknown')}
-                            className="rounded-[2px]"
-                            height={20}
-                            src={`/countries/${log.alpha2.toLowerCase()}.svg`}
-                            width={20}
-                            onError={(e) => {
-                              e.preventDefault();
-                              (e.target as HTMLImageElement).src =
-                                '/countries/unknown.svg';
-                            }}
+                          <CountryFlag
+                            countryCode={log.alpha2}
+                            countryName={log.country}
                           />
                         )}
                         {log.ipAddress}

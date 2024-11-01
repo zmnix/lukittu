@@ -5,6 +5,7 @@ import {
 } from '@/app/api/(dashboard)/logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,7 +20,6 @@ import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { ChevronLeft, Copy, ExternalLink, Logs } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -266,17 +266,9 @@ export default function LogViewer() {
                     </p>
                     <div className="flex items-center gap-2 truncate text-sm">
                       {selectedLog.alpha2 && (
-                        <Image
-                          alt={selectedLog.alpha3 ?? t('general.unknown')}
-                          className="rounded-[2px]"
-                          height={20}
-                          src={`/countries/${selectedLog.alpha2.toLowerCase()}.svg`}
-                          width={20}
-                          onError={(e) => {
-                            e.preventDefault();
-                            (e.target as HTMLImageElement).src =
-                              '/countries/unknown.svg';
-                          }}
+                        <CountryFlag
+                          countryCode={selectedLog.alpha2}
+                          countryName={selectedLog.country}
                         />
                       )}
                       {selectedLog.ipAddress ?? t('general.unknown')}

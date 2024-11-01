@@ -4,6 +4,7 @@ import {
   IAuditLogsGetSuccessResponse,
 } from '@/app/api/(dashboard)/audit-logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -229,19 +230,9 @@ export default function AuditLogTable() {
                                 title={auditLog.ipAddress ?? ''}
                               >
                                 {auditLog.alpha2 && (
-                                  <Image
-                                    alt={
-                                      auditLog.alpha3 ?? t('general.unknown')
-                                    }
-                                    className="rounded-[2px]"
-                                    height={20}
-                                    src={`/countries/${auditLog.alpha2.toLowerCase()}.svg`}
-                                    width={20}
-                                    onError={(e) => {
-                                      e.preventDefault();
-                                      (e.target as HTMLImageElement).src =
-                                        '/countries/unknown.svg';
-                                    }}
+                                  <CountryFlag
+                                    countryCode={auditLog.alpha2}
+                                    countryName={auditLog.country}
                                   />
                                 )}
                                 <span>
@@ -425,21 +416,9 @@ export default function AuditLogTable() {
                                       </h3>
                                       <p className="flex items-center gap-1 truncate text-sm text-muted-foreground">
                                         {auditLog.alpha2 && (
-                                          <Image
-                                            alt={
-                                              auditLog.alpha3 ??
-                                              t('general.unknown')
-                                            }
-                                            className="rounded-[2px]"
-                                            height={20}
-                                            src={`/countries/${auditLog.alpha2.toLowerCase()}.svg`}
-                                            width={20}
-                                            onError={(e) => {
-                                              e.preventDefault();
-                                              (
-                                                e.target as HTMLImageElement
-                                              ).src = '/countries/unknown.svg';
-                                            }}
+                                          <CountryFlag
+                                            countryCode={auditLog.alpha2}
+                                            countryName={auditLog.country}
                                           />
                                         )}
                                         {auditLog.ipAddress ??

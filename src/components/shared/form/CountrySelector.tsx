@@ -17,10 +17,8 @@ import { iso3ToName } from '@/lib/utils/country-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useMemo, useState } from 'react';
-
-const getIso2FromIso3 = (iso3: string) => iso3.toLowerCase().slice(0, 2);
+import { CountryFlag } from '../misc/CountryFlag';
 
 interface CountrySelectorProps {
   value: string;
@@ -41,9 +39,10 @@ export default function CountrySelector({
 
   const countries = useMemo(
     () =>
-      initialCountries.map(({ en_short_name, alpha_3_code }) => ({
+      initialCountries.map(({ en_short_name, alpha_3_code, alpha_2_code }) => ({
         name: en_short_name,
-        flag: alpha_3_code,
+        alpha3: alpha_3_code,
+        alpha2: alpha_2_code,
       })),
     [],
   );
@@ -72,7 +71,7 @@ export default function CountrySelector({
             variant="outline"
           >
             {value
-              ? countries.find((country) => country.name === value)?.flag +
+              ? countries.find((country) => country.name === value)?.alpha3 +
                 ' ' +
                 value
               : t('general.select_country')}
@@ -96,7 +95,7 @@ export default function CountrySelector({
                     onSelect={(currentValue) => {
                       const iso3 = countries.find(
                         (c) => c.name === currentValue,
-                      )?.flag;
+                      )?.alpha3;
                       setValue(currentValue === value ? '' : currentValue);
                       onChange(currentValue === value ? '' : iso3!);
                       setOpen(false);
@@ -108,18 +107,9 @@ export default function CountrySelector({
                         value === country.name ? 'opacity-100' : 'opacity-0',
                       )}
                     />
-                    <Image
-                      alt={country.name}
-                      className="rounded-[2px]"
-                      height={20}
-                      loading="lazy"
-                      src={`/countries/${getIso2FromIso3(country.flag)}.svg`}
-                      width={20}
-                      onError={(e) => {
-                        e.preventDefault();
-                        (e.target as HTMLImageElement).src =
-                          '/countries/unknown.svg';
-                      }}
+                    <CountryFlag
+                      countryCode={country.alpha2}
+                      countryName={country.name}
                     />
                     <span className="ml-2">{country.name}</span>
                   </CommandItem>
