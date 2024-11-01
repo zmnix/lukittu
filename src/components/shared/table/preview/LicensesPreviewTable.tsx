@@ -2,6 +2,7 @@ import {
   ILicensesGetResponse,
   ILicensesGetSuccessResponse,
 } from '@/app/api/(dashboard)/licenses/route';
+import { LicensesActionDropdown } from '@/components/dashboard/licenses/LicensesActionDropdown';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useTableScroll } from '@/hooks/useTableScroll';
+import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -33,6 +36,7 @@ export default function LicensesPreviewTable({
 }: LicensesPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
+  const { showDropdown, containerRef } = useTableScroll();
 
   const [licenses, setLicenses] = useState<
     ILicensesGetSuccessResponse['licenses']
@@ -92,7 +96,10 @@ export default function LicensesPreviewTable({
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           {totalLicenses ? (
             <>
-              <Table>
+              <Table
+                className="relative"
+                containerRef={containerRef as React.RefObject<HTMLDivElement>}
+              >
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -115,10 +122,18 @@ export default function LicensesPreviewTable({
                         <ArrowDownUp className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
+                    <TableHead
+                      className={cn(
+                        'sticky right-0 w-[50px] truncate px-2 text-right',
+                        {
+                          'bg-background drop-shadow-md': showDropdown,
+                        },
+                      )}
+                    />
                   </TableRow>
                 </TableHeader>
                 {loading ? (
-                  <TableSkeleton columns={2} rows={3} />
+                  <TableSkeleton columns={3} rows={3} />
                 ) : (
                   <TableBody>
                     {licenses.map((license) => (
@@ -132,6 +147,16 @@ export default function LicensesPreviewTable({
                         <TableCell>{license.licenseKey}</TableCell>
                         <TableCell>
                           <DateConverter date={license.createdAt} />
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            'sticky right-0 w-[50px] truncate px-2 py-0 text-right',
+                            {
+                              'bg-background drop-shadow-md': showDropdown,
+                            },
+                          )}
+                        >
+                          <LicensesActionDropdown license={license} />
                         </TableCell>
                       </TableRow>
                     ))}

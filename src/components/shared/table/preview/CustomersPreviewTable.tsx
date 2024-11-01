@@ -2,6 +2,7 @@ import {
   ICustomersGetResponse,
   ICustomersGetSuccessResponse,
 } from '@/app/api/(dashboard)/customers/route';
+import { CustomersActionDropdown } from '@/components/dashboard/customers/CustomersActionDropdown';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useTableScroll } from '@/hooks/useTableScroll';
+import { cn } from '@/lib/utils/tailwind-helpers';
 import { CustomerModalProvider } from '@/providers/CustomerModalProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -31,6 +34,7 @@ export default function CustomersPreviewTable({
 }: CustomersPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
+  const { showDropdown, containerRef } = useTableScroll();
 
   const [customers, setCustomers] = useState<
     ICustomersGetSuccessResponse['customers']
@@ -89,7 +93,10 @@ export default function CustomersPreviewTable({
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           {totalCustomers ? (
             <>
-              <Table>
+              <Table
+                className="relative"
+                containerRef={containerRef as React.RefObject<HTMLDivElement>}
+              >
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
@@ -141,6 +148,14 @@ export default function CustomersPreviewTable({
                         <ArrowDownUp className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
+                    <TableHead
+                      className={cn(
+                        'sticky right-0 w-[50px] truncate px-2 text-right',
+                        {
+                          'bg-background drop-shadow-md': showDropdown,
+                        },
+                      )}
+                    />
                   </TableRow>
                 </TableHeader>
                 {loading ? (
@@ -163,6 +178,16 @@ export default function CustomersPreviewTable({
                         </TableCell>
                         <TableCell className="truncate">
                           <DateConverter date={customer.createdAt} />
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            'sticky right-0 w-[50px] truncate px-2 py-0 text-right',
+                            {
+                              'bg-background drop-shadow-md': showDropdown,
+                            },
+                          )}
+                        >
+                          <CustomersActionDropdown customer={customer} />
                         </TableCell>
                       </TableRow>
                     ))}
