@@ -166,7 +166,6 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   return (
     <ScrollArea className="h-full [&>div>div[style]]:!block [&>div>div[style]]:h-full">
       <nav className={cn('flex h-full w-full flex-col', topSpacing && 'pt-8')}>
-        {/* Search section */}
         <div className="px-2 pb-2">
           {isOpen ? (
             <div className="relative">
@@ -254,15 +253,12 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
             </>
           )}
         </div>
-
-        {/* No results message - only show when expanded */}
         {isOpen && searchTerm && filteredMenuList.length === 0 && (
           <div className="flex w-full flex-col items-center justify-center gap-1 py-4 text-sm text-muted-foreground">
             <Frown className="mr-2 h-4 w-4" />
             {t('general.no_results')}
           </div>
         )}
-
         <div className="flex-1 overflow-y-auto overflow-x-clip">
           <ul className="flex flex-col items-start space-y-1 px-2">
             {filteredMenuList.map(({ groupTranslation, menus }, index) => (

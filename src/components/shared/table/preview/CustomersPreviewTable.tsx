@@ -14,12 +14,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { CustomerModalProvider } from '@/providers/CustomerModalProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { DateConverter } from '../../DateConverter';
+import AddEntityButton from '../../misc/AddEntityButton';
 
 interface CustomersPreviewTableProps {
   licenseId: string;
@@ -74,109 +76,115 @@ export default function CustomersPreviewTable({
   }, [page, sortColumn, sortDirection, t, licenseId]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
-        <CardTitle className="flex items-center text-xl font-bold">
-          {t('dashboard.navigation.customers')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        {totalCustomers ? (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="truncate">
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setSortColumn('name');
-                        setSortDirection(
-                          sortColumn === 'name' && sortDirection === 'asc'
-                            ? 'desc'
-                            : 'asc',
-                        );
-                      }}
-                    >
-                      {t('general.name')}
-                      <ArrowDownUp className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead className="truncate">
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setSortColumn('email');
-                        setSortDirection(
-                          sortColumn === 'email' && sortDirection === 'asc'
-                            ? 'desc'
-                            : 'asc',
-                        );
-                      }}
-                    >
-                      {t('general.email')}
-                      <ArrowDownUp className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead className="truncate">
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setSortColumn('createdAt');
-                        setSortDirection(
-                          sortColumn === 'createdAt' && sortDirection === 'asc'
-                            ? 'desc'
-                            : 'asc',
-                        );
-                      }}
-                    >
-                      {t('general.created_at')}
-                      <ArrowDownUp className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              {loading ? (
-                <TableSkeleton columns={3} rows={3} />
-              ) : (
-                <TableBody>
-                  {customers.map((customer) => (
-                    <TableRow
-                      key={customer.id}
-                      className="cursor-pointer"
-                      onClick={() =>
-                        router.push(`/dashboard/customers/${customer.id}`)
-                      }
-                    >
-                      <TableCell className="truncate">
-                        {customer.fullName ?? 'N/A'}
-                      </TableCell>
-                      <TableCell className="truncate">
-                        {customer.email}
-                      </TableCell>
-                      <TableCell className="truncate">
-                        <DateConverter date={customer.createdAt} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              )}
-            </Table>
-            <TablePagination
-              page={page}
-              pageSize={10}
-              results={customers.length}
-              setPage={setPage}
-              totalItems={totalCustomers}
-              totalPages={Math.ceil(totalCustomers / 10)}
-            />
-          </>
-        ) : (
-          <div className="flex h-24 flex-col items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
-            {t('dashboard.licenses.no_customers_assigned')}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <CustomerModalProvider>
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
+          <CardTitle className="flex w-full items-center text-xl font-bold">
+            {t('dashboard.navigation.customers')}
+            <div className="ml-auto flex gap-2">
+              <AddEntityButton entityType="customer" />
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+          {totalCustomers ? (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="truncate">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('name');
+                          setSortDirection(
+                            sortColumn === 'name' && sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.name')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="truncate">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('email');
+                          setSortDirection(
+                            sortColumn === 'email' && sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.email')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="truncate">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('createdAt');
+                          setSortDirection(
+                            sortColumn === 'createdAt' &&
+                              sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.created_at')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                {loading ? (
+                  <TableSkeleton columns={3} rows={3} />
+                ) : (
+                  <TableBody>
+                    {customers.map((customer) => (
+                      <TableRow
+                        key={customer.id}
+                        className="cursor-pointer"
+                        onClick={() =>
+                          router.push(`/dashboard/customers/${customer.id}`)
+                        }
+                      >
+                        <TableCell className="truncate">
+                          {customer.fullName ?? 'N/A'}
+                        </TableCell>
+                        <TableCell className="truncate">
+                          {customer.email}
+                        </TableCell>
+                        <TableCell className="truncate">
+                          <DateConverter date={customer.createdAt} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                )}
+              </Table>
+              <TablePagination
+                page={page}
+                pageSize={10}
+                results={customers.length}
+                setPage={setPage}
+                totalItems={totalCustomers}
+                totalPages={Math.ceil(totalCustomers / 10)}
+              />
+            </>
+          ) : (
+            <div className="flex h-24 flex-col items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
+              {t('dashboard.licenses.no_customers_assigned')}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </CustomerModalProvider>
   );
 }

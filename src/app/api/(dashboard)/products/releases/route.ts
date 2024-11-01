@@ -171,7 +171,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (
-      previousProductReleases.find((release) => release.version === version)
+      previousProductReleases.find(
+        (release) =>
+          release.version === version && release.productId !== productId,
+      )
     ) {
       return NextResponse.json(
         {
