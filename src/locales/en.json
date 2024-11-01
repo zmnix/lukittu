@@ -113,6 +113,7 @@
     "state_max_length": "State must be at most 100 characters long!"
   },
   "general": {
+    "search": "Search",
     "address": "Address",
     "city": "City",
     "latest": "Latest",

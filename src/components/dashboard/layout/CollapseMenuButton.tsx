@@ -21,11 +21,11 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { DropdownMenuArrow } from '@radix-ui/react-dropdown-menu';
-import { ChevronDown, Dot, LucideIcon } from 'lucide-react';
+import { ChevronDown, LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useState } from 'react';
 import { Messages } from '../../../../global';
+import { HighlightText } from './Menu';
 
 type Submenu = {
   href: string;
@@ -40,6 +40,9 @@ interface CollapseMenuButtonProps {
   submenus: Submenu[];
   isOpen: boolean | undefined;
   onClick?: () => void;
+  collapsed?: boolean;
+  onCollapse?: (collapsed: boolean) => void;
+  search?: string;
 }
 
 export function CollapseMenuButton({
@@ -49,16 +52,17 @@ export function CollapseMenuButton({
   submenus,
   isOpen,
   onClick,
+  collapsed,
+  onCollapse,
+  search = '',
 }: CollapseMenuButtonProps) {
   const t = useTranslations();
-  const isSubmenuActive = submenus.some((submenu) => submenu.active);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(isSubmenuActive);
 
   return isOpen ? (
     <Collapsible
       className="w-full"
-      open={isCollapsed}
-      onOpenChange={setIsCollapsed}
+      open={!collapsed}
+      onOpenChange={(open) => onCollapse && onCollapse(open)}
     >
       <CollapsibleTrigger
         className="mb-1 [&[data-state=open]>div>div>svg]:rotate-180"
@@ -81,47 +85,30 @@ export function CollapseMenuButton({
                     : '-translate-x-96 opacity-0',
                 )}
               >
-                {t(`dashboard.navigation.${translation}`)}
+                <HighlightText
+                  highlight={search}
+                  text={t(`dashboard.navigation.${translation}`)}
+                />
               </p>
             </div>
-            <div
-              className={cn(
-                'whitespace-nowrap',
-                isOpen
-                  ? 'translate-x-0 opacity-100'
-                  : '-translate-x-96 opacity-0',
-              )}
-            >
-              <ChevronDown
-                className="transition-transform duration-200"
-                size={18}
-              />
-            </div>
+            <ChevronDown className="h-4 w-4 transition-transform duration-200" />
           </div>
         </Button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-        {submenus.map(({ href, translation, active }, index) => (
+      <CollapsibleContent className="space-y-1">
+        {submenus.map((submenu) => (
           <Button
-            key={index}
-            className="mb-1 h-10 w-full justify-start"
-            variant={active ? 'secondary' : 'ghost'}
+            key={submenu.href}
+            className="h-10 w-full justify-start pl-10"
+            variant={submenu.active ? 'secondary' : 'ghost'}
             asChild
-            onClick={onClick}
           >
-            <Link href={href}>
-              <span className="ml-2 mr-4">
-                <Dot size={18} />
-              </span>
-              <p
-                className={cn(
-                  'max-w-[170px] truncate',
-                  isOpen
-                    ? 'translate-x-0 opacity-100'
-                    : '-translate-x-96 opacity-0',
-                )}
-              >
-                {t(`dashboard.navigation.${translation}`)}
+            <Link href={submenu.href} onClick={onClick}>
+              <p className="truncate">
+                <HighlightText
+                  highlight={search}
+                  text={t(`dashboard.navigation.${submenu.translation}`)}
+                />
               </p>
             </Link>
           </Button>
