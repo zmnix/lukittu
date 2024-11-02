@@ -49,14 +49,16 @@ export const ProductSelector = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
+  const searchParams = new URLSearchParams({
+    pageSize: '25',
+    search: debouncedSearchQuery,
+  });
+
   const { data, isLoading, error } = useSWR<IProductsGetResponse>(
     teamCtx.selectedTeam
-      ? [
-          `/api/products?search=${debouncedSearchQuery}&pageSize=25`,
-          teamCtx.selectedTeam,
-        ]
+      ? ['/api/products', teamCtx.selectedTeam, searchParams.toString()]
       : null,
-    ([url]) => fetchProducts(url),
+    ([url, _, params]) => fetchProducts(`${url}?${params}`),
   );
 
   const products = useMemo(() => {

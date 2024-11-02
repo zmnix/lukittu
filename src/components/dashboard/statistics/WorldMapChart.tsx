@@ -68,6 +68,11 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
 
   const svgRef = useRef<SVGSVGElement | null>(null);
 
+  const searchParams = new URLSearchParams({
+    timeRange,
+    ...(licenseId && { licenseId }),
+  });
+
   const {
     data: response,
     error,
@@ -75,13 +80,12 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
   } = useSWR<IStatisticsMapDataGetSuccessResponse>(
     teamCtx.selectedTeam
       ? [
-          `/api/statistics/map-data?timeRange=${timeRange}${
-            licenseId ? `&licenseId=${licenseId}` : ''
-          }`,
+          '/api/statistics/map-data',
           teamCtx.selectedTeam,
+          searchParams.toString(),
         ]
       : null,
-    ([url]) => fetchMapData(url),
+    ([url, _, params]) => fetchMapData(`${url}?${params}`),
   );
 
   useEffect(() => {

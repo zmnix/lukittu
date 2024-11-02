@@ -7,10 +7,12 @@ import MetadataAside from '@/components/shared/misc/MetadataAside';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import CustomersPreviewTable from '../../../shared/table/preview/CustomersPreviewTable';
 import HeartbeatPreviewTable from '../../../shared/table/preview/HeartbeatPreviewTable';
 import ProductsPreviewTable from '../../../shared/table/preview/ProductsPreviewTable';
@@ -20,42 +22,44 @@ import WorldMapChart from '../../statistics/WorldMapChart';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
 import { LicenseDetails } from './LicenseDetails';
 
+const fetchLicense = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ILicenseGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function LicenseView() {
   const params = useParams();
   const t = useTranslations();
   const router = useRouter();
-
+  const teamCtx = useContext(TeamContext);
   const licenseId = params.slug as string;
-  const [license, setLicense] = useState<
-    ILicenseGetSuccessResponse['license'] | null
-  >(null);
-  const [loading, setLoading] = useState(true);
+
+  const { data, error, isLoading } = useSWR<ILicenseGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/licenses', licenseId, teamCtx.selectedTeam]
+      : null,
+    ([url, licenseId]) => fetchLicense(`${url}/${licenseId}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch(`/api/licenses/${licenseId}`);
-        const data = (await response.json()) as ILicenseGetResponse;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+      router.push('/dashboard/licenses');
+    }
+  }, [error, router, t]);
 
-        if ('message' in data) {
-          router.push('/dashboard/licenses');
-          return toast.error(data.message);
-        }
-
-        setLicense(data.license);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-        router.push('/dashboard/licenses');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [t, licenseId, router]);
+  const license = data?.license;
 
   return (
     <LicenseModalProvider>
       <div className="flex justify-between gap-2">
-        {loading ? (
+        {isLoading ? (
           <Skeleton className="h-8 w-96" />
         ) : (
           <h1 className="truncate text-2xl font-bold">{license?.licenseKey}</h1>
@@ -75,7 +79,7 @@ export default function LicenseView() {
               <WorldMapChart licenseId={licenseId} />
             </div>
             <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
-              <LicenseDetails license={license} />
+              <LicenseDetails license={license ?? null} />
               <MetadataAside metadata={license?.metadata ?? null} />
             </aside>
           </div>

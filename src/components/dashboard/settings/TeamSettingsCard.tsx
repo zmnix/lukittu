@@ -27,10 +27,8 @@ export default function TeamSettingsCard() {
   const teamCtx = useContext(TeamContext);
 
   const { data, error } = useSWR<ITeamGetResponse>(
-    teamCtx.selectedTeam
-      ? [`/api/teams/${teamCtx.selectedTeam}`, teamCtx.selectedTeam]
-      : null,
-    ([url]) => fetchTeams(url),
+    teamCtx.selectedTeam ? ['/api/teams', teamCtx.selectedTeam] : null,
+    ([url, selectedTeam]) => fetchTeams(`${url}/${selectedTeam}`),
   );
 
   useEffect(() => {

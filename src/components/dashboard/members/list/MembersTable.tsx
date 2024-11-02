@@ -33,7 +33,19 @@ import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { MembersActionDropdown } from './MembersActionDropdown';
+
+const fetchMembers = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ITeamsMembersGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export function MembersTable() {
   const locale = useLocale();
@@ -43,48 +55,32 @@ export function MembersTable() {
   const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState<
-    ITeamsMembersGetSuccessResponse['members']
-  >([]);
-  const [totalMembers, setTotalMembers] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(search && { search }),
+  });
+
+  const { data, error, isLoading } = useSWR<ITeamsMembersGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/teams/members', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchMembers(`${url}?${params}`),
+  );
+
   useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-      setLoading(true);
-
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: pageSize.toString(),
-          ...(search && { search }),
-        });
-
-        const response = await fetch(
-          `/api/teams/members?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as ITeamsMembersGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setMembers(data.members);
-        setTotalMembers(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, pageSize, search, t, teamCtx.selectedTeam]);
+  const members = data?.members ?? [];
+  const totalMembers = data?.totalResults ?? 1;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -151,7 +147,7 @@ export function MembersTable() {
                 />
               </div>
               <div className="flex flex-col md:hidden">
-                {loading
+                {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
@@ -237,7 +233,7 @@ export function MembersTable() {
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={4} rows={6} />
                 ) : (
                   <TableBody>

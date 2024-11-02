@@ -8,50 +8,54 @@ import LicensesPreviewTable from '@/components/shared/table/preview/LicensesPrev
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductModalProvider } from '@/providers/ProductModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { ReleasesTable } from '../../releases/list/ReleasesTable';
 import { ProductsActionDropdown } from '../ProductsActionDropdown';
 import { ProductDetails } from './ProductDetails';
+
+const fetchProduct = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IProductGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export default function ProductView() {
   const params = useParams();
   const t = useTranslations();
   const router = useRouter();
-
+  const teamCtx = useContext(TeamContext);
   const productId = params.slug as string;
-  const [product, setProduct] = useState<
-    IProductGetSuccessResponse['product'] | null
-  >(null);
-  const [loading, setLoading] = useState(true);
+
+  const { data, error, isLoading } = useSWR<IProductGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/products', productId, teamCtx.selectedTeam]
+      : null,
+    ([url, productId]) => fetchProduct(`${url}/${productId}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch(`/api/products/${productId}`);
-        const data = (await response.json()) as IProductGetResponse;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+      router.push('/dashboard/products');
+    }
+  }, [error, router, t]);
 
-        if ('message' in data) {
-          router.push('/dashboard/products');
-          return toast.error(data.message);
-        }
-
-        setProduct(data.product);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-        router.push('/dashboard/products');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [t, productId, router]);
+  const product = data?.product;
 
   return (
     <ProductModalProvider>
       <div className="flex justify-between gap-2">
-        {loading ? (
+        {isLoading ? (
           <Skeleton className="h-8 w-96" />
         ) : (
           <h1 className="truncate text-2xl font-bold">{product?.name}</h1>
@@ -67,7 +71,7 @@ export default function ProductView() {
               <ReleasesTable productId={productId} />
             </div>
             <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
-              <ProductDetails product={product} />
+              <ProductDetails product={product ?? null} />
               <MetadataAside metadata={product?.metadata ?? null} />
             </aside>
           </div>

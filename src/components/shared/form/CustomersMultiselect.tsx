@@ -51,14 +51,16 @@ export const CustomersMultiselect = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
+  const searchParams = new URLSearchParams({
+    pageSize: '25',
+    search: debouncedSearchQuery,
+  });
+
   const { data, isLoading, error } = useSWR<ICustomersGetResponse>(
     teamCtx.selectedTeam
-      ? [
-          `/api/customers?search=${debouncedSearchQuery}&pageSize=25`,
-          teamCtx.selectedTeam,
-        ]
+      ? ['/api/customers', teamCtx.selectedTeam, searchParams.toString()]
       : null,
-    ([url]) => fetchCustomers(url),
+    ([url, _, params]) => fetchCustomers(`${url}?${params}`),
   );
 
   useEffect(() => {
