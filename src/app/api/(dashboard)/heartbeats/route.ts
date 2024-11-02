@@ -78,7 +78,8 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    const whereWithoutTeamCheck = {
+    const where = {
+      teamId: selectedTeam,
       licenseId,
     } as Prisma.HeartbeatWhereInput;
 
@@ -93,7 +94,7 @@ export async function GET(
             include: {
               settings: true,
               heartbeats: {
-                where: whereWithoutTeamCheck,
+                where,
                 orderBy: {
                   [sortColumn]: sortDirection,
                 },
@@ -127,10 +128,7 @@ export async function GET(
     const team = session.user.teams[0];
 
     const totalResults = await prisma.heartbeat.count({
-      where: {
-        ...whereWithoutTeamCheck,
-        teamId: selectedTeam,
-      },
+      where,
     });
 
     const heartbeats = team.heartbeats;

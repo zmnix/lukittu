@@ -116,7 +116,8 @@ export async function GET(
       ? generateHMAC(`${search}:${selectedTeam}`)
       : undefined;
 
-    const whereWithoutTeamCheck = {
+    const where = {
+      teamId: selectedTeam,
       licenseKeyLookup,
       products: productIdsFormatted.length
         ? {
@@ -148,7 +149,7 @@ export async function GET(
             },
             include: {
               licenses: {
-                where: whereWithoutTeamCheck,
+                where,
                 skip,
                 take,
                 orderBy: {
@@ -193,10 +194,7 @@ export async function GET(
         },
       }),
       prisma.license.count({
-        where: {
-          ...whereWithoutTeamCheck,
-          teamId: selectedTeam,
-        },
+        where,
       }),
     ]);
 

@@ -140,7 +140,8 @@ export async function GET(
         );
     }
 
-    const whereWithoutTeamCheck = {
+    const where = {
+      teamId: selectedTeam,
       createdAt: {
         gte: dateLimit,
       },
@@ -165,7 +166,7 @@ export async function GET(
             },
             include: {
               requestLogs: {
-                where: whereWithoutTeamCheck,
+                where,
                 orderBy: [
                   {
                     [sortColumn]: sortDirection,
@@ -199,10 +200,7 @@ export async function GET(
     }
 
     const totalResults = await prisma.requestLog.count({
-      where: {
-        ...whereWithoutTeamCheck,
-        teamId: selectedTeam,
-      },
+      where,
     });
 
     const requestLogs = session.user.teams[0].requestLogs;

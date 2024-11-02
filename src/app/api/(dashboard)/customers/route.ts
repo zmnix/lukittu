@@ -88,7 +88,8 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    const whereWithoutTeamCheck = {
+    const where = {
+      teamId: selectedTeam,
       licenses: licenseId
         ? {
             some: {
@@ -124,7 +125,7 @@ export async function GET(
             },
             include: {
               customers: {
-                where: whereWithoutTeamCheck,
+                where,
                 orderBy: {
                   [sortColumn]: sortDirection,
                 },
@@ -168,10 +169,7 @@ export async function GET(
         },
       }),
       prisma.customer.count({
-        where: {
-          ...whereWithoutTeamCheck,
-          teamId: selectedTeam,
-        },
+        where,
       }),
     ]);
 

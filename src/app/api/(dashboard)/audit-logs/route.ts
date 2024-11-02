@@ -97,7 +97,8 @@ export async function GET(
     const teamLogRetentionDays =
       team.limits?.logRetention ?? SIX_MONTHS_IN_DAYS;
 
-    const whereWithoutTeamCheck = {
+    const where = {
+      teamId: selectedTeam,
       createdAt: {
         gte: new Date(
           new Date().getTime() - teamLogRetentionDays * 24 * 60 * 60 * 1000,
@@ -115,7 +116,7 @@ export async function GET(
             },
             include: {
               auditLogs: {
-                where: whereWithoutTeamCheck,
+                where,
                 include: {
                   user: true,
                 },
@@ -152,10 +153,7 @@ export async function GET(
     }
 
     const totalResults = await prisma.auditLog.count({
-      where: {
-        ...whereWithoutTeamCheck,
-        teamId: selectedTeam,
-      },
+      where,
     });
 
     const auditlog = session.user.teams[0].auditLogs;

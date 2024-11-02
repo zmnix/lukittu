@@ -85,7 +85,8 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    const whereWithoutTeamCheck = {
+    const where = {
+      teamId: selectedTeam,
       licenses: licenseId
         ? {
             some: {
@@ -111,7 +112,7 @@ export async function GET(
             },
             include: {
               products: {
-                where: whereWithoutTeamCheck,
+                where,
                 skip,
                 take,
                 orderBy: {
@@ -152,10 +153,7 @@ export async function GET(
         },
       }),
       prisma.product.count({
-        where: {
-          ...whereWithoutTeamCheck,
-          teamId: selectedTeam,
-        },
+        where,
       }),
     ]);
     const products = session.user.teams[0].products;

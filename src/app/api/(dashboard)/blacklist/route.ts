@@ -92,9 +92,10 @@ export async function GET(
       additionalCountrySearch = matchingCountry.alpha_3_code;
     }
 
-    const whereWithoutTeamCheck = (
+    const where = (
       search && additionalCountrySearch
         ? {
+            teamId: selectedTeam,
             OR: [
               {
                 value: search
@@ -109,6 +110,7 @@ export async function GET(
             ],
           }
         : {
+            teamId: selectedTeam,
             value: search
               ? { contains: search, mode: 'insensitive' }
               : undefined,
@@ -125,7 +127,7 @@ export async function GET(
             },
             include: {
               blacklist: {
-                where: whereWithoutTeamCheck,
+                where,
                 skip,
                 take,
                 orderBy: {
@@ -166,10 +168,7 @@ export async function GET(
         },
       }),
       prisma.blacklist.count({
-        where: {
-          ...whereWithoutTeamCheck,
-          teamId: selectedTeam,
-        },
+        where,
       }),
     ]);
     const blacklist = session.user.teams[0].blacklist;
