@@ -16,63 +16,66 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 
 interface HeartbeatPreviewTableProps {
   licenseId?: string;
 }
+
+const fetchHeartbeats = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ILicenseHeartbeatsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function HeartbeatPreviewTable({
   licenseId,
 }: HeartbeatPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
+  const teamCtx = useContext(TeamContext);
 
-  const [heartbeats, setHeartbeats] = useState<
-    ILicenseHeartbeatsGetSuccessResponse['heartbeats']
-  >([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'lastBeatAt' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
-  const [totalHeartbeats, setTotalHeartbeats] = useState(1);
+
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: '10',
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(licenseId && { licenseId }),
+  });
+
+  const { data, error, isLoading } =
+    useSWR<ILicenseHeartbeatsGetSuccessResponse>(
+      teamCtx.selectedTeam
+        ? ['/api/heartbeats', teamCtx.selectedTeam, searchParams.toString()]
+        : null,
+      ([url, _, params]) => fetchHeartbeats(`${url}?${params}`),
+    );
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(licenseId && { licenseId }),
-        });
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-        const response = await fetch(
-          `/api/heartbeats?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as ILicenseHeartbeatsGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setHeartbeats(data.heartbeats);
-        setTotalHeartbeats(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, sortColumn, sortDirection, t, licenseId]);
+  const heartbeats = data?.heartbeats ?? [];
+  const totalHeartbeats = data?.totalResults ?? 1;
 
   return (
     <Card>
@@ -114,7 +117,7 @@ export default function HeartbeatPreviewTable({
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              {loading ? (
+              {isLoading ? (
                 <TableSkeleton columns={4} rows={3} />
               ) : (
                 <TableBody>

@@ -3,6 +3,8 @@ import {
   IProductsGetSuccessResponse,
 } from '@/app/api/(dashboard)/products/route';
 import { ProductsActionDropdown } from '@/components/dashboard/products/ProductsActionDropdown';
+import { DateConverter } from '@/components/shared/DateConverter';
+import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -18,66 +20,68 @@ import {
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ProductModalProvider } from '@/providers/ProductModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { DateConverter } from '../../DateConverter';
-import AddEntityButton from '../../misc/AddEntityButton';
+import useSWR from 'swr';
 
 interface ProductsPreviewTableProps {
   licenseId: string;
 }
+
+const fetchProducts = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IProductsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function ProductsPreviewTable({
   licenseId,
 }: ProductsPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
+  const teamCtx = useContext(TeamContext);
 
-  const [products, setProducts] = useState<
-    IProductsGetSuccessResponse['products']
-  >([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<'createdAt' | null>(null);
+  const [sortColumn, setSortColumn] = useState<'name' | 'createdAt' | null>(
+    null,
+  );
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
-  const [totalProducts, setTotalProducts] = useState(1);
+
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: '10',
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(licenseId && { licenseId }),
+  });
+
+  const { data, error, isLoading } = useSWR<IProductsGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/products', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchProducts(`${url}?${params}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(licenseId && { licenseId }),
-        });
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-        const response = await fetch(
-          `/api/products?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as IProductsGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setProducts(data.products);
-        setTotalProducts(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, sortColumn, sortDirection, t, licenseId]);
+  const products = data?.products ?? [];
+  const totalProducts = data?.totalResults ?? 1;
 
   return (
     <ProductModalProvider>
@@ -100,7 +104,20 @@ export default function ProductsPreviewTable({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="truncate">
-                      {t('general.name')}
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setSortColumn('name');
+                          setSortDirection(
+                            sortColumn === 'name' && sortDirection === 'asc'
+                              ? 'desc'
+                              : 'asc',
+                          );
+                        }}
+                      >
+                        {t('general.name')}
+                        <ArrowDownUp className="ml-2 h-4 w-4" />
+                      </Button>
                     </TableHead>
                     <TableHead className="truncate">
                       <Button
@@ -129,8 +146,8 @@ export default function ProductsPreviewTable({
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
-                  <TableSkeleton columns={2} rows={3} />
+                {isLoading ? (
+                  <TableSkeleton columns={3} rows={3} />
                 ) : (
                   <TableBody>
                     {products.map((product) => (

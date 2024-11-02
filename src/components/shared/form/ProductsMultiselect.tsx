@@ -15,11 +15,24 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { LoadingSpinner } from '../LoadingSpinner';
+
+const fetchProducts = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IProductsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 interface ProductsMultiselectProps {
   onChange: (productIds: string[]) => void;
@@ -28,65 +41,46 @@ interface ProductsMultiselectProps {
 
 export const ProductsMultiselect = ({
   onChange,
-  initialValue,
+  initialValue = [],
 }: ProductsMultiselectProps) => {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [products, setProducts] = useState<{ name: string; id: string }[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>(initialValue);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
-  const handleFetchProducts = useCallback(async () => {
-    const response = await fetch(
-      `/api/products?search=${debouncedSearchQuery}&pageSize=25`,
-    );
-    const data = (await response.json()) as IProductsGetResponse;
-
-    if ('message' in data) {
-      toast.error(data.message);
-      return [];
-    }
-
-    const results = data.products.map((product) => ({
-      name: product.name,
-      id: product.id,
-    }));
-
-    return results;
-  }, [debouncedSearchQuery]);
+  const { data, isLoading, error } = useSWR<IProductsGetResponse>(
+    teamCtx.selectedTeam
+      ? [
+          `/api/products?search=${debouncedSearchQuery}&pageSize=25`,
+          teamCtx.selectedTeam,
+        ]
+      : null,
+    ([url]) => fetchProducts(url),
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   useEffect(() => {
-    if (initialValue?.length) {
-      setSelectedItems(initialValue);
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
     }
-  }, [initialValue]);
+  }, [error, t]);
 
-  useEffect(() => {
-    if (open) {
-      (async () => {
-        setLoading(true);
-        try {
-          const results = await handleFetchProducts();
-          setProducts(results);
-        } catch (error: any) {
-          toast.error(error.message ?? t('general.error'));
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
-  }, [open, debouncedSearchQuery, handleFetchProducts, onChange, t]);
+  const products = useMemo(() => {
+    if (!data || 'message' in data) return [];
+    return data.products.map((product) => ({
+      name: product.name,
+      id: product.id,
+    }));
+  }, [data]);
 
   const filteredProducts = useMemo(
     () =>
@@ -140,6 +134,7 @@ export const ProductsMultiselect = ({
       <PopoverTrigger asChild>
         <Button
           className="w-full justify-between font-normal text-muted-foreground"
+          disabled={isLoading}
           role="combobox"
           variant="outline"
         >
@@ -178,7 +173,7 @@ export const ProductsMultiselect = ({
           <CommandEmpty>{t('general.no_results')}</CommandEmpty>
           <CommandGroup>
             <CommandList>
-              {loading ? (
+              {isLoading ? (
                 <CommandItem>
                   <div className="flex w-full items-center justify-center">
                     <LoadingSpinner />

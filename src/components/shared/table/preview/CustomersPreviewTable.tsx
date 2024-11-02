@@ -18,66 +18,68 @@ import {
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { CustomerModalProvider } from '@/providers/CustomerModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { DateConverter } from '../../DateConverter';
 import AddEntityButton from '../../misc/AddEntityButton';
 
 interface CustomersPreviewTableProps {
   licenseId: string;
 }
+
+const fetchCustomers = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ICustomersGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function CustomersPreviewTable({
   licenseId,
 }: CustomersPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
+  const teamCtx = useContext(TeamContext);
 
-  const [customers, setCustomers] = useState<
-    ICustomersGetSuccessResponse['customers']
-  >([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'createdAt' | 'name' | 'email'>(
     'createdAt',
   );
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [totalCustomers, setTotalCustomers] = useState(1);
+
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: '10',
+    sortColumn,
+    sortDirection,
+    licenseId,
+  });
+
+  const { data, error, isLoading } = useSWR<ICustomersGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/customers', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchCustomers(`${url}?${params}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-          sortColumn,
-          sortDirection,
-          licenseId,
-        });
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-        const response = await fetch(
-          `/api/customers?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as ICustomersGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setCustomers(data.customers);
-        setTotalCustomers(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, sortColumn, sortDirection, t, licenseId]);
+  const customers = data?.customers ?? [];
+  const totalCustomers = data?.totalResults ?? 1;
 
   return (
     <CustomerModalProvider>
@@ -158,7 +160,7 @@ export default function CustomersPreviewTable({
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={3} rows={3} />
                 ) : (
                   <TableBody>

@@ -3,6 +3,7 @@ import {
   ILogsGetResponse,
   ILogsGetSuccessResponse,
 } from '@/app/api/(dashboard)/logs/route';
+import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Badge } from '@/components/ui/badge';
@@ -23,64 +24,68 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { DateConverter } from '../../DateConverter';
+import useSWR from 'swr';
 import { CountryFlag } from '../../misc/CountryFlag';
 
 interface RequestLogsPreviewTableProps {
   licenseId: string;
 }
 
+const fetchRequestLogs = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ILogsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function RequestLogsPreviewTable({
   licenseId,
 }: RequestLogsPreviewTableProps) {
+  const t = useTranslations();
+  const router = useRouter();
   const [timeRange, setTimeRange] = useState('30d');
-  const [logs, setLogs] = useState<ILogsGetSuccessResponse['logs']>([]);
-  const [loading, setLoading] = useState(true);
+  const teamCtx = useContext(TeamContext);
+
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'createdAt' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
-  const [totalLogs, setTotalLogs] = useState(1);
 
-  const t = useTranslations();
-  const router = useRouter();
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: '10',
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(licenseId && { licenseId }),
+    timeRange,
+  });
+
+  const { data, error, isLoading } = useSWR<ILogsGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/logs', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchRequestLogs(`${url}?${params}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(licenseId && { licenseId }),
-          timeRange,
-        });
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-        const response = await fetch(`/api/logs?${searchParams.toString()}`);
-
-        const data = (await response.json()) as ILogsGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setLogs(data.logs);
-        setTotalLogs(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, sortColumn, sortDirection, t, licenseId, timeRange]);
+  const logs = data?.logs ?? [];
+  const totalLogs = data?.totalResults ?? 1;
 
   return (
     <Card>
@@ -137,7 +142,7 @@ export default function RequestLogsPreviewTable({
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              {loading ? (
+              {isLoading ? (
                 <TableSkeleton columns={4} rows={3} />
               ) : (
                 <TableBody>

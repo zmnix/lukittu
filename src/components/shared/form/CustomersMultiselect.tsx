@@ -15,10 +15,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface CustomersMultiselectProps {
@@ -26,74 +28,60 @@ interface CustomersMultiselectProps {
   initialValue?: string[];
 }
 
+const fetchCustomers = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ICustomersGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export const CustomersMultiselect = ({
   onChange,
-  initialValue,
+  initialValue = [],
 }: CustomersMultiselectProps) => {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
 
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [customers, setCustomers] = useState<
-    {
-      id: string;
-      fullName: string | null;
-      email: string | null;
-    }[]
-  >([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>(initialValue);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
-  const handleFetchCustomers = useCallback(async () => {
-    const response = await fetch(
-      `/api/customers?search=${debouncedSearchQuery}&pageSize=25`,
-    );
-    const data = (await response.json()) as ICustomersGetResponse;
-
-    if ('message' in data) {
-      toast.error(data.message);
-      return [];
-    }
-
-    const results = data.customers.map((customer) => ({
-      fullName: customer.fullName,
-      email: customer.email,
-      id: customer.id,
-    }));
-
-    return results;
-  }, [debouncedSearchQuery]);
+  const { data, isLoading, error } = useSWR<ICustomersGetResponse>(
+    teamCtx.selectedTeam
+      ? [
+          `/api/customers?search=${debouncedSearchQuery}&pageSize=25`,
+          teamCtx.selectedTeam,
+        ]
+      : null,
+    ([url]) => fetchCustomers(url),
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   useEffect(() => {
-    if (initialValue?.length) {
-      setSelectedItems(initialValue);
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
     }
-  }, [initialValue]);
+  }, [error, t]);
 
-  useEffect(() => {
-    if (open) {
-      (async () => {
-        setLoading(true);
-        try {
-          const results = await handleFetchCustomers();
-          setCustomers(results);
-        } catch (error: any) {
-          toast.error(error.message ?? t('general.error'));
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
-  }, [open, debouncedSearchQuery, handleFetchCustomers, onChange, t]);
+  const customers = useMemo(() => {
+    if (!data || 'message' in data) return [];
+    return data.customers.map((customer) => ({
+      id: customer.id,
+      fullName: customer.fullName,
+      email: customer.email,
+    }));
+  }, [data]);
 
   const filteredCustomers = useMemo(
     () =>
@@ -102,7 +90,7 @@ export const CustomersMultiselect = ({
           customer.fullName
             ?.toLowerCase()
             .includes(searchQuery.toLowerCase()) ||
-          customer.email?.toLowerCase().includes(searchQuery.toLowerCase()),
+          customer.email.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
     [searchQuery, customers],
   );
@@ -145,11 +133,13 @@ export const CustomersMultiselect = ({
     setSelectedItems([]);
     onChange([]);
   };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           className="w-full justify-between font-normal text-muted-foreground"
+          disabled={isLoading}
           role="combobox"
           variant="outline"
         >
@@ -163,11 +153,10 @@ export const CustomersMultiselect = ({
         <Command
           filter={(value, search) => {
             const item = customers.find((customer) => customer.id === value);
-
             return item?.fullName
               ?.toLowerCase()
               .includes(search.toLowerCase()) ||
-              item?.email?.toLowerCase().includes(search.toLowerCase())
+              item?.email.toLowerCase().includes(search.toLowerCase())
               ? 1
               : 0;
           }}
@@ -191,7 +180,7 @@ export const CustomersMultiselect = ({
           <CommandEmpty>{t('general.no_results')}</CommandEmpty>
           <CommandGroup>
             <CommandList>
-              {loading ? (
+              {isLoading ? (
                 <CommandItem>
                   <div className="flex w-full items-center justify-center">
                     <LoadingSpinner />
@@ -212,7 +201,7 @@ export const CustomersMultiselect = ({
                     />
                     <p>
                       {highlightText(
-                        `${customer.fullName ?? 'N/A'} - ${customer.email ?? 'N/A'}`,
+                        `${customer.fullName ?? 'N/A'} - ${customer.email}`,
                         debouncedSearchQuery,
                       )}
                     </p>

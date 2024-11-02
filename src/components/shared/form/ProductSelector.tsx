@@ -14,10 +14,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 interface ProductSelectProps {
@@ -25,37 +27,51 @@ interface ProductSelectProps {
   initialValue?: string;
 }
 
+const fetchProducts = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IProductsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export const ProductSelector = ({
   onChange,
   initialValue,
 }: ProductSelectProps) => {
   const t = useTranslations();
-
+  const teamCtx = useContext(TeamContext);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [products, setProducts] = useState<{ name: string; id: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
-  const handleFetchProducts = useCallback(async () => {
-    const response = await fetch(
-      `/api/products?search=${debouncedSearchQuery}&pageSize=25`,
-    );
-    const data = (await response.json()) as IProductsGetResponse;
+  const { data, isLoading, error } = useSWR<IProductsGetResponse>(
+    teamCtx.selectedTeam
+      ? [
+          `/api/products?search=${debouncedSearchQuery}&pageSize=25`,
+          teamCtx.selectedTeam,
+        ]
+      : null,
+    ([url]) => fetchProducts(url),
+  );
 
-    if ('message' in data) {
-      toast.error(data.message);
-      return [];
-    }
-
-    const results = data.products.map((product) => ({
+  const products = useMemo(() => {
+    if (!data || 'message' in data) return [];
+    return data.products.map((product) => ({
       name: product.name,
       id: product.id,
     }));
+  }, [data]);
 
-    return results;
-  }, [debouncedSearchQuery]);
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,22 +86,6 @@ export const ProductSelector = ({
       setSelectedItem(initialValue);
     }
   }, [initialValue]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const results = await handleFetchProducts();
-        setProducts(results);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [handleFetchProducts, t]);
 
   const filteredProducts = useMemo(
     () =>
@@ -131,6 +131,10 @@ export const ProductSelector = ({
     onChange(null);
   };
 
+  if (error) {
+    return <div>{t('general.error')}</div>;
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -138,7 +142,7 @@ export const ProductSelector = ({
           className={cn('w-full justify-between font-normal', {
             'text-muted-foreground': !selectedProduct,
           })}
-          disabled={loading}
+          disabled={isLoading}
           role="combobox"
           variant="outline"
         >
@@ -174,7 +178,7 @@ export const ProductSelector = ({
           <CommandEmpty>{t('general.no_results')}</CommandEmpty>
           <CommandGroup>
             <CommandList>
-              {loading ? (
+              {isLoading ? (
                 <CommandItem>
                   <div className="flex w-full items-center justify-center">
                     <LoadingSpinner />

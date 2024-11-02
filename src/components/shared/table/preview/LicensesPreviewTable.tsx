@@ -18,11 +18,13 @@ import {
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { DateConverter } from '../../DateConverter';
 import AddEntityButton from '../../misc/AddEntityButton';
 
@@ -30,6 +32,18 @@ interface LicensesPreviewTableProps {
   productId?: string;
   customerId?: string;
 }
+
+const fetchLicenses = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ILicensesGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function LicensesPreviewTable({
   customerId,
   productId,
@@ -37,50 +51,38 @@ export default function LicensesPreviewTable({
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
+  const teamCtx = useContext(TeamContext);
 
-  const [licenses, setLicenses] = useState<
-    ILicensesGetSuccessResponse['licenses']
-  >([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'createdAt' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
-  const [totalLicenses, setTotalLicenses] = useState(1);
+
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: '10',
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(customerId && { customerId }),
+    ...(productId && { productId }),
+  });
+
+  const { data, error, isLoading } = useSWR<ILicensesGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/licenses', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchLicenses(`${url}?${params}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(productId && { productId }),
-          ...(customerId && { customerId }),
-        });
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-        const response = await fetch(
-          `/api/licenses?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as ILicensesGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setLicenses(data.licenses);
-        setTotalLicenses(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, sortColumn, sortDirection, t, productId, customerId]);
+  const licenses = data?.licenses ?? [];
+  const totalLicenses = data?.totalResults ?? 1;
 
   return (
     <LicenseModalProvider>
@@ -132,7 +134,7 @@ export default function LicensesPreviewTable({
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={3} rows={3} />
                 ) : (
                   <TableBody>
