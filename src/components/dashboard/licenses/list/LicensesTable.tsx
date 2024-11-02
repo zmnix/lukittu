@@ -37,7 +37,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { LicensesActionDropdown } from '../LicensesActionDropdown';
+
+const fetchLicenses = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ILicensesGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export function LicensesTable() {
   const locale = useLocale();
@@ -47,12 +59,6 @@ export function LicensesTable() {
   const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [licenses, setLicenses] = useState<
-    ILicensesGetSuccessResponse['licenses']
-  >([]);
-  const [totalLicenses, setTotalLicenses] = useState(1);
-  const [hasLicenses, setHasLicenses] = useState(true);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [productIds, setProductIds] = useState<string[]>([]);
@@ -66,52 +72,32 @@ export function LicensesTable() {
     null,
   );
 
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(search && { search }),
+    ...(productIds.length && { productIds: productIds.join(',') }),
+    ...(customerIds.length && { customerIds: customerIds.join(',') }),
+  });
+
+  const { data, error, isLoading } = useSWR<ILicensesGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/licenses', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchLicenses(`${url}?${params}`),
+  );
+
   useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: pageSize.toString(),
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(search && { search }),
-          ...(productIds.length && { productIds: productIds.join(',') }),
-          ...(customerIds.length && { customerIds: customerIds.join(',') }),
-        });
-
-        const response = await fetch(
-          `/api/licenses?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as ILicensesGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setLicenses(data.licenses);
-        setTotalLicenses(data.totalResults);
-        setHasLicenses(data.hasResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [
-    page,
-    pageSize,
-    sortColumn,
-    sortDirection,
-    search,
-    t,
-    productIds,
-    customerIds,
-    teamCtx.selectedTeam,
-  ]);
+  const licenses = data?.licenses ?? [];
+  const totalLicenses = data?.totalResults ?? 0;
+  const hasLicenses = data?.hasResults ?? true;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -199,7 +185,7 @@ export function LicensesTable() {
                 />
               </div>
               <div className="flex flex-col md:hidden">
-                {loading
+                {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
@@ -307,7 +293,7 @@ export function LicensesTable() {
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={8} rows={7} />
                 ) : (
                   <TableBody>

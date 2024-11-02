@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export function DeleteLicenseConfirmModal() {
   const t = useTranslations();
@@ -20,6 +21,7 @@ export function DeleteLicenseConfirmModal() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { mutate } = useSWRConfig();
 
   const license = ctx.licenseToDelete;
 
@@ -53,7 +55,7 @@ export function DeleteLicenseConfirmModal() {
         }
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/licenses');
       ctx.setLicenseToDelete(null);
       handleOpenChange(false);
     } catch (error: any) {

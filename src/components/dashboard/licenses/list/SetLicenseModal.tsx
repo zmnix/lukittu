@@ -41,16 +41,16 @@ import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RefreshCw, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export default function SetLicenseModal() {
   const t = useTranslations();
   const locale = useLocale();
   const ctx = useContext(LicenseModalContext);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState<{
@@ -207,7 +207,7 @@ export default function SetLicenseModal() {
         return toast.error(res.message);
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/licenses');
       handleOpenChange(false);
       toast.success(
         ctx.licenseToEdit

@@ -1,6 +1,7 @@
 import { Toaster } from '@/components/ui/sonner';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { SWRProvider } from '@/providers/SwrProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import '@/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
@@ -32,18 +33,20 @@ export default async function RootLayout({
           roboto.variable,
         )}
       >
-        <NextTopLoader color="#4153af" showSpinner={false} />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-        >
-          <Toaster />
-          <NextIntlClientProvider messages={messages}>
-            {children}
-          </NextIntlClientProvider>
-        </ThemeProvider>
+        <SWRProvider>
+          <NextTopLoader color="#4153af" showSpinner={false} />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+            enableSystem
+          >
+            <Toaster />
+            <NextIntlClientProvider messages={messages}>
+              {children}
+            </NextIntlClientProvider>
+          </ThemeProvider>
+        </SWRProvider>
       </body>
     </html>
   );
