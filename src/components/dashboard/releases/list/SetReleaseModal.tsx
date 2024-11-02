@@ -102,6 +102,28 @@ export default function SetReleaseModal() {
     return data;
   };
 
+  const handleReleaseUpdate = async (payload: SetReleaseSchema) => {
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    }
+
+    const jsonPayload = JSON.stringify(payload);
+    formData.append('data', jsonPayload);
+
+    const response = await fetch(
+      `/api/products/releases/${ctx.releaseToEdit?.id}`,
+      {
+        method: 'PUT',
+        body: formData,
+      },
+    );
+
+    const data = (await response.json()) as IProductsReleasesCreateResponse;
+
+    return data;
+  };
+
   const handleFileSelect = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -121,7 +143,9 @@ export default function SetReleaseModal() {
   const onSubmit = async (data: SetReleaseSchema) => {
     setLoading(true);
     try {
-      const res = await handleReleaseCreate(data);
+      const res = ctx.releaseToEdit
+        ? await handleReleaseUpdate(data)
+        : await handleReleaseCreate(data);
 
       if ('message' in res) {
         if (res.field) {

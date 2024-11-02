@@ -377,6 +377,7 @@ enum AuditLogAction {
   CREATE_RELEASE
   UPDATE_RELEASE
   DELETE_RELEASE
+  SET_LATEST_RELEASE
 }
 
 enum ReleaseStatus {

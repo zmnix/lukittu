@@ -110,7 +110,9 @@
     "postal_code_max_length": "Postal code must be at most 20 characters long!",
     "state_required": "State is required!",
     "state_min_length": "State must be at least 2 characters long!",
-    "state_max_length": "State must be at most 100 characters long!"
+    "state_max_length": "State must be at most 100 characters long!",
+    "release_not_found": "Release not found!",
+    "latest_release_must_be_published": "Latest release must be published!"
   },
   "general": {
     "search": "Search",
@@ -573,7 +575,9 @@
       "release_created": "Release created",
       "click_here_to_upload": "Click here to browse and upload a file",
       "supported_file_types": "Any file type (max 1MB)",
-      "no_releases_assigned": "No releases assigned"
+      "no_releases_assigned": "No releases assigned",
+      "set_as_latest": "Set as latest",
+      "latest_release_updated": "Latest release updated"
     },
     "settings": {
       "general_settings": "General settings",
