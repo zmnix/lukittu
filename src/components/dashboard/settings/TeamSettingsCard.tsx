@@ -1,5 +1,8 @@
 'use client';
-import { ITeamGetResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
+import {
+  ITeamGetResponse,
+  ITeamGetSuccessResponse,
+} from '@/app/api/(dashboard)/teams/[slug]/route';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TeamContext } from '@/providers/TeamProvider';
 import { useTranslations } from 'next-intl';
@@ -26,7 +29,7 @@ export default function TeamSettingsCard() {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
 
-  const { data, error } = useSWR<ITeamGetResponse>(
+  const { data, error } = useSWR<ITeamGetSuccessResponse>(
     teamCtx.selectedTeam ? ['/api/teams', teamCtx.selectedTeam] : null,
     ([url, selectedTeam]) => fetchTeams(`${url}/${selectedTeam}`),
   );
@@ -38,10 +41,6 @@ export default function TeamSettingsCard() {
   }, [error, t]);
 
   const team = data?.team;
-
-  if (!team || !teamCtx.selectedTeam) {
-    return null;
-  }
 
   return (
     <div className="flex">
@@ -61,18 +60,18 @@ export default function TeamSettingsCard() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="generalSettings">
-                <TeamGeneralSettings team={team} />
+                <TeamGeneralSettings team={team ?? null} />
               </TabsContent>
               <TabsContent value="publicKeys">
-                <PublicKeysCard team={team} />
+                <PublicKeysCard team={team ?? null} />
               </TabsContent>
               <TabsContent value="limits">
-                <TeamLimits team={team} />
+                <TeamLimits team={team ?? null} />
               </TabsContent>
             </Tabs>
           </div>
           <aside className="flex w-full max-w-96 flex-shrink-0 flex-col gap-4 max-xl:max-w-full">
-            <TeamDetails team={team} />
+            <TeamDetails team={team ?? null} />
           </aside>
         </>
       </div>
