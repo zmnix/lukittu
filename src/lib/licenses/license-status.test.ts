@@ -60,10 +60,10 @@ describe('getLicenseStatus', () => {
 
 describe('getLicenseStatusBadgeVariant', () => {
   test('returns correct badge variants for each status', () => {
-    expect(getLicenseStatusBadgeVariant('ACTIVE')).toBe('default');
+    expect(getLicenseStatusBadgeVariant('ACTIVE')).toBe('success');
     expect(getLicenseStatusBadgeVariant('INACTIVE')).toBe('secondary');
-    expect(getLicenseStatusBadgeVariant('EXPIRING')).toBe('destructive');
-    expect(getLicenseStatusBadgeVariant('EXPIRED')).toBe('destructive');
-    expect(getLicenseStatusBadgeVariant('SUSPENDED')).toBe('destructive');
+    expect(getLicenseStatusBadgeVariant('EXPIRING')).toBe('warning');
+    expect(getLicenseStatusBadgeVariant('EXPIRED')).toBe('error');
+    expect(getLicenseStatusBadgeVariant('SUSPENDED')).toBe('error');
   });
 });
