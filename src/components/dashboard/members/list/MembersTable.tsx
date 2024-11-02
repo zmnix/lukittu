@@ -273,7 +273,13 @@ export function MembersTable() {
                             </Avatar>
                             <div>
                               <b>
-                                {'fullName' in member ? member.fullName : 'N/A'}
+                                {'fullName' in member ? (
+                                  member.fullName
+                                ) : (
+                                  <span className="text-muted-foreground">
+                                    N/A
+                                  </span>
+                                )}
                               </b>
                               <p className="text-xs text-muted-foreground">
                                 {member.email}

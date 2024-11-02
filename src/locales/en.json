@@ -567,6 +567,7 @@
       "stripe_integration_deleted": "Stripe integration deleted"
     },
     "releases": {
+      "total_releases": "Total releases",
       "search_release": "Search release...",
       "release_description": "Releases are the versions of your software that you distribute to your customers. You can add, edit, and delete releases here.",
       "create_release": "Create release",

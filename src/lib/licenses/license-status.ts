@@ -2,7 +2,7 @@ import { badgeVariants } from '@/components/ui/badge';
 import { License } from '@prisma/client';
 import { VariantProps } from 'class-variance-authority';
 
-type LicenseStatus =
+export type LicenseStatus =
   | 'ACTIVE'
   | 'INACTIVE'
   | 'EXPIRING'

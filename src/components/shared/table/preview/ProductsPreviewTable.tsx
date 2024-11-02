@@ -158,8 +158,10 @@ export default function ProductsPreviewTable({
                           router.push(`/dashboard/products/${product.id}`)
                         }
                       >
-                        <TableCell>{product.name}</TableCell>
-                        <TableCell>
+                        <TableCell className="truncate">
+                          {product.name}
+                        </TableCell>
+                        <TableCell className="truncaate">
                           <DateConverter date={product.createdAt} />
                         </TableCell>
                         <TableCell

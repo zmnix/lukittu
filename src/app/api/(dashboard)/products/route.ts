@@ -20,7 +20,10 @@ import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export type IProductsGetSuccessResponse = {
-  products: Product[];
+  products: (Product & {
+    latestRelease: string | null;
+    totalReleases: number;
+  })[];
   totalResults: number;
   hasResults: boolean;
 };
@@ -113,6 +116,9 @@ export async function GET(
             include: {
               products: {
                 where,
+                include: {
+                  releases: true,
+                },
                 skip,
                 take,
                 orderBy: {
@@ -159,7 +165,13 @@ export async function GET(
     const products = session.user.teams[0].products;
 
     return NextResponse.json({
-      products,
+      products: products.map((product) => ({
+        ...product,
+        releases: undefined,
+        latestRelease:
+          product.releases.find((release) => release.latest)?.version || null,
+        totalReleases: product.releases.length || 0,
+      })),
       totalResults,
       hasResults: Boolean(hasResults),
     });

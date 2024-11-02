@@ -5,6 +5,7 @@ import {
 import { LicensesActionDropdown } from '@/components/dashboard/licenses/LicensesActionDropdown';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -16,10 +17,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
+import {
+  getLicenseStatus,
+  getLicenseStatusBadgeVariant,
+} from '@/lib/licenses/license-status';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp } from 'lucide-react';
+import { ArrowDownUp, CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -108,6 +113,9 @@ export default function LicensesPreviewTable({
                       {t('general.license')}
                     </TableHead>
                     <TableHead className="truncate">
+                      {t('dashboard.licenses.status')}
+                    </TableHead>
+                    <TableHead className="truncate">
                       <Button
                         variant="ghost"
                         onClick={() => {
@@ -146,8 +154,29 @@ export default function LicensesPreviewTable({
                           router.push(`/dashboard/licenses/${license.id}`)
                         }
                       >
-                        <TableCell>{license.licenseKey}</TableCell>
-                        <TableCell>
+                        <TableCell className="truncate">
+                          {license.licenseKey}
+                        </TableCell>
+                        <TableCell className="truncate">
+                          <Badge
+                            className="text-xs"
+                            variant={getLicenseStatusBadgeVariant(
+                              getLicenseStatus(license),
+                            )}
+                          >
+                            {getLicenseStatusBadgeVariant(
+                              getLicenseStatus(license),
+                            ) === 'success' ? (
+                              <CheckCircle className="mr-1 h-3 w-3" />
+                            ) : (
+                              <XCircle className="mr-1 h-3 w-3" />
+                            )}
+                            {t(
+                              `general.${getLicenseStatus(license).toLowerCase()}` as any,
+                            )}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="truncate">
                           <DateConverter date={license.createdAt} />
                         </TableCell>
                         <TableCell

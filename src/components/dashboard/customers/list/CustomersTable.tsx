@@ -281,7 +281,11 @@ export function CustomersTable() {
                           {customer.email}
                         </TableCell>
                         <TableCell className="truncate">
-                          {customer.fullName ?? 'N/A'}
+                          {customer.fullName ? (
+                            customer.fullName
+                          ) : (
+                            <span className="text-muted-foreground">N/A</span>
+                          )}
                         </TableCell>
                         <TableCell
                           className="truncate"

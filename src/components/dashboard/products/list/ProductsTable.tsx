@@ -8,6 +8,7 @@ import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,7 @@ import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ProductModalProvider } from '@/providers/ProductModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp, Clock, Filter, Package, Search } from 'lucide-react';
+import { ArrowDownUp, Clock, Filter, Package, Rss, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -218,6 +219,12 @@ export function ProductsTable() {
                       </Button>
                     </TableHead>
                     <TableHead className="truncate">
+                      {t('general.version')}
+                    </TableHead>
+                    <TableHead className="truncate">
+                      {t('dashboard.releases.total_releases')}
+                    </TableHead>
+                    <TableHead className="truncate">
                       <Button
                         variant="ghost"
                         onClick={() => {
@@ -275,6 +282,19 @@ export function ProductsTable() {
                       >
                         <TableCell className="truncate">
                           {product.name}
+                        </TableCell>
+                        <TableCell className="truncate">
+                          {product.latestRelease ? (
+                            <Badge variant="secondary">
+                              <Rss className="mr-1 h-4 w-4" />
+                              {product.latestRelease}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">N/A</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="truncate">
+                          {product.totalReleases}
                         </TableCell>
                         <TableCell
                           className="truncate"

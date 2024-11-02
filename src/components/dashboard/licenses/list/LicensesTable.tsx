@@ -27,17 +27,21 @@ import { useTableScroll } from '@/hooks/useTableScroll';
 import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
+  LicenseStatus,
 } from '@/lib/licenses/license-status';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import {
+  AlertTriangle,
   ArrowDownUp,
+  Box,
   CheckCircle,
   Clock,
   Filter,
   Key,
   Search,
+  Users,
   XCircle,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -57,6 +61,24 @@ const fetchLicenses = async (url: string) => {
   }
 
   return data;
+};
+
+const StatusBadge = ({ status, t }: { status: LicenseStatus; t: any }) => {
+  const icons = {
+    success: <CheckCircle className="mr-1 h-3 w-3" />,
+    error: <XCircle className="mr-1 h-3 w-3" />,
+    warning: <AlertTriangle className="mr-1 h-3 w-3" />,
+  };
+
+  const variant = getLicenseStatusBadgeVariant(status);
+  const icon = icons[variant as keyof typeof icons];
+
+  return (
+    <Badge className="text-xs" variant={variant}>
+      {icon}
+      {t(`general.${status.toLowerCase()}`)}
+    </Badge>
+  );
 };
 
 export function LicensesTable() {
@@ -211,33 +233,54 @@ export function LicensesTable() {
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
-                          <p className="line-clamp-2 break-all font-medium">{`${license.licenseKey}`}</p>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <div className="text-xs text-muted-foreground">
-                              <DateConverter date={license.createdAt} />
+                          <span className="sm:hidden">
+                            <StatusBadge
+                              status={getLicenseStatus(license)}
+                              t={t}
+                            />
+                          </span>
+                          <p
+                            className="line-clamp-1 break-all font-medium"
+                            title={license.licenseKey}
+                          >
+                            {`${license.licenseKey}`}
+                          </p>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm font-semibold text-muted-foreground">
+                                {new Date(license.createdAt).toLocaleString(
+                                  locale,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                  },
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm text-muted-foreground">
+                                {license.customers.length}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Box className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm text-muted-foreground">
+                                {license.products.length}
+                              </div>
                             </div>
                           </div>
                         </div>
                         <div className="z-10 flex items-center space-x-2">
-                          <span className="rounded-full px-2 py-1 text-xs font-medium">
-                            <Badge
-                              className="text-xs"
-                              variant={getLicenseStatusBadgeVariant(
-                                getLicenseStatus(license),
-                              )}
-                            >
-                              {getLicenseStatusBadgeVariant(
-                                getLicenseStatus(license),
-                              ) === 'success' ? (
-                                <CheckCircle className="mr-1 h-3 w-3" />
-                              ) : (
-                                <XCircle className="mr-1 h-3 w-3" />
-                              )}
-                              {t(
-                                `general.${getLicenseStatus(license).toLowerCase()}` as any,
-                              )}
-                            </Badge>
+                          <span className="rounded-full px-2 py-1 text-xs font-medium max-sm:hidden">
+                            <StatusBadge
+                              status={getLicenseStatus(license)}
+                              t={t}
+                            />
                           </span>
                           <LicensesActionDropdown license={license} />
                         </div>
@@ -325,23 +368,10 @@ export function LicensesTable() {
                           {license.licenseKey}
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge
-                            className="text-xs"
-                            variant={getLicenseStatusBadgeVariant(
-                              getLicenseStatus(license),
-                            )}
-                          >
-                            {getLicenseStatusBadgeVariant(
-                              getLicenseStatus(license),
-                            ) === 'success' ? (
-                              <CheckCircle className="mr-1 h-3 w-3" />
-                            ) : (
-                              <XCircle className="mr-1 h-3 w-3" />
-                            )}
-                            {t(
-                              `general.${getLicenseStatus(license).toLowerCase()}` as any,
-                            )}
-                          </Badge>
+                          <StatusBadge
+                            status={getLicenseStatus(license)}
+                            t={t}
+                          />
                         </TableCell>
                         <TableCell
                           className="truncate"
