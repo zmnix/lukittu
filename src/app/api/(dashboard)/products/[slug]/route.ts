@@ -21,6 +21,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export type IProductGetSuccessResponse = {
   product: Product & {
+    latestRelease: string | null;
+    totalReleases: number;
     createdBy: Omit<User, 'passwordHash'> | null;
   };
 };
@@ -72,6 +74,7 @@ export async function GET(
                 },
                 include: {
                   createdBy: true,
+                  releases: true,
                 },
               },
             },
@@ -112,7 +115,13 @@ export async function GET(
     const product = team.products[0];
 
     return NextResponse.json({
-      product,
+      product: {
+        ...product,
+        releases: undefined,
+        latestRelease:
+          product.releases.find((release) => release.latest)?.version || null,
+        totalReleases: product.releases.length,
+      },
     });
   } catch (error) {
     logger.error("Error occurred in 'products/[slug]' route:", error);
