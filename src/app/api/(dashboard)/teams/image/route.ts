@@ -12,6 +12,7 @@ import {
   getLanguage,
   getSelectedTeam,
 } from '@/lib/utils/header-helpers';
+import { bytesToSize } from '@/lib/utils/number-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
@@ -53,7 +54,9 @@ export async function POST(
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          message: t('validation.file_too_large'),
+          message: t('validation.file_too_large', {
+            size: bytesToSize(MAX_FILE_SIZE),
+          }),
         },
         { status: HttpStatus.BAD_REQUEST },
       );

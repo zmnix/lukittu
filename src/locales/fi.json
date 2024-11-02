@@ -65,7 +65,7 @@
     "invitation_not_found": "Invitation not found! It may have expired. Please ask the team owner to resend the invitation.",
     "invitation_already_accepted": "Invitation has already been accepted!",
     "invitation_for_different_email": "Invitation is for a different email address!",
-    "file_too_large": "File is too large! Maximum file size is 1MB.",
+    "file_too_large": "File is too large! Maximum file size is {size}.",
     "invalid_file_type": "Invalid file type! Only PNG, JPEG, and WEBP are allowed.",
     "heartbeat_timeout_positive": "Heartbeat timeout must be at least 1 minute!",
     "too_many_requests": "Too many requests! Please try again later.",
@@ -574,7 +574,7 @@
       "release_updated": "Release updated",
       "release_created": "Release created",
       "click_here_to_upload": "Click here to browse and upload a file",
-      "supported_file_types": "Any file type (max 1MB)",
+      "supported_file_types": "Any file type (max {size})",
       "no_releases_assigned": "No releases assigned",
       "set_as_latest": "Set as latest",
       "latest_release_updated": "Latest release updated"

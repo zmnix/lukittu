@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { bytesToSize } from '@/lib/utils/number-helpers';
 import { firstLetterUppercase, getInitials } from '@/lib/utils/text-helpers';
 import {
   UpdateProfileSchema,
@@ -178,7 +179,11 @@ export default function GeneralSettingsCard() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         if (file.size > 1048576) {
-          return toast.error(t('validation.file_too_large'));
+          return toast.error(
+            t('validation.file_too_large', {
+              bytesToSize: bytesToSize(1048576),
+            }),
+          );
         }
         await handleUpload(file);
       }

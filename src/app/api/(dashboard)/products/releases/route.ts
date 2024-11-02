@@ -12,6 +12,7 @@ import {
   getSelectedTeam,
 } from '@/lib/utils/header-helpers';
 import { getMainClassFromJar } from '@/lib/utils/java-helpers';
+import { bytesToSize } from '@/lib/utils/number-helpers';
 import {
   SetReleaseSchema,
   setReleaseSchema,
@@ -29,7 +30,7 @@ import {
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-const MAX_FILE_SIZE = 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 1024 * 1024 * 10; // 10MB
 
 export type IProductsReleasesCreateSuccessResponse = {
   release: Release;
@@ -83,7 +84,9 @@ export async function POST(request: NextRequest) {
     if (file && file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          message: t('validation.file_too_large'),
+          message: t('validation.file_too_large', {
+            size: bytesToSize(MAX_FILE_SIZE),
+          }),
         },
         { status: HttpStatus.BAD_REQUEST },
       );

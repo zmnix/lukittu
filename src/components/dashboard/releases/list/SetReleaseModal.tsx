@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { bytesToSize } from '@/lib/utils/number-helpers';
 import {
   setReleaseSchema,
   SetReleaseSchema,
@@ -40,6 +41,8 @@ import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
+
+const MAX_FILE_SIZE = 1024 * 1024 * 10; // 10 MB
 
 export default function SetReleaseModal() {
   const t = useTranslations();
@@ -131,8 +134,12 @@ export default function SetReleaseModal() {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        if (file.size > 1048576) {
-          return toast.error(t('validation.file_too_large'));
+        if (file.size > MAX_FILE_SIZE) {
+          return toast.error(
+            t('validation.file_too_large', {
+              size: bytesToSize(MAX_FILE_SIZE),
+            }),
+          );
         }
         setFile(file);
       }
@@ -288,7 +295,9 @@ export default function SetReleaseModal() {
                       {t('dashboard.releases.click_here_to_upload')}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {t('dashboard.releases.supported_file_types')}
+                      {t('dashboard.releases.supported_file_types', {
+                        size: bytesToSize(MAX_FILE_SIZE),
+                      })}
                     </span>
                   </div>
                 ) : (
@@ -296,15 +305,9 @@ export default function SetReleaseModal() {
                     <span className="flex w-full items-center gap-2">
                       <FileIcon className="h-8 w-8" />
                       <span className="text-sm font-medium text-muted-foreground">
-                        {file.name} (
-                        {file.size > 1024
-                          ? file.size > 1048576
-                            ? file.size > 1073741824
-                              ? `${(file.size / 1073741824).toFixed(2)} GB`
-                              : `${(file.size / 1048576).toFixed(2)} MB`
-                            : `${(file.size / 1024).toFixed(2)} KB`
-                          : `${file.size} B`}
-                        )
+                        {file.name}
+                        {' - '}
+                        {bytesToSize(file.size)}
                       </span>
                     </span>
                     <Button

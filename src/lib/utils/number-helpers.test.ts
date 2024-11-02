@@ -39,15 +39,15 @@ describe('bytesToSize', () => {
   });
 
   it('should format bytes correctly', () => {
-    expect(bytesToSize(500)).toBe('500 Bytes');
-    expect(bytesToSize(1024)).toBe('1 KB');
-    expect(bytesToSize(1048576)).toBe('1 MB');
-    expect(bytesToSize(1073741824)).toBe('1 GB');
-    expect(bytesToSize(1099511627776)).toBe('1 TB');
+    expect(bytesToSize(500)).toBe('500.0 Bytes');
+    expect(bytesToSize(1024)).toBe('1.0 KB');
+    expect(bytesToSize(1048576)).toBe('1.0 MB');
+    expect(bytesToSize(1073741824)).toBe('1.0 GB');
+    expect(bytesToSize(1099511627776)).toBe('1.0 TB');
   });
 
-  it('should round to whole numbers', () => {
-    expect(bytesToSize(1536)).toBe('2 KB');
-    expect(bytesToSize(1600000)).toBe('2 MB');
+  it('should show one decimal place', () => {
+    expect(bytesToSize(1536)).toBe('1.5 KB');
+    expect(bytesToSize(1600000)).toBe('1.5 MB');
   });
 });

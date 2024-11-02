@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { bytesToSize } from '@/lib/utils/number-helpers';
 import { getInitials } from '@/lib/utils/text-helpers';
 import {
   SetTeamSettingsSchema,
@@ -191,7 +192,11 @@ export default function TeamGeneralSettings({
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         if (file.size > 1048576) {
-          return toast.error(t('validation.file_too_large'));
+          return toast.error(
+            t('validation.file_too_large', {
+              size: bytesToSize(1048576),
+            }),
+          );
         }
         await handleUpload(file);
       }
