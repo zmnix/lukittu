@@ -38,6 +38,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 
 const initialData = Array.from({ length: 24 }, (_, index) => {
   const date = new Date();
@@ -51,6 +52,17 @@ const initialData = Array.from({ length: 24 }, (_, index) => {
   };
 });
 
+const fetchRequests = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IStatisticsRequestsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 interface RequestsAreaChartProps {
   licenseId?: string;
 }
@@ -61,43 +73,25 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
   const teamCtx = useContext(TeamContext);
 
   const [timeRange, setTimeRange] = useState('24h');
-  const [comparedToPrevious, setComparedToPrevious] = useState('0%');
-  const [data, setData] =
-    useState<IStatisticsRequestsGetSuccessResponse['data']>(initialData);
+
+  const { data: response, error } =
+    useSWR<IStatisticsRequestsGetSuccessResponse>(
+      teamCtx.selectedTeam
+        ? [
+            `/api/statistics/requests?timeRange=${timeRange}${
+              licenseId ? `&licenseId=${licenseId}` : ''
+            }`,
+            teamCtx.selectedTeam,
+          ]
+        : null,
+      ([url]) => fetchRequests(url),
+    );
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!teamCtx.selectedTeam) return;
-
-      try {
-        const res = await fetch(
-          `/api/statistics/requests?timeRange=${timeRange}${
-            licenseId ? `&licenseId=${licenseId}` : ''
-          }`,
-        );
-        const data = (await res.json()) as IStatisticsRequestsGetResponse;
-
-        if ('message' in data) {
-          toast.error(data.message);
-          return;
-        }
-
-        if (res.ok) {
-          setData(data.data);
-          setComparedToPrevious(data.comparedToPrevious);
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      }
-    };
-
-    fetchData();
-
-    // Fetch data every 60 seconds
-    const intervalId = setInterval(fetchData, 60000);
-
-    return () => clearInterval(intervalId);
-  }, [t, timeRange, licenseId, teamCtx.selectedTeam]);
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
 
   const chartConfig = {
     total: {
@@ -149,7 +143,7 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
           className="aspect-auto h-[250px] w-full"
           config={chartConfig}
         >
-          <AreaChart data={data}>
+          <AreaChart data={response?.data ?? initialData}>
             <defs>
               <linearGradient id="fillSuccess" x1="0" x2="0" y1="0" y2="1">
                 <stop
@@ -263,17 +257,17 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div className="flex cursor-pointer items-center gap-2 font-medium leading-none underline">
-                    {comparedToPrevious.includes('-') ? (
+                    {response?.comparedToPrevious.includes('-') ? (
                       <>
                         {t('dashboard.dashboard.trending_down')}{' '}
-                        {comparedToPrevious}{' '}
+                        {response.comparedToPrevious}{' '}
                         {t('dashboard.dashboard.compared_to_last_period')}
                         <TrendingDown className="h-4 w-4" />
                       </>
                     ) : (
                       <>
                         {t('dashboard.dashboard.trending_up')}{' '}
-                        {comparedToPrevious}{' '}
+                        {response?.comparedToPrevious}{' '}
                         {t('dashboard.dashboard.compared_to_last_period')}
                         <TrendingUp className="h-4 w-4" />
                       </>

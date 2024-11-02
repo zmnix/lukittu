@@ -24,56 +24,43 @@ import {
 import { TeamContext } from '@/providers/TeamProvider';
 import { Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
+
+const fetchRecentActivity = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IStatisticsRecentActivityGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export default function RecentlyActiveCard() {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<
-    IStatisticsRecentActivityGetSuccessResponse['data']
-  >([]);
-  const [hasData, setHasData] = useState(true);
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<IStatisticsRecentActivityGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/statistics/recent-activity', teamCtx.selectedTeam]
+      : null,
+    ([url]) => fetchRecentActivity(url),
+  );
 
   useEffect(() => {
-    const fetchData = async (initial?: boolean) => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
 
-      if (initial) {
-        setLoading(true);
-      }
-
-      try {
-        const res = await fetch('/api/statistics/recent-activity');
-        const data = (await res.json()) as IStatisticsRecentActivityGetResponse;
-
-        if ('message' in data) {
-          toast.error(data.message);
-          return;
-        }
-
-        if (res.ok) {
-          setData(data.data);
-          if (data.data.length === 0) {
-            setHasData(false);
-          }
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData(true);
-
-    // Fetch data every 60 seconds
-    const intervalId = setInterval(fetchData, 60000);
-
-    return () => clearInterval(intervalId);
-  }, [t, teamCtx.selectedTeam]);
+  const hasData = response?.data.length ? response.data.length > 0 : false;
 
   return (
     <Card className="flex h-full flex-col">
@@ -97,11 +84,11 @@ export default function RecentlyActiveCard() {
                 <TableHead>{t('dashboard.licenses.status')}</TableHead>
               </TableRow>
             </TableHeader>
-            {loading ? (
+            {isLoading ? (
               <TableSkeleton columns={3} rows={4} />
             ) : (
               <TableBody>
-                {data.map((row) => (
+                {response?.data.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.license}</TableCell>
                     <TableCell>

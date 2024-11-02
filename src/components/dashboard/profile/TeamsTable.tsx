@@ -25,21 +25,33 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AuthContext } from '@/providers/AuthProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { Team, User } from '@prisma/client';
 import { Ellipsis } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { DeleteTeamConfirmModal } from './TeamDeleteConfirmModal';
 import { LeaveTeamConfirmModal } from './TeamLeaveConfirmModal';
 import { TransferTeamOwnershipModal } from './TransferTeamOwnershipModal';
 
+const fetchTeams = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ITeamsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function TeamsTable() {
   const authCtx = useContext(AuthContext);
+  const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(true);
-  const [teams, setTeams] = useState<ITeamsGetSuccessResponse['teams']>([]);
   const [teamLeaveConfirmation, setTeamLeaveConfirmation] =
     useState<Team | null>(null);
   const [teamTransferConfirmation, setTeamTransferConfirmation] = useState<
@@ -60,23 +72,18 @@ export default function TeamsTable() {
   const t = useTranslations();
   const router = useRouter();
 
-  useEffect(() => {
-    const handleTeamGet = async () => {
-      try {
-        const response = await fetch('/api/teams');
-        const data = (await response.json()) as ITeamsGetResponse;
-        if ('teams' in data) {
-          setTeams(data.teams);
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, error, isLoading } = useSWR<ITeamsGetSuccessResponse>(
+    ['/api/teams', teamCtx.selectedTeam],
+    ([url]) => fetchTeams(url),
+  );
 
-    handleTeamGet();
-  }, [t]);
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
+
+  const teams = data?.teams ?? [];
 
   const handleLeaveTeam = async (teamId: string) => {
     const response = await fetch(`/api/teams/${teamId}/leave`, {
@@ -133,7 +140,6 @@ export default function TeamsTable() {
       return;
     }
 
-    toast.success(t('dashboard.profile.delete_team_success'));
     router.refresh();
   };
 
@@ -207,7 +213,7 @@ export default function TeamsTable() {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            {loading ? (
+            {isLoading ? (
               <TableSkeleton columns={3} rows={4} />
             ) : (
               <TableBody>

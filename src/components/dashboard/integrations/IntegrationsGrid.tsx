@@ -14,12 +14,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { TeamContext } from '@/providers/TeamProvider';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import SetStripeIntegrationModal from './modals/SetStripeIntegrationModal';
 
 interface InitialIntegration {
@@ -39,45 +41,44 @@ const initialIntegrations: InitialIntegration[] = [
   },
 ];
 
+const fetchIntegrations = async (url: string) => {
+  const res = await fetch(url);
+  const data = (await res.json()) as ITeamsIntegrationsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data.integrations;
+};
+
 export default function IntegrationsGrid() {
   const t = useTranslations();
-
-  const [loading, setLoading] = useState(false);
+  const teamCtx = useContext(TeamContext);
   const [openSetupModal, setOpenSetupModal] = useState<
     keyof ITeamsIntegrationsGetSuccessResponse['integrations'] | null
   >(null);
-  const [integrations, setIntegrations] = useState<
-    ITeamsIntegrationsGetSuccessResponse['integrations'] | null
-  >(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/teams/integrations');
-      const data = (await res.json()) as ITeamsIntegrationsGetResponse;
-
-      if ('message' in data) {
-        toast.error(data.message);
-        return;
-      }
-
-      if (res.ok) {
-        setIntegrations(data.integrations);
-      }
-    } catch (error: any) {
-      toast.error(error.message ?? t('general.error_occurred'));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const {
+    data: integrations,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<ITeamsIntegrationsGetSuccessResponse['integrations']>(
+    teamCtx.selectedTeam
+      ? ['/api/teams/integrations', teamCtx.selectedTeam]
+      : null,
+    ([url]) => fetchIntegrations(url),
+  );
 
   useEffect(() => {
-    fetchData();
-  }, [t, fetchData]);
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
 
   const handleIntegrationModalClose = (open: boolean) => {
-    fetchData();
+    mutate();
     setOpenSetupModal(null);
   };
 
@@ -124,7 +125,7 @@ export default function IntegrationsGrid() {
                 )}
               </Badge>
               <Button
-                disabled={loading}
+                disabled={isLoading}
                 size="sm"
                 variant={
                   integrations?.[integration.key] ? 'secondary' : 'default'

@@ -11,9 +11,9 @@ import { ReleaseModalContext } from '@/providers/ReleasesModalProvider';
 import { VariantProps } from 'class-variance-authority';
 import { Edit, Ellipsis, Star, Trash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext } from 'react';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 interface ReleasesActionDropdownProps {
   release: IProductsReleasesGetSuccessResponse['releases'][number] | undefined;
@@ -26,7 +26,7 @@ export const ReleasesActionDropdown = ({
 }: ReleasesActionDropdownProps) => {
   const t = useTranslations();
   const ctx = useContext(ReleaseModalContext);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   if (!release) return null;
 
@@ -42,7 +42,9 @@ export const ReleasesActionDropdown = ({
         toast.error(res.message);
       } else {
         toast.success(t('dashboard.releases.latest_release_updated'));
-        router.refresh();
+        mutate(
+          (key) => Array.isArray(key) && key[0] === '/api/products/releases',
+        );
       }
     } catch (error) {
       toast.error(t('general.error_occurred'));

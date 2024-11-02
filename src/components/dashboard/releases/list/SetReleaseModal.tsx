@@ -36,17 +36,17 @@ import { ReleaseModalContext } from '@/providers/ReleasesModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FileIcon, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export default function SetReleaseModal() {
   const t = useTranslations();
   const ctx = useContext(ReleaseModalContext);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const form = useForm<SetReleaseSchema>({
     resolver: zodResolver(setReleaseSchema(t)),
@@ -159,7 +159,9 @@ export default function SetReleaseModal() {
         return toast.error(res.message);
       }
 
-      router.refresh();
+      mutate(
+        (key) => Array.isArray(key) && key[0] === '/api/products/releases',
+      );
       handleOpenChange(false);
       toast.success(
         ctx.releaseToEdit

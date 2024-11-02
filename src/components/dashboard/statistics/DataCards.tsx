@@ -8,52 +8,43 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Activity, Key, Package, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
+
+const fetchCardData = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IStatisticsCardDataGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export default function DataCards() {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<
-    IStatisticsCardDataGetSuccessResponse['data'] | null
-  >(null);
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<IStatisticsCardDataGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/statistics/card-data', teamCtx.selectedTeam]
+      : null,
+    ([url]) => fetchCardData(url),
+  );
 
   useEffect(() => {
-    const fetchData = async (initial?: boolean) => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
 
-      if (initial) {
-        setLoading(true);
-      }
-
-      try {
-        const res = await fetch('/api/statistics/card-data');
-        const data = (await res.json()) as IStatisticsCardDataGetResponse;
-
-        if ('message' in data) {
-          toast.error(data.message);
-          return;
-        }
-
-        if (res.ok) {
-          setData(data.data);
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData(true);
-
-    // Fetch data every 60 seconds
-    const intervalId = setInterval(fetchData, 60000);
-
-    return () => clearInterval(intervalId);
-  }, [t, teamCtx.selectedTeam]);
+  const data = response?.data;
 
   const comparedToPrevious = data?.trends.activeLicensesPreviousPeriod
     ? data.activeLicenses > data.trends.activeLicensesPreviousPeriod
@@ -73,7 +64,7 @@ export default function DataCards() {
           </span>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading ? (
             <>
               <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
@@ -101,7 +92,7 @@ export default function DataCards() {
           </span>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading ? (
             <>
               <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
@@ -130,7 +121,7 @@ export default function DataCards() {
           </span>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading ? (
             <>
               <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />
@@ -159,7 +150,7 @@ export default function DataCards() {
           </span>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading ? (
             <>
               <Skeleton className="h-6 w-24" />
               <Skeleton className="mt-2 h-4 w-32" />

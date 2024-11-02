@@ -10,15 +10,15 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { MemberModalContext } from '@/providers/MemberModalProvider';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export function CancelInviteConfirmModal() {
   const t = useTranslations();
   const ctx = useContext(MemberModalContext);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const invitation = ctx.memberToCancelInvitation;
 
@@ -48,7 +48,7 @@ export function CancelInviteConfirmModal() {
         toast.success(t('dashboard.members.invitation_cancelled'));
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/teams');
       ctx.setMemberToCancelInvitation(null);
       handleOpenChange(false);
     } catch (error: any) {

@@ -25,6 +25,7 @@ import * as d3 from 'd3';
 import { useTranslations } from 'next-intl';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import * as topojson from 'topojson-client';
 import worldJson from 'visionscarto-world-atlas/world/110m.json';
 import { MapTooltip } from './WorldMapTooltip';
@@ -44,15 +45,21 @@ interface WorldMapChartProps {
   licenseId?: string;
 }
 
+const fetchMapData = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IStatisticsMapDataGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
-
-  const [loading, setLoading] = useState(false);
   const [timeRange, setTimeRange] = useState('30d');
-  const [data, setData] = useState<
-    IStatisticsMapDataGetSuccessResponse['data'] | null
-  >(null);
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
@@ -61,58 +68,41 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
 
   const svgRef = useRef<SVGSVGElement | null>(null);
 
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<IStatisticsMapDataGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? [
+          `/api/statistics/map-data?timeRange=${timeRange}${
+            licenseId ? `&licenseId=${licenseId}` : ''
+          }`,
+          teamCtx.selectedTeam,
+        ]
+      : null,
+    ([url]) => fetchMapData(url),
+  );
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
+
   const labels = { singular: 'Request', plural: 'Requests' };
 
   const { maxValue, dataByCountryCode } = useMemo(() => {
     const dataByCountryCode: Map<string, CountryData> = new Map();
     let maxValue = 0;
-    for (const { alpha_3, requests, name } of data || []) {
+    for (const { alpha_3, requests, name } of response?.data || []) {
       if (requests > maxValue) {
         maxValue = requests;
       }
       dataByCountryCode.set(alpha_3, { alpha_3, requests, name });
     }
     return { maxValue, dataByCountryCode };
-  }, [data]);
-
-  useEffect(() => {
-    const fetchData = async (initial?: boolean) => {
-      if (!teamCtx.selectedTeam) return;
-
-      if (initial) {
-        setLoading(true);
-      }
-
-      try {
-        const res = await fetch(
-          `/api/statistics/map-data?timeRange=${timeRange}${
-            licenseId ? `&licenseId=${licenseId}` : ''
-          }`,
-        );
-        const data = (await res.json()) as IStatisticsMapDataGetResponse;
-
-        if ('message' in data) {
-          toast.error(data.message);
-          return;
-        }
-
-        if (res.ok) {
-          setData(data.data);
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData(true);
-
-    // Fetch data every 60 seconds
-    const intervalId = setInterval(fetchData, 60000);
-
-    return () => clearInterval(intervalId);
-  }, [t, timeRange, licenseId, teamCtx.selectedTeam]);
+  }, [response?.data]);
 
   useEffect(() => {
     if (!svgRef.current) {
@@ -208,7 +198,7 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
             )}
           </div>
         </div>
-        {loading && (
+        {isLoading && (
           <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-background bg-opacity-50">
             <LoadingSpinner size={42} />
           </div>

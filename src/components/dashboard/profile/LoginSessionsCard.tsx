@@ -1,7 +1,6 @@
 'use client';
 import { ISessionsSignOutResponse } from '@/app/api/(dashboard)/sessions/[slug]/route';
 import {
-  ISessionsGetResponse,
   ISessionsGetSuccessResponse,
   ISessionsSignOutAllResponse,
 } from '@/app/api/(dashboard)/sessions/route';
@@ -22,74 +21,43 @@ import { LogOut } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
+
+const fetchSessions = async (url: string) => {
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
+};
 
 export default function SessionsTable() {
   const t = useTranslations();
-
   const [pendingSingleId, setPendingSingleId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [sessions, setSessions] = useState<
-    ISessionsGetSuccessResponse['sessions']
-  >([]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/sessions');
-        const data = (await res.json()) as ISessionsGetResponse;
+  const { data, error, mutate } = useSWR<ISessionsGetSuccessResponse>(
+    '/api/sessions',
+    fetchSessions,
+  );
 
-        if ('message' in data) {
-          toast.error(data.message);
-          return;
-        }
-
-        if (res.ok) {
-          setSessions(data.sessions);
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [t]);
-
-  const hasOtherThanCurrentSession = sessions.some(
+  const hasOtherThanCurrentSession = data?.sessions.some(
     (session) => !session.current,
   );
 
   const handleSignOutSingleSession = async (id: string) => {
-    const response = await fetch(`/api/sessions/${id}`, {
-      method: 'DELETE',
-    });
-
-    const data = (await response.json()) as ISessionsSignOutResponse;
-
-    return data;
-  };
-
-  const handleSignOutAllSessions = async () => {
-    const response = await fetch('/api/sessions', {
-      method: 'DELETE',
-    });
-
-    const data = (await response.json()) as ISessionsSignOutAllResponse;
-
-    return data;
-  };
-
-  const onSessionLogoutSubmit = async (id: string) => {
     setPendingSingleId(id);
     try {
-      const res = await handleSignOutSingleSession(id);
+      const res = await fetch(`/api/sessions/${id}`, {
+        method: 'DELETE',
+      });
+      const data = (await res.json()) as ISessionsSignOutResponse;
 
-      if ('message' in res) {
-        toast.error(res.message);
+      if ('message' in data) {
+        toast.error(data.message);
         return;
       }
 
-      setSessions((prev) => prev.filter((session) => session.id !== id));
+      await mutate();
       toast.success(t('dashboard.profile.logged_out_session'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
@@ -98,16 +66,20 @@ export default function SessionsTable() {
     }
   };
 
-  const onSessionLogoutAllSubmit = async () => {
+  const handleSignOutAllSessions = async () => {
     setSubmitting(true);
     try {
-      const res = await handleSignOutAllSessions();
-      if ('message' in res) {
-        toast.error(res.message);
+      const res = await fetch('/api/sessions', {
+        method: 'DELETE',
+      });
+      const data = (await res.json()) as ISessionsSignOutAllResponse;
+
+      if ('message' in data) {
+        toast.error(data.message);
         return;
       }
 
-      setSessions((prev) => prev.filter((session) => session.current));
+      await mutate();
       toast.success(t('dashboard.profile.logged_out_all_sessions'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
@@ -115,6 +87,12 @@ export default function SessionsTable() {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
   return (
     <Card>
@@ -137,11 +115,11 @@ export default function SessionsTable() {
               </TableHead>
             </TableRow>
           </TableHeader>
-          {loading ? (
+          {!data ? (
             <TableSkeleton columns={4} rows={4} />
           ) : (
             <TableBody>
-              {sessions.map((session) => (
+              {data.sessions.map((session) => (
                 <TableRow key={session.id}>
                   <TableCell className="truncate">
                     {`${session.browser ?? 'N/A'} - ${session.os ?? ''}`.trim()}
@@ -168,7 +146,7 @@ export default function SessionsTable() {
                         pending={pendingSingleId === session.id}
                         size="sm"
                         variant="ghost"
-                        onClick={() => onSessionLogoutSubmit(session.id)}
+                        onClick={() => handleSignOutSingleSession(session.id)}
                       >
                         <LogOut size={20} />
                       </LoadingButton>
@@ -185,7 +163,7 @@ export default function SessionsTable() {
           pending={submitting}
           size="sm"
           variant="secondary"
-          onClick={onSessionLogoutAllSubmit}
+          onClick={handleSignOutAllSessions}
         >
           <LogOut className="mr-2 h-4 w-4" />
           {t('dashboard.profile.logout_all_sessions')}

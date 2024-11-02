@@ -25,16 +25,16 @@ import {
 import { MemberModalContext } from '@/providers/MemberModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export default function InviteMemberModal() {
   const t = useTranslations();
   const ctx = useContext(MemberModalContext);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const form = useForm<InviteMemberSchema>({
     resolver: zodResolver(inviteMemberSchema(t)),
@@ -74,7 +74,7 @@ export default function InviteMemberModal() {
         return toast.error(res.message);
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/teams');
       handleOpenChange(false);
       toast.success(t('dashboard.members.member_invited'));
     } catch (error: any) {

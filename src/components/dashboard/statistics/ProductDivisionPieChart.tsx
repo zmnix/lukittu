@@ -1,5 +1,8 @@
 'use client';
-import { IStatisticsProductDivisionGetResponse } from '@/app/api/(dashboard)/statistics/product-division/route';
+import {
+  IStatisticsProductDivisionGetResponse,
+  IStatisticsProductDivisionGetSuccessResponse,
+} from '@/app/api/(dashboard)/statistics/product-division/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Card,
@@ -19,9 +22,10 @@ import {
 import { TeamContext } from '@/providers/TeamProvider';
 import { Frown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { Label, Pie, PieChart } from 'recharts';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 
 interface RenderLabelProps {
   cx: number;
@@ -59,72 +63,58 @@ const renderCustomizedLabel = ({
   );
 };
 
+const fetchProductDivision = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IStatisticsProductDivisionGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export function ProductDivisionPieChart() {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
 
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<
-    {
-      id: string;
-      name: string;
-      licenses: number;
-      fill: string;
-    }[]
-  >([]);
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<IStatisticsProductDivisionGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/statistics/product-division', teamCtx.selectedTeam]
+      : null,
+    ([url]) => fetchProductDivision(url),
+  );
 
   useEffect(() => {
-    const fetchData = async (initial?: boolean) => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    }
+  }, [error, t]);
 
-      if (initial) {
-        setLoading(true);
-      }
+  const chartData =
+    response?.data.map(({ name, licenses, id }) => ({
+      id,
+      name,
+      licenses,
+      fill: `var(--color-${id})`,
+    })) ?? [];
 
-      try {
-        const res = await fetch('/api/statistics/product-division');
-        const data =
-          (await res.json()) as IStatisticsProductDivisionGetResponse;
+  const chartConfig = chartData.reduce<ChartConfig>(
+    (acc, { name, id }, index) => {
+      acc[id] = {
+        label: name,
+        color: `hsl(var(--chart-${index + 1}))`,
+      };
+      return acc;
+    },
+    {},
+  );
 
-        if ('message' in data) {
-          toast.error(data.message);
-          return;
-        }
-
-        if (res.ok) {
-          setData(
-            data.data.map(({ name, licenses, id }) => ({
-              id,
-              name,
-              licenses,
-              fill: `var(--color-${id})`,
-            })),
-          );
-        }
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.error_occurred'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData(true);
-
-    // Fetch data every 60 seconds
-    const intervalId = setInterval(fetchData, 60000);
-
-    return () => clearInterval(intervalId);
-  }, [t, teamCtx.selectedTeam]);
-
-  const chartConfig = data.reduce<ChartConfig>((acc, { name, id }, index) => {
-    acc[id] = {
-      label: name,
-      color: `hsl(var(--chart-${index + 1}))`,
-    };
-    return acc;
-  }, {});
-
-  const total = data.reduce((acc, { licenses }) => acc + licenses, 0);
+  const total = chartData.reduce((acc, { licenses }) => acc + licenses, 0);
 
   return (
     <Card className="flex h-full flex-col">
@@ -139,7 +129,7 @@ export function ProductDivisionPieChart() {
         </div>
       </CardHeader>
       <CardContent className="relative flex-1 pb-0">
-        {loading && (
+        {isLoading && (
           <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-lg bg-background">
             <LoadingSpinner className="h-10 w-10" />
           </div>
@@ -164,7 +154,7 @@ export function ProductDivisionPieChart() {
                 cursor={false}
               />
               <Pie
-                data={data}
+                data={chartData}
                 dataKey="licenses"
                 innerRadius={70}
                 label={renderCustomizedLabel}

@@ -36,60 +36,59 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import AuditLogMapPreview from './AuditLogMapPreview';
 import AuditLogRequestModal from './AuditLogRequestModal';
 
+const fetchAuditLogs = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IAuditLogsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export default function AuditLogTable() {
-  const t = useTranslations();
   const teamCtx = useContext(TeamContext);
+  const t = useTranslations();
 
   const [auditLogModalOpen, setAuditLogModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<
     IAuditLogsGetSuccessResponse['auditLogs'][number] | null
   >(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [totalAuditLogs, setTotalAuditLogs] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'createdAt' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
-  const [pageSize, setPageSize] = useState(25);
-  const [loading, setLoading] = useState(false);
-  const [auditLogs, setAuditLogs] = useState<
-    IAuditLogsGetSuccessResponse['auditLogs']
-  >([]);
-  const [page, setPage] = useState(1);
+
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+  });
+
+  const { data, error, isLoading } = useSWR<IAuditLogsGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/audit-logs', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, params]) => fetchAuditLogs(`${url}?${params}`),
+  );
 
   useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-      setLoading(true);
-
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: pageSize.toString(),
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-        });
-
-        const response = await fetch(`/api/audit-logs?${searchParams}`);
-        const data = (await response.json()) as IAuditLogsGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setAuditLogs(data.auditLogs);
-        setTotalAuditLogs(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [sortColumn, sortDirection, page, t, pageSize, teamCtx.selectedTeam]);
+  const auditLogs = data?.auditLogs ?? [];
+  const totalAuditLogs = data?.totalResults ?? 1;
 
   const toggleRow = (id: string) => {
     const newExpandedRows = new Set(expandedRows);
@@ -135,7 +134,7 @@ export default function AuditLogTable() {
                 }
               `}</style>
               <div className="flex flex-col md:hidden">
-                {loading
+                {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
@@ -333,7 +332,7 @@ export default function AuditLogTable() {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={6} rows={7} />
                 ) : (
                   <TableBody>

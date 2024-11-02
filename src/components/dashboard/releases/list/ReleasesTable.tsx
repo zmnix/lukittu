@@ -28,11 +28,23 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { ReleasesActionDropdown } from '../ReleasesActionDropdown';
 
 interface ReleasesTableProps {
   productId: string;
 }
+
+const fetchReleases = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IProductsReleasesGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export function ReleasesTable({ productId }: ReleasesTableProps) {
   const locale = useLocale();
@@ -41,51 +53,40 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
   const teamCtx = useContext(TeamContext);
   const router = useRouter();
 
-  const [loading, setLoading] = useState(false);
-  const [releases, setReleases] = useState<
-    IProductsReleasesGetSuccessResponse['releases']
-  >([]);
   const [sortColumn, setSortColumn] = useState<'createdAt' | 'version'>(
     'createdAt',
   );
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [totalReleases, setTotalReleases] = useState(1);
   const [page, setPage] = useState(1);
 
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: '10',
+    sortColumn,
+    sortDirection,
+    productId,
+  });
+
+  const { data, error, isLoading } =
+    useSWR<IProductsReleasesGetSuccessResponse>(
+      teamCtx.selectedTeam
+        ? [
+            '/api/products/releases',
+            teamCtx.selectedTeam,
+            searchParams.toString(),
+          ]
+        : null,
+      ([url, _, params]) => fetchReleases(`${url}?${params}`),
+    );
+
   useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-      setLoading(true);
-
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-          sortColumn,
-          sortDirection,
-          productId,
-        });
-
-        const response = await fetch(
-          `/api/products/releases?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as IProductsReleasesGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setReleases(data.releases);
-        setTotalReleases(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [page, t, sortColumn, sortDirection, teamCtx.selectedTeam, productId]);
+  const releases = data?.releases ?? [];
+  const totalReleases = data?.totalResults ?? 1;
 
   return (
     <ReleaseModalProvider>
@@ -156,7 +157,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={5} rows={6} />
                 ) : (
                   <TableBody>

@@ -1,8 +1,5 @@
 'use client';
-import {
-  ILogsGetResponse,
-  ILogsGetSuccessResponse,
-} from '@/app/api/(dashboard)/logs/route';
+import { ILogsGetSuccessResponse } from '@/app/api/(dashboard)/logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { CountryFlag } from '@/components/shared/misc/CountryFlag';
@@ -21,8 +18,9 @@ import { TeamContext } from '@/providers/TeamProvider';
 import { ChevronLeft, Copy, ExternalLink, Logs } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import useSWRInfinite from 'swr/infinite';
 import {
   LogViewerLeftSkeleton,
   LogViewerRightSkeleton,
@@ -32,76 +30,57 @@ export default function LogViewer() {
   const t = useTranslations();
   const locale = useLocale();
   const teamCtx = useContext(TeamContext);
+  const isFirstLoad = useRef(true);
 
-  const [hasMore, setHasMore] = useState(true);
   const [selectedLog, setSelectedLog] = useState<
     ILogsGetSuccessResponse['logs'][number] | null
   >(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [totalLogs, setTotalLogs] = useState(1);
-  const [logs, setLogs] = useState<ILogsGetSuccessResponse['logs'][]>([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [fetchingMore, setFetchingMore] = useState(false);
 
-  useEffect(() => {
-    if (teamCtx.selectedTeam) {
-      setSelectedLog(null);
-      setLogs([]);
-      setPage(1);
-      setLoading(true);
-    }
-  }, [teamCtx.selectedTeam]);
+  const getKey = (
+    pageIndex: number,
+    previousPageData: ILogsGetSuccessResponse | null,
+  ) => {
+    if (previousPageData && !previousPageData.logs.length) return null;
+    if (!teamCtx.selectedTeam) return null;
 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      if (!teamCtx.selectedTeam) return;
+    return `/api/logs?page=${pageIndex + 1}&pageSize=10&team=${teamCtx.selectedTeam}`;
+  };
 
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: '10',
-        });
-
-        const response = await fetch(`/api/logs?${searchParams.toString()}`);
-
-        const data = (await response.json()) as ILogsGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setTotalLogs(data.totalResults);
-        setLogs((prevLogs) => {
-          const newLogs = [...prevLogs.flat(), ...data.logs];
-          const uniqueLogs = Array.from(
-            new Map(newLogs.map((log) => [log.id, log])).values(),
-          );
-
-          setHasMore(data.totalResults > uniqueLogs.length);
-
-          const groupedLogs = uniqueLogs.reduce(
-            (acc, log) => {
-              const date = new Date(log.createdAt).toDateString();
-              acc[date] = acc[date] ?? [];
-              acc[date].push(log);
-              return acc;
-            },
-            {} as Record<string, ILogsGetSuccessResponse['logs']>,
-          );
-
-          return Object.values(groupedLogs);
-        });
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-        setFetchingMore(false);
+  const { data, error, size, setSize, isLoading } =
+    useSWRInfinite<ILogsGetSuccessResponse>(getKey, async (url) => {
+      const response = await fetch(url);
+      const data = await response.json();
+      if ('message' in data) {
+        throw new Error(data.message);
       }
-    };
+      return data;
+    });
 
-    fetchLogs();
-  }, [page, teamCtx.selectedTeam, t]);
+  const logs = useMemo(() => {
+    if (!data) return [];
+
+    const flattenedLogs = data.flatMap((page) => page.logs);
+    const uniqueLogs = Array.from(
+      new Map(flattenedLogs.map((log) => [log.id, log])).values(),
+    );
+
+    return Object.values(
+      uniqueLogs.reduce(
+        (acc, log) => {
+          const date = new Date(log.createdAt).toDateString();
+          acc[date] = acc[date] ?? [];
+          acc[date].push(log);
+          return acc;
+        },
+        {} as Record<string, ILogsGetSuccessResponse['logs']>,
+      ),
+    );
+  }, [data]);
+
+  const isLoadingMore =
+    isLoading || (size > 0 && data && typeof data[size - 1] === 'undefined');
+  const hasMore = data ? data[0]?.totalResults > logs.flat().length : false;
 
   useEffect(() => {
     if (!selectedLog && logs.length > 0) {
@@ -114,18 +93,36 @@ export default function LogViewer() {
     setShowDetails(true);
   };
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
+
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
+    setSelectedLog(null);
+    setShowDetails(false);
+    setSize(1);
+  }, [teamCtx.selectedTeam, setSize]);
+
   return (
     <Card className="flex flex-col md:flex-row">
-      {totalLogs && teamCtx.selectedTeam ? (
+      {(data?.[0]?.totalResults || 0) > 0 && teamCtx.selectedTeam ? (
         <>
           <div
-            className={`w-full border-r p-2 md:w-1/2 ${showDetails ? 'hidden md:block' : 'block'}`}
+            className={`w-full border-r p-2 md:w-1/2 ${
+              showDetails ? 'hidden md:block' : 'block'
+            }`}
           >
             <div className="p-4">
               <h2 className="mb-4 mt-1 text-xl font-bold tracking-tight">
                 {t('dashboard.navigation.logs')}
               </h2>
-              {loading ? (
+              {isLoading && size === 1 ? (
                 <LogViewerLeftSkeleton />
               ) : (
                 logs.map((log, index) => (
@@ -180,21 +177,20 @@ export default function LogViewer() {
               )}
               <LoadingButton
                 disabled={!hasMore || !teamCtx.selectedTeam}
-                pending={fetchingMore || loading}
+                pending={isLoadingMore}
                 variant="link"
-                onClick={() => {
-                  setFetchingMore(true);
-                  setPage((prev) => prev + 1);
-                }}
+                onClick={() => setSize(size + 1)}
               >
                 {t('general.load_more')}
               </LoadingButton>
             </div>
           </div>
           <div
-            className={`w-full p-2 md:w-1/2 ${showDetails ? 'block' : 'hidden md:block'}`}
+            className={`w-full p-2 md:w-1/2 ${
+              showDetails ? 'block' : 'hidden md:block'
+            }`}
           >
-            {loading ? (
+            {isLoading && size === 1 ? (
               <LogViewerRightSkeleton />
             ) : selectedLog ? (
               <div className="p-4">
@@ -280,7 +276,9 @@ export default function LogViewer() {
                     </p>
                     <p className="text-sm">
                       {selectedLog.browser || selectedLog.os
-                        ? `${selectedLog.browser ?? ''} - ${selectedLog.os ?? ''}`
+                        ? `${selectedLog.browser ?? ''} - ${
+                            selectedLog.os ?? ''
+                          }`
                         : t('general.unknown')}
                     </p>
                   </div>

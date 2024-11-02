@@ -1,4 +1,3 @@
-'use client';
 import { ICustomersGetResponse } from '@/app/api/(dashboard)/customers/route';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
