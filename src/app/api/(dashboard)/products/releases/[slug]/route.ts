@@ -173,6 +173,15 @@ export async function PUT(
       );
     }
 
+    if (existingRelease.latest && status !== 'PUBLISHED') {
+      return NextResponse.json(
+        {
+          message: t('validation.latest_release_must_be_published'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
     if (
       team.releases.find(
         (release) =>
