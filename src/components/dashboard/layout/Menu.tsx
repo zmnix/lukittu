@@ -38,7 +38,7 @@ import {
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Messages } from '../../../../global';
 import { CollapseMenuButton } from './CollapseMenuButton';
 
@@ -74,6 +74,13 @@ interface MenuProps {
   onClose?: () => void;
 }
 
+interface FlatMenuItem {
+  href: string;
+  translation: string;
+  isSubmenu?: boolean;
+  parentTranslation?: string;
+}
+
 export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const t = useTranslations();
   const pathname = usePathname();
@@ -96,6 +103,88 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
       {} as Record<keyof Messages['dashboard']['navigation'], boolean>,
     ),
   );
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  const filteredMenuList = menuList
+    .map((group) => ({
+      ...group,
+      menus: group.menus.filter((menu) => {
+        const menuMatches = t(`dashboard.navigation.${menu.translation}`)
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+        const subMenuMatches =
+          menu.submenus?.some((submenu) =>
+            t(`dashboard.navigation.${submenu.translation}`)
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()),
+          ) ?? false;
+
+        return menuMatches || subMenuMatches;
+      }),
+    }))
+    .filter((group) => group.menus.length > 0);
+
+  // Create flattened list including submenus
+  const flattenedMenuItems: FlatMenuItem[] = filteredMenuList.flatMap(
+    ({ menus }) =>
+      menus.flatMap((menu) => [
+        { href: menu.href, translation: menu.translation },
+        ...(menu.submenus?.map((submenu) => ({
+          href: submenu.href,
+          translation: submenu.translation,
+          isSubmenu: true,
+          parentTranslation: menu.translation,
+        })) ?? []),
+      ]),
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Open dialog with Ctrl+K
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchDialogOpen(true);
+      }
+
+      if (searchDialogOpen) {
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            setSelectedIndex((prev) =>
+              Math.min(prev + 1, flattenedMenuItems.length - 1),
+            );
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            setSelectedIndex((prev) => Math.max(prev - 1, -1));
+            break;
+          case 'Enter':
+            e.preventDefault();
+            if (selectedIndex >= 0) {
+              const selectedItem = flattenedMenuItems[selectedIndex];
+              setSearchDialogOpen(false);
+              setSearchTerm('');
+              onClose?.();
+              window.location.href = selectedItem.href;
+            }
+            break;
+          case 'Escape':
+            setSearchDialogOpen(false);
+            setSelectedIndex(-1);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchDialogOpen, flattenedMenuItems, selectedIndex, onClose]);
+
+  // Reset selected index when search term changes
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [searchTerm]);
 
   const handleSearch = (searchValue: string) => {
     setSearchTerm(searchValue);
@@ -143,26 +232,6 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
     setSearchTerm('');
   };
 
-  const filteredMenuList = menuList
-    .map((group) => ({
-      ...group,
-      menus: group.menus.filter((menu) => {
-        const menuMatches = t(`dashboard.navigation.${menu.translation}`)
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-
-        const subMenuMatches =
-          menu.submenus?.some((submenu) =>
-            t(`dashboard.navigation.${submenu.translation}`)
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase()),
-          ) ?? false;
-
-        return menuMatches || subMenuMatches;
-      }),
-    }))
-    .filter((group) => group.menus.length > 0);
-
   return (
     <ScrollArea className="h-full [&>div>div[style]]:!block [&>div>div[style]]:h-full">
       <nav className={cn('flex h-full w-full flex-col', topSpacing && 'pt-8')}>
@@ -178,80 +247,87 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
               />
             </div>
           ) : (
-            <>
-              <TooltipProvider>
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      className="w-full"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setSearchDialogOpen(true)}
-                    >
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>Search menu</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <ResponsiveDialog
-                open={searchDialogOpen}
-                onOpenChange={setSearchDialogOpen}
-              >
-                <ResponsiveDialogTitle>
-                  <div className="sr-only">{t('general.search')}</div>
-                </ResponsiveDialogTitle>
-                <ResponsiveDialogContent className="sm:max-w-[425px]">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      className="w-full border-none bg-muted/50 pl-8 !shadow-none outline-none ring-0 hover:bg-muted/70 focus:bg-muted/70 focus-visible:ring-0 focus-visible:ring-transparent"
-                      placeholder="Search menu..."
-                      value={searchTerm}
-                      autoFocus
-                      onChange={(e) => handleSearch(e.target.value)}
-                    />
-                  </div>
-                  {searchTerm && filteredMenuList.length === 0 ? (
-                    <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
-                      <Frown className="h-4 w-4" />
-                      {t('general.no_results')}
-                    </div>
-                  ) : (
-                    <div className="max-h-[300px] overflow-y-auto">
-                      {filteredMenuList.map(({ menus }) =>
-                        menus.map((menu) => (
-                          <Button
-                            key={menu.translation}
-                            className="w-full justify-start"
-                            variant="ghost"
-                            asChild
-                            onClick={() => {
-                              setSearchDialogOpen(false);
-                              setSearchTerm('');
-                              onClose?.();
-                            }}
-                          >
-                            <Link href={menu.href}>
-                              <HighlightText
-                                highlight={searchTerm}
-                                text={t(
-                                  `dashboard.navigation.${menu.translation}`,
-                                )}
-                              />
-                            </Link>
-                          </Button>
-                        )),
-                      )}
-                    </div>
-                  )}
-                </ResponsiveDialogContent>
-              </ResponsiveDialog>
-            </>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="w-full"
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setSearchDialogOpen(true)}
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Search menu</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
+          <ResponsiveDialog
+            open={searchDialogOpen}
+            onOpenChange={setSearchDialogOpen}
+          >
+            <ResponsiveDialogTitle>
+              <div className="sr-only">{t('general.search')}</div>
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogContent className="sm:max-w-[425px]">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="w-full border-none bg-muted/50 pl-8 !shadow-none outline-none ring-0 hover:bg-muted/70 focus:bg-muted/70 focus-visible:ring-0 focus-visible:ring-transparent"
+                  placeholder="Search menu..."
+                  value={searchTerm}
+                  autoFocus
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+              </div>
+              {searchTerm && flattenedMenuItems.length === 0 ? (
+                <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+                  <Frown className="h-4 w-4" />
+                  {t('general.no_results')}
+                </div>
+              ) : (
+                <div className="max-h-[300px] overflow-y-auto">
+                  {flattenedMenuItems.map((item, index) => (
+                    <Button
+                      key={`${item.translation}-${index}`}
+                      className={cn(
+                        'w-full justify-start',
+                        index === selectedIndex && 'bg-accent',
+                        item.isSubmenu && 'pl-8',
+                      )}
+                      variant="ghost"
+                      asChild
+                      onClick={() => {
+                        setSearchDialogOpen(false);
+                        setSearchTerm('');
+                        onClose?.();
+                      }}
+                    >
+                      <Link href={item.href}>
+                        {item.isSubmenu && (
+                          <span className="mr-2 text-sm text-muted-foreground">
+                            {t(
+                              `dashboard.navigation.${item.parentTranslation}` as any,
+                            )}{' '}
+                            →
+                          </span>
+                        )}
+                        <HighlightText
+                          highlight={searchTerm}
+                          text={t(
+                            `dashboard.navigation.${item.translation}` as any,
+                          )}
+                        />
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </ResponsiveDialogContent>
+          </ResponsiveDialog>
         </div>
         {isOpen && searchTerm && filteredMenuList.length === 0 && (
           <div className="flex w-full flex-col items-center justify-center gap-1 py-4 text-sm text-muted-foreground">
