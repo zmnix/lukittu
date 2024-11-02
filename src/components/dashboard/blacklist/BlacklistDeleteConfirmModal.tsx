@@ -13,12 +13,14 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export function DeleteBlacklistConfirmModal() {
   const t = useTranslations();
   const ctx = useContext(BlacklistModalContext);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { mutate } = useSWRConfig();
   const pathname = usePathname();
 
   const blacklist = ctx.blacklistToDelete;
@@ -53,7 +55,7 @@ export function DeleteBlacklistConfirmModal() {
         }
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/blacklist');
       ctx.setBlacklistToDelete(null);
       handleOpenChange(false);
     } catch (error: any) {

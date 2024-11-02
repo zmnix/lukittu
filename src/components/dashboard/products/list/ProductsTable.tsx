@@ -30,7 +30,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { ProductsActionDropdown } from '../ProductsActionDropdown';
+
+const fetchProducts = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IProductsGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export function ProductsTable() {
   const locale = useLocale();
@@ -40,12 +52,6 @@ export function ProductsTable() {
   const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<
-    IProductsGetSuccessResponse['products']
-  >([]);
-  const [hasProducts, setHasProducts] = useState(true);
-  const [totalProducts, setTotalProducts] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -57,48 +63,30 @@ export function ProductsTable() {
     null,
   );
 
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(search && { search }),
+  });
+
+  const { data, error, isLoading } = useSWR<IProductsGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/products', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchProducts(`${url}?${params}`),
+  );
+
   useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: pageSize.toString(),
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(search && { search }),
-        });
-
-        const response = await fetch(
-          `/api/products?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as IProductsGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setProducts(data.products);
-        setHasProducts(data.hasResults);
-        setTotalProducts(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [
-    page,
-    pageSize,
-    sortColumn,
-    sortDirection,
-    search,
-    t,
-    teamCtx.selectedTeam,
-  ]);
+  const products = data?.products ?? [];
+  const totalProducts = data?.totalResults ?? 0;
+  const hasProducts = data?.hasResults ?? true;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -158,7 +146,7 @@ export function ProductsTable() {
                 />
               </div>
               <div className="flex flex-col md:hidden">
-                {loading
+                {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
@@ -273,7 +261,7 @@ export function ProductsTable() {
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={4} rows={6} />
                 ) : (
                   <TableBody>

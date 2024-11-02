@@ -29,7 +29,19 @@ import { ArrowDownUp, Ban, Clock, Filter, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { BlacklistActionDropdown } from './BlacklistActionDropdown';
+
+const fetchBlacklists = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as IBlacklistGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export function BlacklistTable() {
   const locale = useLocale();
@@ -38,12 +50,6 @@ export function BlacklistTable() {
   const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [blacklist, setBlacklist] = useState<
-    IBlacklistGetSuccessResponse['blacklist']
-  >([]);
-  const [hasBlacklist, setHasBlacklist] = useState(true);
-  const [totalBlacklist, setTotalBlacklist] = useState(1);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -55,48 +61,20 @@ export function BlacklistTable() {
     null,
   );
 
-  useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(search && { search }),
+  });
 
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: pageSize.toString(),
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(search && { search }),
-        });
-
-        const response = await fetch(
-          `/api/blacklist?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as IBlacklistGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setBlacklist(data.blacklist);
-        setHasBlacklist(data.hasResults);
-        setTotalBlacklist(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [
-    page,
-    pageSize,
-    sortColumn,
-    sortDirection,
-    search,
-    t,
-    teamCtx.selectedTeam,
-  ]);
+  const { data, error, isLoading } = useSWR<IBlacklistGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/blacklist', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchBlacklists(`${url}?${params}`),
+  );
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -107,6 +85,16 @@ export function BlacklistTable() {
       clearTimeout(timeout);
     };
   }, [debounceSearch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
+
+  const blacklist = data?.blacklist ?? [];
+  const hasBlacklist = data?.hasResults ?? false;
+  const totalBlacklist = data?.totalResults ?? 1;
 
   return (
     <BlacklistModalProvider>
@@ -156,7 +144,7 @@ export function BlacklistTable() {
                 />
               </div>
               <div className="flex flex-col md:hidden">
-                {loading
+                {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
@@ -257,7 +245,7 @@ export function BlacklistTable() {
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={6} rows={6} />
                 ) : (
                   <TableBody>

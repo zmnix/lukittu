@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export function DeleteProductConfirmModal() {
   const t = useTranslations();
@@ -22,6 +23,7 @@ export function DeleteProductConfirmModal() {
   const [loading, setLoading] = useState(false);
   const [productNameConfirmation, setProductNameConfirmation] = useState('');
   const router = useRouter();
+  const { mutate } = useSWRConfig();
   const pathname = usePathname();
 
   const product = ctx.productToDelete;
@@ -63,7 +65,7 @@ export function DeleteProductConfirmModal() {
         }
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/products');
       ctx.setProductToDelete(null);
       handleOpenChange(false);
     } catch (error: any) {

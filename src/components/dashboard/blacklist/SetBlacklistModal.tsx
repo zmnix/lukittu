@@ -35,16 +35,16 @@ import { BlacklistModalContext } from '@/providers/BlacklistModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export default function SetBlacklistModal() {
   const t = useTranslations();
   const ctx = useContext(BlacklistModalContext);
+  const { mutate } = useSWRConfig();
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const form = useForm<SetBlacklistSchema>({
     resolver: zodResolver(setBlacklistSchema(t)),
@@ -128,7 +128,7 @@ export default function SetBlacklistModal() {
         return toast.error(res.message);
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/blacklist');
       handleOpenChange(false);
       toast.success(
         ctx.blacklistToEdit

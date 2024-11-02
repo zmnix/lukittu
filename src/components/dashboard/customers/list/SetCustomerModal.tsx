@@ -28,16 +28,16 @@ import { CustomerModalContext } from '@/providers/CustomerModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export default function SetCustomerModal() {
   const t = useTranslations();
   const ctx = useContext(CustomerModalContext);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const form = useForm<SetCustomerSchema>({
     resolver: zodResolver(setCustomerSchema(t)),
@@ -139,7 +139,7 @@ export default function SetCustomerModal() {
         return toast.error(res.message);
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/customers');
       handleOpenChange(false);
       toast.success(
         ctx.customerToEdit

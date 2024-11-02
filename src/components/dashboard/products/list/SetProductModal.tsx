@@ -27,16 +27,16 @@ import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export default function SetProductModal() {
   const t = useTranslations();
   const ctx = useContext(ProductModalContext);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const form = useForm<SetProductSchema>({
     resolver: zodResolver(setProductSchema(t)),
@@ -118,7 +118,7 @@ export default function SetProductModal() {
         return toast.error(res.message);
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/products');
       handleOpenChange(false);
       toast.success(
         ctx.productToEdit

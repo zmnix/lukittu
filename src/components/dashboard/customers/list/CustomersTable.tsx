@@ -30,7 +30,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 import { CustomersActionDropdown } from '../CustomersActionDropdown';
+
+const fetchCustomers = async (url: string) => {
+  const response = await fetch(url);
+  const data = (await response.json()) as ICustomersGetResponse;
+
+  if ('message' in data) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
 
 export function CustomersTable() {
   const locale = useLocale();
@@ -40,12 +52,6 @@ export function CustomersTable() {
   const teamCtx = useContext(TeamContext);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [customers, setCustomers] = useState<
-    ICustomersGetSuccessResponse['customers']
-  >([]);
-  const [totalCustomers, setTotalCustomers] = useState(1);
-  const [hasCustomers, setHasCustomers] = useState(true);
   const [debounceSearch, setDebounceSearch] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -57,48 +63,30 @@ export function CustomersTable() {
     null,
   );
 
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(sortColumn && { sortColumn }),
+    ...(sortDirection && { sortDirection }),
+    ...(search && { search }),
+  });
+
+  const { data, error, isLoading } = useSWR<ICustomersGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/customers', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchCustomers(`${url}?${params}`),
+  );
+
   useEffect(() => {
-    (async () => {
-      if (!teamCtx.selectedTeam) return;
+    if (error) {
+      toast.error(error.message ?? t('general.server_error'));
+    }
+  }, [error, t]);
 
-      setLoading(true);
-      try {
-        const searchParams = new URLSearchParams({
-          page: page.toString(),
-          pageSize: pageSize.toString(),
-          ...(sortColumn && { sortColumn }),
-          ...(sortDirection && { sortDirection }),
-          ...(search && { search }),
-        });
-
-        const response = await fetch(
-          `/api/customers?${searchParams.toString()}`,
-        );
-
-        const data = (await response.json()) as ICustomersGetResponse;
-
-        if ('message' in data) {
-          return toast.error(data.message);
-        }
-
-        setCustomers(data.customers);
-        setHasCustomers(data.hasResults);
-        setTotalCustomers(data.totalResults);
-      } catch (error: any) {
-        toast.error(error.message ?? t('general.server_error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [
-    page,
-    pageSize,
-    sortColumn,
-    sortDirection,
-    search,
-    t,
-    teamCtx.selectedTeam,
-  ]);
+  const customers = data?.customers ?? [];
+  const totalCustomers = data?.totalResults ?? 0;
+  const hasCustomers = data?.hasResults ?? true;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -158,7 +146,7 @@ export function CustomersTable() {
                 />
               </div>
               <div className="flex flex-col md:hidden">
-                {loading
+                {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
@@ -277,7 +265,7 @@ export function CustomersTable() {
                     />
                   </TableRow>
                 </TableHeader>
-                {loading ? (
+                {isLoading ? (
                   <TableSkeleton columns={5} rows={6} />
                 ) : (
                   <TableBody>
@@ -290,7 +278,7 @@ export function CustomersTable() {
                         }
                       >
                         <TableCell className="truncate">
-                          {customer.email ?? 'N/A'}
+                          {customer.email}
                         </TableCell>
                         <TableCell className="truncate">
                           {customer.fullName ?? 'N/A'}

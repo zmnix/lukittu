@@ -13,12 +13,14 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 import { toast } from 'sonner';
+import { useSWRConfig } from 'swr';
 
 export function DeleteCustomerConfirmModal() {
   const t = useTranslations();
   const ctx = useContext(CustomerModalContext);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { mutate } = useSWRConfig();
   const pathname = usePathname();
 
   const customer = ctx.customerToDelete;
@@ -53,7 +55,7 @@ export function DeleteCustomerConfirmModal() {
         }
       }
 
-      router.refresh();
+      mutate((key) => Array.isArray(key) && key[0] === '/api/customers');
       ctx.setCustomerToDelete(null);
       handleOpenChange(false);
     } catch (error: any) {
