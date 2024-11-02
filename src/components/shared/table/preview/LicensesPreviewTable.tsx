@@ -89,7 +89,7 @@ export default function LicensesPreviewTable({
           <CardTitle className="flex w-full items-center text-xl font-bold">
             {t('dashboard.navigation.licenses')}
             <div className="ml-auto flex gap-2">
-              <AddEntityButton entityType="license" />
+              <AddEntityButton entityType="license" variant="outline" />
             </div>
           </CardTitle>
         </CardHeader>

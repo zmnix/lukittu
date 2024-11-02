@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +13,7 @@ import { MemberModalContext } from '@/providers/MemberModalProvider';
 import { ProductModalContext } from '@/providers/ProductModalProvider';
 import { ReleaseModalContext } from '@/providers/ReleasesModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
+import { VariantProps } from 'class-variance-authority';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext } from 'react';
@@ -27,12 +28,14 @@ interface AddEntityButtonProps {
     | 'release';
   displayText?: boolean;
   isTeamOwner?: boolean;
+  variant?: VariantProps<typeof buttonVariants>['variant'];
 }
 
 export default function AddEntityButton({
   entityType,
   displayText = false,
   isTeamOwner = true,
+  variant = 'default',
 }: AddEntityButtonProps) {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
@@ -88,7 +91,7 @@ export default function AddEntityButton({
       className="ml-auto flex gap-2"
       disabled={isDisabled}
       size="sm"
-      variant="default"
+      variant={variant}
       onClick={openModal}
     >
       <Plus className="h-4 w-4" />

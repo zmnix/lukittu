@@ -86,7 +86,7 @@ export default function CustomersPreviewTable({
           <CardTitle className="flex w-full items-center text-xl font-bold">
             {t('dashboard.navigation.customers')}
             <div className="ml-auto flex gap-2">
-              <AddEntityButton entityType="customer" />
+              <AddEntityButton entityType="customer" variant="outline" />
             </div>
           </CardTitle>
         </CardHeader>

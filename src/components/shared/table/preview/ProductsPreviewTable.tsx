@@ -86,7 +86,7 @@ export default function ProductsPreviewTable({
           <CardTitle className="flex w-full items-center text-xl font-bold">
             {t('dashboard.navigation.products')}
             <div className="ml-auto flex gap-2">
-              <AddEntityButton entityType="product" />
+              <AddEntityButton entityType="product" variant="outline" />
             </div>
           </CardTitle>
         </CardHeader>

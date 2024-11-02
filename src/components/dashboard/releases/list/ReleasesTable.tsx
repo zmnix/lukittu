@@ -94,7 +94,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
           <CardTitle className="flex items-center text-xl font-bold">
             {t('dashboard.navigation.releases')}
             <div className="ml-auto flex gap-2">
-              <AddEntityButton entityType="release" />
+              <AddEntityButton entityType="release" variant="outline" />
             </div>
           </CardTitle>
         </CardHeader>
