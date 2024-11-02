@@ -14,7 +14,7 @@ import {
   getLicenseStatus,
   getLicenseStatusBadgeVariant,
 } from '@/lib/licenses/license-status';
-import { Copy, Infinity, User } from 'lucide-react';
+import { CheckCircle, Copy, Infinity, User, XCircle } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -81,6 +81,12 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                     getLicenseStatus(license),
                   )}
                 >
+                  {getLicenseStatusBadgeVariant(getLicenseStatus(license)) ===
+                  'success' ? (
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                  ) : (
+                    <XCircle className="mr-1 h-3 w-3" />
+                  )}
                   {t(
                     `general.${getLicenseStatus(license).toLowerCase()}` as any,
                   )}

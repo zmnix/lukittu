@@ -27,7 +27,7 @@ import {
 import { AuthContext } from '@/providers/AuthProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Team, User } from '@prisma/client';
-import { Ellipsis } from 'lucide-react';
+import { ChevronsUp, ChevronUp, Ellipsis } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -221,7 +221,12 @@ export default function TeamsTable() {
                   <TableRow key={team.id}>
                     <TableCell className="truncate">{team.name}</TableCell>
                     <TableCell className="truncate">
-                      <Badge className="text-xs" variant="outline">
+                      <Badge className="text-xs" variant="secondary">
+                        {team.ownerId === authCtx.session?.user.id ? (
+                          <ChevronsUp className="mr-1 h-3 w-3" />
+                        ) : (
+                          <ChevronUp className="mr-1 h-3 w-3" />
+                        )}
                         {team.ownerId === authCtx.session?.user.id
                           ? t('general.owner')
                           : t('general.member')}

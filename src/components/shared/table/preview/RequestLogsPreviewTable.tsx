@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp } from 'lucide-react';
+import { AlertTriangle, ArrowDownUp, CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -162,7 +162,23 @@ export default function RequestLogsPreviewTable({
                         {log.ipAddress}
                       </TableCell>
                       <TableCell className="truncate">
-                        <Badge className="text-xs" variant="secondary">
+                        <Badge
+                          className="text-xs"
+                          variant={
+                            log.statusCode >= 200 && log.statusCode < 300
+                              ? 'success'
+                              : log.statusCode === 500
+                                ? 'error'
+                                : 'warning'
+                          }
+                        >
+                          {log.statusCode >= 200 && log.statusCode < 300 ? (
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                          ) : log.statusCode === 500 ? (
+                            <XCircle className="mr-1 h-3 w-3" />
+                          ) : (
+                            <AlertTriangle className="mr-1 h-3 w-3" />
+                          )}
                           {log.status}
                         </Badge>
                       </TableCell>

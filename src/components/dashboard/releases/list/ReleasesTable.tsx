@@ -23,7 +23,7 @@ import { bytesToSize } from '@/lib/utils/number-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ReleaseModalProvider } from '@/providers/ReleasesModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp, CloudOff, CloudUpload } from 'lucide-react';
+import { ArrowDownUp, CloudOff, CloudUpload, Rss } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -174,13 +174,23 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                             {release.version}{' '}
                             {release.latest && (
                               <Badge className="text-xs">
+                                <Rss className="mr-1 h-3 w-3" />
                                 {t('general.latest')}
                               </Badge>
                             )}
                           </div>
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge className="text-xs">{release.status}</Badge>
+                          <Badge
+                            className="text-xs"
+                            variant={
+                              release.status === 'PUBLISHED'
+                                ? 'success'
+                                : 'secondary'
+                            }
+                          >
+                            {release.status}
+                          </Badge>
                         </TableCell>
                         <TableCell className="truncate">
                           {release.file ? (

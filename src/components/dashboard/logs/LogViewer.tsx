@@ -15,7 +15,15 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ChevronLeft, Copy, ExternalLink, Logs } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  ChevronLeft,
+  Copy,
+  ExternalLink,
+  Logs,
+  XCircle,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -157,7 +165,23 @@ export default function LogViewer() {
                             variant="ghost"
                             onClick={() => handleLogClick(l)}
                           >
-                            <Badge className="mr-2" variant="outline">
+                            <Badge
+                              className="mr-2"
+                              variant={
+                                l.statusCode >= 200 && l.statusCode < 300
+                                  ? 'success'
+                                  : l.statusCode === 500
+                                    ? 'error'
+                                    : 'warning'
+                              }
+                            >
+                              {l.statusCode >= 200 && l.statusCode < 300 ? (
+                                <CheckCircle className="mr-1 h-3 w-3" />
+                              ) : l.statusCode === 500 ? (
+                                <XCircle className="mr-1 h-3 w-3" />
+                              ) : (
+                                <AlertTriangle className="mr-1 h-3 w-3" />
+                              )}
                               {l.status}
                             </Badge>
                             <span className="mr-2">{l.method}</span>
@@ -215,7 +239,25 @@ export default function LogViewer() {
                     <p className="text-sm text-muted-foreground">
                       {t('general.code')}
                     </p>
-                    <Badge className="text-xs" variant="outline">
+                    <Badge
+                      className="text-xs"
+                      variant={
+                        selectedLog.statusCode >= 200 &&
+                        selectedLog.statusCode < 300
+                          ? 'success'
+                          : selectedLog.statusCode === 500
+                            ? 'error'
+                            : 'warning'
+                      }
+                    >
+                      {selectedLog.statusCode >= 200 &&
+                      selectedLog.statusCode < 300 ? (
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                      ) : selectedLog.statusCode === 500 ? (
+                        <XCircle className="mr-1 h-3 w-3" />
+                      ) : (
+                        <AlertTriangle className="mr-1 h-3 w-3" />
+                      )}
                       {selectedLog.status}
                     </Badge>
                   </div>

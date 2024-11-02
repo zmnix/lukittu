@@ -31,7 +31,15 @@ import {
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp, Clock, Filter, Key, Search } from 'lucide-react';
+import {
+  ArrowDownUp,
+  CheckCircle,
+  Clock,
+  Filter,
+  Key,
+  Search,
+  XCircle,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -219,6 +227,13 @@ export function LicensesTable() {
                                 getLicenseStatus(license),
                               )}
                             >
+                              {getLicenseStatusBadgeVariant(
+                                getLicenseStatus(license),
+                              ) === 'success' ? (
+                                <CheckCircle className="mr-1 h-3 w-3" />
+                              ) : (
+                                <XCircle className="mr-1 h-3 w-3" />
+                              )}
                               {t(
                                 `general.${getLicenseStatus(license).toLowerCase()}` as any,
                               )}
@@ -316,6 +331,13 @@ export function LicensesTable() {
                               getLicenseStatus(license),
                             )}
                           >
+                            {getLicenseStatusBadgeVariant(
+                              getLicenseStatus(license),
+                            ) === 'success' ? (
+                              <CheckCircle className="mr-1 h-3 w-3" />
+                            ) : (
+                              <XCircle className="mr-1 h-3 w-3" />
+                            )}
                             {t(
                               `general.${getLicenseStatus(license).toLowerCase()}` as any,
                             )}

@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp } from 'lucide-react';
+import { ArrowDownUp, CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -136,11 +136,15 @@ export default function HeartbeatPreviewTable({
                       <TableCell>{heartbeat.ipAddress}</TableCell>
                       <TableCell>
                         {heartbeat.status === 'inactive' ? (
-                          <Badge variant="destructive">
+                          <Badge variant="error">
+                            <XCircle className="mr-1 h-3 w-3" />
                             {t('general.inactive')}
                           </Badge>
                         ) : (
-                          <Badge variant="default">{t('general.active')}</Badge>
+                          <Badge variant="success">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            {t('general.active')}
+                          </Badge>
                         )}
                       </TableCell>
                     </TableRow>

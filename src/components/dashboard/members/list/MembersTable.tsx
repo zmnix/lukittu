@@ -28,7 +28,7 @@ import { getInitials } from '@/lib/utils/text-helpers';
 import { AuthContext } from '@/providers/AuthProvider';
 import { MemberModalProvider } from '@/providers/MemberModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { Filter, Search, Users } from 'lucide-react';
+import { ChevronsUp, ChevronUp, Filter, Search, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
@@ -193,7 +193,12 @@ export function MembersTable() {
                         </div>
                         <div className="z-10 flex items-center space-x-2">
                           <span className="rounded-full px-2 py-1 text-xs font-medium">
-                            <Badge className="text-xs" variant="outline">
+                            <Badge className="text-xs" variant="secondary">
+                              {'isOwner' in member ? (
+                                <ChevronsUp className="mr-1 h-3 w-3" />
+                              ) : (
+                                <ChevronUp className="mr-1 h-3 w-3" />
+                              )}
                               {'isOwner' in member && member.isOwner
                                 ? t('general.owner')
                                 : t('general.member')}
@@ -277,7 +282,12 @@ export function MembersTable() {
                           </div>
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge className="text-xs" variant="outline">
+                          <Badge className="text-xs" variant="secondary">
+                            {'isOwner' in member ? (
+                              <ChevronsUp className="mr-1 h-3 w-3" />
+                            ) : (
+                              <ChevronUp className="mr-1 h-3 w-3" />
+                            )}
                             {'isOwner' in member && member.isOwner
                               ? t('general.owner')
                               : t('general.member')}

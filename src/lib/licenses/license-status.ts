@@ -87,14 +87,14 @@ export const getLicenseStatusBadgeVariant = (
 ): Variant => {
   switch (status) {
     case 'ACTIVE':
-      return 'default';
+      return 'success';
     case 'INACTIVE':
       return 'secondary';
     case 'EXPIRING':
-      return 'destructive';
+      return 'warning';
     case 'EXPIRED':
-      return 'destructive';
+      return 'error';
     case 'SUSPENDED':
-      return 'destructive';
+      return 'error';
   }
 };

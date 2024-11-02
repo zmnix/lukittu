@@ -109,18 +109,18 @@ export default function IntegrationsGrid() {
               <Badge
                 variant={
                   integrations?.[integration.key]?.active
-                    ? 'default'
+                    ? 'success'
                     : 'secondary'
                 }
               >
                 {integrations?.[integration.key]?.active ? (
                   <>
-                    <CheckCircle className="mr-1 h-4 w-4" />{' '}
+                    <CheckCircle className="mr-1 h-3 w-3" />{' '}
                     {t('general.active')}
                   </>
                 ) : (
                   <>
-                    <XCircle className="mr-1 h-4 w-4" /> {t('general.inactive')}
+                    <XCircle className="mr-1 h-3 w-3" /> {t('general.inactive')}
                   </>
                 )}
               </Badge>

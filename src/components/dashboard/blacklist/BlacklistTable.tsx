@@ -93,7 +93,7 @@ export function BlacklistTable() {
   }, [error, t]);
 
   const blacklist = data?.blacklist ?? [];
-  const hasBlacklist = data?.hasResults ?? false;
+  const hasBlacklist = data?.hasResults ?? true;
   const totalBlacklist = data?.totalResults ?? 1;
 
   return (
@@ -164,7 +164,7 @@ export function BlacklistTable() {
                         <div className="z-10">
                           <p className="line-clamp-2 break-all font-medium">{`${blacklist.country ?? blacklist.value}`}</p>
                           <div className="mb-1 line-clamp-1 break-all text-xs font-semibold text-muted-foreground">
-                            {`${blacklist.hits ?? 0} ${t('general.hits')}`}
+                            {`${blacklist.hits} ${t('general.hits')}`}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -175,7 +175,7 @@ export function BlacklistTable() {
                         </div>
                         <div className="z-10 flex items-center space-x-2">
                           <span className="rounded-full px-2 py-1 text-xs font-medium">
-                            <Badge className="text-xs">
+                            <Badge className="text-xs" variant="secondary">
                               {t(
                                 `general.${blacklist.type.toLowerCase()}` as any,
                               )}
@@ -255,7 +255,7 @@ export function BlacklistTable() {
                           {blacklist.country ?? blacklist.value}
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge className="text-xs">
+                          <Badge className="text-xs" variant="secondary">
                             {t(
                               `general.${blacklist.type.toLowerCase()}` as any,
                             )}

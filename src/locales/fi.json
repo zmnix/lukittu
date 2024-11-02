@@ -505,6 +505,7 @@
       "no_audit_logs_title": "You have no audit logs",
       "no_audit_logs_description": "No audit logs found. Audit logs are created when an action is performed in the system. You can view the details of the action here.",
       "actions_types": {
+        "set_latest_release": "set latest release",
         "leave_team": "leaved team",
         "create_team": "created team",
         "delete_team": "deleted team",
