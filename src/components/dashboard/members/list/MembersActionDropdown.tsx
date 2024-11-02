@@ -42,7 +42,7 @@ export const MembersActionDropdown = ({
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <span>
-                  <Button disabled={!isTeamOwner} size="sm" variant="ghost">
+                  <Button disabled={!isTeamOwner} size="icon" variant="ghost">
                     <Ellipsis className="h-4 w-4" />
                   </Button>
                 </span>
@@ -53,7 +53,7 @@ export const MembersActionDropdown = ({
             </Tooltip>
           </TooltipProvider>
         ) : (
-          <Button disabled={isSelf} size="sm" variant="ghost">
+          <Button disabled={isSelf} size="icon" variant="ghost">
             <Ellipsis className="h-4 w-4" />
           </Button>
         )}

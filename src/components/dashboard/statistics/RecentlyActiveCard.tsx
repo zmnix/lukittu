@@ -52,6 +52,9 @@ export default function RecentlyActiveCard() {
       ? ['/api/statistics/recent-activity', teamCtx.selectedTeam]
       : null,
     ([url]) => fetchRecentActivity(url),
+    {
+      refreshInterval: 30 * 1000,
+    },
   );
 
   useEffect(() => {

@@ -86,6 +86,9 @@ export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
         ]
       : null,
     ([url, _, params]) => fetchMapData(`${url}?${params}`),
+    {
+      refreshInterval: 60 * 1000, // 60 seconds
+    },
   );
 
   useEffect(() => {

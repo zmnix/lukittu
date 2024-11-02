@@ -85,6 +85,9 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
           ]
         : null,
       ([url]) => fetchRequests(url),
+      {
+        refreshInterval: 30 * 1000, // 30 seconds
+      },
     );
 
   useEffect(() => {

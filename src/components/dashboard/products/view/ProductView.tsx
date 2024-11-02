@@ -54,7 +54,7 @@ export default function ProductView() {
 
   return (
     <ProductModalProvider>
-      <div className="flex justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         {isLoading ? (
           <Skeleton className="h-8 w-96" />
         ) : (
