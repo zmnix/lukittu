@@ -167,6 +167,7 @@ export const CustomersMultiselect = ({
             <CommandInput
               placeholder={t('general.search_customer')}
               value={searchQuery}
+              disableBorder
               onValueChange={setSearchQuery}
             />
             {selectedItems.length > 0 && (

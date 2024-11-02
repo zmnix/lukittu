@@ -160,6 +160,7 @@ export const ProductsMultiselect = ({
             <CommandInput
               placeholder={t('dashboard.licenses.search_product')}
               value={searchQuery}
+              disableBorder
               onValueChange={setSearchQuery}
             />
             {selectedItems.length > 0 && (

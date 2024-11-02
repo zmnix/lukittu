@@ -199,6 +199,7 @@ export function LicensesTable() {
                         key={license.id}
                         className="group relative flex items-center justify-between border-b py-3 first:border-t"
                         href={`/dashboard/licenses/${license.id}`}
+                        tabIndex={0}
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">

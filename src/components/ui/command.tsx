@@ -37,9 +37,17 @@ const CommandDialog = ({ children, ...props }: CommandDialogProps) => (
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, ...props }, ref) => (
-  <div className="flex w-full items-center border-b px-3" cmdk-input-wrapper="">
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & {
+    disableBorder?: boolean;
+  }
+>(({ className, disableBorder, ...props }, ref) => (
+  <div
+    className={cn(
+      'flex w-full items-center px-3',
+      !disableBorder && 'border-b',
+    )}
+    cmdk-input-wrapper=""
+  >
     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
     <CommandPrimitive.Input
       ref={ref}
