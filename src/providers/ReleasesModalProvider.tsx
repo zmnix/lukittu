@@ -1,6 +1,7 @@
 'use client';
 import { IProductsReleasesSetLatestResponse } from '@/app/api/(dashboard)/products/releases/set-latest/route';
 import SetReleaseModal from '@/components/dashboard/releases/list/SetReleaseModal';
+import { DeleteDeleteConfirmModal } from '@/components/dashboard/releases/ReleaseDeleteConfirmModal';
 import { Release } from '@prisma/client';
 import { createContext, useState } from 'react';
 
@@ -56,6 +57,7 @@ export const ReleaseModalProvider = ({
         releaseModalOpen,
       }}
     >
+      <DeleteDeleteConfirmModal />
       <SetReleaseModal />
       {children}
     </ReleaseModalContext.Provider>

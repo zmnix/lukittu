@@ -576,7 +576,10 @@
       "supported_file_types": "Any file type (max {size})",
       "no_releases_assigned": "No releases assigned",
       "set_as_latest": "Set as latest",
-      "latest_release_updated": "Latest release updated"
+      "latest_release_updated": "Latest release updated",
+      "delete_release_confirm_title": "Delete release",
+      "delete_release_confirm_description": "You are about to delete release <strong>{version}</strong>! This will <strong>permanently delete</strong> this release and it's files. This action cannot be undone.",
+      "release_deleted": "Release deleted"
     },
     "settings": {
       "general_settings": "General settings",

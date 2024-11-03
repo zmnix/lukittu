@@ -313,3 +313,134 @@ export async function PUT(
     );
   }
 }
+
+export type IProductsReleasesDeleteSuccessResponse = {
+  success: boolean;
+};
+
+export type IProductsReleasesDeleteResponse =
+  | IProductsReleasesDeleteSuccessResponse
+  | ErrorResponse;
+
+export async function DELETE(
+  request: NextRequest,
+  props: { params: Promise<{ slug: string }> },
+): Promise<NextResponse<IProductsReleasesDeleteResponse>> {
+  const params = await props.params;
+  const t = await getTranslations({ locale: await getLanguage() });
+
+  try {
+    const releaseId = params.slug;
+
+    if (!releaseId || !regex.uuidV4.test(releaseId)) {
+      return NextResponse.json(
+        {
+          message: t('validation.bad_request'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const selectedTeam = await getSelectedTeam();
+
+    if (!selectedTeam) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const session = await getSession({
+      user: {
+        include: {
+          teams: {
+            where: {
+              deletedAt: null,
+              id: selectedTeam,
+            },
+            include: {
+              releases: {
+                where: {
+                  id: releaseId,
+                },
+                include: {
+                  file: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    if (!session.user.teams.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const team = session.user.teams[0];
+
+    if (!team.releases.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.customer_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const release = team.releases[0];
+
+    await prisma.release.delete({
+      where: {
+        id: releaseId,
+      },
+    });
+
+    if (release.file) {
+      await deleteFileFromPrivateS3(
+        process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
+        release.file.key,
+      );
+    }
+
+    const response = {
+      success: true,
+    };
+
+    createAuditLog({
+      userId: session.user.id,
+      teamId: team.id,
+      action: AuditLogAction.DELETE_RELEASE,
+      targetId: releaseId,
+      targetType: AuditLogTargetType.RELEASE,
+      requestBody: null,
+      responseBody: response,
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.OK });
+  } catch (error) {
+    logger.error("Error occurred in 'products/releases/[slug]' route", error);
+    return NextResponse.json(
+      {
+        message: t('general.server_error'),
+      },
+      { status: HttpStatus.INTERNAL_SERVER_ERROR },
+    );
+  }
+}
