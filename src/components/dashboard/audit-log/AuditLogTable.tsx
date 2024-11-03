@@ -288,7 +288,7 @@ export default function AuditLogTable() {
                                 longitude={auditLog.longitude}
                               />
                             ) : (
-                              <div className="flex items-center justify-center">
+                              <div className="flex items-center justify-center rounded-lg border-2 border-dashed">
                                 <MapPinOff className="h-16 w-16 text-muted-foreground" />
                               </div>
                             )}
@@ -492,7 +492,7 @@ export default function AuditLogTable() {
                                         longitude={auditLog.longitude}
                                       />
                                     ) : (
-                                      <div className="flex items-center justify-center">
+                                      <div className="flex items-center justify-center rounded-lg border-2 border-dashed">
                                         <MapPinOff className="h-16 w-16 text-muted-foreground" />
                                       </div>
                                     )}
