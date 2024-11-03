@@ -75,7 +75,8 @@ export default function RecentAuditLogs() {
     }
   }, [error, t]);
 
-  const hasData = response?.data.length ? response.data.length > 0 : true;
+  const hasData =
+    response?.data.length !== undefined ? response.data.length > 0 : false;
 
   return (
     <Card className="flex h-full flex-col">
