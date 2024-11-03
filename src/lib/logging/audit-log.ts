@@ -1,7 +1,7 @@
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import 'server-only';
 import prisma from '../database/prisma';
-import { proxyCheck } from '../providers/proxycheck';
+import { getCloudflareVisitorData } from '../providers/cloudflare';
 import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getUserAgent } from '../utils/header-helpers';
 import { logger } from './logger';
@@ -27,12 +27,12 @@ export const createAuditLog = async ({
 }: CreateAuditLogProps) => {
   const ipAddress = await getIp();
   const userAgent = await getUserAgent();
-  const geoData = await proxyCheck(ipAddress);
-  const longitude = geoData?.longitude || null;
-  const latitude = geoData?.latitude || null;
+  const geoData = await getCloudflareVisitorData();
+  const longitude = geoData?.long || null;
+  const latitude = geoData?.lat || null;
   const hasBothLongitudeAndLatitude = longitude && latitude;
-  const countryAlpha3: string | null = geoData?.isocode
-    ? iso2toIso3(geoData.isocode!)
+  const countryAlpha3: string | null = geoData?.alpha2
+    ? iso2toIso3(geoData.alpha2!)
     : null;
 
   try {

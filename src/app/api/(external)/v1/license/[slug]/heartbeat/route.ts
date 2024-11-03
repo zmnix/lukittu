@@ -5,7 +5,7 @@ import {
   ExternalVerifyResponse,
   loggedResponse,
 } from '@/lib/logging/request-log';
-import { proxyCheck } from '@/lib/providers/proxycheck';
+import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
 import { generateHMAC, signChallenge } from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
 import { iso2toIso3 } from '@/lib/utils/country-helpers';
@@ -228,10 +228,10 @@ export async function POST(
     const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
 
     if (blacklistedCountryList.length > 0) {
-      const geoData = await proxyCheck(ipAddress);
+      const geoData = await getCloudflareVisitorData();
 
-      if (geoData?.isocode) {
-        const inIso3 = iso2toIso3(geoData.isocode!)!;
+      if (geoData?.alpha2) {
+        const inIso3 = iso2toIso3(geoData.alpha2!)!;
 
         if (blacklistedCountryList.includes(inIso3)) {
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);

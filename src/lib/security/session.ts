@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 import 'server-only';
 import { logger } from '../logging/logger';
-import { proxyCheck } from '../providers/proxycheck';
+import { getCloudflareVisitorData } from '../providers/cloudflare';
 import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getUserAgent } from '../utils/header-helpers';
 
@@ -14,9 +14,9 @@ export async function createSession(userId: string, rememberMe: boolean) {
     const ipAddress = await getIp();
     const userAgent = await getUserAgent();
 
-    const geoData = await proxyCheck(ipAddress);
-    const countryAlpha3: string | null = geoData?.isocode
-      ? iso2toIso3(geoData.isocode!)!
+    const geoData = await getCloudflareVisitorData();
+    const countryAlpha3: string | null = geoData?.alpha2
+      ? iso2toIso3(geoData.alpha2!)!
       : null;
 
     const sessionId = randomBytes(16).toString('hex');

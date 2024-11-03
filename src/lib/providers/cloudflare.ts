@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import 'server-only';
 import { logger } from '../logging/logger';
 
@@ -22,3 +23,28 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
     return false;
   }
 };
+
+interface CloudflareVisitorData {
+  alpha2: string;
+  long: number;
+  lat: number;
+}
+
+export const getCloudflareVisitorData =
+  async (): Promise<CloudflareVisitorData | null> => {
+    const headersList = await headers();
+
+    const alpha2 = headersList.get('cf-ipcountry');
+    const long = headersList.get('cf-iplongitude');
+    const lat = headersList.get('cf-iplatitude');
+
+    if (!alpha2 || !long || !lat) {
+      return null;
+    }
+
+    return {
+      alpha2,
+      long: parseFloat(long),
+      lat: parseFloat(lat),
+    };
+  };

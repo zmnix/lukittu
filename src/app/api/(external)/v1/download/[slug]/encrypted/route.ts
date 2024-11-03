@@ -6,7 +6,7 @@ import {
   loggedResponse,
 } from '@/lib/logging/request-log';
 import { getFileFromPrivateS3 } from '@/lib/providers/aws-s3';
-import { proxyCheck } from '@/lib/providers/proxycheck';
+import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
 import {
   createEncryptionStream,
   generateHMAC,
@@ -371,10 +371,10 @@ export async function GET(
     const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
 
     if (blacklistedCountryList.length > 0) {
-      const geoData = await proxyCheck(ipAddress);
+      const geoData = await getCloudflareVisitorData();
 
-      if (geoData?.isocode) {
-        const inIso3 = iso2toIso3(geoData.isocode!)!;
+      if (geoData?.alpha2) {
+        const inIso3 = iso2toIso3(geoData.alpha2!)!;
 
         if (blacklistedCountryList.includes(inIso3)) {
           await updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
