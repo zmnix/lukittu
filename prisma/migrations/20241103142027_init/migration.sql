@@ -2,10 +2,16 @@
 CREATE TYPE "RequestMethod" AS ENUM ('GET', 'POST', 'PUT', 'PATCH', 'DELETE');
 
 -- CreateEnum
-CREATE TYPE "AuditLogAction" AS ENUM ('LEAVE_TEAM', 'CREATE_TEAM', 'UPDATE_TEAM', 'DELETE_TEAM', 'TRANSFER_TEAM_OWNERSHIP', 'CREATE_LICENSE', 'UPDATE_LICENSE', 'DELETE_LICENSE', 'CREATE_CUSTOMER', 'UPDATE_CUSTOMER', 'DELETE_CUSTOMER', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'INVITE_MEMBER', 'KICK_MEMBER', 'CANCEL_INVITATION', 'ACCEPT_INVITATION', 'RESET_PUBLIC_KEY', 'UPDATE_TEAM_SETTINGS');
+CREATE TYPE "AuditLogAction" AS ENUM ('LEAVE_TEAM', 'CREATE_TEAM', 'UPDATE_TEAM', 'DELETE_TEAM', 'TRANSFER_TEAM_OWNERSHIP', 'CREATE_LICENSE', 'UPDATE_LICENSE', 'DELETE_LICENSE', 'CREATE_CUSTOMER', 'UPDATE_CUSTOMER', 'DELETE_CUSTOMER', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'INVITE_MEMBER', 'KICK_MEMBER', 'CANCEL_INVITATION', 'ACCEPT_INVITATION', 'RESET_PUBLIC_KEY', 'UPDATE_TEAM_SETTINGS', 'UPDATE_TEAM_PICTURE', 'CREATE_BLACKLIST', 'DELETE_BLACKLIST', 'UPDATE_BLACKLIST', 'CREATE_API_KEY', 'DELETE_API_KEY', 'SET_STRIPE_INTEGRATION', 'DELETE_STRIPE_INTEGRATION', 'CREATE_RELEASE', 'UPDATE_RELEASE', 'DELETE_RELEASE', 'SET_LATEST_RELEASE');
 
 -- CreateEnum
-CREATE TYPE "AuditLogTargetType" AS ENUM ('LICENSE', 'CUSTOMER', 'PRODUCT', 'TEAM');
+CREATE TYPE "ReleaseStatus" AS ENUM ('PUBLISHED', 'DRAFT', 'DEPRECATED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "AuditLogTargetType" AS ENUM ('LICENSE', 'CUSTOMER', 'PRODUCT', 'TEAM', 'BLACKLIST', 'RELEASE');
+
+-- CreateEnum
+CREATE TYPE "BlacklistType" AS ENUM ('DEVICE_IDENTIFIER', 'IP_ADDRESS', 'COUNTRY');
 
 -- CreateEnum
 CREATE TYPE "Provider" AS ENUM ('CREDENTIALS', 'GOOGLE', 'GITHUB');
@@ -17,7 +23,10 @@ CREATE TYPE "LicenseExpirationType" AS ENUM ('NEVER', 'DATE', 'DURATION');
 CREATE TYPE "LicenseExpirationStart" AS ENUM ('ACTIVATION', 'CREATION');
 
 -- CreateEnum
-CREATE TYPE "RequestStatus" AS ENUM ('INTERNAL_SERVER_ERROR', 'BAD_REQUEST', 'LICENSE_NOT_FOUND', 'VALID', 'IP_LIMIT_REACHED', 'PRODUCT_NOT_FOUND', 'CUSTOMER_NOT_FOUND', 'LICENSE_EXPIRED', 'LICENSE_SUSPENDED');
+CREATE TYPE "IpLimitPeriod" AS ENUM ('DAY', 'WEEK', 'MONTH');
+
+-- CreateEnum
+CREATE TYPE "RequestStatus" AS ENUM ('INTERNAL_SERVER_ERROR', 'BAD_REQUEST', 'LICENSE_NOT_FOUND', 'VALID', 'IP_LIMIT_REACHED', 'PRODUCT_NOT_FOUND', 'CUSTOMER_NOT_FOUND', 'LICENSE_EXPIRED', 'LICENSE_SUSPENDED', 'MAXIMUM_CONCURRENT_SEATS', 'TEAM_NOT_FOUND', 'RATE_LIMIT', 'DEVICE_IDENTIFIER_BLACKLISTED', 'COUNTRY_BLACKLISTED', 'IP_BLACKLISTED', 'RELEASE_NOT_FOUND', 'INVALID_SESSION_KEY');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -26,6 +35,7 @@ CREATE TABLE "User" (
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "fullName" TEXT NOT NULL,
     "passwordHash" TEXT,
+    "imageUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "provider" "Provider" NOT NULL DEFAULT 'CREDENTIALS',
@@ -52,6 +62,7 @@ CREATE TABLE "Team" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
+    "imageUrl" TEXT,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -60,11 +71,59 @@ CREATE TABLE "Team" (
 );
 
 -- CreateTable
+CREATE TABLE "StripeIntegration" (
+    "id" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "webhookSecret" TEXT NOT NULL,
+    "apiKey" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "StripeIntegration_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Blacklist" (
+    "id" TEXT NOT NULL,
+    "type" "BlacklistType" NOT NULL,
+    "value" TEXT NOT NULL,
+    "hits" INTEGER NOT NULL DEFAULT 0,
+    "metadata" JSONB NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "teamId" TEXT NOT NULL,
+    "createdByUserId" TEXT,
+
+    CONSTRAINT "Blacklist_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Limits" (
+    "id" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "maxLicenses" INTEGER NOT NULL DEFAULT 100,
+    "maxProducts" INTEGER NOT NULL DEFAULT 3,
+    "logRetention" INTEGER NOT NULL DEFAULT 30,
+    "maxCustomers" INTEGER NOT NULL DEFAULT 100,
+    "maxTeamMembers" INTEGER NOT NULL DEFAULT 10,
+    "maxBlacklist" INTEGER NOT NULL DEFAULT 100,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Limits_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Settings" (
     "id" TEXT NOT NULL,
     "teamId" TEXT NOT NULL,
+    "heartbeatTimeout" INTEGER NOT NULL DEFAULT 60,
+    "ipLimitPeriod" "IpLimitPeriod" NOT NULL DEFAULT 'DAY',
     "strictCustomers" BOOLEAN NOT NULL DEFAULT false,
     "strictProducts" BOOLEAN NOT NULL DEFAULT false,
+    "emailMessage" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -120,9 +179,53 @@ CREATE TABLE "Product" (
 );
 
 -- CreateTable
+CREATE TABLE "Release" (
+    "id" TEXT NOT NULL,
+    "version" TEXT NOT NULL,
+    "metadata" JSONB NOT NULL,
+    "status" "ReleaseStatus" NOT NULL DEFAULT 'DRAFT',
+    "latest" BOOLEAN NOT NULL DEFAULT false,
+    "teamId" TEXT NOT NULL,
+    "createdByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "productId" TEXT NOT NULL,
+
+    CONSTRAINT "Release_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ReleaseFile" (
+    "id" TEXT NOT NULL,
+    "releaseId" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "size" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "checksum" TEXT NOT NULL,
+    "mainClassName" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ReleaseFile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Address" (
+    "id" TEXT NOT NULL,
+    "city" TEXT,
+    "country" TEXT,
+    "line1" TEXT,
+    "line2" TEXT,
+    "postalCode" TEXT,
+    "state" TEXT,
+    "customerId" TEXT NOT NULL,
+
+    CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Customer" (
     "id" TEXT NOT NULL,
-    "email" TEXT,
+    "email" TEXT NOT NULL,
     "fullName" TEXT,
     "metadata" JSONB NOT NULL,
     "teamId" TEXT NOT NULL,
@@ -144,6 +247,7 @@ CREATE TABLE "License" (
     "expirationStart" "LicenseExpirationStart" NOT NULL DEFAULT 'CREATION',
     "expirationDate" TIMESTAMP(3),
     "expirationDays" INTEGER,
+    "seats" INTEGER,
     "suspended" BOOLEAN NOT NULL DEFAULT false,
     "teamId" TEXT NOT NULL,
     "createdByUserId" TEXT,
@@ -151,6 +255,19 @@ CREATE TABLE "License" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "License_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Heartbeat" (
+    "id" TEXT NOT NULL,
+    "licenseId" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "ipAddress" TEXT,
+    "deviceIdentifier" TEXT NOT NULL,
+    "lastBeatAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Heartbeat_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -187,6 +304,7 @@ CREATE TABLE "RequestLog" (
     "version" TEXT NOT NULL,
     "userAgent" TEXT,
     "origin" TEXT,
+    "deviceIdentifier" TEXT,
     "path" TEXT NOT NULL,
     "method" "RequestMethod" NOT NULL,
     "requestBody" JSONB,
@@ -225,6 +343,15 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Session_sessionId_key" ON "Session"("sessionId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "StripeIntegration_teamId_key" ON "StripeIntegration"("teamId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Blacklist_teamId_type_value_key" ON "Blacklist"("teamId", "type", "value");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Limits_teamId_key" ON "Limits"("teamId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Settings_teamId_key" ON "Settings"("teamId");
 
 -- CreateIndex
@@ -240,16 +367,34 @@ CREATE INDEX "ApiKey_teamId_idx" ON "ApiKey"("teamId");
 CREATE INDEX "Product_teamId_idx" ON "Product"("teamId");
 
 -- CreateIndex
+CREATE INDEX "Release_teamId_idx" ON "Release"("teamId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Release_productId_version_key" ON "Release"("productId", "version");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ReleaseFile_releaseId_key" ON "ReleaseFile"("releaseId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Address_customerId_key" ON "Address"("customerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Customer_email_teamId_key" ON "Customer"("email", "teamId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "License_teamId_licenseKeyLookup_key" ON "License"("teamId", "licenseKeyLookup");
 
 -- CreateIndex
-CREATE INDEX "AuditLog_teamId_idx" ON "AuditLog"("teamId");
+CREATE INDEX "Heartbeat_teamId_idx" ON "Heartbeat"("teamId");
 
 -- CreateIndex
-CREATE INDEX "RequestLog_teamId_idx" ON "RequestLog"("teamId");
+CREATE UNIQUE INDEX "Heartbeat_licenseId_deviceIdentifier_key" ON "Heartbeat"("licenseId", "deviceIdentifier");
+
+-- CreateIndex
+CREATE INDEX "AuditLog_teamId_createdAt_idx" ON "AuditLog"("teamId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "RequestLog_teamId_createdAt_idx" ON "RequestLog"("teamId", "createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_TeamUsers_AB_unique" ON "_TeamUsers"("A", "B");
@@ -276,6 +421,21 @@ ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Team" ADD CONSTRAINT "Team_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "StripeIntegration" ADD CONSTRAINT "StripeIntegration_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StripeIntegration" ADD CONSTRAINT "StripeIntegration_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Blacklist" ADD CONSTRAINT "Blacklist_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Blacklist" ADD CONSTRAINT "Blacklist_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Limits" ADD CONSTRAINT "Limits_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Settings" ADD CONSTRAINT "Settings_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -300,6 +460,21 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_teamId_fkey" FOREIGN KEY ("teamId"
 ALTER TABLE "Product" ADD CONSTRAINT "Product_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Release" ADD CONSTRAINT "Release_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Release" ADD CONSTRAINT "Release_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Release" ADD CONSTRAINT "Release_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ReleaseFile" ADD CONSTRAINT "ReleaseFile_releaseId_fkey" FOREIGN KEY ("releaseId") REFERENCES "Release"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Address" ADD CONSTRAINT "Address_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Customer" ADD CONSTRAINT "Customer_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -310,6 +485,12 @@ ALTER TABLE "License" ADD CONSTRAINT "License_teamId_fkey" FOREIGN KEY ("teamId"
 
 -- AddForeignKey
 ALTER TABLE "License" ADD CONSTRAINT "License_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Heartbeat" ADD CONSTRAINT "Heartbeat_licenseId_fkey" FOREIGN KEY ("licenseId") REFERENCES "License"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Heartbeat" ADD CONSTRAINT "Heartbeat_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -1,2 +1,0 @@
--- AlterEnum
-ALTER TYPE "RequestStatus" ADD VALUE 'RELEASE_NOT_FOUND';
