@@ -10,6 +10,7 @@ export const SWRProvider = ({ children }: SWRProviderProps) => (
   <SWRConfig
     value={{
       fetcher,
+      refreshInterval: 120000, // 2 minutes
     }}
   >
     {children}

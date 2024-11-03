@@ -79,6 +79,9 @@ export default function AuditLogTable() {
       ? ['/api/audit-logs', teamCtx.selectedTeam, searchParams.toString()]
       : null,
     ([url, params]) => fetchAuditLogs(`${url}?${params}`),
+    {
+      refreshInterval: 30 * 1000, // 30 seconds
+    },
   );
 
   useEffect(() => {

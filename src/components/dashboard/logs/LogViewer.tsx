@@ -56,14 +56,20 @@ export default function LogViewer() {
   };
 
   const { data, error, size, setSize, isLoading } =
-    useSWRInfinite<ILogsGetSuccessResponse>(getKey, async (url) => {
-      const response = await fetch(url);
-      const data = await response.json();
-      if ('message' in data) {
-        throw new Error(data.message);
-      }
-      return data;
-    });
+    useSWRInfinite<ILogsGetSuccessResponse>(
+      getKey,
+      async (url) => {
+        const response = await fetch(url);
+        const data = await response.json();
+        if ('message' in data) {
+          throw new Error(data.message);
+        }
+        return data;
+      },
+      {
+        refreshInterval: 30 * 1000, // 30 seconds
+      },
+    );
 
   const logs = useMemo(() => {
     if (!data) return [];
