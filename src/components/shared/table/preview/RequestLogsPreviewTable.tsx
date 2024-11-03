@@ -193,7 +193,6 @@ export default function RequestLogsPreviewTable({
             <TablePagination
               page={page}
               pageSize={10}
-              results={logs.length}
               setPage={setPage}
               totalItems={totalLogs}
               totalPages={Math.ceil(totalLogs / 10)}

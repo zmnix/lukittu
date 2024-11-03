@@ -1,38 +1,38 @@
 import { logger } from '@/lib/logging/logger';
-import { decryptLicenseKey } from '@/lib/security/crypto';
 import { getSession } from '@/lib/security/session';
 import { iso3toIso2, iso3ToName } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { RequestStatus } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type RecentActivityData = {
+type RecentAuditLogs = {
   id: string;
-  license: string;
-  ipAddress: string;
-  status: RequestStatus;
-  statusCode: number;
-  path: string;
-  alpha2: string | null;
+  ipAddress: string | null;
+  targetType: AuditLogTargetType;
+  action: AuditLogAction;
   country: string | null;
+  alpha2: string | null;
+  imageUrl: string | null;
+  fullName: string | null;
+  email: string | null;
   createdAt: Date;
 };
 
-export type IStatisticsRecentActivityGetSuccessResponse = {
-  data: RecentActivityData[];
+export type IStatisticsRecentAuditLogsSuccessResponse = {
+  data: RecentAuditLogs[];
   hasNextPage: boolean;
 };
 
-export type IStatisticsRecentActivityGetResponse =
+export type IStatisticsRecentAuditLogsResponse =
   | ErrorResponse
-  | IStatisticsRecentActivityGetSuccessResponse;
+  | IStatisticsRecentAuditLogsSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<IStatisticsRecentActivityGetResponse>> {
+): Promise<NextResponse<IStatisticsRecentAuditLogsResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
   const searchParams = request.nextUrl.searchParams;
 
@@ -46,7 +46,7 @@ export async function GET(
       );
     }
 
-    const pageSize = 5;
+    const pageSize = 4;
     let page = parseInt(searchParams.get('page') as string) || 1;
     if (page < 1) {
       page = 1;
@@ -63,20 +63,15 @@ export async function GET(
               deletedAt: null,
             },
             include: {
-              requestLogs: {
-                where: {
-                  licenseId: {
-                    not: null,
-                  },
-                },
-                include: {
-                  license: true,
-                },
+              auditLogs: {
                 orderBy: {
                   createdAt: 'desc',
                 },
+                include: {
+                  user: true,
+                },
                 skip,
-                take: 6,
+                take: 5,
               },
             },
           },
@@ -100,23 +95,24 @@ export async function GET(
 
     const team = session.user.teams[0];
 
-    const data: RecentActivityData[] = team.requestLogs
-      .slice(0, 5)
+    const data: RecentAuditLogs[] = team.auditLogs
+      .slice(0, pageSize)
       .map((log) => ({
         id: log.id,
-        license: decryptLicenseKey(log.license!.licenseKey),
-        ipAddress: log.ipAddress || '',
-        path: log.path,
-        statusCode: log.statusCode,
-        status: log.status,
-        createdAt: log.createdAt,
-        alpha2: iso3toIso2(log.country),
+        ipAddress: log.ipAddress,
+        targetType: log.targetType,
+        action: log.action,
         country: iso3ToName(log.country),
+        alpha2: iso3toIso2(log.country),
+        imageUrl: log.user?.imageUrl ?? null,
+        fullName: log.user?.fullName ?? null,
+        email: log.user?.email ?? null,
+        createdAt: log.createdAt,
       }));
 
     return NextResponse.json({
       data,
-      hasNextPage: team.requestLogs.length > pageSize,
+      hasNextPage: team.auditLogs.length > pageSize,
     });
   } catch (error) {
     logger.error("Error occurred in 'dashboard/recent-activity' route", error);

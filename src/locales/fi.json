@@ -115,6 +115,7 @@
     "latest_release_must_be_published": "Latest release must be published!"
   },
   "general": {
+    "path": "Path",
     "search": "Search",
     "address": "Address",
     "city": "City",
@@ -334,6 +335,8 @@
       "no_recent_activity": "No recent activity",
       "no_recent_activity_description": "No recent activity found. Recent activity will be shown here.",
       "active_licenses": "Active licenses",
+      "recent_audit_logs": "Recent audit logs",
+      "recent_audit_logs_description": "Showing recent actions performed in the system.",
       "requests": "Requests",
       "requests_description": "Showing license verify requests divided by status.",
       "last_hour": "Last hour",

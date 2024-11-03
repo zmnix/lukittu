@@ -373,7 +373,6 @@ export function ProductsTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={products.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 totalItems={totalProducts}

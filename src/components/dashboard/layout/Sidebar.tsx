@@ -30,7 +30,7 @@ export function Sidebar() {
       <div className="relative flex h-full flex-col overflow-y-auto border-r px-3 py-4">
         <Button
           className={cn(
-            'mb-1 transition-transform duration-300 ease-in-out',
+            'mb-1 ring-0 transition-transform duration-300 ease-in-out focus-visible:ring-0',
             ctx.open === false ? 'translate-x-1' : 'translate-x-0',
           )}
           tabIndex={0}

@@ -155,7 +155,6 @@ export default function HeartbeatPreviewTable({
             <TablePagination
               page={page}
               pageSize={10}
-              results={heartbeats.length}
               setPage={setPage}
               totalItems={totalHeartbeats}
               totalPages={Math.ceil(totalHeartbeats / 10)}

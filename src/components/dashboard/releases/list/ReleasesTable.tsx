@@ -232,7 +232,6 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
               <TablePagination
                 page={page}
                 pageSize={10}
-                results={releases.length}
                 setPage={setPage}
                 totalItems={totalReleases}
                 totalPages={Math.ceil(totalReleases / 10)}

@@ -525,7 +525,6 @@ export default function AuditLogTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={auditLogs.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 totalItems={totalAuditLogs}

@@ -341,7 +341,6 @@ export function MembersTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={members.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 totalItems={totalMembers}

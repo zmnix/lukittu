@@ -1,12 +1,12 @@
 'use client';
 import {
-  IStatisticsRecentActivityGetResponse,
-  IStatisticsRecentActivityGetSuccessResponse,
-} from '@/app/api/(dashboard)/statistics/recent-activity/route';
+  IStatisticsRecentAuditLogsResponse,
+  IStatisticsRecentAuditLogsSuccessResponse,
+} from '@/app/api/(dashboard)/statistics/recent-audit-logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,24 +23,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { normalizePath } from '@/lib/utils/text-helpers';
+import { getInitials } from '@/lib/utils/text-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
-import {
-  AlertTriangle,
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  XCircle,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Logs } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
-const fetchRecentActivity = async (url: string) => {
+const fetchRecentAuditLogs = async (url: string) => {
   const response = await fetch(url);
-  const data = (await response.json()) as IStatisticsRecentActivityGetResponse;
+  const data = (await response.json()) as IStatisticsRecentAuditLogsResponse;
 
   if ('message' in data) {
     throw new Error(data.message);
@@ -49,7 +43,7 @@ const fetchRecentActivity = async (url: string) => {
   return data;
 };
 
-export default function RecentlyActiveCard() {
+export default function RecentAuditLogs() {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
 
@@ -59,11 +53,11 @@ export default function RecentlyActiveCard() {
     data: response,
     error,
     isLoading,
-  } = useSWR<IStatisticsRecentActivityGetSuccessResponse>(
+  } = useSWR<IStatisticsRecentAuditLogsSuccessResponse>(
     teamCtx.selectedTeam
-      ? ['/api/statistics/recent-activity', teamCtx.selectedTeam, page]
+      ? ['/api/statistics/recent-audit-logs', teamCtx.selectedTeam, page]
       : null,
-    ([url, _, page]) => fetchRecentActivity(`${url}?page=${page}`),
+    ([url, _, page]) => fetchRecentAuditLogs(`${url}?page=${page}`),
     {
       refreshInterval: 30 * 1000,
     },
@@ -88,7 +82,7 @@ export default function RecentlyActiveCard() {
       <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
         <div className="grid flex-1 gap-1">
           <CardTitle className="flex items-center text-xl font-bold">
-            {t('dashboard.dashboard.recently_activity')}
+            {t('dashboard.dashboard.recent_audit_logs')}
             <div className="ml-auto flex gap-2">
               <Button
                 className="h-8 w-8 p-0"
@@ -109,7 +103,7 @@ export default function RecentlyActiveCard() {
             </div>
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
-            {t('dashboard.dashboard.recently_activity_description')}
+            {t('dashboard.dashboard.recent_audit_logs_description')}
           </CardDescription>
         </div>
       </CardHeader>
@@ -118,52 +112,51 @@ export default function RecentlyActiveCard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('general.license')}</TableHead>
-                <TableHead>{t('general.path')}</TableHead>
-                <TableHead>{t('dashboard.licenses.status')}</TableHead>
-                <TableHead>{t('general.ip_address')}</TableHead>
-                <TableHead>{t('general.created_at')}</TableHead>
+                <TableHead className="truncate">
+                  {t('general.action')}
+                </TableHead>
+                <TableHead className="truncate">
+                  {t('general.ip_address')}
+                </TableHead>
+                <TableHead className="truncate">
+                  {t('general.created_at')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             {isLoading ? (
-              <TableSkeleton columns={5} rows={4} />
+              <TableSkeleton columns={3} rows={4} />
             ) : (
               <TableBody>
                 {response?.data.map((row) => (
                   <TableRow key={row.id}>
-                    <TableCell className="truncate">{row.license}</TableCell>
-                    <TableCell className="truncate">
-                      {normalizePath(row.path)}
+                    <TableCell className="flex items-center gap-2 truncate">
+                      <Avatar className="h-8 w-8 border">
+                        <AvatarImage src={row.imageUrl!} asChild>
+                          {row.imageUrl && (
+                            <Image alt="Avatar" src={row.imageUrl} fill />
+                          )}
+                        </AvatarImage>
+                        <AvatarFallback className="bg-primary text-xs text-white">
+                          {getInitials(row.fullName ?? '??')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>
+                        <b>{row.email ?? t('general.unknown')}</b>{' '}
+                        {t(
+                          `dashboard.audit_logs.actions_types.${row.action.toLowerCase()}` as any,
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        className="mr-2"
-                        variant={
-                          row.statusCode >= 200 && row.statusCode < 300
-                            ? 'success'
-                            : row.statusCode === 500
-                              ? 'error'
-                              : 'warning'
-                        }
-                      >
-                        {row.statusCode >= 200 && row.statusCode < 300 ? (
-                          <CheckCircle className="mr-1 h-3 w-3" />
-                        ) : row.statusCode === 500 ? (
-                          <XCircle className="mr-1 h-3 w-3" />
-                        ) : (
-                          <AlertTriangle className="mr-1 h-3 w-3" />
+                      <div className="flex items-center gap-2">
+                        {row.alpha2 && (
+                          <CountryFlag
+                            countryCode={row.alpha2}
+                            countryName={row.country}
+                          />
                         )}
-                        {row.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      {row.alpha2 && (
-                        <CountryFlag
-                          countryCode={row.alpha2}
-                          countryName={row.country}
-                        />
-                      )}
-                      {row.ipAddress === '::1' ? '127.0.0.1' : row.ipAddress}
+                        {row.ipAddress === '::1' ? '127.0.0.1' : row.ipAddress}
+                      </div>
                     </TableCell>
                     <TableCell className="truncate">
                       <DateConverter date={row.createdAt} />
@@ -178,14 +171,14 @@ export default function RecentlyActiveCard() {
             <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
               <div className="flex">
                 <span className="rounded-lg bg-secondary p-4">
-                  <Clock className="h-6 w-6" />
+                  <Logs className="h-6 w-6" />
                 </span>
               </div>
               <h3 className="text-lg font-bold">
-                {t('dashboard.dashboard.no_recent_activity')}
+                {t('dashboard.dashboard.no_recent_audit_logs')}
               </h3>
               <p className="max-w-sm text-center text-sm text-muted-foreground">
-                {t('dashboard.dashboard.no_recent_activity_description')}
+                {t('dashboard.dashboard.no_recent_audit_logs_description')}
               </p>
             </div>
           </div>

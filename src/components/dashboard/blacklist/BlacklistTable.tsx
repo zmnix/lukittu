@@ -335,7 +335,6 @@ export function BlacklistTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={blacklist.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 totalItems={totalBlacklist}

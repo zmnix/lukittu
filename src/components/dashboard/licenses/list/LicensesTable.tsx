@@ -429,7 +429,6 @@ export function LicensesTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={licenses.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 totalItems={totalLicenses}

@@ -182,7 +182,6 @@ export default function ProductsPreviewTable({
               <TablePagination
                 page={page}
                 pageSize={10}
-                results={products.length}
                 setPage={setPage}
                 totalItems={totalProducts}
                 totalPages={Math.ceil(totalProducts / 10)}

@@ -197,7 +197,6 @@ export default function LicensesPreviewTable({
               <TablePagination
                 page={page}
                 pageSize={10}
-                results={licenses.length}
                 setPage={setPage}
                 totalItems={totalLicenses}
                 totalPages={Math.ceil(totalLicenses / 10)}

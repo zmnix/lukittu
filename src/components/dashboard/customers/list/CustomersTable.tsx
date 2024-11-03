@@ -330,7 +330,6 @@ export function CustomersTable() {
               <TablePagination
                 page={page}
                 pageSize={pageSize}
-                results={customers.length}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 totalItems={totalCustomers}

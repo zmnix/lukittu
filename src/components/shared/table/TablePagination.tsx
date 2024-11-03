@@ -1,4 +1,3 @@
-'use client';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -19,7 +18,6 @@ interface TablePaginationProps {
   pageSize: number;
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
-  results: number;
   totalPages: number;
   totalItems: number;
   setPageSize?: React.Dispatch<React.SetStateAction<number>>;
@@ -29,7 +27,6 @@ export default function TablePagination({
   setPage,
   setPageSize,
   totalPages,
-  results,
   page,
   totalItems,
   pageSize,

@@ -1,5 +1,6 @@
 import DataCards from '@/components/dashboard/statistics/DataCards';
 import { ProductDivisionPieChart } from '@/components/dashboard/statistics/ProductDivisionPieChart';
+import RecentAuditLogs from '@/components/dashboard/statistics/RecentAuditLogs';
 import RecentlyActiveCard from '@/components/dashboard/statistics/RecentlyActiveCard';
 import { RequestsAreaChart } from '@/components/dashboard/statistics/RequestsAreaChart';
 import WorldMapChart from '@/components/dashboard/statistics/WorldMapChart';
@@ -27,10 +28,13 @@ export default function Dashboard() {
         <div className="col-span-12 xl:col-span-4">
           <ProductDivisionPieChart />
         </div>
-        <div className="col-span-12 xl:col-span-6">
+        <div className="col-span-12 xl:col-span-5">
           <WorldMapChart />
         </div>
-        <div className="col-span-12 xl:col-span-6">
+        <div className="col-span-12 xl:col-span-7">
+          <RecentAuditLogs />
+        </div>
+        <div className="col-span-12">
           <RecentlyActiveCard />
         </div>
       </div>
