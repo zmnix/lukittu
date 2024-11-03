@@ -12,6 +12,7 @@ import {
   generateHMAC,
   privateDecrypt,
 } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getIp } from '@/lib/utils/header-helpers';
 import { downloadReleaseSchema } from '@/lib/validation/products/download-release-schema';
@@ -80,26 +81,26 @@ export async function GET(
     const ipAddress = await getIp();
 
     // TODO: Enable rate limiting
-    // if (ipAddress) {
-    //   const key = `license-heartbeat:${ipAddress}`;
-    //   const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
+    if (ipAddress) {
+      const key = `license-encrypted:${ipAddress}`;
+      const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
-    //   if (isLimited) {
-    //     return loggedResponse({
-    //       ...loggedResponseBase,
-    //       status: RequestStatus.RATE_LIMIT,
-    //       response: {
-    //         data: null,
-    //         result: {
-    //           timestamp: new Date(),
-    //           valid: false,
-    //           details: 'Rate limited',
-    //         },
-    //       },
-    //       httpStatus: HttpStatus.TOO_MANY_REQUESTS,
-    //     });
-    //   }
-    // }
+      if (isLimited) {
+        return loggedResponse({
+          ...loggedResponseBase,
+          status: RequestStatus.RATE_LIMIT,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'Rate limited',
+            },
+          },
+          httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+        });
+      }
+    }
 
     const team = await prisma.team.findUnique({
       where: { id: teamId },
@@ -168,6 +169,32 @@ export async function GET(
           },
         },
         httpStatus: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    const validatedSessionKeyHash = generateHMAC(validatedSessionKey);
+    const sessionKeyRatelimitKey = `session-key:${teamId}:${validatedSessionKeyHash}`;
+
+    const isSessionKeyLimited = await isRateLimited(
+      sessionKeyRatelimitKey,
+      1,
+      900,
+    ); // 1 request per 15 minutes
+
+    if (isSessionKeyLimited) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        status: RequestStatus.RATE_LIMIT,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Rate limited',
+          },
+        },
+        httpStatus: HttpStatus.TOO_MANY_REQUESTS,
       });
     }
 
