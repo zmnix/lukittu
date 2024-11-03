@@ -337,6 +337,8 @@
       "active_licenses": "Active licenses",
       "recent_audit_logs": "Recent audit logs",
       "recent_audit_logs_description": "Showing recent actions performed in the system.",
+      "no_recent_audit_logs": "No recent audit logs",
+      "no_recent_audit_logs_description": "No recent audit logs found. Audit logs are created when an action is performed in the system.",
       "requests": "Requests",
       "requests_description": "Showing license verify requests divided by status.",
       "last_hour": "Last hour",
