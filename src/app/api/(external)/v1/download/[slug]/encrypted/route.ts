@@ -335,7 +335,7 @@ export async function GET(
       return loggedResponse({
         ...loggedResponseBase,
         ...commonBase,
-        status: RequestStatus.INTERNAL_SERVER_ERROR,
+        status: RequestStatus.RELEASE_NOT_FOUND,
         response: {
           data: null,
           result: {
@@ -356,7 +356,7 @@ export async function GET(
       return loggedResponse({
         ...loggedResponseBase,
         ...commonBase,
-        status: RequestStatus.INTERNAL_SERVER_ERROR,
+        status: RequestStatus.RELEASE_NOT_FOUND,
         response: {
           data: null,
           result: {
