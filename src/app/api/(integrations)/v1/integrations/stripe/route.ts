@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     const stripe = new Stripe(team.stripeIntegration.apiKey, {
-      apiVersion: '2024-09-30.acacia',
+      apiVersion: '2024-10-28.acacia',
     });
 
     const event = stripe.webhooks.constructEvent(
