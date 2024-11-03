@@ -172,7 +172,7 @@ jobs:
             # Wait for application to be ready
             echo "⏳ Waiting for application to start..."
             for i in {1..12}; do
-              if curl -s http://localhost:3000/api/health > /dev/null; then
+              if curl -s http://localhost:3069/api/health > /dev/null; then
                 echo "✅ Application is ready!"
                 
                 echo "📝 Running migrations..."
