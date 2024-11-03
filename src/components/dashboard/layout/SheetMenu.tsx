@@ -44,7 +44,7 @@ export function SheetMenu() {
         </SheetTitle>
         <SheetHeader>
           <Button
-            className="flex items-center justify-center pb-2 pt-1"
+            className="flex items-center justify-center pb-2 pt-1 ring-0 focus-visible:ring-0"
             variant="link"
           >
             <Link className="flex items-center gap-2" href="/dashboard">

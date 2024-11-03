@@ -172,7 +172,7 @@ export default function LogViewer() {
                             onClick={() => handleLogClick(l)}
                           >
                             <Badge
-                              className="mr-2"
+                              className="mr-2 max-sm:hidden"
                               variant={
                                 l.statusCode >= 200 && l.statusCode < 300
                                   ? 'success'
@@ -190,6 +190,15 @@ export default function LogViewer() {
                               )}
                               {l.status}
                             </Badge>
+                            <span className="hidden max-sm:block">
+                              {l.statusCode >= 200 && l.statusCode < 300 ? (
+                                <CheckCircle className="mr-1 h-3 w-3 text-[#237f26] dark:text-green-400" />
+                              ) : l.statusCode === 500 ? (
+                                <XCircle className="mr-1 h-3 w-3 text-red-500 dark:text-red-400" />
+                              ) : (
+                                <AlertTriangle className="mr-1 h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                              )}
+                            </span>
                             <span className="mr-2">{l.method}</span>
                             <span className="truncate text-muted-foreground">
                               {l.path}

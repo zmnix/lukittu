@@ -31,7 +31,7 @@ import {
   Logs,
   MapPinOff,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -54,6 +54,7 @@ const fetchAuditLogs = async (url: string) => {
 export default function AuditLogTable() {
   const teamCtx = useContext(TeamContext);
   const t = useTranslations();
+  const locale = useLocale();
 
   const [auditLogModalOpen, setAuditLogModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<
@@ -178,7 +179,7 @@ export default function AuditLogTable() {
                                 {auditLog.user?.email}
                               </p>
                               <div className="flex items-center gap-1">
-                                <div className="truncate text-xs font-semibold text-muted-foreground">
+                                <div className="truncate text-sm font-semibold text-muted-foreground">
                                   {t(
                                     `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,
                                   )}
@@ -186,8 +187,17 @@ export default function AuditLogTable() {
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                                <div className="truncate text-xs text-muted-foreground">
-                                  <DateConverter date={auditLog.createdAt} />
+                                <div className="text-sm font-semibold text-muted-foreground">
+                                  {new Date(auditLog.createdAt).toLocaleString(
+                                    locale,
+                                    {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric',
+                                      hour: 'numeric',
+                                      minute: 'numeric',
+                                    },
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -383,7 +393,9 @@ export default function AuditLogTable() {
                           </TableCell>
                           <TableCell className="truncate">
                             <Badge className="text-xs" variant="primary">
-                              {auditLog.targetType}
+                              {t(
+                                `general.${auditLog.targetType.toLowerCase()}` as any,
+                              )}
                             </Badge>
                           </TableCell>
                           <TableCell className="truncate">

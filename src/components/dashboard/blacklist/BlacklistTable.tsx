@@ -25,11 +25,15 @@ import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { BlacklistModalProvider } from '@/providers/BlacklistModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
+import { BlacklistType } from '@prisma/client';
 import {
   ArrowDownUp,
   Ban,
   Clock,
   Filter,
+  Fingerprint,
+  Globe,
+  MapPinned,
   Search,
   ShieldAlert,
 } from 'lucide-react';
@@ -48,6 +52,23 @@ const fetchBlacklists = async (url: string) => {
   }
 
   return data;
+};
+
+const TypeBadge = ({ type }: { type: BlacklistType }) => {
+  const t = useTranslations();
+
+  const icon = {
+    [BlacklistType.IP_ADDRESS]: <MapPinned className="mr-1 h-3 w-3" />,
+    [BlacklistType.COUNTRY]: <Globe className="mr-1 h-3 w-3" />,
+    [BlacklistType.DEVICE_IDENTIFIER]: <Fingerprint className="mr-1 h-3 w-3" />,
+  };
+
+  return (
+    <Badge className="text-xs" variant="primary">
+      {icon[type]}
+      {t(`general.${type.toLowerCase()}` as any)}
+    </Badge>
+  );
 };
 
 export function BlacklistTable() {
@@ -170,11 +191,7 @@ export function BlacklistTable() {
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
                           <span className="sm:hidden">
-                            <Badge className="text-xs" variant="primary">
-                              {t(
-                                `general.${blacklist.type.toLowerCase()}` as any,
-                              )}
-                            </Badge>
+                            <TypeBadge type={blacklist.type} />
                           </span>
                           <p className="line-clamp-2 break-all font-medium">{`${blacklist.country ?? blacklist.value}`}</p>
                           <div className="flex items-center gap-4">
@@ -203,11 +220,7 @@ export function BlacklistTable() {
                         </div>
                         <div className="z-10 flex items-center space-x-2">
                           <span className="rounded-full px-2 py-1 text-xs font-medium max-sm:hidden">
-                            <Badge className="text-xs" variant="primary">
-                              {t(
-                                `general.${blacklist.type.toLowerCase()}` as any,
-                              )}
-                            </Badge>
+                            <TypeBadge type={blacklist.type} />
                           </span>
                           <BlacklistActionDropdown blacklist={blacklist} />
                         </div>
@@ -283,11 +296,7 @@ export function BlacklistTable() {
                           {blacklist.country ?? blacklist.value}
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge className="text-xs" variant="primary">
-                            {t(
-                              `general.${blacklist.type.toLowerCase()}` as any,
-                            )}
-                          </Badge>
+                          <TypeBadge type={blacklist.type} />
                         </TableCell>
                         <TableCell className="truncate">
                           {blacklist.hits}
