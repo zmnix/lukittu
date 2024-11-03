@@ -25,7 +25,15 @@ import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ProductModalProvider } from '@/providers/ProductModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp, Clock, Filter, Package, Rss, Search } from 'lucide-react';
+import {
+  ArrowDownUp,
+  Clock,
+  Filter,
+  Package,
+  Rocket,
+  Rss,
+  Search,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -168,29 +176,64 @@ export function ProductsTable() {
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
+                          <span className="sm:hidden">
+                            {product.latestRelease ? (
+                              <Badge variant="primary">
+                                <Rss className="mr-1 h-3 w-3" />
+                                {product.latestRelease}
+                              </Badge>
+                            ) : null}
+                          </span>
                           <p className="line-clamp-2 break-all font-medium">{`${product.name}`}</p>
                           <div className="flex items-center gap-1">
                             {product.url ? (
                               <Link
-                                className="line-clamp-1 break-all text-xs font-semibold text-primary"
+                                className="line-clamp-1 break-all text-sm font-semibold text-primary"
                                 href={product.url}
                               >
                                 {product.url}
                               </Link>
                             ) : (
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-sm text-muted-foreground">
                                 {t('general.unknown')}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <div className="text-xs text-muted-foreground">
-                              <DateConverter date={product.createdAt} />
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm font-semibold text-muted-foreground">
+                                {new Date(product.createdAt).toLocaleString(
+                                  locale,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                  },
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Rocket className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm text-muted-foreground">
+                                {product.totalReleases}
+                              </div>
                             </div>
                           </div>
                         </div>
                         <div className="z-10 flex items-center space-x-2">
+                          <span className="rounded-full px-2 py-1 text-xs font-medium max-sm:hidden">
+                            {product.latestRelease ? (
+                              <Badge variant="primary">
+                                <Rss className="mr-1 h-3 w-3" />
+                                {product.latestRelease}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground">N/A</span>
+                            )}
+                          </span>
                           <ProductsActionDropdown product={product} />
                         </div>
                       </div>
@@ -285,8 +328,8 @@ export function ProductsTable() {
                         </TableCell>
                         <TableCell className="truncate">
                           {product.latestRelease ? (
-                            <Badge variant="secondary">
-                              <Rss className="mr-1 h-4 w-4" />
+                            <Badge variant="primary">
+                              <Rss className="mr-1 h-3 w-3" />
                               {product.latestRelease}
                             </Badge>
                           ) : (

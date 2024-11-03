@@ -379,7 +379,7 @@ export default function AuditLogTable() {
                             </span>
                           </TableCell>
                           <TableCell className="truncate">
-                            <Badge className="text-xs" variant="secondary">
+                            <Badge className="text-xs" variant="primary">
                               {auditLog.targetType}
                             </Badge>
                           </TableCell>

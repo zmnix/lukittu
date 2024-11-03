@@ -193,7 +193,7 @@ export function MembersTable() {
                         </div>
                         <div className="z-10 flex items-center space-x-2">
                           <span className="rounded-full px-2 py-1 text-xs font-medium">
-                            <Badge className="text-xs" variant="secondary">
+                            <Badge className="text-xs" variant="primary">
                               {'isOwner' in member ? (
                                 <ChevronsUp className="mr-1 h-3 w-3" />
                               ) : (
@@ -288,7 +288,7 @@ export function MembersTable() {
                           </div>
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge className="text-xs" variant="secondary">
+                          <Badge className="text-xs" variant="primary">
                             {'isOwner' in member ? (
                               <ChevronsUp className="mr-1 h-3 w-3" />
                             ) : (
@@ -308,7 +308,7 @@ export function MembersTable() {
                           ).toLocaleString(locale)}
                         >
                           {'isInvitation' in member ? (
-                            <Badge className="text-xs" variant="secondary">
+                            <Badge className="text-xs" variant="primary">
                               {t('general.invitation_sent')}
                             </Badge>
                           ) : member.lastLoginAt ? (

@@ -167,13 +167,22 @@ export function CustomersTable() {
                           <p className="line-clamp-2 break-all font-medium">
                             {customer.email}
                           </p>
-                          <div className="mb-1 line-clamp-1 break-all text-xs font-semibold text-muted-foreground">
+                          <div className="mb-1 line-clamp-1 break-all text-sm font-semibold text-muted-foreground">
                             {customer.fullName ?? t('general.unknown')}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <div className="text-xs text-muted-foreground">
-                              <DateConverter date={customer.createdAt} />
+                            <div className="text-sm font-semibold text-muted-foreground">
+                              {new Date(customer.createdAt).toLocaleString(
+                                locale,
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: 'numeric',
+                                  minute: 'numeric',
+                                },
+                              )}
                             </div>
                           </div>
                         </div>

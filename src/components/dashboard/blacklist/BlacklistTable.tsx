@@ -25,7 +25,14 @@ import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { BlacklistModalProvider } from '@/providers/BlacklistModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp, Ban, Clock, Filter, Search } from 'lucide-react';
+import {
+  ArrowDownUp,
+  Ban,
+  Clock,
+  Filter,
+  Search,
+  ShieldAlert,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -162,20 +169,41 @@ export function BlacklistTable() {
                       >
                         <div className="absolute inset-0 -mx-2 rounded-lg transition-colors group-hover:bg-secondary/80" />
                         <div className="z-10">
+                          <span className="sm:hidden">
+                            <Badge className="text-xs" variant="primary">
+                              {t(
+                                `general.${blacklist.type.toLowerCase()}` as any,
+                              )}
+                            </Badge>
+                          </span>
                           <p className="line-clamp-2 break-all font-medium">{`${blacklist.country ?? blacklist.value}`}</p>
-                          <div className="mb-1 line-clamp-1 break-all text-xs font-semibold text-muted-foreground">
-                            {`${blacklist.hits} ${t('general.hits')}`}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <div className="text-xs text-muted-foreground">
-                              <DateConverter date={blacklist.createdAt} />
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm font-semibold text-muted-foreground">
+                                {new Date(blacklist.createdAt).toLocaleString(
+                                  locale,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                  },
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <ShieldAlert className="h-3.5 w-3.5 text-muted-foreground" />
+                              <div className="text-sm text-muted-foreground">
+                                {blacklist.hits}
+                              </div>
                             </div>
                           </div>
                         </div>
                         <div className="z-10 flex items-center space-x-2">
-                          <span className="rounded-full px-2 py-1 text-xs font-medium">
-                            <Badge className="text-xs" variant="secondary">
+                          <span className="rounded-full px-2 py-1 text-xs font-medium max-sm:hidden">
+                            <Badge className="text-xs" variant="primary">
                               {t(
                                 `general.${blacklist.type.toLowerCase()}` as any,
                               )}
@@ -255,7 +283,7 @@ export function BlacklistTable() {
                           {blacklist.country ?? blacklist.value}
                         </TableCell>
                         <TableCell className="truncate">
-                          <Badge className="text-xs" variant="secondary">
+                          <Badge className="text-xs" variant="primary">
                             {t(
                               `general.${blacklist.type.toLowerCase()}` as any,
                             )}
