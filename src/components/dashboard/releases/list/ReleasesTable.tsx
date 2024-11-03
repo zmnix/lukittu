@@ -189,7 +189,9 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                                 : 'secondary'
                             }
                           >
-                            {release.status}
+                            {t(
+                              `general.${release.status.toLowerCase()}` as any,
+                            )}
                           </Badge>
                         </TableCell>
                         <TableCell className="truncate">

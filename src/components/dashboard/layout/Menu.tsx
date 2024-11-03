@@ -457,7 +457,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                   <div className="flex items-center space-x-2">
                     <Badge
                       className="uppercase"
-                      variant={isCustom ? 'default' : 'secondary'}
+                      variant={isCustom ? 'primary' : 'secondary'}
                     >
                       {isCustom ? t('general.active') : t('general.basic')}
                     </Badge>
