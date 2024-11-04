@@ -221,7 +221,7 @@ export default function TeamsTable() {
                   <TableRow key={team.id}>
                     <TableCell className="truncate">{team.name}</TableCell>
                     <TableCell className="truncate">
-                      <Badge className="text-xs" variant="secondary">
+                      <Badge className="text-xs" variant="primary">
                         {team.ownerId === authCtx.session?.user.id ? (
                           <ChevronsUp className="mr-1 h-3 w-3" />
                         ) : (
