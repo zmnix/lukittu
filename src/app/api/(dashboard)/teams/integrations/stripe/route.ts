@@ -91,8 +91,9 @@ export async function POST(
     });
 
     try {
-      await stripe.accounts.list();
+      await stripe.customers.list();
     } catch (error) {
+      logger.error('Error occurred while validating Stripe API key', error);
       return NextResponse.json(
         {
           message: t('validation.stripe_api_key_invalid'),

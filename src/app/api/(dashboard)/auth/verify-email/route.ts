@@ -89,6 +89,7 @@ export async function POST(
         type: JwtTypes;
       };
     } catch (error) {
+      logger.error("Error occurred in 'verify-email' route", error);
       if (error instanceof jwt.TokenExpiredError) {
         return NextResponse.json(
           {

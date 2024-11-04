@@ -94,6 +94,7 @@ export async function POST(
         type: JwtTypes;
       };
     } catch (error) {
+      logger.error('Error verifying token in reset-password route', error);
       if (error instanceof jwt.TokenExpiredError) {
         return NextResponse.json(
           {

@@ -149,6 +149,10 @@ export async function GET(
         const decryptedBuffer = await privateDecrypt(sessionKey, privateKey);
         return Buffer.from(decryptedBuffer).toString('hex');
       } catch (error) {
+        logger.error(
+          'Error occurred while decrypting session key in download route',
+          error,
+        );
         return null;
       }
     };
