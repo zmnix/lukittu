@@ -21,7 +21,7 @@ export const setStripeIntegrationSchema = (
         .max(255, {
           message: t('validation.stripe_api_key_invalid'),
         })
-        .regex(/^sk_/, {
+        .regex(/^(sk_|rk_)/, {
           message: t('validation.stripe_api_key_invalid'),
         })
         .regex(/^[^\s]+$/, {

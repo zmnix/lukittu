@@ -170,7 +170,7 @@ export default function SetStripeIntegrationModal({
                     <div className="relative">
                       <Input
                         autoComplete="off"
-                        placeholder="sk_test_..."
+                        placeholder="rk_..."
                         type={showApiKey ? 'text' : 'password'}
                         {...field}
                       />
