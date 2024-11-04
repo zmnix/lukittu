@@ -380,7 +380,8 @@ export const handleCheckoutSessionCompleted = async (
         ? 'ACTIVATION'
         : 'CREATION';
     const expirationDate =
-      expirationStart?.toUpperCase() === 'CREATION'
+      (!expirationStart || expirationStart.toUpperCase() === 'CREATION') &&
+      expirationDays
         ? new Date(Date.now() + parsedExpirationDays * 24 * 60 * 60 * 1000)
         : null;
 
