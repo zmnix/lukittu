@@ -194,7 +194,7 @@ export function MembersTable() {
                         <div className="z-10 flex items-center space-x-2">
                           <span className="rounded-full px-2 py-1 text-xs font-medium">
                             <Badge className="text-xs" variant="primary">
-                              {'isOwner' in member ? (
+                              {'isOwner' in member && member.isOwner ? (
                                 <ChevronsUp className="mr-1 h-3 w-3" />
                               ) : (
                                 <ChevronUp className="mr-1 h-3 w-3" />
@@ -289,7 +289,7 @@ export function MembersTable() {
                         </TableCell>
                         <TableCell className="truncate">
                           <Badge className="text-xs" variant="primary">
-                            {'isOwner' in member ? (
+                            {'isOwner' in member && member.isOwner ? (
                               <ChevronsUp className="mr-1 h-3 w-3" />
                             ) : (
                               <ChevronUp className="mr-1 h-3 w-3" />
