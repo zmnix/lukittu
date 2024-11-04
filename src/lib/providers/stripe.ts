@@ -7,174 +7,224 @@ import { generateUniqueLicense } from '../licenses/generate-license';
 import { logger } from '../logging/logger';
 import { encryptLicenseKey, generateHMAC } from '../security/crypto';
 
-export const handleSubscriptionCreated = async (
-  subscription: Stripe.Subscription,
+export const handleInvoicePaid = async (
+  invoice: Stripe.Invoice,
   teamId: string,
   stripe: Stripe,
 ) => {
   try {
-    const stripeCustomerId = subscription.customer as string;
-    const stripeCustomer = await stripe.customers.retrieve(stripeCustomerId);
-
-    if (stripeCustomer.deleted) {
-      logger.info('Skipping: Customer not found or deleted');
+    if (!invoice.billing_reason) {
+      logger.info('Skipping: No billing reason associated with invoice');
       return;
     }
 
-    const item = subscription.items.data[0];
-
-    const product = await stripe.products.retrieve(
-      item.price.product as string,
+    const subscription = await stripe.subscriptions.retrieve(
+      invoice.subscription as string,
     );
 
-    const lukittuProductId = product.metadata.product_id;
-    const ipLimit = product.metadata.ip_limit as string | undefined;
-    const seats = product.metadata.seats as string | undefined;
+    const lukittuLicenseId = subscription.metadata.lukittu_license_id;
 
-    if (!lukittuProductId || !regex.uuidV4.test(lukittuProductId)) {
-      logger.info('Skipping: Invalid or missing product_id in metadata');
-      return;
-    }
-
-    const productExists = await prisma.product.findUnique({
-      where: {
-        id: lukittuProductId,
-      },
-    });
-
-    if (!productExists) {
-      logger.info('Skipping: Product not found in database', {
-        productId: lukittuProductId,
-      });
-      return;
-    }
-
-    const parsedIpLimit = parseInt(ipLimit || '');
-    if (ipLimit && (isNaN(parsedIpLimit) || parsedIpLimit < 0)) {
-      logger.info('Skipping: Invalid ip_limit');
-      return;
-    }
-
-    const parsedSeats = parseInt(seats || '');
-    if (seats && (isNaN(parsedSeats) || parsedSeats < 0)) {
-      logger.info('Skipping: Invalid seats');
-      return;
-    }
-
-    const metadata = [
-      {
-        key: 'Stripe sub',
-        value: subscription.id,
-      },
-      {
-        key: 'Stripe cus',
-        value: stripeCustomerId,
-      },
-      {
-        key: 'Stripe prod',
-        value: product.id,
-      },
-    ];
-
-    const license = await prisma.$transaction(async (prisma) => {
-      const lukittuCustomer = await prisma.customer.upsert({
-        where: {
-          email_teamId: {
-            email: stripeCustomer.email!,
-            teamId,
-          },
-        },
-        create: {
-          email: stripeCustomer.email!,
-          fullName: stripeCustomer.name ?? undefined,
-          teamId,
-          metadata,
-        },
-        update: {},
-      });
-
-      const licenseKey = await generateUniqueLicense(teamId);
-      const hmac = generateHMAC(`${licenseKey}:${teamId}`);
-
-      if (!licenseKey) {
-        logger.error('Failed to generate a unique license key');
+    if (invoice.billing_reason === 'subscription_create') {
+      if (lukittuLicenseId) {
+        logger.info('Skipping: License already exists for subscription');
         return;
       }
 
-      const encryptedLicenseKey = encryptLicenseKey(licenseKey);
+      const stripeCustomerId = subscription.customer as string;
+      const stripeCustomer = await stripe.customers.retrieve(stripeCustomerId);
 
-      const license = await prisma.license.create({
-        data: {
-          licenseKey: encryptedLicenseKey,
-          teamId,
-          customers: {
-            connect: {
-              id: lukittuCustomer.id,
-            },
-          },
-          licenseKeyLookup: hmac,
-          metadata,
-          products: {
-            connect: {
-              id: lukittuProductId,
-            },
-          },
-          ipLimit: ipLimit ? parsedIpLimit : null,
-          seats: seats ? parsedSeats : null,
-          expirationType: 'DATE',
-          expirationDate: new Date(subscription.current_period_end * 1000),
-        },
-        include: {
-          team: true,
-          products: true,
-        },
-      });
+      if (stripeCustomer.deleted) {
+        logger.info('Skipping: Customer not found or deleted');
+        return;
+      }
 
-      await stripe.subscriptions.update(subscription.id, {
-        metadata: {
-          ...subscription.metadata,
-          lukittu_license_id: license.id,
-          lukittu_customer_id: lukittuCustomer.id,
-          lukittu_license_key: licenseKey,
-          lukittu_event_description: 'Recurring subscription',
+      const item = subscription.items.data[0];
+
+      const product = await stripe.products.retrieve(
+        item.price.product as string,
+      );
+
+      const lukittuProductId = product.metadata.product_id;
+      const ipLimit = product.metadata.ip_limit as string | undefined;
+      const seats = product.metadata.seats as string | undefined;
+
+      if (!lukittuProductId || !regex.uuidV4.test(lukittuProductId)) {
+        logger.info('Skipping: Invalid or missing product_id in metadata');
+        return;
+      }
+
+      const productExists = await prisma.product.findUnique({
+        where: {
+          id: lukittuProductId,
         },
       });
 
-      await sendLicenseDistributionEmail({
-        customer: lukittuCustomer,
-        licenseKey,
-        license,
-        team: license.team,
+      if (!productExists) {
+        logger.info('Skipping: Product not found in database', {
+          productId: lukittuProductId,
+        });
+        return;
+      }
+
+      const parsedIpLimit = parseInt(ipLimit || '');
+      if (ipLimit && (isNaN(parsedIpLimit) || parsedIpLimit < 0)) {
+        logger.info('Skipping: Invalid ip_limit');
+        return;
+      }
+
+      const parsedSeats = parseInt(seats || '');
+      if (seats && (isNaN(parsedSeats) || parsedSeats < 0)) {
+        logger.info('Skipping: Invalid seats');
+        return;
+      }
+
+      const metadata = [
+        {
+          key: 'Stripe sub',
+          value: subscription.id,
+        },
+        {
+          key: 'Stripe cus',
+          value: stripeCustomerId,
+        },
+        {
+          key: 'Stripe prod',
+          value: product.id,
+        },
+      ];
+
+      const license = await prisma.$transaction(async (prisma) => {
+        const lukittuCustomer = await prisma.customer.upsert({
+          where: {
+            email_teamId: {
+              email: stripeCustomer.email!,
+              teamId,
+            },
+          },
+          create: {
+            email: stripeCustomer.email!,
+            fullName: stripeCustomer.name ?? undefined,
+            teamId,
+            metadata,
+          },
+          update: {},
+        });
+
+        const licenseKey = await generateUniqueLicense(teamId);
+        const hmac = generateHMAC(`${licenseKey}:${teamId}`);
+
+        if (!licenseKey) {
+          logger.error('Failed to generate a unique license key');
+          return;
+        }
+
+        const encryptedLicenseKey = encryptLicenseKey(licenseKey);
+
+        const license = await prisma.license.create({
+          data: {
+            licenseKey: encryptedLicenseKey,
+            teamId,
+            customers: {
+              connect: {
+                id: lukittuCustomer.id,
+              },
+            },
+            licenseKeyLookup: hmac,
+            metadata,
+            products: {
+              connect: {
+                id: lukittuProductId,
+              },
+            },
+            ipLimit: ipLimit ? parsedIpLimit : null,
+            seats: seats ? parsedSeats : null,
+            expirationType: 'DATE',
+            expirationDate: new Date(subscription.current_period_end * 1000),
+          },
+          include: {
+            team: true,
+            products: true,
+          },
+        });
+
+        await stripe.subscriptions.update(subscription.id, {
+          metadata: {
+            ...subscription.metadata,
+            lukittu_license_id: license.id,
+            lukittu_customer_id: lukittuCustomer.id,
+            lukittu_license_key: licenseKey,
+            lukittu_event_description: 'Recurring subscription',
+          },
+        });
+
+        await sendLicenseDistributionEmail({
+          customer: lukittuCustomer,
+          licenseKey,
+          license,
+          team: license.team,
+        });
+
+        return license;
+      });
+
+      logger.info('License created for subscription', {
+        subscriptionId: subscription.id,
+        teamId,
       });
 
       return license;
-    });
+    }
 
-    logger.info('Subscription created and license generated', {
-      licenseId: license?.id,
-      subscriptionId: subscription.id,
-      teamId,
-    });
+    if (invoice.billing_reason === 'subscription_cycle') {
+      if (!lukittuLicenseId || !regex.uuidV4.test(lukittuLicenseId)) {
+        logger.info('Skipping: No license ID found for subscription renewal');
+        return;
+      }
 
-    return license;
+      const license = await prisma.license.findUnique({
+        where: { id: lukittuLicenseId },
+      });
+
+      if (!license) {
+        logger.info('Skipping: License not found for renewal', {
+          lukittuLicenseId,
+          subscriptionId: subscription.id,
+        });
+        return;
+      }
+
+      const updatedLicense = await prisma.license.update({
+        where: { id: lukittuLicenseId },
+        data: {
+          expirationDate: new Date(subscription.current_period_end * 1000),
+        },
+      });
+
+      logger.info('License expiration updated on subscription renewal', {
+        licenseId: updatedLicense.id,
+        subscriptionId: subscription.id,
+        teamId,
+      });
+
+      return updatedLicense;
+    }
+
+    logger.info('Skipping: Unhandled billing reason', {
+      billingReason: invoice.billing_reason,
+    });
   } catch (error) {
-    logger.error('Error occurred in handleSubscriptionCreated', error);
+    logger.error('Error in handleInvoicePaid', error);
   }
 };
 
-export const handleSubscriptionUpdated = async (
+export const handleSubscriptionDeleted = async (
   subscription: Stripe.Subscription,
   teamId: string,
 ) => {
   try {
-    if (subscription.status !== 'active') {
-      logger.info('Skipping: Subscription status is not active');
-      return;
-    }
-
     const licenseId = subscription.metadata.lukittu_license_id;
 
-    if (!licenseId) {
+    if (!licenseId || !regex.uuidV4.test(licenseId)) {
       logger.info('Skipping: License ID not found in subscription metadata');
       return;
     }
@@ -198,53 +248,6 @@ export const handleSubscriptionUpdated = async (
         id: licenseId,
       },
       data: {
-        expirationDate: new Date(subscription.current_period_end * 1000),
-      },
-    });
-
-    logger.info('Subscription updated and license updated', {
-      licenseId: updatedLicense.id,
-      subscriptionId: subscription.id,
-      teamId,
-    });
-
-    return updatedLicense;
-  } catch (error) {
-    logger.error('Error occurred in handleSubscriptionUpdated', error);
-  }
-};
-
-export const handleSubscriptionDeleted = async (
-  subscription: Stripe.Subscription,
-  teamId: string,
-) => {
-  try {
-    const licenseId = subscription.metadata.lukittu_license_id;
-
-    if (!licenseId) {
-      logger.info('Skipping: License ID not found in subscription metadata');
-      return;
-    }
-
-    const license = await prisma.license.findUnique({
-      where: {
-        id: licenseId,
-      },
-    });
-
-    if (!license) {
-      logger.info('Skipping: License not found', {
-        licenseId,
-        subscriptionId: subscription.id,
-      });
-      return;
-    }
-
-    await prisma.license.update({
-      where: {
-        id: licenseId,
-      },
-      data: {
         expirationDate: new Date(),
       },
     });
@@ -254,6 +257,8 @@ export const handleSubscriptionDeleted = async (
       subscriptionId: subscription.id,
       teamId,
     });
+
+    return updatedLicense;
   } catch (error) {
     logger.error('Error occurred in handleSubscriptionDeleted', error);
   }

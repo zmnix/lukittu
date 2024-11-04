@@ -3,9 +3,8 @@ import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
 import {
   handleCheckoutSessionCompleted,
-  handleSubscriptionCreated,
+  handleInvoicePaid,
   handleSubscriptionDeleted,
-  handleSubscriptionUpdated,
 } from '@/lib/providers/stripe';
 import { isRateLimited } from '@/lib/security/rate-limiter';
 import { HttpStatus } from '@/types/http-status';
@@ -90,11 +89,8 @@ export async function POST(request: NextRequest) {
     );
 
     switch (event.type) {
-      case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object, teamId, stripe);
-        break;
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object, teamId);
+      case 'invoice.paid':
+        await handleInvoicePaid(event.data.object, teamId, stripe);
         break;
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object, teamId);

@@ -6,9 +6,8 @@ import { logger } from '../logging/logger';
 import { encryptLicenseKey, generateHMAC } from '../security/crypto';
 import {
   handleCheckoutSessionCompleted,
-  handleSubscriptionCreated,
+  handleInvoicePaid,
   handleSubscriptionDeleted,
-  handleSubscriptionUpdated,
 } from './stripe';
 
 jest.mock('../logging/logger', () => ({
@@ -73,6 +72,12 @@ describe('Stripe Integration', () => {
     metadata: {},
   } as unknown as Stripe.Subscription;
 
+  const mockInvoice = {
+    id: 'in_123',
+    subscription: 'sub_123',
+    status: 'paid',
+  } as unknown as Stripe.Invoice;
+
   beforeEach(() => {
     mockStripe = {
       checkout: {
@@ -91,6 +96,10 @@ describe('Stripe Integration', () => {
       },
       subscriptions: {
         update: jest.fn(),
+        retrieve: jest.fn(),
+      },
+      invoices: {
+        retrieve: jest.fn(),
       },
     } as unknown as jest.Mocked<Stripe>;
 
@@ -145,10 +154,19 @@ describe('Stripe Integration', () => {
       deleted: false,
     });
 
+    (mockStripe.invoices.retrieve as jest.Mock).mockResolvedValue({
+      id: 'in_123',
+      status: 'paid',
+    });
+
     (generateUniqueLicense as jest.Mock).mockResolvedValue('test-license-key');
     (generateHMAC as jest.Mock).mockReturnValue('test-hmac');
     (encryptLicenseKey as jest.Mock).mockReturnValue('encrypted-license-key');
     (sendLicenseDistributionEmail as jest.Mock).mockResolvedValue(undefined);
+
+    (mockStripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+      ...mockSubscription,
+    });
   });
 
   describe('handleCheckoutSessionCompleted', () => {
@@ -274,168 +292,177 @@ describe('Stripe Integration', () => {
     });
   });
 
-  describe('handleSubscriptionCreated', () => {
-    test('successfully creates a license for valid subscription', async () => {
-      const result = await handleSubscriptionCreated(
-        mockSubscription,
-        teamId,
-        mockStripe,
-      );
+  describe('handleInvoicePaid', () => {
+    test('successfully creates a license for subscription_create', async () => {
+      const invoice = {
+        ...mockInvoice,
+        billing_reason: 'subscription_create' as Stripe.Invoice.BillingReason,
+      };
+
+      (mockStripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+        ...mockSubscription,
+        metadata: {}, // Ensure no existing license
+      });
+
+      const result = await handleInvoicePaid(invoice, teamId, mockStripe);
 
       expect(result).toBeDefined();
-      expect(mockStripe.customers.retrieve).toHaveBeenCalledWith('cus_123');
-      expect(mockStripe.products.retrieve).toHaveBeenCalledWith('prod_123');
-      expect(prismaMock.customer.upsert).toHaveBeenCalled();
+      expect(mockStripe.subscriptions.retrieve).toHaveBeenCalledWith('sub_123');
       expect(prismaMock.license.create).toHaveBeenCalled();
       expect(mockStripe.subscriptions.update).toHaveBeenCalled();
-      expect(sendLicenseDistributionEmail).toHaveBeenCalled();
-    });
-
-    test('skips processing when customer is deleted', async () => {
-      (mockStripe.customers.retrieve as jest.Mock).mockResolvedValue({
-        deleted: true,
-      });
-
-      await handleSubscriptionCreated(mockSubscription, teamId, mockStripe);
-
       expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: Customer not found or deleted',
+        'License created for subscription',
+        expect.any(Object),
       );
-      expect(prismaMock.customer.upsert).not.toHaveBeenCalled();
     });
 
-    it('should skip if product not found from database', async () => {
-      prismaMock.product.findUnique.mockResolvedValue(null);
+    test('successfully updates license for subscription_cycle', async () => {
+      const invoice = {
+        ...mockInvoice,
+        billing_reason: 'subscription_cycle' as Stripe.Invoice.BillingReason,
+      };
 
-      await handleSubscriptionCreated(mockSubscription, teamId, mockStripe);
+      const updatedLicense = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        expirationDate: new Date(),
+      };
 
-      expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: Product not found in database',
-        {
-          productId: '123e4567-e89b-12d3-a456-426614174000',
-        },
-      );
-      expect(prismaMock.license.update).not.toHaveBeenCalled();
-    });
-
-    test('handles invalid product metadata', async () => {
-      (mockStripe.products.retrieve as jest.Mock).mockResolvedValue({
-        id: 'prod_123',
+      (mockStripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+        ...mockSubscription,
         metadata: {
-          product_id: 'invalid-uuid',
+          lukittu_license_id: '123e4567-e89b-12d3-a456-426614174000',
         },
+        current_period_end: Math.floor(Date.now() / 1000) + 86400 * 30,
       });
 
-      (mockStripe.customers.retrieve as jest.Mock).mockResolvedValue({
-        deleted: false,
-      });
-
-      await handleSubscriptionCreated(mockSubscription, teamId, mockStripe);
-
-      expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: Invalid or missing product_id in metadata',
-      );
-      expect(prismaMock.customer.upsert).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleSubscriptionUpdated', () => {
-    beforeEach(() => {
-      mockSubscription.metadata.lukittu_license_id = 'license_123';
       prismaMock.license.findUnique.mockResolvedValue({
-        id: 'license_123',
+        id: '123e4567-e89b-12d3-a456-426614174000',
       } as any);
-      prismaMock.license.update.mockResolvedValue({
-        id: 'license_123',
-      } as any);
-    });
 
-    test('successfully updates license expiration date', async () => {
-      const result = await handleSubscriptionUpdated(mockSubscription, teamId);
+      prismaMock.license.update.mockResolvedValue(updatedLicense as any);
+
+      const result = await handleInvoicePaid(invoice, teamId, mockStripe);
 
       expect(result).toBeDefined();
+      expect(result).toEqual(updatedLicense);
       expect(prismaMock.license.update).toHaveBeenCalledWith({
-        where: { id: 'license_123' },
+        where: { id: '123e4567-e89b-12d3-a456-426614174000' },
         data: {
           expirationDate: expect.any(Date),
         },
       });
     });
 
-    test('skips processing when subscription is not active', async () => {
-      const inactiveSubscription = {
-        ...mockSubscription,
-        status: 'canceled',
-      } as Stripe.Subscription;
+    test('skips if no billing reason', async () => {
+      const invoice = {
+        ...mockInvoice,
+        billing_reason: null,
+      };
 
-      await handleSubscriptionUpdated(inactiveSubscription, teamId);
+      await handleInvoicePaid(invoice, teamId, mockStripe);
 
       expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: Subscription status is not active',
+        'Skipping: No billing reason associated with invoice',
       );
-      expect(prismaMock.license.update).not.toHaveBeenCalled();
+      expect(prismaMock.license.create).not.toHaveBeenCalled();
     });
 
-    test('handles missing license ID in metadata', async () => {
-      const subscriptionWithoutLicenseId = {
-        ...mockSubscription,
-        metadata: {},
-      } as Stripe.Subscription;
+    test('skips if license already exists for subscription_create', async () => {
+      const invoice = {
+        ...mockInvoice,
+        billing_reason: 'subscription_create' as Stripe.Invoice.BillingReason,
+      };
 
-      await handleSubscriptionUpdated(subscriptionWithoutLicenseId, teamId);
+      (mockStripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+        ...mockSubscription,
+        metadata: { lukittu_license_id: 'existing_license' },
+      });
+
+      await handleInvoicePaid(invoice, teamId, mockStripe);
 
       expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: License ID not found in subscription metadata',
+        'Skipping: License already exists for subscription',
       );
-      expect(prismaMock.license.update).not.toHaveBeenCalled();
+      expect(prismaMock.license.create).not.toHaveBeenCalled();
     });
 
-    test('handles non-existent license', async () => {
-      prismaMock.license.findUnique.mockResolvedValue(null);
+    test('skips if customer is deleted', async () => {
+      const invoice = {
+        ...mockInvoice,
+        billing_reason: 'subscription_create' as Stripe.Invoice.BillingReason,
+      };
 
-      await handleSubscriptionUpdated(mockSubscription, teamId);
+      (mockStripe.customers.retrieve as jest.Mock).mockResolvedValue({
+        deleted: true,
+      });
+
+      await handleInvoicePaid(invoice, teamId, mockStripe);
 
       expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: License not found',
-        expect.any(Object),
+        'Skipping: Customer not found or deleted',
       );
-      expect(prismaMock.license.update).not.toHaveBeenCalled();
+      expect(prismaMock.license.create).not.toHaveBeenCalled();
+    });
+
+    test('handles database error gracefully', async () => {
+      const invoice = {
+        ...mockInvoice,
+        billing_reason: 'subscription_create' as Stripe.Invoice.BillingReason,
+      };
+
+      (mockStripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+        ...mockSubscription,
+      });
+
+      const error = new Error('Database error');
+      prismaMock.$transaction.mockRejectedValue(error);
+
+      const result = await handleInvoicePaid(invoice, teamId, mockStripe);
+
+      expect(result).toBeUndefined();
+      expect(logger.error).toHaveBeenCalledWith(
+        'Error in handleInvoicePaid',
+        error,
+      );
     });
   });
 
   describe('handleSubscriptionDeleted', () => {
     beforeEach(() => {
-      mockSubscription.metadata.lukittu_license_id = 'license_123';
-      prismaMock.license.findUnique.mockResolvedValue({
-        id: 'license_123',
-      } as any);
-      prismaMock.license.update.mockResolvedValue({
-        id: 'license_123',
-      } as any);
+      jest.clearAllMocks();
     });
 
-    test('successfully expires license on subscription deletion', async () => {
-      await handleSubscriptionDeleted(mockSubscription, teamId);
+    test('successfully expires license', async () => {
+      const subscription = {
+        ...mockSubscription,
+        metadata: {
+          lukittu_license_id: '123e4567-e89b-12d3-a456-426614174000',
+        }, // Valid UUID
+      };
+
+      const updatedLicense = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        expirationDate: new Date(),
+      };
+
+      prismaMock.license.findUnique.mockResolvedValue({
+        id: '123e4567-e89b-12d3-a456-426614174000',
+      } as any);
+
+      prismaMock.license.update.mockResolvedValue(updatedLicense as any);
+
+      await handleSubscriptionDeleted(subscription, teamId);
 
       expect(prismaMock.license.update).toHaveBeenCalledWith({
-        where: { id: 'license_123' },
+        where: { id: '123e4567-e89b-12d3-a456-426614174000' },
         data: {
           expirationDate: expect.any(Date),
         },
       });
-      expect(logger.info).toHaveBeenCalledWith(
-        'Subscription deleted and license expired',
-        expect.any(Object),
-      );
     });
 
-    test('handles missing license ID in metadata', async () => {
-      const subscriptionWithoutLicenseId = {
-        ...mockSubscription,
-        metadata: {},
-      } as Stripe.Subscription;
-
-      await handleSubscriptionDeleted(subscriptionWithoutLicenseId, teamId);
+    test('skips if no license ID in metadata', async () => {
+      await handleSubscriptionDeleted(mockSubscription, teamId);
 
       expect(logger.info).toHaveBeenCalledWith(
         'Skipping: License ID not found in subscription metadata',
@@ -443,16 +470,43 @@ describe('Stripe Integration', () => {
       expect(prismaMock.license.update).not.toHaveBeenCalled();
     });
 
-    test('handles non-existent license', async () => {
+    test('skips if license not found', async () => {
+      const subscription = {
+        ...mockSubscription,
+        metadata: {
+          lukittu_license_id: '123e4567-e89b-12d3-a456-426614174000',
+        },
+      };
+
       prismaMock.license.findUnique.mockResolvedValue(null);
 
-      await handleSubscriptionDeleted(mockSubscription, teamId);
+      await handleSubscriptionDeleted(subscription, teamId);
 
-      expect(logger.info).toHaveBeenCalledWith(
-        'Skipping: License not found',
-        expect.any(Object),
-      );
+      expect(logger.info).toHaveBeenCalledWith('Skipping: License not found', {
+        licenseId: '123e4567-e89b-12d3-a456-426614174000',
+        subscriptionId: subscription.id,
+      });
       expect(prismaMock.license.update).not.toHaveBeenCalled();
+    });
+
+    test('handles errors gracefully', async () => {
+      const error = new Error('Update failed');
+      const subscription = {
+        ...mockSubscription,
+        metadata: {
+          lukittu_license_id: '123e4567-e89b-12d3-a456-426614174000',
+        },
+      };
+
+      prismaMock.license.findUnique.mockResolvedValue({
+        id: '123e4567-e89b-12d3-a456-426614174000',
+      } as any);
+
+      prismaMock.license.update.mockRejectedValue(error);
+
+      await expect(
+        handleSubscriptionDeleted(subscription, teamId),
+      ).resolves.toBeUndefined();
     });
   });
 });
