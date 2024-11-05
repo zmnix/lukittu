@@ -2,17 +2,21 @@
 import { IProductsReleasesSetLatestResponse } from '@/app/api/(dashboard)/products/releases/set-latest/route';
 import SetReleaseModal from '@/components/dashboard/releases/list/SetReleaseModal';
 import { DeleteDeleteConfirmModal } from '@/components/dashboard/releases/ReleaseDeleteConfirmModal';
-import { Release } from '@prisma/client';
+import { Release, ReleaseFile } from '@prisma/client';
 import { createContext, useState } from 'react';
+
+type ReleaseExtended = Release & {
+  file: ReleaseFile | null;
+};
 
 export const ReleaseModalContext = createContext({
   setReleaseToDelete: (release: Release | null) => {},
-  setReleaseToEdit: (release: Release | null) => {},
+  setReleaseToEdit: (release: ReleaseExtended | null) => {},
   setReleaseModalOpen: (open: boolean) => {},
   setReleaseToDeleteModalOpen: (open: boolean) => {},
   setReleaseAsLatest: (release: Release) =>
     ({}) as Promise<IProductsReleasesSetLatestResponse>,
-  releaseToEdit: null as Release | null,
+  releaseToEdit: null as ReleaseExtended | null,
   releaseToDelete: null as Release | null,
   releaseToDeleteModalOpen: false,
   releaseModalOpen: false,
@@ -26,7 +30,9 @@ export const ReleaseModalProvider = ({
   const [releaseToDelete, setReleaseToDelete] = useState<Release | null>(null);
   const [releaseToDeleteModalOpen, setReleaseToDeleteModalOpen] =
     useState(false);
-  const [releaseToEdit, setReleaseToEdit] = useState<Release | null>(null);
+  const [releaseToEdit, setReleaseToEdit] = useState<ReleaseExtended | null>(
+    null,
+  );
   const [releaseModalOpen, setReleaseModalOpen] = useState(false);
 
   const setReleaseAsLatest = async (release: Release) => {

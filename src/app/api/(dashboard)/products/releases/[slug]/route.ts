@@ -79,7 +79,8 @@ export async function PUT(
       );
     }
 
-    const { metadata, productId, status, version } = validated.data;
+    const { metadata, productId, status, version, keepExistingFile } =
+      validated.data;
 
     if (file) {
       if (!(file instanceof File)) {
@@ -204,16 +205,24 @@ export async function PUT(
       );
     }
 
-    const existingReleaseFile = await prisma.releaseFile.findUnique({
-      where: { releaseId },
-    });
+    await prisma.$transaction(async (prisma) => {
+      const existingReleaseFile = await prisma.releaseFile.findUnique({
+        where: { releaseId },
+      });
 
-    if (existingReleaseFile) {
-      await deleteFileFromPrivateS3(
-        process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
-        existingReleaseFile.key,
-      );
-    }
+      const newFileUploaded = file && existingReleaseFile;
+      const fileDeleted = !file && existingReleaseFile && !keepExistingFile;
+      if (newFileUploaded || fileDeleted) {
+        await deleteFileFromPrivateS3(
+          process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
+          existingReleaseFile.key,
+        );
+
+        await prisma.releaseFile.delete({
+          where: { releaseId },
+        });
+      }
+    });
 
     let fileKey: string | null = null;
     let checksum: string | null = null;
@@ -266,21 +275,12 @@ export async function PUT(
         teamId: team.id,
         file: file
           ? {
-              upsert: {
-                create: {
-                  key: fileKey!,
-                  size: file.size,
-                  checksum: checksum!,
-                  name: file.name,
-                  mainClassName,
-                },
-                update: {
-                  key: fileKey!,
-                  size: file.size,
-                  checksum: checksum!,
-                  name: file.name,
-                  mainClassName,
-                },
+              create: {
+                key: fileKey!,
+                checksum: checksum!,
+                name: file.name,
+                size: file.size,
+                mainClassName,
               },
             }
           : undefined,

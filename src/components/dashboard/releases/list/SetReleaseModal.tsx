@@ -58,6 +58,7 @@ export default function SetReleaseModal() {
       version: '',
       metadata: [],
       productId: '',
+      keepExistingFile: false,
     },
   });
 
@@ -68,6 +69,7 @@ export default function SetReleaseModal() {
 
   useEffect(() => {
     if (ctx.releaseToEdit) {
+      form.setValue('keepExistingFile', ctx.releaseToEdit.file !== null);
       form.setValue('version', ctx.releaseToEdit.version);
       form.setValue('status', ctx.releaseToEdit.status);
       form.setValue('productId', ctx.releaseToEdit.productId);
@@ -85,6 +87,8 @@ export default function SetReleaseModal() {
       );
     }
   }, [ctx.releaseToEdit, form]);
+
+  const keepExistingFile = form.watch('keepExistingFile');
 
   const handleReleaseCreate = async (payload: SetReleaseSchema) => {
     const formData = new FormData();
@@ -285,7 +289,7 @@ export default function SetReleaseModal() {
               />
               <FormItem>
                 <Label>{t('general.file')}</Label>
-                {!file ? (
+                {!file && !keepExistingFile ? (
                   <div
                     className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed p-6"
                     onClick={handleFileSelect}
@@ -305,9 +309,11 @@ export default function SetReleaseModal() {
                     <span className="flex w-full items-center gap-2">
                       <FileIcon className="h-8 w-8" />
                       <span className="text-sm font-medium text-muted-foreground">
-                        {file.name}
+                        {file?.name ?? ctx.releaseToEdit?.file?.name}
                         {' - '}
-                        {bytesToSize(file.size)}
+                        {bytesToSize(
+                          file?.size ?? ctx.releaseToEdit?.file?.size ?? 0,
+                        )}
                       </span>
                     </span>
                     <Button
@@ -315,7 +321,10 @@ export default function SetReleaseModal() {
                       size="icon"
                       type="button"
                       variant="ghost"
-                      onClick={() => setFile(null)}
+                      onClick={() => {
+                        setFile(null);
+                        form.setValue('keepExistingFile', false);
+                      }}
                     >
                       <X size={24} />
                     </Button>

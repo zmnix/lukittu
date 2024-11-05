@@ -4,6 +4,7 @@ import { logger } from '@/lib/logging/logger';
 import {
   ExternalVerifyResponse,
   loggedResponse,
+  logRequest,
 } from '@/lib/logging/request-log';
 import { getFileFromPrivateS3 } from '@/lib/providers/aws-s3';
 import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
@@ -677,6 +678,21 @@ export async function GET(
     const encryptedStream = fileStream.pipeThrough(
       createEncryptionStream(validatedSessionKey),
     );
+
+    logRequest({
+      deviceIdentifier,
+      pathname: request.nextUrl.pathname,
+      requestBody: null,
+      responseBody: null,
+      requestTime,
+      status: RequestStatus.VALID,
+      customerId,
+      productId,
+      licenseKeyLookup,
+      teamId,
+      statusCode: HttpStatus.OK,
+      method: request.method,
+    });
 
     return new Response(encryptedStream, {
       headers: {
