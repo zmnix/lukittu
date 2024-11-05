@@ -112,7 +112,8 @@
     "state_min_length": "State must be at least 2 characters long!",
     "state_max_length": "State must be at most 100 characters long!",
     "release_not_found": "Release not found!",
-    "latest_release_must_be_published": "Latest release must be published!"
+    "latest_release_must_be_published": "Latest release must be published!",
+    "file_extension_not_found": "File must have an supported extension!"
   },
   "general": {
     "path": "Path",

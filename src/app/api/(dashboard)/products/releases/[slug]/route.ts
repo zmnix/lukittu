@@ -241,7 +241,18 @@ export async function PUT(
 
       checksum = generatedChecksum;
 
-      if (file.type === 'application/java-archive') {
+      const fileExtension = file.name.split('.').pop();
+
+      if (!fileExtension || !fileExtension.length) {
+        return NextResponse.json(
+          {
+            message: t('validation.file_extension_not_found'),
+          },
+          { status: HttpStatus.BAD_REQUEST },
+        );
+      }
+
+      if (fileExtension === 'jar') {
         const foundMainClassName = await getMainClassFromJar(file);
         if (!foundMainClassName) {
           return NextResponse.json(
@@ -255,7 +266,7 @@ export async function PUT(
         mainClassName = foundMainClassName;
       }
 
-      fileKey = `releases/${team.id}/${productId}-${version}.${file.type.split('/')[1]}`;
+      fileKey = `releases/${team.id}/${productId}-${version}.${fileExtension}`;
       const fileStream = file.stream();
       await uploadFileToPrivateS3(
         process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
