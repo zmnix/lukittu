@@ -25,7 +25,6 @@ import { ReleaseModalProvider } from '@/providers/ReleasesModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp, CloudOff, CloudUpload, Rss } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
@@ -51,7 +50,6 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
   const t = useTranslations();
   const { showDropdown, containerRef } = useTableScroll();
   const teamCtx = useContext(TeamContext);
-  const router = useRouter();
 
   const [sortColumn, setSortColumn] = useState<'createdAt' | 'version'>(
     'createdAt',
@@ -162,13 +160,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                 ) : (
                   <TableBody>
                     {releases.map((release) => (
-                      <TableRow
-                        key={release.id}
-                        className="cursor-pointer"
-                        onClick={() =>
-                          router.push(`/dashboard/releases/${release.id}`)
-                        }
-                      >
+                      <TableRow key={release.id}>
                         <TableCell className="truncate">
                           <div className="flex items-center gap-2">
                             {release.version}{' '}

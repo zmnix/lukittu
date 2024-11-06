@@ -19,10 +19,10 @@ import {
 import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp, CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
+import { CountryFlag } from '../../misc/CountryFlag';
 
 interface HeartbeatPreviewTableProps {
   licenseId?: string;
@@ -43,7 +43,6 @@ export default function HeartbeatPreviewTable({
   licenseId,
 }: HeartbeatPreviewTableProps) {
   const t = useTranslations();
-  const router = useRouter();
   const teamCtx = useContext(TeamContext);
 
   const [page, setPage] = useState(1);
@@ -122,18 +121,20 @@ export default function HeartbeatPreviewTable({
               ) : (
                 <TableBody>
                   {heartbeats.map((heartbeat) => (
-                    <TableRow
-                      key={heartbeat.id}
-                      className="cursor-pointer"
-                      onClick={() =>
-                        router.push(`/dashboard/heartbeats/${heartbeat.id}`)
-                      }
-                    >
+                    <TableRow key={heartbeat.id}>
                       <TableCell>{heartbeat.deviceIdentifier}</TableCell>
-                      <TableCell>
+                      <TableCell className="truncate">
                         <DateConverter date={heartbeat.lastBeatAt} />
                       </TableCell>
-                      <TableCell>{heartbeat.ipAddress}</TableCell>
+                      <TableCell className="flex items-center gap-2 truncate">
+                        {heartbeat.alpha2 && (
+                          <CountryFlag
+                            countryCode={heartbeat.alpha2}
+                            countryName={heartbeat.country}
+                          />
+                        )}
+                        {heartbeat.ipAddress}
+                      </TableCell>
                       <TableCell>
                         {heartbeat.status === 'inactive' ? (
                           <Badge variant="error">

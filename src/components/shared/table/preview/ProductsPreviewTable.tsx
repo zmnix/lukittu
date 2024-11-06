@@ -161,7 +161,7 @@ export default function ProductsPreviewTable({
                         <TableCell className="truncate">
                           {product.name}
                         </TableCell>
-                        <TableCell className="truncaate">
+                        <TableCell className="truncate">
                           <DateConverter date={product.createdAt} />
                         </TableCell>
                         <TableCell

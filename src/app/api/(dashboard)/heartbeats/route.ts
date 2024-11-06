@@ -1,7 +1,9 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
+import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
 import { getSession } from '@/lib/security/session';
+import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
@@ -14,6 +16,8 @@ type HeartbeatStatus = 'active' | 'inactive';
 export type ILicenseHeartbeatsGetSuccessResponse = {
   heartbeats: (Heartbeat & {
     status: HeartbeatStatus;
+    country: string | null;
+    alpha2: string | null;
   })[];
   totalResults: number;
 };
@@ -131,6 +135,8 @@ export async function GET(
       where,
     });
 
+    const geoData = await getCloudflareVisitorData();
+
     const heartbeats = team.heartbeats;
 
     const heartbeatsWithStatus = heartbeats.map((heartbeat) => {
@@ -147,6 +153,8 @@ export async function GET(
 
       return {
         ...heartbeat,
+        country: iso2toIso3(geoData?.alpha2 ?? null),
+        alpha2: geoData?.alpha2 ?? null,
         status,
       };
     });

@@ -277,6 +277,7 @@ model Heartbeat {
   teamId           String
   team             Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   ipAddress        String?
+  country          String?
   deviceIdentifier String
   lastBeatAt       DateTime @default(now())
   createdAt        DateTime @default(now())
