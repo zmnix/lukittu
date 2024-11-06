@@ -152,14 +152,18 @@ export default function RequestLogsPreviewTable({
                       className="cursor-pointer"
                       onClick={() => router.push(`/dashboard/logs/${log.id}`)}
                     >
-                      <TableCell className="flex items-center gap-2 truncate">
-                        {log.alpha2 && (
-                          <CountryFlag
-                            countryCode={log.alpha2}
-                            countryName={log.country}
-                          />
-                        )}
-                        {log.ipAddress}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="flex-shrink-0">
+                            {log.alpha2 && (
+                              <CountryFlag
+                                countryCode={log.alpha2}
+                                countryName={log.country}
+                              />
+                            )}
+                          </span>
+                          <span>{log.ipAddress}</span>
+                        </div>
                       </TableCell>
                       <TableCell className="truncate">
                         <Badge

@@ -126,14 +126,18 @@ export default function HeartbeatPreviewTable({
                       <TableCell className="truncate">
                         <DateConverter date={heartbeat.lastBeatAt} />
                       </TableCell>
-                      <TableCell className="flex items-center gap-2 truncate">
-                        {heartbeat.alpha2 && (
-                          <CountryFlag
-                            countryCode={heartbeat.alpha2}
-                            countryName={heartbeat.country}
-                          />
-                        )}
-                        {heartbeat.ipAddress}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="flex-shrink-0">
+                            {heartbeat.alpha2 && (
+                              <CountryFlag
+                                countryCode={heartbeat.alpha2}
+                                countryName={heartbeat.country}
+                              />
+                            )}
+                          </span>
+                          <span>{heartbeat.ipAddress}</span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         {heartbeat.status === 'inactive' ? (

@@ -124,16 +124,18 @@ export default function SessionsTable() {
                   <TableCell className="truncate">
                     {`${session.browser ?? 'N/A'} - ${session.os ?? ''}`.trim()}
                   </TableCell>
-                  <TableCell className="flex items-center gap-2">
-                    {session.alpha2 && (
-                      <CountryFlag
-                        countryCode={session.alpha2}
-                        countryName={session.country}
-                      />
-                    )}
-                    {session.ipAddress === '::1'
-                      ? '127.0.0.1'
-                      : session.ipAddress}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="flex-shrink-0">
+                        {session.alpha2 && (
+                          <CountryFlag
+                            countryCode={session.alpha2}
+                            countryName={session.country}
+                          />
+                        )}
+                      </span>
+                      <span>{session.ipAddress}</span>
+                    </div>
                   </TableCell>
                   <TableCell className="truncate">
                     <DateConverter date={session.createdAt} />

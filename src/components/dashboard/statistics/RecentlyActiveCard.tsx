@@ -157,14 +157,18 @@ export default function RecentlyActiveCard() {
                         {row.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      {row.alpha2 && (
-                        <CountryFlag
-                          countryCode={row.alpha2}
-                          countryName={row.country}
-                        />
-                      )}
-                      {row.ipAddress === '::1' ? '127.0.0.1' : row.ipAddress}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="flex-shrink-0">
+                          {row.alpha2 && (
+                            <CountryFlag
+                              countryCode={row.alpha2}
+                              countryName={row.country}
+                            />
+                          )}
+                        </span>
+                        <span>{row.ipAddress}</span>
+                      </div>
                     </TableCell>
                     <TableCell className="truncate">
                       <DateConverter date={row.createdAt} />
