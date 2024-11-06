@@ -51,7 +51,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: '/dashboard/licenses',
           translation: 'licenses',
-          active: pathname === '/dashboard/licenses',
+          active: pathname.startsWith('/dashboard/licenses'),
           icon: KeyRound,
           submenus: [],
         },
@@ -75,7 +75,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: '/dashboard/customers',
           translation: 'customers',
-          active: pathname === '/dashboard/customers',
+          active: pathname.startsWith('/dashboard/customers'),
           icon: Users,
           submenus: [],
         },
