@@ -115,7 +115,7 @@ export default function RecentlyActiveCard() {
         </div>
       </CardHeader>
       <CardContent>
-        {hasData ? (
+        {hasData || isLoading ? (
           <Table>
             <TableHeader>
               <TableRow>

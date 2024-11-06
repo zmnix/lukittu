@@ -109,7 +109,7 @@ export default function RecentAuditLogs() {
         </div>
       </CardHeader>
       <CardContent>
-        {hasData ? (
+        {hasData || isLoading ? (
           <Table>
             <TableHeader>
               <TableRow>
