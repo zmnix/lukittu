@@ -96,7 +96,11 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
     menuList.reduce(
       (acc, group) => {
         group.menus.forEach((menu) => {
-          acc[menu.translation] = true;
+          const hasActiveSubmenu = menu.submenus?.some(
+            (submenu) => submenu.active,
+          );
+
+          acc[menu.translation] = !hasActiveSubmenu;
         });
         return acc;
       },
