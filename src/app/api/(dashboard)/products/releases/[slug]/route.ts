@@ -15,7 +15,7 @@ import {
   getSelectedTeam,
 } from '@/lib/utils/header-helpers';
 import { getMainClassFromJar } from '@/lib/utils/java-helpers';
-import { bytesToSize } from '@/lib/utils/number-helpers';
+import { bytesToMb, bytesToSize } from '@/lib/utils/number-helpers';
 import {
   SetReleaseSchema,
   setReleaseSchema,
@@ -135,6 +135,7 @@ export async function PUT(
               products: {
                 where: { id: validated.data.productId },
               },
+              limits: true,
             },
           },
         },
@@ -160,6 +161,16 @@ export async function PUT(
     }
 
     const team = session.user.teams[0];
+
+    if (!team.limits) {
+      // Should never happen
+      return NextResponse.json(
+        {
+          message: t('general.server_error'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
 
     if (!team.products.length) {
       return NextResponse.json(
@@ -228,6 +239,36 @@ export async function PUT(
     let checksum: string | null = null;
     let mainClassName: string | null = null;
     if (file) {
+      const teamReleases = await prisma.release.findMany({
+        where: {
+          teamId: team.id,
+        },
+        include: {
+          file: true,
+        },
+      });
+
+      const totalStorageUsed = teamReleases.reduce(
+        (acc, release) => acc + (release.file?.size || 0),
+        0,
+      );
+
+      const maxStorage = team.limits.maxStorage || 0; // In MB
+      const totalStorageUsedMb = bytesToMb(totalStorageUsed);
+      const uploadeReleaseSizeMb = bytesToMb(file.size);
+      const newTotalStorageUsedMb = totalStorageUsedMb + uploadeReleaseSizeMb;
+
+      if (newTotalStorageUsedMb > maxStorage) {
+        return NextResponse.json(
+          {
+            message: t('validation.storage_limit_reached', {
+              maxStorage,
+            }),
+          },
+          { status: HttpStatus.BAD_REQUEST },
+        );
+      }
+
       const generatedChecksum = await generateMD5Hash(file);
 
       if (!generatedChecksum) {

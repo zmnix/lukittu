@@ -259,6 +259,7 @@ export type ITeamGetSuccessResponse = {
     publicKey: string;
     settings: Settings;
     limits: Limits;
+    totalStorageUsed: number;
     counts: {
       memberCount: number;
       productCount: number;
@@ -334,6 +335,19 @@ export async function GET(
       );
     }
 
+    const teamReleaseFiles = await prisma.releaseFile.findMany({
+      where: {
+        release: {
+          teamId,
+        },
+      },
+    });
+
+    const totalStorageUsed = teamReleaseFiles.reduce(
+      (acc, file) => acc + file.size,
+      0,
+    );
+
     const team = session.user.teams[0];
 
     return NextResponse.json({
@@ -344,6 +358,7 @@ export async function GET(
         _count: undefined,
         keyPair: undefined,
         settings: team.settings!,
+        totalStorageUsed,
         limits: team.limits!,
         counts: {
           memberCount: team._count.users,

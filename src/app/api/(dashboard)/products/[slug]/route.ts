@@ -2,6 +2,7 @@ import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
+import { deleteFileFromPrivateS3 } from '@/lib/providers/aws-s3';
 import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
@@ -214,6 +215,13 @@ export async function DELETE(
         id: productId,
         teamId: selectedTeam,
       },
+      include: {
+        releases: {
+          include: {
+            file: true,
+          },
+        },
+      },
     });
 
     if (!product) {
@@ -234,10 +242,41 @@ export async function DELETE(
       );
     }
 
-    await prisma.product.delete({
-      where: {
-        id: productId,
-      },
+    await prisma.$transaction(async (prisma) => {
+      await prisma.product.delete({
+        where: {
+          id: productId,
+        },
+      });
+
+      const fileIds = product.releases
+        .map((release) => release.file?.id)
+        .filter(Boolean) as string[];
+
+      logger.info(
+        `Product ${product.id} deleted, deleting ${fileIds.length} files`,
+        {
+          product: product.id,
+          files: fileIds,
+        },
+      );
+
+      await prisma.releaseFile.deleteMany({
+        where: {
+          id: {
+            in: fileIds,
+          },
+        },
+      });
+
+      const deleteFilePromises = fileIds.map((fileId) =>
+        deleteFileFromPrivateS3(
+          process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
+          fileId,
+        ),
+      );
+
+      await Promise.all(deleteFilePromises);
     });
 
     const response = {

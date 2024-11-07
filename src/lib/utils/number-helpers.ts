@@ -39,3 +39,6 @@ export function bytesToSize(bytes: number) {
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
 }
+
+export const bytesToMb = (bytes: number) =>
+  Math.round((bytes / 1024 / 1024) * 100) / 100;

@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { bytesToMb } from '@/lib/utils/number-helpers';
 import { Clock, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -40,6 +41,12 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
       current: team?.counts.memberCount ?? 0,
       max: team?.limits.maxTeamMembers ?? 1,
     },
+    {
+      name: t('dashboard.settings.total_storage_used'),
+      current: bytesToMb(team?.totalStorageUsed ?? 0),
+      max: team?.limits.maxStorage ?? 1,
+      unit: 'MB',
+    },
   ];
 
   return (
@@ -58,7 +65,7 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
             <div className="flex justify-between text-sm">
               <span>{limit.name}</span>
               <span>
-                {limit.current} / {limit.max}
+                {limit.current} / {limit.max} {limit.unit ?? ''}
               </span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-secondary">

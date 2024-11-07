@@ -115,6 +115,7 @@ model Limits {
   maxCustomers   Int      @default(100)
   maxTeamMembers Int      @default(10)
   maxBlacklist   Int      @default(100)
+  maxStorage     Int      @default(100) // in MB
   updatedAt      DateTime @updatedAt
   createdAt      DateTime @default(now())
 }
