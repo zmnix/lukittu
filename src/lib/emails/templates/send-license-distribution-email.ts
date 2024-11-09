@@ -22,7 +22,7 @@ export const sendLicenseDistributionEmail = async ({
       LicenseDistributionEmailTemplate({
         customerName: customer.fullName ?? customer.email!,
         licenseKey,
-        businessLogoUrl: 'https://app.lukittu.com/customers/karhu.png',
+        businessLogoUrl: team.settings?.emailImageUrl ?? undefined,
         products: license.products.map((product) => product.name),
         teamName: team.name,
         businessMessage: team.settings?.emailMessage ?? undefined,
@@ -33,7 +33,7 @@ export const sendLicenseDistributionEmail = async ({
       LicenseDistributionEmailTemplate({
         customerName: customer.fullName ?? customer.email!,
         licenseKey,
-        businessLogoUrl: 'https://app.lukittu.com/customers/karhu.png',
+        businessLogoUrl: team.settings?.emailImageUrl ?? undefined,
         products: license.products.map((product) => product.name),
         teamName: team.name,
         businessMessage: team.settings?.emailMessage ?? undefined,

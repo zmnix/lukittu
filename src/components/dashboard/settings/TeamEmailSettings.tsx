@@ -1,8 +1,10 @@
 import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
-import { ITeamsImageSetResponse } from '@/app/api/(dashboard)/teams/image/route';
-import { ITeamsCreateResponse } from '@/app/api/(dashboard)/teams/route';
+import {
+  ITeamsEmailImageDeleteResponse,
+  ITeamsEmailImageSetResponse,
+} from '@/app/api/(dashboard)/teams/settings/email/image/route';
+import { ITeamsSettingsEmailEditResponse } from '@/app/api/(dashboard)/teams/settings/email/route';
 import LoadingButton from '@/components/shared/LoadingButton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Card,
   CardContent,
@@ -18,55 +20,81 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { bytesToSize } from '@/lib/utils/number-helpers';
-import { getInitials } from '@/lib/utils/text-helpers';
+import { cn } from '@/lib/utils/tailwind-helpers';
 import {
-  SetTeamSchema,
-  setTeamSchema,
-} from '@/lib/validation/team/set-team-schema';
-import { AuthContext } from '@/providers/AuthProvider';
+  SetTeamEmailSettingsSchema,
+  setTeamEmailSettingsSchema,
+} from '@/lib/validation/team/set-team-email-settings-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-interface TeamGeneralSettingsProps {
+interface TeamEmailSettingsProps {
   team: ITeamGetSuccessResponse['team'] | null;
 }
 
-export default function TeamGeneralSettings({
-  team,
-}: TeamGeneralSettingsProps) {
+export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
   const t = useTranslations();
-  const ctx = useContext(AuthContext);
-  const router = useRouter();
 
-  const [uploading, setUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const form = useForm<SetTeamSchema>({
-    resolver: zodResolver(setTeamSchema(t)),
+  const form = useForm<SetTeamEmailSettingsSchema>({
+    resolver: zodResolver(setTeamEmailSettingsSchema(t)),
     defaultValues: {
-      name: '',
+      emailMessage: '',
     },
   });
 
+  const emailMessage = form.watch('emailMessage');
+
+  useEffect(() => {
+    form.reset({
+      emailMessage: team?.settings.emailMessage ?? '',
+    });
+  }, [form, team]);
+
+  const onSubmit = async (payload: SetTeamEmailSettingsSchema) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/teams/settings/email', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json()) as ITeamsSettingsEmailEditResponse;
+
+      if ('message' in data) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success(t('dashboard.settings.team_settings_updated'));
+    } catch (error: any) {
+      toast.error(error.message ?? t('general.error_occurred'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (team) {
-      setImageUrl(team.imageUrl ?? null);
-      form.reset({ name: team.name });
+      setImageUrl(team.settings.emailImageUrl ?? null);
     }
   }, [team, form]);
 
@@ -76,12 +104,12 @@ export default function TeamGeneralSettings({
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/teams/image', {
+      const response = await fetch('/api/teams/settings/email/image', {
         method: 'POST',
         body: formData,
       });
 
-      const data = (await response.json()) as ITeamsImageSetResponse;
+      const data = (await response.json()) as ITeamsEmailImageSetResponse;
 
       if ('message' in data) {
         toast.error(data.message);
@@ -89,16 +117,7 @@ export default function TeamGeneralSettings({
       }
 
       setImageUrl(data.url);
-      ctx.setSession((session) => ({
-        ...session!,
-        user: {
-          ...session!.user,
-          teams: session!.user.teams.map((t) =>
-            t.id === team?.id ? { ...t, imageUrl: data.url } : t,
-          ),
-        },
-      }));
-      toast.success(t('dashboard.settings.team_image_updated'));
+      toast.success(t('dashboard.settings.team_settings_updated'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
     } finally {
@@ -109,11 +128,11 @@ export default function TeamGeneralSettings({
   const handleRemove = async () => {
     setUploading(true);
     try {
-      const response = await fetch('/api/teams/image', {
+      const response = await fetch('/api/teams/settings/email/image', {
         method: 'DELETE',
       });
 
-      const data = (await response.json()) as ITeamsImageSetResponse;
+      const data = (await response.json()) as ITeamsEmailImageDeleteResponse;
 
       if ('message' in data) {
         toast.error(data.message);
@@ -121,15 +140,6 @@ export default function TeamGeneralSettings({
       }
 
       setImageUrl(null);
-      ctx.setSession((session) => ({
-        ...session!,
-        user: {
-          ...session!.user,
-          teams: session!.user.teams.map((t) =>
-            t.id === team?.id ? { ...t, imageUrl: null } : t,
-          ),
-        },
-      }));
       toast.success(t('dashboard.settings.team_image_removed'));
     } catch (error: any) {
       toast.error(error.message ?? t('general.error_occurred'));
@@ -159,59 +169,11 @@ export default function TeamGeneralSettings({
     input.click();
   };
 
-  const handleTeamEdit = async (payload: SetTeamSchema) => {
-    const response = await fetch(`/api/teams/${team?.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    });
-
-    const data = (await response.json()) as ITeamsCreateResponse;
-
-    return data;
-  };
-
-  const onSubmit = async (data: SetTeamSchema) => {
-    setLoading(true);
-    try {
-      const res = await handleTeamEdit(data);
-
-      if ('message' in res) {
-        if (res.field) {
-          return form.setError(res.field as keyof SetTeamSchema, {
-            type: 'manual',
-            message: res.message,
-          });
-        }
-
-        return toast.error(res.message);
-      }
-
-      if ('team' in res && ctx.session) {
-        ctx.setSession({
-          ...ctx.session,
-          user: {
-            ...ctx.session.user,
-            teams: ctx.session.user.teams.map((team) =>
-              team.id === res.team.id ? res.team : team,
-            ),
-          },
-        });
-      }
-
-      router.refresh();
-      toast.success(t('dashboard.settings.team_settings_updated'));
-    } catch (error: any) {
-      toast.error(error.message ?? t('general.error_occurred'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-xl font-bold">
-          {t('dashboard.settings.general_settings')}
+          {t('dashboard.settings.email_settings')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -221,31 +183,46 @@ export default function TeamGeneralSettings({
             onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="relative">
-              <div className="mb-1 text-sm font-semibold">
-                {t('general.avatar')}
+              <div className="mb-1">
+                <div className="text-sm font-semibold">
+                  {t('dashboard.settings.email_header_image')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('dashboard.settings.recommended_dimensions', {
+                    width: 512,
+                    height: 128,
+                  })}
+                </div>
               </div>
-              <Avatar className="h-32 w-32 border max-md:h-28 max-md:w-28">
-                <AvatarImage src={imageUrl!} asChild>
-                  {imageUrl && (
-                    <Image
-                      alt="Team image"
-                      className="object-cover"
-                      height={128}
-                      quality={100}
-                      src={imageUrl}
-                      width={128}
-                      priority
-                    />
-                  )}
-                </AvatarImage>
-                <AvatarFallback className="bg-primary text-2xl text-white">
-                  {getInitials(team?.name ?? '??')}
-                </AvatarFallback>
-              </Avatar>
+              <div
+                className={cn(
+                  'relative h-24 w-full overflow-hidden rounded-md',
+                  'border bg-background p-4',
+                  'flex items-center justify-center',
+                )}
+              >
+                {imageUrl ? (
+                  <Image
+                    alt="Team email header"
+                    className="h-auto max-h-full w-auto object-contain"
+                    height={128}
+                    quality={100}
+                    src={imageUrl}
+                    width={512}
+                    priority
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                    <span className="text-sm">
+                      {t('dashboard.settings.no_header_image')}
+                    </span>
+                  </div>
+                )}
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <LoadingButton
-                    className="absolute bottom-0 left-0"
+                    className="absolute bottom-2 left-2"
                     disabled={uploading}
                     pending={uploading}
                     size="sm"
@@ -271,18 +248,24 @@ export default function TeamGeneralSettings({
             </div>
             <FormField
               control={form.control}
-              name="name"
+              name="emailMessage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('general.name')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t(
-                        'dashboard.teams.my_first_team_placeholder',
-                      )}
-                      {...field}
-                    />
-                  </FormControl>
+                  <div className="flex justify-between pt-2">
+                    <FormLabel htmlFor="emailMessage">
+                      {t('dashboard.settings.email_delivery_message')}
+                    </FormLabel>
+                    <div className="flex justify-end text-xs text-muted-foreground">
+                      {emailMessage?.length ?? 0} / 1000
+                    </div>
+                  </div>
+                  <Textarea
+                    {...field}
+                    className="form-textarea"
+                    disabled={!team || loading}
+                    id="emailMessage"
+                    maxLength={1000}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -293,7 +276,7 @@ export default function TeamGeneralSettings({
       </CardContent>
       <CardFooter>
         <LoadingButton
-          pending={loading || !team}
+          pending={loading}
           size="sm"
           type="submit"
           variant="secondary"

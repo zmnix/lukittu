@@ -4,31 +4,32 @@ import { logger } from '@/lib/logging/logger';
 import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
-  setTeamSettingsSchema,
-  SetTeamSettingsSchema,
-} from '@/lib/validation/team/set-team-settings-schema';
+  setTeamValidationSettingsSchema,
+  SetTeamValidationSettingsSchema,
+} from '@/lib/validation/team/set-team-validation-settings-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType, Settings } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export type ITeamsSettingsEditSuccessResponse = {
+export type ITeamsSettingsValidationEditSuccessResponse = {
   settings: Settings;
 };
 
-export type ITeamsSettingsEditResponse =
+export type ITeamsSettingsValidationEditResponse =
   | ErrorResponse
-  | ITeamsSettingsEditSuccessResponse;
+  | ITeamsSettingsValidationEditSuccessResponse;
 
 export async function PUT(
   request: NextRequest,
-): Promise<NextResponse<ITeamsSettingsEditResponse>> {
+): Promise<NextResponse<ITeamsSettingsValidationEditResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const body = (await request.json()) as SetTeamSettingsSchema;
-    const validated = await setTeamSettingsSchema(t).safeParseAsync(body);
+    const body = (await request.json()) as SetTeamValidationSettingsSchema;
+    const validated =
+      await setTeamValidationSettingsSchema(t).safeParseAsync(body);
 
     if (!validated.success) {
       return NextResponse.json(
@@ -83,13 +84,8 @@ export async function PUT(
       );
     }
 
-    const {
-      strictCustomers,
-      strictProducts,
-      emailMessage,
-      heartbeatTimeout,
-      ipLimitPeriod,
-    } = validated.data;
+    const { strictCustomers, strictProducts, heartbeatTimeout, ipLimitPeriod } =
+      validated.data;
 
     const updatedSettings = await prisma.settings.update({
       where: {
@@ -99,7 +95,6 @@ export async function PUT(
         strictCustomers,
         strictProducts,
         heartbeatTimeout,
-        emailMessage: emailMessage || null,
         ipLimitPeriod,
       },
     });
@@ -119,7 +114,7 @@ export async function PUT(
 
     return NextResponse.json(response);
   } catch (error) {
-    logger.error("Error occurred in 'teams/settings' route", error);
+    logger.error("Error occurred in 'teams/settings/validation' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

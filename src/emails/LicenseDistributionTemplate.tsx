@@ -19,7 +19,7 @@ interface LicenseDistributionEmailTemplateProps {
   products: string[];
   teamName: string;
   businessMessage?: string;
-  businessLogoUrl: string;
+  businessLogoUrl?: string;
 }
 
 export const LicenseDistributionEmailTemplate = ({

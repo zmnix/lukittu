@@ -129,6 +129,7 @@ model Settings {
   strictCustomers  Boolean       @default(false)
   strictProducts   Boolean       @default(false)
   emailMessage     String?
+  emailImageUrl    String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 }
@@ -369,6 +370,7 @@ enum AuditLogAction {
   RESET_PUBLIC_KEY
   UPDATE_TEAM_SETTINGS
   UPDATE_TEAM_PICTURE
+  DELETE_TEAM_PICTURE
   CREATE_BLACKLIST
   DELETE_BLACKLIST
   UPDATE_BLACKLIST
@@ -380,6 +382,8 @@ enum AuditLogAction {
   UPDATE_RELEASE
   DELETE_RELEASE
   SET_LATEST_RELEASE
+  UPDATE_EMAIL_PICTURE
+  DELETE_EMAIL_PICTURE
 }
 
 enum ReleaseStatus {

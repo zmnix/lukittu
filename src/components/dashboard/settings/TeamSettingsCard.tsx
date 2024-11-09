@@ -11,8 +11,10 @@ import { toast } from 'sonner';
 import useSWR from 'swr';
 import PublicKeysCard from './PublicKeysCard';
 import { TeamDetails } from './TeamDetails';
+import TeamEmailSettings from './TeamEmailSettings';
 import TeamGeneralSettings from './TeamGeneralSettings';
 import TeamLimits from './TeamLimits';
+import TeamValidationSettings from './TeamValidationSettings';
 
 const fetchTeams = async (url: string) => {
   const response = await fetch(url);
@@ -47,10 +49,10 @@ export default function TeamSettingsCard() {
       <div className="flex w-full gap-4 max-xl:flex-col-reverse">
         <>
           <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-            <Tabs className="w-full" defaultValue="generalSettings">
+            <Tabs className="w-full" defaultValue="settings">
               <TabsList className="mb-4 grid h-auto w-full grid-cols-3">
-                <TabsTrigger value="generalSettings">
-                  {t('dashboard.settings.general_settings')}
+                <TabsTrigger value="settings">
+                  {t('general.settings')}
                 </TabsTrigger>
                 <TabsTrigger value="publicKeys">
                   {t('dashboard.settings.public_keys')}
@@ -59,8 +61,12 @@ export default function TeamSettingsCard() {
                   {t('dashboard.settings.limits')}
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="generalSettings">
-                <TeamGeneralSettings team={team ?? null} />
+              <TabsContent value="settings">
+                <div className="grid grid-cols-1 gap-4">
+                  <TeamGeneralSettings team={team ?? null} />
+                  <TeamValidationSettings team={team ?? null} />
+                  <TeamEmailSettings team={team ?? null} />
+                </div>
               </TabsContent>
               <TabsContent value="publicKeys">
                 <PublicKeysCard team={team ?? null} />

@@ -23,19 +23,19 @@ import sharp from 'sharp';
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1 MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_IMAGE_DIMENSION = 600; // pixels
+const MAX_IMAGE_DIMENSION = 300;
 
-export type ITeamsImageSetSuccessResponse = {
+export type ITeamsEmailImageSetSuccessResponse = {
   url: string;
 };
 
-export type ITeamsImageSetResponse =
-  | ITeamsImageSetSuccessResponse
+export type ITeamsEmailImageSetResponse =
+  | ITeamsEmailImageSetSuccessResponse
   | ErrorResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<ITeamsImageSetResponse>> {
+): Promise<NextResponse<ITeamsEmailImageSetResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {
@@ -73,7 +73,7 @@ export async function POST(
 
     const ip = await getIp();
     if (ip) {
-      const key = `team-image:${ip}`;
+      const key = `team-email-image:${ip}`;
       const isLimited = await isRateLimited(key, 5, 300); // 5 requests per 5 minutes
 
       if (isLimited) {
@@ -105,6 +105,9 @@ export async function POST(
               id: selectedTeam,
               deletedAt: null,
             },
+            include: {
+              settings: true,
+            },
           },
         },
       },
@@ -133,12 +136,20 @@ export async function POST(
     const fileBuffer = await file.arrayBuffer();
     let processedImageBuffer: Buffer;
     try {
+      const metadata = await sharp(Buffer.from(fileBuffer)).metadata();
+      const aspectRatio = (metadata.width || 0) / (metadata.height || 1);
+      const targetWidth = Math.min(
+        4 * MAX_IMAGE_DIMENSION,
+        Math.round(aspectRatio * MAX_IMAGE_DIMENSION),
+      );
+
       processedImageBuffer = await sharp(Buffer.from(fileBuffer))
-        .resize(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION, {
-          fit: 'cover',
-          position: 'center',
+        .resize(targetWidth, MAX_IMAGE_DIMENSION, {
+          fit: 'contain',
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+          position: 'left',
         })
-        .webp({ quality: 80 })
+        .png({ quality: 80 })
         .toBuffer();
     } catch (error) {
       logger.error('Error occurred while resizing image', error);
@@ -150,9 +161,9 @@ export async function POST(
       );
     }
 
-    if (team.imageUrl) {
-      const imageUrlParts = team.imageUrl.split('/');
-      const fileKey = `teams/${imageUrlParts[imageUrlParts.length - 1]}`;
+    if (team.settings?.emailImageUrl) {
+      const imageUrlParts = team.settings.emailImageUrl.split('/');
+      const fileKey = `team-emails/${imageUrlParts[imageUrlParts.length - 1]}`;
       await deleteFileFromPublicS3(
         process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
         fileKey,
@@ -161,7 +172,7 @@ export async function POST(
 
     const imageUuid = randomUUID();
 
-    const fileKey = `teams/${imageUuid}.${file.type.split('/')[1]}`;
+    const fileKey = `team-emails/${imageUuid}.${file.type.split('/')[1]}`;
     await uploadFileToPublicS3(
       process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
       fileKey,
@@ -171,12 +182,12 @@ export async function POST(
 
     const imageUrl = `${process.env.PUBLIC_OBJECT_STORAGE_BASE_URL}/${fileKey}`;
 
-    await prisma.team.update({
+    await prisma.settings.update({
       where: {
-        id: team.id,
+        teamId: team.id,
       },
       data: {
-        imageUrl,
+        emailImageUrl: imageUrl,
       },
     });
 
@@ -187,7 +198,7 @@ export async function POST(
     createAuditLog({
       userId: session.user.id,
       teamId: team.id,
-      action: AuditLogAction.UPDATE_TEAM_PICTURE,
+      action: AuditLogAction.UPDATE_EMAIL_PICTURE,
       targetId: team.id,
       targetType: AuditLogTargetType.TEAM,
       requestBody: null,
@@ -196,7 +207,7 @@ export async function POST(
 
     return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {
-    logger.error("Error occurred in 'teams/image' route", error);
+    logger.error("Error occurred in 'teams/settings/email/image' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
@@ -205,6 +216,14 @@ export async function POST(
     );
   }
 }
+
+export type ITeamsEmailImageDeleteSuccessResponse = {
+  success: boolean;
+};
+
+export type ITeamsEmailImageDeleteResponse =
+  | ITeamsEmailImageDeleteSuccessResponse
+  | ErrorResponse;
 
 export async function DELETE(request: NextRequest) {
   const t = await getTranslations({ locale: await getLanguage() });
@@ -228,6 +247,9 @@ export async function DELETE(request: NextRequest) {
             where: {
               id: selectedTeam,
               deletedAt: null,
+            },
+            include: {
+              settings: true,
             },
           },
         },
@@ -254,7 +276,7 @@ export async function DELETE(request: NextRequest) {
 
     const team = session.user.teams[0];
 
-    if (!team.imageUrl) {
+    if (!team.settings?.emailImageUrl) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -263,19 +285,19 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const imageUrlParts = team.imageUrl.split('/');
-    const fileKey = `teams/${imageUrlParts[imageUrlParts.length - 1]}`;
+    const imageUrlParts = team.settings.emailImageUrl.split('/');
+    const fileKey = `team-emails/${imageUrlParts[imageUrlParts.length - 1]}`;
     await deleteFileFromPublicS3(
       process.env.PUBLIC_OBJECT_STORAGE_BUCKET_NAME!,
       fileKey,
     );
 
-    await prisma.team.update({
+    await prisma.settings.update({
       where: {
-        id: team.id,
+        id: team.settings.id,
       },
       data: {
-        imageUrl: null,
+        emailImageUrl: null,
       },
     });
 
@@ -286,7 +308,7 @@ export async function DELETE(request: NextRequest) {
     createAuditLog({
       userId: session.user.id,
       teamId: team.id,
-      action: AuditLogAction.DELETE_TEAM_PICTURE,
+      action: AuditLogAction.DELETE_EMAIL_PICTURE,
       targetId: team.id,
       targetType: AuditLogTargetType.TEAM,
       requestBody: null,
@@ -295,7 +317,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    logger.error("Error occurred in 'teams/image' route", error);
+    logger.error("Error occurred in 'teams/settings/email/image' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

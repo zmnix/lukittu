@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 
-export type SetTeamSettingsSchema = z.infer<
-  ReturnType<typeof setTeamSettingsSchema>
+export type SetTeamValidationSettingsSchema = z.infer<
+  ReturnType<typeof setTeamValidationSettingsSchema>
 >;
 
-export const setTeamSettingsSchema = (
+export const setTeamValidationSettingsSchema = (
   t: Awaited<ReturnType<typeof getTranslations<never>>>,
 ) =>
   z
@@ -17,6 +17,5 @@ export const setTeamSettingsSchema = (
         .number()
         .positive({ message: t('validation.heartbeat_timeout_positive') })
         .int(),
-      emailMessage: z.string().max(1000).optional(),
     })
     .strict();
