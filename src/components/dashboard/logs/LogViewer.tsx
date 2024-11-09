@@ -125,7 +125,8 @@ export default function LogViewer() {
 
   return (
     <Card className="flex flex-col md:flex-row">
-      {(data?.[0]?.totalResults || 0) > 0 && teamCtx.selectedTeam ? (
+      {((data?.[0]?.totalResults || 0) > 0 || isLoading) &&
+      teamCtx.selectedTeam ? (
         <>
           <div
             className={`w-full border-r p-2 md:w-1/2 ${
