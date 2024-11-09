@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Messages } from '../../../../global';
 import { CollapseMenuButton } from './CollapseMenuButton';
@@ -85,6 +85,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
+  const router = useRouter();
   const isCustom = false;
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -170,7 +171,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
               setSearchDialogOpen(false);
               setSearchTerm('');
               onClose?.();
-              window.location.href = selectedItem.href;
+              router.push(selectedItem.href);
             }
             break;
           case 'Escape':
