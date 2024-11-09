@@ -58,7 +58,7 @@ export default function TeamSettingsCard() {
                   {t('general.settings')}
                 </TabsTrigger>
                 <TabsTrigger value="publicKeys">
-                  {t('dashboard.settings.public_keys')}
+                  {t('general.security')}
                 </TabsTrigger>{' '}
                 <TabsTrigger value="limits">
                   {t('dashboard.settings.limits')}
