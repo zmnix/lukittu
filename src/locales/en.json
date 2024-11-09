@@ -525,7 +525,10 @@
         "set_stripe_integration": "set Stripe integration",
         "create_release": "created release",
         "delete_release": "deleted release",
-        "update_release": "updated release"
+        "update_release": "updated release",
+        "update_email_picture": "updated team's email picture",
+        "delete_email_picture": "deleted team's email picture",
+        "delete_team_picture": "deleted team picture"
       }
     },
     "members": {
