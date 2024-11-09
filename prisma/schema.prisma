@@ -128,6 +128,7 @@ model Settings {
   ipLimitPeriod    IpLimitPeriod @default(DAY)
   strictCustomers  Boolean       @default(false)
   strictProducts   Boolean       @default(false)
+  strictReleases   Boolean       @default(false)
   emailMessage     String?
   emailImageUrl    String?
   createdAt        DateTime      @default(now())
@@ -199,21 +200,23 @@ model Release {
   product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId       String
   file            ReleaseFile?
+  requestLogs     RequestLog[]
 
   @@unique([productId, version])
   @@index([teamId])
 }
 
 model ReleaseFile {
-  id            String   @id @default(uuid())
-  releaseId     String   @unique
-  release       Release  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  id            String       @id @default(uuid())
+  releaseId     String       @unique
+  release       Release      @relation(fields: [releaseId], references: [id], onDelete: Cascade)
   key           String
   size          Int
   name          String
   checksum      String
   mainClassName String?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime     @default(now())
+  requestLogs   RequestLog[]
 }
 
 model Address {
@@ -333,6 +336,10 @@ model RequestLog {
   license          License?      @relation(fields: [licenseId], references: [id], onDelete: Cascade)
   productId        String?
   product          Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  releaseId        String?
+  release          Release?      @relation(fields: [releaseId], references: [id], onDelete: SetNull)
+  releaseFileId    String?
+  releaseFile      ReleaseFile?  @relation(fields: [releaseFileId], references: [id], onDelete: SetNull)
   customerId       String?
   customer         Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt        DateTime      @default(now())

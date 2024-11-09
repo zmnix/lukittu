@@ -51,6 +51,7 @@ export default function TeamValidationSettings({
     defaultValues: {
       strictCustomers: false,
       strictProducts: false,
+      strictReleases: false,
       heartbeatTimeout: 60,
       ipLimitPeriod: 'DAY',
     },
@@ -60,6 +61,7 @@ export default function TeamValidationSettings({
     form.reset({
       strictCustomers: team?.settings.strictCustomers ?? false,
       strictProducts: team?.settings.strictProducts ?? false,
+      strictReleases: team?.settings.strictReleases ?? false,
       heartbeatTimeout: team?.settings.heartbeatTimeout ?? 60,
       ipLimitPeriod: team?.settings.ipLimitPeriod ?? 'DAY',
     });
@@ -138,6 +140,32 @@ export default function TeamValidationSettings({
                 <FormItem>
                   <FormLabel>
                     {t('dashboard.settings.strict_products')}
+                  </FormLabel>
+                  <Select
+                    value={`${field.value}`}
+                    onValueChange={(value) => field.onChange(value === 'true')}
+                  >
+                    <FormControl>
+                      <SelectTrigger disabled={!team || loading}>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="true">True</SelectItem>
+                      <SelectItem value="false">False</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="strictReleases"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('dashboard.settings.strict_releases')}
                   </FormLabel>
                   <Select
                     value={`${field.value}`}

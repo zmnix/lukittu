@@ -12,6 +12,7 @@ export const setTeamValidationSettingsSchema = (
     .object({
       strictProducts: z.boolean(),
       strictCustomers: z.boolean(),
+      strictReleases: z.boolean(),
       ipLimitPeriod: z.enum(['DAY', 'WEEK', 'MONTH']),
       heartbeatTimeout: z
         .number()

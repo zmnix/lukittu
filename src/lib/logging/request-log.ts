@@ -21,6 +21,8 @@ interface LogRequestProps {
   teamId?: string;
   method: string;
   deviceIdentifier?: string;
+  releaseId?: string;
+  releaseFileId?: string;
 }
 
 export async function logRequest({
@@ -36,6 +38,8 @@ export async function logRequest({
   teamId,
   method,
   pathname,
+  releaseFileId,
+  releaseId,
 }: LogRequestProps) {
   try {
     const origin = await getOrigin();
@@ -64,6 +68,10 @@ export async function logRequest({
         responseBody,
         deviceIdentifier,
         ipAddress,
+        release: releaseId ? { connect: { id: releaseId } } : undefined,
+        releaseFile: releaseFileId
+          ? { connect: { id: releaseFileId } }
+          : undefined,
         country: countryAlpha3,
         team: { connect: { id: teamId } },
         customer: customerId ? { connect: { id: customerId } } : undefined,
@@ -105,6 +113,8 @@ interface HandleLoggedRequestResponse {
   customerId?: string;
   productId?: string;
   teamId?: string;
+  releaseId?: string;
+  releaseFileId?: string;
   licenseKeyLookup?: string;
 }
 
@@ -131,6 +141,8 @@ export async function loggedResponse({
   productId,
   licenseKeyLookup,
   deviceIdentifier,
+  releaseFileId,
+  releaseId,
 }: HandleLoggedRequestResponse): Promise<NextResponse<ExternalVerifyResponse>> {
   const responseBody = {
     data: response.data,
@@ -157,6 +169,8 @@ export async function loggedResponse({
       teamId,
       statusCode: httpStatus,
       method: request.method,
+      releaseFileId,
+      releaseId,
     });
   }
 

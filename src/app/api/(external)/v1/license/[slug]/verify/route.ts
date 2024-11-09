@@ -15,7 +15,12 @@ import {
   verifyLicenseSchema,
 } from '@/lib/validation/licenses/verify-license-schema';
 import { HttpStatus } from '@/types/http-status';
-import { BlacklistType, IpLimitPeriod, RequestStatus } from '@prisma/client';
+import {
+  BlacklistType,
+  IpLimitPeriod,
+  ReleaseFile,
+  RequestStatus,
+} from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -121,8 +126,14 @@ export async function POST(
       });
     }
 
-    const { licenseKey, customerId, productId, challenge, deviceIdentifier } =
-      validated.data;
+    const {
+      licenseKey,
+      customerId,
+      productId,
+      challenge,
+      deviceIdentifier,
+      version,
+    } = validated.data;
 
     const licenseKeyLookup = generateHMAC(`${licenseKey}:${teamId}`);
 
@@ -146,7 +157,19 @@ export async function POST(
       },
       include: {
         customers: true,
-        products: true,
+        products: {
+          include: {
+            releases: {
+              where: {
+                status: 'PUBLISHED',
+              },
+              include: {
+                file: true,
+              },
+              take: 1,
+            },
+          },
+        },
         heartbeats: true,
         requestLogs: {
           where: {
@@ -163,6 +186,7 @@ export async function POST(
 
     const hasStrictProducts = settings.strictProducts || false;
     const hasStrictCustomers = settings.strictCustomers || false;
+    const hasStrictReleases = settings.strictReleases || false;
 
     const matchingCustomer = license?.customers.find(
       (customer) => customer.id === customerId,
@@ -172,12 +196,20 @@ export async function POST(
       (product) => product.id === productId,
     );
 
+    const productHasReleases = (matchingProduct?.releases.length ?? 0) > 0;
+
+    const matchingRelease = matchingProduct?.releases?.find(
+      (release) => release.version === version,
+    );
+
     const commonBase = {
       teamId,
       customerId: matchingCustomer ? customerId : undefined,
       productId: matchingProduct ? productId : undefined,
       deviceIdentifier,
       licenseKeyLookup: undefined as string | undefined,
+      releaseId: undefined as string | undefined,
+      releaseFileId: undefined as string | undefined,
     };
 
     if (!license) {
@@ -329,6 +361,33 @@ export async function POST(
         httpStatus: HttpStatus.NOT_FOUND,
       });
     }
+
+    const strictModeNoVersion =
+      hasStrictReleases && productHasReleases && !version;
+    const noVersionMatch = productHasReleases && version && !matchingRelease;
+
+    if (strictModeNoVersion || noVersionMatch) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.RELEASE_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Release not found with specified version',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    commonBase.releaseId = matchingRelease?.id;
+    commonBase.releaseFileId =
+      matchingRelease && 'file' in matchingRelease
+        ? (matchingRelease.file as ReleaseFile)?.id
+        : undefined;
 
     if (license.suspended) {
       return loggedResponse({

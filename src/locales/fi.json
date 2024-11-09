@@ -595,6 +595,7 @@
       "reset_key": "Reset key",
       "strict_customers": "Strict customers",
       "strict_products": "Strict products",
+      "strict_releases": "Strict releases",
       "reset_public_key_confirm_title": "Reset public key",
       "reset_public_key_confirm_description": "You are about to reset your team's public key! This will generate a new public key and invalidate the old one. You will need to update the public key in your software to continue verifying licenses.",
       "public_key_reset": "Public key reset successfully",

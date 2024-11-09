@@ -271,6 +271,8 @@ export async function GET(
       productId: matchingProduct ? productId : undefined,
       deviceIdentifier,
       licenseKeyLookup: undefined as string | undefined,
+      releaseId: undefined as string | undefined,
+      releaseFileId: undefined as string | undefined,
     };
 
     if (!license) {
@@ -373,6 +375,9 @@ export async function GET(
         httpStatus: HttpStatus.NOT_FOUND,
       });
     }
+
+    commonBase.releaseId = releaseToUse?.id;
+    commonBase.releaseFileId = fileToUse.id;
 
     const blacklistedIps = team.blacklist.filter(
       (b) => b.type === BlacklistType.IP_ADDRESS,
@@ -692,6 +697,8 @@ export async function GET(
       teamId,
       statusCode: HttpStatus.OK,
       method: request.method,
+      releaseId: releaseToUse?.id,
+      releaseFileId: fileToUse.id,
     });
 
     return new Response(encryptedStream, {

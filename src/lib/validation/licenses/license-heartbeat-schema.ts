@@ -33,6 +33,20 @@ export const licenseHeartbeatSchema = () =>
         .max(1000, { message: 'Challenge must be less than 1000 characters' })
         .regex(/^[^\s]+$/, { message: 'Challenge must not contain spaces' })
         .optional(),
+      version: z
+        .string({
+          message: 'Version must be a string',
+        })
+        .min(3, {
+          message: 'Version must be at least 3 characters',
+        })
+        .max(255, {
+          message: 'Version must be less than 255 characters',
+        })
+        .regex(/^[^\s]+$/, {
+          message: 'Version must not contain spaces',
+        })
+        .optional(),
       deviceIdentifier: z
         .string({
           message: 'Device identifier must be a string',
