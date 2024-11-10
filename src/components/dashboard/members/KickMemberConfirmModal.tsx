@@ -48,7 +48,7 @@ export function KickMemberConfirmModal() {
         toast.success(t('dashboard.members.member_kicked'));
       }
 
-      mutate((key) => Array.isArray(key) && key[0] === '/api/teams');
+      mutate((key) => Array.isArray(key) && key[0] === '/api/teams/members');
       ctx.setMemberToKick(null);
       handleOpenChange(false);
     } catch (error: any) {

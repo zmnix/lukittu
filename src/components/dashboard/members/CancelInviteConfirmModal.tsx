@@ -48,7 +48,7 @@ export function CancelInviteConfirmModal() {
         toast.success(t('dashboard.members.invitation_cancelled'));
       }
 
-      mutate((key) => Array.isArray(key) && key[0] === '/api/teams');
+      mutate((key) => Array.isArray(key) && key[0] === '/api/teams/members');
       ctx.setMemberToCancelInvitation(null);
       handleOpenChange(false);
     } catch (error: any) {

@@ -74,7 +74,7 @@ export default function InviteMemberModal() {
         return toast.error(res.message);
       }
 
-      mutate((key) => Array.isArray(key) && key[0] === '/api/teams');
+      mutate((key) => Array.isArray(key) && key[0] === '/api/teams/members');
       handleOpenChange(false);
       toast.success(t('dashboard.members.member_invited'));
     } catch (error: any) {
