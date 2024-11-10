@@ -7,6 +7,7 @@ import '@/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import PlausibleProvider from 'next-plausible';
 import { Roboto } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 
@@ -27,6 +28,20 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <PlausibleProvider
+          customDomain={process.env.NEXT_PUBLIC_BASE_URL}
+          domain={process.env.NEXT_PUBLIC_BASE_URL?.replace('https://', '')!}
+          scriptProps={{
+            src: `${process.env.NEXT_PUBLIC_BASE_URL}/js/nuuhkija.js`,
+
+            // https://github.com/4lejandrito/next-plausible/issues/113
+            // @ts-expect-error missing types
+            'data-api': `${process.env.NEXT_PUBLIC_BASE_URL}/api/event`,
+          }}
+          selfHosted
+        />
+      </head>
       <body
         className={cn(
           'flex min-h-dvh w-full max-w-[100vw] bg-background font-sans antialiased',
