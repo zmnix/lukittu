@@ -1,6 +1,7 @@
 'use client';
 import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -77,7 +78,7 @@ export default function ApiKeysCard({ team }: ApiKeyCardProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {team?.apiKeys.length ? (
+          {(team?.apiKeys.length ?? true) ? (
             <div className="space-y-4">
               <Table>
                 <TableHeader>
@@ -97,48 +98,54 @@ export default function ApiKeysCard({ team }: ApiKeyCardProps) {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
-                  {team.apiKeys.map((apiKey) => (
-                    <TableRow key={apiKey.id}>
-                      <TableCell className="truncate" title={apiKey.id}>
-                        <code>{apiKey.id.slice(0, 6)}...</code>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <b>
-                            {apiKey.createdBy?.fullName ? (
-                              apiKey.createdBy.fullName
-                            ) : (
-                              <span className="text-muted-foreground">N/A</span>
-                            )}
-                          </b>
-                          <p className="text-xs text-muted-foreground">
-                            {apiKey.createdBy?.email ?? 'N/A'}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="truncate">
-                        <DateConverter date={apiKey.createdAt} />
-                      </TableCell>
-                      <TableCell className="truncate">
-                        {apiKey.expiresAt ? (
-                          <DateConverter date={apiKey.expiresAt} />
-                        ) : (
-                          t('general.never')
-                        )}
-                      </TableCell>
-                      <TableCell className="py-0 text-right">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(apiKey.id)}
-                        >
-                          {t('general.delete')}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
+                {!team?.apiKeys.length ? (
+                  <TableSkeleton columns={5} rows={5} />
+                ) : (
+                  <TableBody>
+                    {team.apiKeys.map((apiKey) => (
+                      <TableRow key={apiKey.id}>
+                        <TableCell className="truncate" title={apiKey.id}>
+                          <code>{apiKey.id.slice(0, 6)}...</code>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <b>
+                              {apiKey.createdBy?.fullName ? (
+                                apiKey.createdBy.fullName
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  N/A
+                                </span>
+                              )}
+                            </b>
+                            <p className="text-xs text-muted-foreground">
+                              {apiKey.createdBy?.email ?? 'N/A'}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="truncate">
+                          <DateConverter date={apiKey.createdAt} />
+                        </TableCell>
+                        <TableCell className="truncate">
+                          {apiKey.expiresAt ? (
+                            <DateConverter date={apiKey.expiresAt} />
+                          ) : (
+                            t('general.never')
+                          )}
+                        </TableCell>
+                        <TableCell className="py-0 text-right">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(apiKey.id)}
+                          >
+                            {t('general.delete')}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                )}
               </Table>
             </div>
           ) : (
