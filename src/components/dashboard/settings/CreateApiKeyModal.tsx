@@ -3,7 +3,13 @@ import LoadingButton from '@/components/shared/LoadingButton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Form, FormControl, FormItem, FormLabel } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Popover,
@@ -175,6 +181,9 @@ export function CreateApiKeyModal({
                     </Button>
                   </div>
                 </FormControl>
+                <FormDescription>
+                  {t('dashboard.settings.api_key_expiration_date_description')}
+                </FormDescription>
               </FormItem>
               <button className="hidden" type="submit" />
             </form>

@@ -19,9 +19,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { Plus } from 'lucide-react';
+import { Copy, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { CreateApiKeyModal } from './CreateApiKeyModal';
 import { DeleteApiKeyModal } from './DeleteApiKeyModal';
 
@@ -38,6 +39,11 @@ export default function ApiKeysCard({ team }: ApiKeyCardProps) {
   const handleDelete = async (apiKey: string) => {
     setSelectedApiKey(apiKey);
     setDeleteModalOpen(true);
+  };
+
+  const handleCopy = async (apiKey: string) => {
+    await navigator.clipboard.writeText(apiKey);
+    toast.success(t('general.copied_to_clipboard'));
   };
 
   return (
@@ -105,7 +111,14 @@ export default function ApiKeysCard({ team }: ApiKeyCardProps) {
                     {team.apiKeys.map((apiKey) => (
                       <TableRow key={apiKey.id}>
                         <TableCell className="truncate" title={apiKey.id}>
-                          <code>{apiKey.id.slice(0, 6)}...</code>
+                          <Button
+                            size="sm"
+                            variant="link"
+                            onClick={() => handleCopy(apiKey.id)}
+                          >
+                            <Copy className="mr-2 h-4 w-4 text-foreground" />
+                            {apiKey.id.slice(0, 8)}...
+                          </Button>
                         </TableCell>
                         <TableCell>
                           <div>

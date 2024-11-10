@@ -535,7 +535,9 @@
         "update_release": "updated release",
         "update_email_picture": "updated team's email picture",
         "delete_email_picture": "deleted team's email picture",
-        "delete_team_picture": "deleted team picture"
+        "delete_team_picture": "deleted team picture",
+        "create_api_key": "created API key",
+        "delete_api_key": "deleted API key"
       }
     },
     "members": {
@@ -626,7 +628,8 @@
       "delete_api_key_confirm_title": "Delete API key",
       "delete_api_key_confirm_description": "You are about to delete API key with ID <strong>{id}</strong>! This will <strong>permanently delete</strong> this API key. This action cannot be undone.",
       "no_api_keys": "No API keys",
-      "api_key_created_description": "API key created successfully. Keep this key secret and do not share it with anyone. <strong>This is the only time you will see this key so save it now!</strong>."
+      "api_key_created_description": "API key created successfully. Keep this key secret and do not share it with anyone. <strong>This is the only time you will see this key so save it now!</strong>.",
+      "api_key_expiration_date_description": "You don't need to set an expiration date but it can be useful for security reasons. If you set an expiration date, the API key will be automatically deleted after the date."
     },
     "blacklist": {
       "blacklist_updated": "Blacklist updated",
