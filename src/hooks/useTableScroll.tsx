@@ -43,7 +43,7 @@ export const useTableScroll = (buffer: number = 20) => {
         observer.disconnect();
       };
     }
-  }, [handleScroll, handleResize, observer]);
+  }, [handleScroll, handleResize, observer, containerRef.current?.nodeValue]);
 
   return { showDropdown, containerRef };
 };
