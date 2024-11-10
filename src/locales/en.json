@@ -109,7 +109,11 @@
     "release_not_found": "Release not found!",
     "latest_release_must_be_published": "Latest release must be published!",
     "file_extension_not_found": "File must have an supported extension!",
-    "storage_limit_reached": "Your team has reached the maximum storage limit allowed for the current plan. Please upgrade to increase the storage limit."
+    "storage_limit_reached": "Your team has reached the maximum storage limit allowed for the current plan. Please upgrade to increase the storage limit.",
+    "api_key_limit_reached": "Your team has reached the maximum number of API keys allowed for the current plan. Please upgrade to add more API keys.",
+    "api_key_not_found": "API key not found!",
+    "max_invitations_reached": "Your team has reached the maximum number of invitations allowed for the current plan. Please upgrade to add more invitations.",
+    "max_releases_reached": "Your team has reached the maximum number of releases allowed for the current plan. Please upgrade to add more releases."
   },
   "general": {
     "path": "Path",
@@ -139,6 +143,8 @@
     "published": "Published",
     "select_status": "Select status",
     "status": "Status",
+    "last_seen": "Last seen",
+    "never_used": "Never used",
     "deprecated": "Deprecated",
     "file": "File",
     "archived": "Archived",
@@ -610,7 +616,17 @@
       "need_increased_limits": "Need increased limits? Send us an email at <emailElement>support@lukittu.com</emailElement>!",
       "contact_support": "Contact support",
       "ip_limit_period": "IP limit period",
-      "total_storage_used": "Total storage used"
+      "total_storage_used": "Total storage used",
+      "create_api_key": "Create API-key",
+      "api_key_description": "API keys are used to authenticate your software with the Lukittu API. Keep in mind that API keys are sensitive information and should be kept secret.",
+      "api_key_created": "API key created",
+      "api_keys": "API keys",
+      "add_api_key": "Add API key",
+      "api_key_deleted": "API key deleted",
+      "delete_api_key_confirm_title": "Delete API key",
+      "delete_api_key_confirm_description": "You are about to delete API key with ID <strong>{id}</strong>! This will <strong>permanently delete</strong> this API key. This action cannot be undone.",
+      "no_api_keys": "No API keys",
+      "api_key_created_description": "API key created successfully. Keep this key secret and do not share it with anyone. <strong>This is the only time you will see this key so save it now!</strong>."
     },
     "blacklist": {
       "blacklist_updated": "Blacklist updated",

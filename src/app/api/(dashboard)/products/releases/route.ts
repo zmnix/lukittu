@@ -184,6 +184,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (previousProductReleases.length >= team.limits.maxReleasesPerProduct) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_releases_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
     if (
       previousProductReleases.find(
         (release) =>

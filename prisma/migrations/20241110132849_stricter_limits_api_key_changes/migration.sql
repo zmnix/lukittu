@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "ApiKey" ADD COLUMN     "expiresAt" TIMESTAMP(3),
+ADD COLUMN     "lastSeenAt" TIMESTAMP(3);
+
+-- AlterTable
+ALTER TABLE "Limits" ADD COLUMN     "maxApiKeys" INTEGER NOT NULL DEFAULT 10,
+ADD COLUMN     "maxInvitations" INTEGER NOT NULL DEFAULT 10,
+ADD COLUMN     "maxReleasesPerProduct" INTEGER NOT NULL DEFAULT 100;

@@ -11,6 +11,7 @@ import {
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
+  ApiKey,
   AuditLogAction,
   AuditLogTargetType,
   Limits,
@@ -259,6 +260,12 @@ export type ITeamGetSuccessResponse = {
     publicKey: string;
     settings: Settings;
     limits: Limits;
+    apiKeys: (Omit<ApiKey, 'key'> & {
+      createdBy: {
+        fullName: string;
+        email: string;
+      } | null;
+    })[];
     totalStorageUsed: number;
     counts: {
       memberCount: number;
@@ -303,6 +310,19 @@ export async function GET(
               keyPair: true,
               settings: true,
               limits: true,
+              apiKeys: {
+                include: {
+                  createdBy: {
+                    select: {
+                      email: true,
+                      fullName: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
               _count: {
                 select: {
                   users: true,

@@ -65,7 +65,9 @@ export async function POST(
               limits: true,
               invitations: {
                 where: {
-                  email,
+                  createdAt: {
+                    gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000), // 24 hours
+                  },
                 },
               },
             },
@@ -113,6 +115,15 @@ export async function POST(
       );
     }
 
+    if (team.invitations.length >= team.limits.maxInvitations) {
+      return NextResponse.json(
+        {
+          message: t('validation.max_invitations_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
     if (team.ownerId !== session.user.id) {
       return NextResponse.json(
         {
@@ -133,9 +144,15 @@ export async function POST(
     }
 
     let existingInvitation = false;
-    if (team.invitations.find((invitation) => invitation.email === email)) {
+    const existingEmailInvitations = team.invitations.filter(
+      (invitation) => invitation.email === email,
+    );
+    if (existingEmailInvitations.length) {
+      const latestInvitation = existingEmailInvitations.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+      )[0];
       if (
-        new Date().getTime() - team.invitations[0].createdAt.getTime() <
+        new Date().getTime() - latestInvitation.createdAt.getTime() <
         15 * 60 * 1000 // 15 minutes
       ) {
         return NextResponse.json(

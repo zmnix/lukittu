@@ -18,6 +18,9 @@ declare global {
           keyPair: {
             privateKey: true;
           };
+          apiKey: {
+            key: true;
+          };
         };
       }>
     | undefined;
@@ -38,6 +41,9 @@ const prisma =
       },
       keyPair: {
         privateKey: true,
+      },
+      apiKey: {
+        key: true,
       },
     },
   });

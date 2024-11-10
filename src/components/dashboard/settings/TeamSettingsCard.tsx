@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useContext, useEffect } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
+import ApiKeysCard from './ApiKeysCard';
 import PublicKeysCard from './PublicKeysCard';
 import { TeamDetails } from './TeamDetails';
 import TeamEmailSettings from './TeamEmailSettings';
@@ -57,9 +58,9 @@ export default function TeamSettingsCard() {
                 <TabsTrigger value="settings">
                   {t('general.settings')}
                 </TabsTrigger>
-                <TabsTrigger value="publicKeys">
+                <TabsTrigger value="security">
                   {t('general.security')}
-                </TabsTrigger>{' '}
+                </TabsTrigger>
                 <TabsTrigger value="limits">
                   {t('dashboard.settings.limits')}
                 </TabsTrigger>
@@ -71,8 +72,11 @@ export default function TeamSettingsCard() {
                   <TeamEmailSettings team={team ?? null} />
                 </div>
               </TabsContent>
-              <TabsContent value="publicKeys">
-                <PublicKeysCard team={team ?? null} />
+              <TabsContent value="security">
+                <div className="grid grid-cols-1 gap-4">
+                  <PublicKeysCard team={team ?? null} />
+                  <ApiKeysCard team={team ?? null} />
+                </div>
               </TabsContent>
               <TabsContent value="limits">
                 <TeamLimits team={team ?? null} />

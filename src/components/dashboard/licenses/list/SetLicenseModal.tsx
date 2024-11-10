@@ -104,7 +104,12 @@ export default function SetLicenseModal() {
       form.setValue('expirationType', ctx.licenseToEdit.expirationType);
 
       if (ctx.licenseToEdit.expirationType === 'DATE') {
-        form.setValue('expirationDate', ctx.licenseToEdit.expirationDate);
+        form.setValue(
+          'expirationDate',
+          ctx.licenseToEdit.expirationDate
+            ? new Date(ctx.licenseToEdit.expirationDate)
+            : null,
+        );
       }
 
       if (ctx.licenseToEdit.expirationType === 'DURATION') {
