@@ -287,6 +287,7 @@ export async function POST(request: NextRequest) {
         status,
         version,
         teamId: team.id,
+        createdByUserId: session.user.id,
         file: file
           ? {
               create: {
