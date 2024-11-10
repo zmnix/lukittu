@@ -21,7 +21,21 @@ export async function isRateLimited(
 
     await redisClient.set(rateLimitKey, currentRequests + 1, 'EX', limitWindow);
 
-    return currentRequests >= maxRequests;
+    const isRateLimited = currentRequests >= maxRequests;
+
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
+    if (isRateLimited) {
+      if (isDevelopment) {
+        logger.info(
+          `Rate limit exceeded for ${key} but allowing in development`,
+        );
+      }
+
+      return true;
+    }
+
+    return false;
   } catch (error) {
     logger.error('Error checking rate limit', error);
     return false;

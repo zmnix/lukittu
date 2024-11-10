@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { metadata, productId, status, version } = body;
+    const { metadata, productId, status, version, setAsLatest } = body;
 
     if (file && !(file instanceof File)) {
       return NextResponse.json(
@@ -289,26 +289,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const release = await prisma.release.create({
-      data: {
-        metadata,
-        productId,
-        status,
-        version,
-        teamId: team.id,
-        createdByUserId: session.user.id,
-        file: file
-          ? {
-              create: {
-                key: fileKey!,
-                size: file.size,
-                checksum: checksum!,
-                name: file.name,
-                mainClassName,
-              },
-            }
-          : undefined,
-      },
+    const release = await prisma.$transaction(async (prisma) => {
+      const isPublished = status === 'PUBLISHED';
+
+      if (isPublished && setAsLatest) {
+        await prisma.release.updateMany({
+          where: {
+            productId,
+          },
+          data: {
+            latest: false,
+          },
+        });
+      }
+
+      const release = await prisma.release.create({
+        data: {
+          metadata,
+          productId,
+          status,
+          version,
+          teamId: team.id,
+          createdByUserId: session.user.id,
+          latest: Boolean(setAsLatest && isPublished),
+          file: file
+            ? {
+                create: {
+                  key: fileKey!,
+                  size: file.size,
+                  checksum: checksum!,
+                  name: file.name,
+                  mainClassName,
+                },
+              }
+            : undefined,
+        },
+      });
+
+      return release;
     });
 
     const response = {
@@ -348,6 +366,7 @@ export type IProductsReleasesGetSuccessResponse = {
     product: Product;
   })[];
   totalResults: number;
+  hasLatestRelease: boolean;
   hasResults: boolean;
 };
 
@@ -385,7 +404,7 @@ export async function GET(
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
 
-    if (productId && !regex.uuidV4.test(productId)) {
+    if (!productId || !regex.uuidV4.test(productId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -484,9 +503,12 @@ export async function GET(
     ]);
     const releases = session.user.teams[0].releases;
 
+    const hasLatestRelease = releases.some((release) => release.latest);
+
     return NextResponse.json({
       releases,
       totalResults,
+      hasLatestRelease,
       hasResults: Boolean(hasResults),
     });
   } catch (error) {

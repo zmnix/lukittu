@@ -29,6 +29,7 @@ import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { ReleasesActionDropdown } from '../ReleasesActionDropdown';
+import { WarningIndicator } from './WarningIndicator';
 
 interface ReleasesTableProps {
   productId: string;
@@ -85,6 +86,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
 
   const releases = data?.releases ?? [];
   const totalReleases = data?.totalResults ?? 1;
+  const noLatestRelease = data?.releases.length && !data.hasLatestRelease;
 
   return (
     <ReleaseModalProvider>
@@ -92,7 +94,8 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-bold">
             {t('dashboard.navigation.releases')}
-            <div className="ml-auto flex gap-2">
+            <div className="ml-auto flex items-center gap-2">
+              {noLatestRelease && <WarningIndicator />}
               <AddEntityButton entityType="release" variant="outline" />
             </div>
           </CardTitle>

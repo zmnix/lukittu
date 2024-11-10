@@ -29,6 +29,7 @@ export const setReleaseSchema = (
         .uuid({
           message: t('validation.release_product_required'),
         }),
+      setAsLatest: z.boolean(),
       keepExistingFile: z.boolean(),
       status: z.enum(['PUBLISHED', 'DRAFT', 'DEPRECATED', 'ARCHIVED']),
       metadata: metadataSchema(t),

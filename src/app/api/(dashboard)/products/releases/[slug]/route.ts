@@ -79,8 +79,14 @@ export async function PUT(
       );
     }
 
-    const { metadata, productId, status, version, keepExistingFile } =
-      validated.data;
+    const {
+      metadata,
+      productId,
+      status,
+      version,
+      keepExistingFile,
+      setAsLatest,
+    } = validated.data;
 
     if (file) {
       if (!(file instanceof File)) {
@@ -187,15 +193,6 @@ export async function PUT(
       return NextResponse.json(
         { message: t('validation.release_not_found') },
         { status: HttpStatus.NOT_FOUND },
-      );
-    }
-
-    if (existingRelease.latest && status !== 'PUBLISHED') {
-      return NextResponse.json(
-        {
-          message: t('validation.latest_release_must_be_published'),
-        },
-        { status: HttpStatus.BAD_REQUEST },
       );
     }
 
@@ -317,26 +314,44 @@ export async function PUT(
       );
     }
 
-    const release = await prisma.release.update({
-      where: { id: releaseId },
-      data: {
-        metadata,
-        productId,
-        status,
-        version,
-        teamId: team.id,
-        file: file
-          ? {
-              create: {
-                key: fileKey!,
-                checksum: checksum!,
-                name: file.name,
-                size: file.size,
-                mainClassName,
-              },
-            }
-          : undefined,
-      },
+    const release = await prisma.$transaction(async (prisma) => {
+      const isPublished = status === 'PUBLISHED';
+
+      if (isPublished && setAsLatest) {
+        await prisma.release.updateMany({
+          where: {
+            productId,
+          },
+          data: {
+            latest: false,
+          },
+        });
+      }
+
+      const release = await prisma.release.update({
+        where: { id: releaseId },
+        data: {
+          metadata,
+          productId,
+          status,
+          version,
+          teamId: team.id,
+          latest: Boolean(setAsLatest && isPublished),
+          file: file
+            ? {
+                create: {
+                  key: fileKey!,
+                  checksum: checksum!,
+                  name: file.name,
+                  size: file.size,
+                  mainClassName,
+                },
+              }
+            : undefined,
+        },
+      });
+
+      return release;
     });
 
     const response = {

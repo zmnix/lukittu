@@ -3,9 +3,11 @@ import { IProductsReleasesCreateResponse } from '@/app/api/(dashboard)/products/
 import { ProductSelector } from '@/components/shared/form/ProductSelector';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -58,6 +60,7 @@ export default function SetReleaseModal() {
       version: '',
       metadata: [],
       productId: '',
+      setAsLatest: false,
       keepExistingFile: false,
     },
   });
@@ -73,6 +76,7 @@ export default function SetReleaseModal() {
       form.setValue('version', ctx.releaseToEdit.version);
       form.setValue('status', ctx.releaseToEdit.status);
       form.setValue('productId', ctx.releaseToEdit.productId);
+      form.setValue('setAsLatest', ctx.releaseToEdit.latest || false);
       form.setValue(
         'metadata',
         (
@@ -89,6 +93,7 @@ export default function SetReleaseModal() {
   }, [ctx.releaseToEdit, form]);
 
   const keepExistingFile = form.watch('keepExistingFile');
+  const releaseStatus = form.watch('status');
 
   const handleReleaseCreate = async (payload: SetReleaseSchema) => {
     const formData = new FormData();
@@ -287,6 +292,30 @@ export default function SetReleaseModal() {
                   </FormItem>
                 )}
               />
+              {releaseStatus === 'PUBLISHED' && (
+                <FormField
+                  control={form.control}
+                  name="setAsLatest"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          {t('dashboard.releases.set_as_latest')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t('dashboard.releases.set_as_latest_description')}
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormItem>
                 <Label>{t('general.file')}</Label>
                 {!file && !keepExistingFile ? (

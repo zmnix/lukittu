@@ -585,7 +585,10 @@
       "latest_release_updated": "Latest release updated",
       "delete_release_confirm_title": "Delete release",
       "delete_release_confirm_description": "You are about to delete release <strong>{version}</strong>! This will <strong>permanently delete</strong> this release and it's files. This action cannot be undone.",
-      "release_deleted": "Release deleted"
+      "release_deleted": "Release deleted",
+      "set_as_latest_description": "When checked, this release will be set as the latest release for the product and will be used if no specific release is requested.",
+      "no_latest_release": "No latest release",
+      "no_latest_release_description": "You have not set a latest release for this product. It is used as a fallback if no specific release is requested."
     },
     "settings": {
       "general_settings": "General settings",
