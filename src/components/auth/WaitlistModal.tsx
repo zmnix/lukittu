@@ -111,7 +111,7 @@ export default function WaitlistModal({
                 discordLinkElement: (children) => (
                   <Link
                     className="font-semibold text-primary"
-                    href="https://discord.com/invite/5Gxh4V3dSC"
+                    href="https://discord.lukittu.com"
                   >
                     {children}
                   </Link>

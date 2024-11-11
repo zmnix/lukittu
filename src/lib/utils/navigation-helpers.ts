@@ -149,7 +149,7 @@ export function getMenuList(pathname: string): Group[] {
           submenus: [],
         },
         {
-          href: 'https://discord.gg/5Gxh4V3dSC',
+          href: 'https://discord.lukittu.com',
           translation: 'discord',
           active: pathname === '#',
           icon: discordIcon as LucideIcon,
