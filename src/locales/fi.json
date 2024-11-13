@@ -570,6 +570,7 @@
       "stripe_integration_deleted": "Stripe integration deleted"
     },
     "releases": {
+      "drop_file_here": "Drop file here",
       "total_releases": "Total releases",
       "search_release": "Search release...",
       "release_description": "Releases are the versions of your software that you distribute to your customers. You can add, edit, and delete releases here.",

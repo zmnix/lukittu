@@ -51,6 +51,7 @@ export default function SetReleaseModal() {
   const ctx = useContext(ReleaseModalContext);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const { mutate } = useSWRConfig();
 
   const form = useForm<SetReleaseSchema>({
@@ -154,6 +155,36 @@ export default function SetReleaseModal() {
       }
     };
     input.click();
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files[0] as File | null;
+    if (droppedFile) {
+      if (droppedFile.size > MAX_FILE_SIZE) {
+        return toast.error(
+          t('validation.file_too_large', {
+            size: bytesToSize(MAX_FILE_SIZE),
+          }),
+        );
+      }
+      setFile(droppedFile);
+    }
   };
 
   const onSubmit = async (data: SetReleaseSchema) => {
@@ -320,18 +351,33 @@ export default function SetReleaseModal() {
                 <Label>{t('general.file')}</Label>
                 {!file && !keepExistingFile ? (
                   <div
-                    className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed p-6"
+                    className={`flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 transition-all duration-200 ease-in-out ${
+                      isDragging
+                        ? 'scale-[1.01] border-solid border-primary bg-primary/5'
+                        : 'border-dashed'
+                    } relative p-6`}
                     onClick={handleFileSelect}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
                   >
-                    <FileIcon className="h-12 w-12" />
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.releases.click_here_to_upload')}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t('dashboard.releases.supported_file_types', {
-                        size: bytesToSize(MAX_FILE_SIZE),
-                      })}
-                    </span>
+                    <div className="pointer-events-none flex flex-col items-center gap-1">
+                      <FileIcon
+                        className={`h-12 w-12 transition-transform duration-200 ${
+                          isDragging ? 'scale-110' : ''
+                        }`}
+                      />
+                      <span className="text-sm font-medium text-muted-foreground transition-opacity duration-200">
+                        {isDragging
+                          ? t('dashboard.releases.drop_file_here')
+                          : t('dashboard.releases.click_here_to_upload')}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('dashboard.releases.supported_file_types', {
+                          size: bytesToSize(MAX_FILE_SIZE),
+                        })}
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg border px-2 py-1">
