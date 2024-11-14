@@ -1,22 +1,22 @@
 /*
   Warnings:
 
-  - You are about to drop the column `deviceTimeout` on the `Settings` table. All the data in the column will be lost.
-  - You are about to drop the `Device` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the column `heartbeatTimeout` on the `Settings` table. All the data in the column will be lost.
+  - You are about to drop the `Heartbeat` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- DropForeignKey
-ALTER TABLE "Device" DROP CONSTRAINT "Device_licenseId_fkey";
+ALTER TABLE "Heartbeat" DROP CONSTRAINT "Heartbeat_licenseId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "Device" DROP CONSTRAINT "Device_teamId_fkey";
+ALTER TABLE "Heartbeat" DROP CONSTRAINT "Heartbeat_teamId_fkey";
 
 -- AlterTable
-ALTER TABLE "Settings" DROP COLUMN "deviceTimeout",
+ALTER TABLE "Settings" DROP COLUMN "heartbeatTimeout",
 ADD COLUMN     "deviceTimeout" INTEGER NOT NULL DEFAULT 60;
 
 -- DropTable
-DROP TABLE "Device";
+DROP TABLE "Heartbeat";
 
 -- CreateTable
 CREATE TABLE "Device" (
