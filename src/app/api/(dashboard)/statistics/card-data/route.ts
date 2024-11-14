@@ -64,7 +64,7 @@ export async function GET(): Promise<
               },
               licenses: {
                 include: {
-                  heartbeats: true,
+                  devices: true,
                 },
               },
             },
@@ -89,30 +89,29 @@ export async function GET(): Promise<
 
     const team = session.user.teams[0];
     const settings = team.settings;
-    const heartbeatTimeout = settings?.heartbeatTimeout || 60; // Minutes
+    const deviceTimeout = settings?.deviceTimeout || 60; // Minutes
 
-    const heartbeats = team.licenses
-      .flatMap((license) => license.heartbeats)
+    const devices = team.licenses
+      .flatMap((license) => license.devices)
       .filter(
-        (heartbeat) =>
-          new Date(heartbeat.lastBeatAt) >=
-          new Date(new Date().getTime() - heartbeatTimeout * 60 * 2 * 1000),
+        (device) =>
+          new Date(device.lastBeatAt) >=
+          new Date(new Date().getTime() - deviceTimeout * 60 * 2 * 1000),
       );
 
-    const activeHeartbeats = heartbeats.filter(
-      (heartbeat) =>
-        new Date(heartbeat.lastBeatAt) >=
-        new Date(new Date().getTime() - heartbeatTimeout * 60 * 1000),
+    const activeDevices = devices.filter(
+      (device) =>
+        new Date(device.lastBeatAt) >=
+        new Date(new Date().getTime() - deviceTimeout * 60 * 1000),
     );
 
-    const activeLicensesPreviousPeriod =
-      heartbeats.length - activeHeartbeats.length;
+    const activeLicensesPreviousPeriod = devices.length - activeDevices.length;
 
     const data: CardData = {
       totalLicenses: team.licenses.length,
       totalProducts: team.products.length,
       totalCustomers: team.customers.length,
-      activeLicenses: activeHeartbeats.length,
+      activeLicenses: activeDevices.length,
       trends: {
         licensesLastWeek: team.licenses.filter(
           (license) =>

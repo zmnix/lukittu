@@ -170,7 +170,7 @@ export async function POST(
             },
           },
         },
-        heartbeats: true,
+        devices: true,
         requestLogs: {
           where: {
             createdAt: {
@@ -386,7 +386,7 @@ export async function POST(
     commonBase.releaseId = matchingRelease?.id;
     commonBase.releaseFileId =
       matchingRelease && 'file' in matchingRelease
-        ? (matchingRelease.file as ReleaseFile)?.id
+        ? (matchingRelease.file as ReleaseFile | null)?.id
         : undefined;
 
     if (license.suspended) {
@@ -490,12 +490,12 @@ export async function POST(
     }
 
     if (license.seats) {
-      const heartbeatTimeout = settings.heartbeatTimeout || 60;
+      const deviceTimeout = settings.deviceTimeout || 60;
 
-      const activeSeats = license.heartbeats.filter(
-        (heartbeat) =>
-          new Date(heartbeat.lastBeatAt).getTime() >
-          new Date(Date.now() - heartbeatTimeout * 60 * 1000).getTime(),
+      const activeSeats = license.devices.filter(
+        (device) =>
+          new Date(device.lastBeatAt).getTime() >
+          new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
       );
 
       const seatsIncludesClient = activeSeats.some(
@@ -520,7 +520,7 @@ export async function POST(
       }
     }
 
-    await prisma.heartbeat.upsert({
+    await prisma.device.upsert({
       where: {
         licenseId_deviceIdentifier: {
           licenseId: license.id,

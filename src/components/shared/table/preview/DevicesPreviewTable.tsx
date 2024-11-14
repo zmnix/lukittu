@@ -1,7 +1,7 @@
 import {
-  ILicenseHeartbeatsGetResponse,
-  ILicenseHeartbeatsGetSuccessResponse,
-} from '@/app/api/(dashboard)/heartbeats/route';
+  ILicenseDevicesGetResponse,
+  ILicenseDevicesGetSuccessResponse,
+} from '@/app/api/(dashboard)/devices/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -24,13 +24,13 @@ import { toast } from 'sonner';
 import useSWR from 'swr';
 import { CountryFlag } from '../../misc/CountryFlag';
 
-interface HeartbeatPreviewTableProps {
+interface DevicePreviewTableProps {
   licenseId?: string;
 }
 
-const fetchHeartbeats = async (url: string) => {
+const fetchDevices = async (url: string) => {
   const response = await fetch(url);
-  const data = (await response.json()) as ILicenseHeartbeatsGetResponse;
+  const data = (await response.json()) as ILicenseDevicesGetResponse;
 
   if ('message' in data) {
     throw new Error(data.message);
@@ -39,9 +39,9 @@ const fetchHeartbeats = async (url: string) => {
   return data;
 };
 
-export default function HeartbeatPreviewTable({
+export default function DevicesPreviewTable({
   licenseId,
-}: HeartbeatPreviewTableProps) {
+}: DevicePreviewTableProps) {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
 
@@ -59,13 +59,12 @@ export default function HeartbeatPreviewTable({
     ...(licenseId && { licenseId }),
   });
 
-  const { data, error, isLoading } =
-    useSWR<ILicenseHeartbeatsGetSuccessResponse>(
-      teamCtx.selectedTeam
-        ? ['/api/heartbeats', teamCtx.selectedTeam, searchParams.toString()]
-        : null,
-      ([url, _, params]) => fetchHeartbeats(`${url}?${params}`),
-    );
+  const { data, error, isLoading } = useSWR<ILicenseDevicesGetSuccessResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/devices', teamCtx.selectedTeam, searchParams.toString()]
+      : null,
+    ([url, _, params]) => fetchDevices(`${url}?${params}`),
+  );
 
   useEffect(() => {
     if (error) {
@@ -73,18 +72,18 @@ export default function HeartbeatPreviewTable({
     }
   }, [error, t]);
 
-  const heartbeats = data?.heartbeats ?? [];
-  const totalHeartbeats = data?.totalResults ?? 1;
+  const devices = data?.devices ?? [];
+  const totalDevices = data?.totalResults ?? 1;
 
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
         <CardTitle className="flex items-center text-xl font-bold">
-          {t('general.heartbeats')}
+          {t('general.devices')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        {totalHeartbeats ? (
+        {totalDevices ? (
           <>
             <Table>
               <TableHeader>
@@ -120,27 +119,27 @@ export default function HeartbeatPreviewTable({
                 <TableSkeleton columns={4} rows={3} />
               ) : (
                 <TableBody>
-                  {heartbeats.map((heartbeat) => (
-                    <TableRow key={heartbeat.id}>
-                      <TableCell>{heartbeat.deviceIdentifier}</TableCell>
+                  {devices.map((device) => (
+                    <TableRow key={device.id}>
+                      <TableCell>{device.deviceIdentifier}</TableCell>
                       <TableCell className="truncate">
-                        <DateConverter date={heartbeat.lastBeatAt} />
+                        <DateConverter date={device.lastBeatAt} />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="flex-shrink-0">
-                            {heartbeat.alpha2 && (
+                            {device.alpha2 && (
                               <CountryFlag
-                                countryCode={heartbeat.alpha2}
-                                countryName={heartbeat.country}
+                                countryCode={device.alpha2}
+                                countryName={device.country}
                               />
                             )}
                           </span>
-                          <span>{heartbeat.ipAddress}</span>
+                          <span>{device.ipAddress}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        {heartbeat.status === 'inactive' ? (
+                        {device.status === 'inactive' ? (
                           <Badge variant="error">
                             <XCircle className="mr-1 h-3 w-3" />
                             {t('general.inactive')}
@@ -161,13 +160,13 @@ export default function HeartbeatPreviewTable({
               page={page}
               pageSize={10}
               setPage={setPage}
-              totalItems={totalHeartbeats}
-              totalPages={Math.ceil(totalHeartbeats / 10)}
+              totalItems={totalDevices}
+              totalPages={Math.ceil(totalDevices / 10)}
             />
           </>
         ) : (
           <div className="flex h-24 flex-col items-center justify-center rounded-lg border-2 border-dashed text-sm text-muted-foreground">
-            {t('dashboard.licenses.no_heartbeat_data')}
+            {t('dashboard.licenses.no_device_data')}
           </div>
         )}
       </CardContent>

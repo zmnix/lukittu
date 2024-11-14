@@ -242,7 +242,7 @@ export async function GET(
             },
           },
         },
-        heartbeats: true,
+        devices: true,
         requestLogs: {
           where: {
             createdAt: {
@@ -589,12 +589,12 @@ export async function GET(
     }
 
     if (license.seats) {
-      const heartbeatTimeout = settings.heartbeatTimeout || 60;
+      const deviceTimeout = settings.deviceTimeout || 60;
 
-      const activeSeats = license.heartbeats.filter(
-        (heartbeat) =>
-          new Date(heartbeat.lastBeatAt).getTime() >
-          new Date(Date.now() - heartbeatTimeout * 60 * 1000).getTime(),
+      const activeSeats = license.devices.filter(
+        (device) =>
+          new Date(device.lastBeatAt).getTime() >
+          new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
       );
 
       const seatsIncludesClient = activeSeats.some(
@@ -619,7 +619,7 @@ export async function GET(
       }
     }
 
-    await prisma.heartbeat.upsert({
+    await prisma.device.upsert({
       where: {
         licenseId_deviceIdentifier: {
           licenseId: license.id,
@@ -721,7 +721,7 @@ export async function GET(
     });
   } catch (error) {
     logger.error(
-      "Error occurred in '(external)/v1/license/[slug]/heartbeat' route",
+      "Error occurred in '(external)/v1/license/[slug]/device' route",
       error,
     );
 

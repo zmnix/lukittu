@@ -52,7 +52,7 @@ export default function TeamValidationSettings({
       strictCustomers: false,
       strictProducts: false,
       strictReleases: false,
-      heartbeatTimeout: 60,
+      deviceTimeout: 60,
       ipLimitPeriod: 'DAY',
     },
   });
@@ -62,7 +62,7 @@ export default function TeamValidationSettings({
       strictCustomers: team?.settings.strictCustomers ?? false,
       strictProducts: team?.settings.strictProducts ?? false,
       strictReleases: team?.settings.strictReleases ?? false,
-      heartbeatTimeout: team?.settings.heartbeatTimeout ?? 60,
+      deviceTimeout: team?.settings.deviceTimeout ?? 60,
       ipLimitPeriod: team?.settings.ipLimitPeriod ?? 'DAY',
     });
   }, [form, team]);
@@ -216,25 +216,25 @@ export default function TeamValidationSettings({
             />
             <FormField
               control={form.control}
-              name="heartbeatTimeout"
+              name="deviceTimeout"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {t('dashboard.settings.heartbeat_timeout')}
+                    {t('dashboard.settings.device_timeout')}
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={!team || loading}
                       min={1}
-                      placeholder={t('dashboard.settings.heartbeat_timeout')}
+                      placeholder={t('dashboard.settings.device_timeout')}
                       type="number"
                       value={field.value}
                       onChange={(e) => {
                         if (!e.target.value || e.target.value === '0') {
                           e.target.value = '1';
                         }
-                        form.setValue('heartbeatTimeout', +e.target.value);
+                        form.setValue('deviceTimeout', +e.target.value);
                       }}
                     />
                   </FormControl>

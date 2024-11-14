@@ -170,7 +170,7 @@ export async function POST(
             },
           },
         },
-        heartbeats: true,
+        devices: true,
         requestLogs: {
           where: {
             createdAt: {
@@ -492,12 +492,12 @@ export async function POST(
 
     if (deviceIdentifier) {
       if (license.seats) {
-        const heartbeatTimeout = settings.heartbeatTimeout || 60; // Timeout in minutes
+        const deviceTimeout = settings.deviceTimeout || 60; // Timeout in minutes
 
-        const activeSeats = license.heartbeats.filter(
-          (heartbeat) =>
-            new Date(heartbeat.lastBeatAt).getTime() >
-            new Date(Date.now() - heartbeatTimeout * 60 * 1000).getTime(),
+        const activeSeats = license.devices.filter(
+          (device) =>
+            new Date(device.lastBeatAt).getTime() >
+            new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
         );
 
         const seatsIncludesClient = activeSeats.some(
@@ -522,7 +522,7 @@ export async function POST(
         }
       }
 
-      await prisma.heartbeat.upsert({
+      await prisma.device.upsert({
         where: {
           licenseId_deviceIdentifier: {
             licenseId: license.id,

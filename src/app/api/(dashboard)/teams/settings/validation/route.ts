@@ -87,7 +87,7 @@ export async function PUT(
     const {
       strictCustomers,
       strictProducts,
-      heartbeatTimeout,
+      deviceTimeout,
       ipLimitPeriod,
       strictReleases,
     } = validated.data;
@@ -100,7 +100,7 @@ export async function PUT(
         strictCustomers,
         strictProducts,
         strictReleases,
-        heartbeatTimeout,
+        deviceTimeout,
         ipLimitPeriod,
       },
     });

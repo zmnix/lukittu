@@ -14,9 +14,9 @@ export const setTeamValidationSettingsSchema = (
       strictCustomers: z.boolean(),
       strictReleases: z.boolean(),
       ipLimitPeriod: z.enum(['DAY', 'WEEK', 'MONTH']),
-      heartbeatTimeout: z
+      deviceTimeout: z
         .number()
-        .positive({ message: t('validation.heartbeat_timeout_positive') })
+        .positive({ message: t('validation.device_timeout_positive') })
         .int(),
     })
     .strict();

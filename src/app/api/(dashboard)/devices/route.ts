@@ -7,28 +7,28 @@ import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Heartbeat, Prisma } from '@prisma/client';
+import { Device, Prisma } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-type HeartbeatStatus = 'active' | 'inactive';
+type DeviceStatus = 'active' | 'inactive';
 
-export type ILicenseHeartbeatsGetSuccessResponse = {
-  heartbeats: (Heartbeat & {
-    status: HeartbeatStatus;
+export type ILicenseDevicesGetSuccessResponse = {
+  devices: (Device & {
+    status: DeviceStatus;
     country: string | null;
     alpha2: string | null;
   })[];
   totalResults: number;
 };
 
-export type ILicenseHeartbeatsGetResponse =
+export type ILicenseDevicesGetResponse =
   | ErrorResponse
-  | ILicenseHeartbeatsGetSuccessResponse;
+  | ILicenseDevicesGetSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<ILicenseHeartbeatsGetResponse>> {
+): Promise<NextResponse<ILicenseDevicesGetResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {
@@ -85,7 +85,7 @@ export async function GET(
     const where = {
       teamId: selectedTeam,
       licenseId,
-    } as Prisma.HeartbeatWhereInput;
+    } as Prisma.DeviceWhereInput;
 
     const session = await getSession({
       user: {
@@ -97,7 +97,7 @@ export async function GET(
             },
             include: {
               settings: true,
-              heartbeats: {
+              devices: {
                 where,
                 orderBy: {
                   [sortColumn]: sortDirection,
@@ -131,28 +131,28 @@ export async function GET(
 
     const team = session.user.teams[0];
 
-    const totalResults = await prisma.heartbeat.count({
+    const totalResults = await prisma.device.count({
       where,
     });
 
     const geoData = await getCloudflareVisitorData();
 
-    const heartbeats = team.heartbeats;
+    const devices = team.devices;
 
-    const heartbeatsWithStatus = heartbeats.map((heartbeat) => {
-      const heartbeatTimeout = team.settings?.heartbeatTimeout || 60;
+    const devicesWithStatus = devices.map((device) => {
+      const deviceTimeout = team.settings?.deviceTimeout || 60;
 
-      const lastBeatAt = new Date(heartbeat.lastBeatAt);
+      const lastBeatAt = new Date(device.lastBeatAt);
       const now = new Date();
 
       const diff = Math.abs(now.getTime() - lastBeatAt.getTime());
       const minutes = Math.floor(diff / 1000 / 60);
 
-      const status: HeartbeatStatus =
-        minutes <= heartbeatTimeout ? 'active' : 'inactive';
+      const status: DeviceStatus =
+        minutes <= deviceTimeout ? 'active' : 'inactive';
 
       return {
-        ...heartbeat,
+        ...device,
         country: iso2toIso3(geoData?.alpha2 ?? null),
         alpha2: geoData?.alpha2 ?? null,
         status,
@@ -160,7 +160,7 @@ export async function GET(
     });
 
     return NextResponse.json({
-      heartbeats: heartbeatsWithStatus,
+      devices: devicesWithStatus,
       totalResults,
     });
   } catch (error) {

@@ -64,7 +64,7 @@ model Team {
   auditLogs         AuditLog[]
   invitations       Invitation[]
   apiKeys           ApiKey[]
-  heartbeats        Heartbeat[]
+  devices           Device[]
   releases          Release[]
   blacklist         Blacklist[]
   limits            Limits?
@@ -124,18 +124,18 @@ model Limits {
 }
 
 model Settings {
-  id               String        @id @default(uuid())
-  teamId           String        @unique
-  team             Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  heartbeatTimeout Int           @default(60)
-  ipLimitPeriod    IpLimitPeriod @default(DAY)
-  strictCustomers  Boolean       @default(false)
-  strictProducts   Boolean       @default(false)
-  strictReleases   Boolean       @default(false)
-  emailMessage     String?
-  emailImageUrl    String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  teamId          String        @unique
+  team            Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  deviceTimeout   Int           @default(60)
+  ipLimitPeriod   IpLimitPeriod @default(DAY)
+  strictCustomers Boolean       @default(false)
+  strictProducts  Boolean       @default(false)
+  strictReleases  Boolean       @default(false)
+  emailMessage    String?
+  emailImageUrl   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model KeyPair {
@@ -275,12 +275,12 @@ model License {
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
   requestLogs      RequestLog[]
-  heartbeats       Heartbeat[]
+  devices          Device[]
 
   @@unique([teamId, licenseKeyLookup])
 }
 
-model Heartbeat {
+model Device {
   id               String   @id @default(uuid())
   licenseId        String
   license          License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
