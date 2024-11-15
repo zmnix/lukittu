@@ -2,8 +2,8 @@
 import { ILogsGetSuccessResponse } from '@/app/api/(dashboard)/logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import { FilterChip } from '@/components/shared/FilterChip';
-import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
-import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
+import { CustomersSearchFilter } from '@/components/shared/form/CustomersSearchFilter';
+import { ProductsSearchFilter } from '@/components/shared/form/ProductsSearchFilter';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
@@ -112,7 +105,7 @@ export default function LogViewer() {
 
     const params = new URLSearchParams({
       page: (pageIndex + 1).toString(),
-      pageSize: '10',
+      pageSize: '25',
       team: teamCtx.selectedTeam,
     });
 
@@ -259,51 +252,41 @@ export default function LogViewer() {
           setTempStatus('all');
         }}
       >
-        <Select value={tempStatus} onValueChange={setTempStatus}>
-          <SelectTrigger className="w-full">
-            <SelectValue>
-              {tempStatus === 'all' ? (
-                t('general.all')
-              ) : (
-                <div className="flex items-center gap-2">
-                  {tempStatus === 'success' ? (
-                    <CheckCircle className="h-4 w-4 text-[#22c55e]" />
-                  ) : tempStatus === 'error' ? (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  ) : (
-                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                  )}
-                  {tempStatus === 'success'
-                    ? t('general.valid')
-                    : tempStatus === 'error'
-                      ? t('general.error')
-                      : t('general.warning')}
-                </div>
-              )}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('general.all')}</SelectItem>
-            <SelectItem value="success">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[#22c55e]" />
-                {t('general.valid')}
-              </div>
-            </SelectItem>
-            <SelectItem value="error">
-              <div className="flex items-center gap-2">
-                <XCircle className="h-4 w-4 text-red-500" />
-                {t('general.error')}
-              </div>
-            </SelectItem>
-            <SelectItem value="warning">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                {t('general.warning')}
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              className="justify-start"
+              variant={tempStatus === 'all' ? 'default' : 'outline'}
+              onClick={() => setTempStatus('all')}
+            >
+              {t('general.all')}
+            </Button>
+            <Button
+              className="flex items-center justify-start gap-2"
+              variant={tempStatus === 'success' ? 'default' : 'outline'}
+              onClick={() => setTempStatus('success')}
+            >
+              <CheckCircle className="h-4 w-4 text-[#22c55e]" />
+              {t('general.valid')}
+            </Button>
+            <Button
+              className="flex items-center justify-start gap-2"
+              variant={tempStatus === 'error' ? 'default' : 'outline'}
+              onClick={() => setTempStatus('error')}
+            >
+              <XCircle className="h-4 w-4 text-red-500" />
+              {t('general.error')}
+            </Button>
+            <Button
+              className="flex items-center justify-start gap-2"
+              variant={tempStatus === 'warning' ? 'default' : 'outline'}
+              onClick={() => setTempStatus('warning')}
+            >
+              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              {t('general.warning')}
+            </Button>
+          </div>
+        </div>
       </FilterChip>
 
       <FilterChip
@@ -406,8 +389,8 @@ export default function LogViewer() {
           setTempProductIds([]);
         }}
       >
-        <ProductsMultiselect
-          initialValue={tempProductIds}
+        <ProductsSearchFilter
+          value={tempProductIds}
           onChange={setTempProductIds}
         />
       </FilterChip>
@@ -430,8 +413,8 @@ export default function LogViewer() {
           setTempCustomerIds([]);
         }}
       >
-        <CustomersMultiselect
-          initialValue={tempCustomerIds}
+        <CustomersSearchFilter
+          value={tempCustomerIds}
           onChange={setTempCustomerIds}
         />
       </FilterChip>

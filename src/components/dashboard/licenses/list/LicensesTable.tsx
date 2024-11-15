@@ -4,8 +4,11 @@ import {
   ILicensesGetSuccessResponse,
 } from '@/app/api/(dashboard)/licenses/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { FilterChip } from '@/components/shared/FilterChip';
 import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
+import { CustomersSearchFilter } from '@/components/shared/form/CustomersSearchFilter';
 import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
+import { ProductsSearchFilter } from '@/components/shared/form/ProductsSearchFilter';
 import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
@@ -101,6 +104,8 @@ export function LicensesTable() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
+  const [tempProductIds, setTempProductIds] = useState<string[]>([]);
+  const [tempCustomerIds, setTempCustomerIds] = useState<string[]>([]);
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -138,6 +143,70 @@ export function LicensesTable() {
       clearTimeout(timeout);
     };
   }, [debounceSearch]);
+
+  const renderFilters = () => (
+    <div className="mb-4 flex flex-wrap items-center gap-4 max-lg:hidden">
+      <div className="relative flex w-full min-w-[33%] max-w-xs items-center">
+        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+        <Input
+          className="pl-8"
+          placeholder={t('dashboard.licenses.search_license')}
+          value={debounceSearch}
+          onChange={(e) => {
+            setDebounceSearch(e.target.value);
+          }}
+        />
+      </div>
+
+      <FilterChip
+        activeValue={
+          productIds.length > 0
+            ? `${productIds.length} ${t('general.selected')}`
+            : t('general.products')
+        }
+        isActive={productIds.length > 0}
+        label={t('general.product')}
+        popoverTitle={t('general.select_products')}
+        onApply={() => setProductIds(tempProductIds)}
+        onClear={() => {
+          setTempProductIds(productIds);
+        }}
+        onReset={() => {
+          setProductIds([]);
+          setTempProductIds([]);
+        }}
+      >
+        <ProductsSearchFilter
+          value={tempProductIds}
+          onChange={setTempProductIds}
+        />
+      </FilterChip>
+
+      <FilterChip
+        activeValue={
+          customerIds.length > 0
+            ? `${customerIds.length} ${t('general.selected')}`
+            : t('general.customers')
+        }
+        isActive={customerIds.length > 0}
+        label={t('general.customer')}
+        popoverTitle={t('general.select_customers')}
+        onApply={() => setCustomerIds(tempCustomerIds)}
+        onClear={() => {
+          setTempCustomerIds(customerIds);
+        }}
+        onReset={() => {
+          setCustomerIds([]);
+          setTempCustomerIds([]);
+        }}
+      >
+        <CustomersSearchFilter
+          value={tempCustomerIds}
+          onChange={setTempCustomerIds}
+        />
+      </FilterChip>
+    </div>
+  );
 
   return (
     <LicenseModalProvider>
@@ -193,27 +262,7 @@ export function LicensesTable() {
         <CardContent>
           {hasLicenses && teamCtx.selectedTeam ? (
             <>
-              <div className="mb-4 flex items-center gap-4 max-lg:hidden max-lg:flex-col">
-                <div className="relative flex w-full items-center">
-                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
-                  <Input
-                    className="pl-8"
-                    placeholder={t('dashboard.licenses.search_license')}
-                    value={debounceSearch}
-                    onChange={(e) => {
-                      setDebounceSearch(e.target.value);
-                    }}
-                  />
-                </div>
-                <ProductsMultiselect
-                  initialValue={productIds}
-                  onChange={setProductIds}
-                />
-                <CustomersMultiselect
-                  initialValue={customerIds}
-                  onChange={setCustomerIds}
-                />
-              </div>
+              {renderFilters()}
               <div className="flex flex-col md:hidden">
                 {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
