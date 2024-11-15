@@ -108,9 +108,7 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    const isFullLicense = search.match(
-      /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/,
-    );
+    const isFullLicense = search.match(regex.licenseKey);
 
     const licenseKeyLookup = isFullLicense
       ? generateHMAC(`${search}:${selectedTeam}`)

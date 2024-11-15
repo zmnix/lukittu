@@ -63,8 +63,8 @@ export default function LogViewer() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [customerIds, setCustomerIds] = useState<string[]>([]);
   const [productIds, setProductIds] = useState<string[]>([]);
-  const [, setLicenseSearch] = useState('');
-  const [debouncedLicenseSearch, setDebouncedLicenseSearch] = useState('');
+  const [licenseSearch, setLicenseSearch] = useState('');
+  const [ipSearch, setIpSearch] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: addDays(new Date(), -7),
     to: new Date(),
@@ -72,13 +72,11 @@ export default function LogViewer() {
 
   const [tempStatus, setTempStatus] = useState(statusFilter);
   const [tempDateRange, setTempDateRange] = useState(dateRange);
-  const [tempLicenseSearch, setTempLicenseSearch] = useState(
-    debouncedLicenseSearch,
-  );
+  const [tempLicenseSearch, setTempLicenseSearch] = useState(licenseSearch);
+  const [tempIpSearch, setTempIpSearch] = useState(ipSearch);
   const [tempProductIds, setTempProductIds] = useState(productIds);
   const [tempCustomerIds, setTempCustomerIds] = useState(customerIds);
 
-  // Add default values constants
   const DEFAULT_STATUS = 'all';
   const DEFAULT_DATE_RANGE = {
     from: addDays(new Date(), -7),
@@ -92,26 +90,18 @@ export default function LogViewer() {
     if (statusFilter !== 'all') count++;
     if (customerIds.length > 0) count++;
     if (productIds.length > 0) count++;
-    if (debouncedLicenseSearch) count++;
+    if (licenseSearch) count++;
+    if (ipSearch) count++;
     if (dateRange?.from || dateRange?.to) count++;
     return count;
   }, [
     statusFilter,
     customerIds,
     productIds,
-    debouncedLicenseSearch,
+    licenseSearch,
+    ipSearch,
     dateRange,
   ]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setLicenseSearch(debouncedLicenseSearch);
-    }, 500);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [debouncedLicenseSearch]);
 
   const getKey = (
     pageIndex: number,
@@ -130,19 +120,26 @@ export default function LogViewer() {
       params.append('status', statusFilter);
     }
     if (customerIds.length > 0) {
-      customerIds.forEach((id) => params.append('customerIds', id));
+      params.append('customerIds', customerIds.join(','));
     }
     if (productIds.length > 0) {
-      productIds.forEach((id) => params.append('productIds', id));
+      params.append('productIds', productIds.join(','));
     }
-    if (debouncedLicenseSearch) {
-      params.append('licenseKey', debouncedLicenseSearch);
+    if (licenseSearch) {
+      params.append('licenseSearch', licenseSearch);
+    }
+    if (ipSearch) {
+      params.append('ipSearch', ipSearch);
     }
     if (dateRange?.from) {
-      params.append('from', dateRange.from.toISOString());
+      const dateRangeStartOfDay = new Date(dateRange.from);
+      dateRangeStartOfDay.setHours(0, 0, 0, 0);
+      params.append('rangeStart', dateRangeStartOfDay.toISOString());
     }
     if (dateRange?.to) {
-      params.append('to', dateRange.to.toISOString());
+      const dateRangeEndOfDay = new Date(dateRange.to);
+      dateRangeEndOfDay.setHours(23, 59, 59, 999);
+      params.append('rangeEnd', dateRangeEndOfDay.toISOString());
     }
 
     return `/api/logs?${params.toString()}`;
@@ -220,7 +217,8 @@ export default function LogViewer() {
     statusFilter,
     customerIds,
     productIds,
-    debouncedLicenseSearch,
+    licenseSearch,
+    ipSearch,
     dateRange,
   ]);
 
@@ -231,8 +229,10 @@ export default function LogViewer() {
     setTempCustomerIds(DEFAULT_IDS);
     setProductIds(DEFAULT_IDS);
     setTempProductIds(DEFAULT_IDS);
-    setDebouncedLicenseSearch(DEFAULT_SEARCH);
+    setLicenseSearch(DEFAULT_SEARCH);
     setTempLicenseSearch(DEFAULT_SEARCH);
+    setIpSearch(DEFAULT_SEARCH);
+    setTempIpSearch(DEFAULT_SEARCH);
     setDateRange(DEFAULT_DATE_RANGE);
     setTempDateRange(DEFAULT_DATE_RANGE);
   };
@@ -343,16 +343,16 @@ export default function LogViewer() {
       </FilterChip>
 
       <FilterChip
-        activeValue={debouncedLicenseSearch}
-        isActive={!!debouncedLicenseSearch}
+        activeValue={licenseSearch}
+        isActive={!!licenseSearch}
         label={t('general.license')}
         popoverTitle={t('general.search_license')}
-        onApply={() => setDebouncedLicenseSearch(tempLicenseSearch)}
+        onApply={() => setLicenseSearch(tempLicenseSearch)}
         onClear={() => {
-          setTempLicenseSearch(debouncedLicenseSearch);
+          setTempLicenseSearch(licenseSearch);
         }}
         onReset={() => {
-          setDebouncedLicenseSearch('');
+          setLicenseSearch('');
           setTempLicenseSearch('');
         }}
       >
@@ -361,6 +361,29 @@ export default function LogViewer() {
             placeholder={t('dashboard.licenses.search_license')}
             value={tempLicenseSearch}
             onChange={(e) => setTempLicenseSearch(e.target.value)}
+          />
+        </div>
+      </FilterChip>
+
+      <FilterChip
+        activeValue={ipSearch}
+        isActive={!!ipSearch}
+        label={t('general.ip_address')}
+        popoverTitle={t('general.search_ip')}
+        onApply={() => setIpSearch(tempIpSearch)}
+        onClear={() => {
+          setTempIpSearch(ipSearch);
+        }}
+        onReset={() => {
+          setIpSearch('');
+          setTempIpSearch('');
+        }}
+      >
+        <div className="flex flex-col gap-2">
+          <Input
+            placeholder={t('dashboard.logs.search_ip')}
+            value={tempIpSearch}
+            onChange={(e) => setTempIpSearch(e.target.value)}
           />
         </div>
       </FilterChip>
@@ -432,8 +455,10 @@ export default function LogViewer() {
               setTempCustomerIds(DEFAULT_IDS);
               setProductIds(DEFAULT_IDS);
               setTempProductIds(DEFAULT_IDS);
-              setDebouncedLicenseSearch(DEFAULT_SEARCH);
+              setLicenseSearch(DEFAULT_SEARCH);
               setTempLicenseSearch(DEFAULT_SEARCH);
+              setIpSearch(DEFAULT_SEARCH);
+              setTempIpSearch(DEFAULT_SEARCH);
               setDateRange(undefined);
               setTempDateRange(undefined);
             }}

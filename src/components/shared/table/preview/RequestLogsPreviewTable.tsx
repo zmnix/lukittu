@@ -28,7 +28,7 @@ import { TeamContext } from '@/providers/TeamProvider';
 import { AlertTriangle, ArrowDownUp, CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { CountryFlag } from '../../misc/CountryFlag';
@@ -36,6 +36,22 @@ import { CountryFlag } from '../../misc/CountryFlag';
 interface RequestLogsPreviewTableProps {
   licenseId: string;
 }
+
+const timeRangeToDate = (timeRange: string) => {
+  const date = new Date();
+  switch (timeRange) {
+    case '24h':
+      date.setDate(date.getDate() - 1);
+      break;
+    case '7d':
+      date.setDate(date.getDate() - 7);
+      break;
+    case '30d':
+      date.setDate(date.getDate() - 30);
+      break;
+  }
+  return date;
+};
 
 const fetchRequestLogs = async (url: string) => {
   const response = await fetch(url);
@@ -53,7 +69,7 @@ export default function RequestLogsPreviewTable({
 }: RequestLogsPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
-  const [timeRange, setTimeRange] = useState('30d');
+  const [timeRange, setTimeRange] = useState('7d');
   const teamCtx = useContext(TeamContext);
 
   const [page, setPage] = useState(1);
@@ -62,13 +78,15 @@ export default function RequestLogsPreviewTable({
     null,
   );
 
+  const timeRangeToUse = useMemo(() => timeRangeToDate(timeRange), [timeRange]);
+
   const searchParams = new URLSearchParams({
     page: page.toString(),
     pageSize: '10',
     ...(sortColumn && { sortColumn }),
     ...(sortDirection && { sortDirection }),
     ...(licenseId && { licenseId }),
-    timeRange,
+    rangeStart: timeRangeToUse.toISOString(),
   });
 
   const { data, error, isLoading } = useSWR<ILogsGetSuccessResponse>(

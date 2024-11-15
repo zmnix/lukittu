@@ -1,4 +1,5 @@
 import { prismaMock } from '../../../jest.setup';
+import { regex } from '../constants/regex';
 import { generateHMAC } from '../security/crypto';
 import { generateUniqueLicense } from './generate-license';
 
@@ -23,9 +24,7 @@ describe('License Generation', () => {
       const result = await generateUniqueLicense(teamId);
 
       expect(result).not.toBeNull();
-      expect(result).toMatch(
-        /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/,
-      );
+      expect(result).toMatch(regex.licenseKey);
       expect(prismaMock.license.findUnique).toHaveBeenCalledTimes(1);
       expect(generateHMAC).toHaveBeenCalledTimes(1);
       expect(generateHMAC).toHaveBeenCalledWith(
@@ -44,9 +43,7 @@ describe('License Generation', () => {
       const result = await generateUniqueLicense(teamId);
 
       expect(result).not.toBeNull();
-      expect(result).toMatch(
-        /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/,
-      );
+      expect(result).toMatch(regex.licenseKey);
       expect(prismaMock.license.findUnique).toHaveBeenCalledTimes(5);
       expect(generateHMAC).toHaveBeenCalledTimes(5);
     });
@@ -68,9 +65,7 @@ describe('License Generation', () => {
 
       const result = await generateUniqueLicense(teamId);
 
-      expect(result).toMatch(
-        /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/,
-      );
+      expect(result).toMatch(regex.licenseKey);
     });
 
     it('should properly handle database errors', async () => {

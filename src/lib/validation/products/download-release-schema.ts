@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import { z } from 'zod';
 
 export type DownloadReleaseSchema = z.infer<
@@ -9,13 +10,10 @@ export const downloadReleaseSchema = () =>
     .object({
       licenseKey: z
         .string({ message: 'License key must be a string' })
-        .regex(
-          /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/,
-          {
-            message:
-              'License key must be in the format of XXXXX-XXXXX-XXXXX-XXXXX-XXXXX',
-          },
-        ),
+        .regex(regex.licenseKey, {
+          message:
+            'License key must be in the format of XXXXX-XXXXX-XXXXX-XXXXX-XXXXX',
+        }),
       productId: z
         .string({
           message: 'Product UUID must be a string',

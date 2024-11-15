@@ -1,3 +1,4 @@
+import { regex } from '@/lib/constants/regex';
 import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 import { metadataSchema } from '../shared/metadata-schema';
@@ -9,14 +10,9 @@ export const setLicenseSchema = (
 ) =>
   z
     .object({
-      licenseKey: z
-        .string()
-        .regex(
-          /^[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/,
-          {
-            message: t('validation.license_key_invalid'),
-          },
-        ),
+      licenseKey: z.string().regex(regex.licenseKey, {
+        message: t('validation.license_key_invalid'),
+      }),
       expirationType: z.enum(['DATE', 'DURATION', 'NEVER']),
       expirationStart: z.enum(['CREATION', 'ACTIVATION']).nullable(),
       expirationDate: z.coerce.date().nullable(),
