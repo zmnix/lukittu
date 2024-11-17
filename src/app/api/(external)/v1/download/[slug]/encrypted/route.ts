@@ -18,7 +18,12 @@ import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getIp } from '@/lib/utils/header-helpers';
 import { downloadReleaseSchema } from '@/lib/validation/products/download-release-schema';
 import { HttpStatus } from '@/types/http-status';
-import { BlacklistType, IpLimitPeriod, RequestStatus } from '@prisma/client';
+import {
+  BlacklistType,
+  IpLimitPeriod,
+  RequestStatus,
+  RequestType,
+} from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -33,6 +38,8 @@ export async function GET(
     body: null,
     request,
     requestTime,
+    type: RequestType.DOWNLOAD,
+    query: null as any,
   };
 
   try {
@@ -78,6 +85,8 @@ export async function GET(
         httpStatus: HttpStatus.BAD_REQUEST,
       });
     }
+
+    loggedResponseBase.query = validated.data;
 
     const ipAddress = await getIp();
 
@@ -695,6 +704,7 @@ export async function GET(
       productId,
       licenseKeyLookup,
       teamId,
+      type: RequestType.DOWNLOAD,
       statusCode: HttpStatus.OK,
       method: request.method,
       releaseId: releaseToUse?.id,

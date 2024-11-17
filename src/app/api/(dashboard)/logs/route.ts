@@ -47,6 +47,7 @@ export async function GET(
     const allowedSortDirections = ['asc', 'desc'];
     const allowedSortColumns = ['createdAt'];
     const allowedStatus = ['success', 'error', 'warning'];
+    const allowedTypes = ['VERIFY', 'DOWNLOAD', 'HEARTBEAT'];
 
     const licenseSearch = (searchParams.get('licenseSearch') as string) || '';
     const ipSearch = (searchParams.get('ipSearch') as string) || '';
@@ -56,6 +57,7 @@ export async function GET(
     const rangeStart = searchParams.get('rangeStart') as string;
     const rangeEnd = searchParams.get('rangeEnd') as string;
     const status = searchParams.get('status') as string;
+    const type = searchParams.get('type') as string;
 
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
@@ -70,6 +72,13 @@ export async function GET(
       .safeParse(new Date(rangeStart)).error;
     const invalidRangeEnd = z.coerce.date().safeParse(new Date(rangeEnd)).error;
     const invalidIpAddress = z.string().ip().safeParse(ipSearch).error;
+
+    if (type && !allowedTypes.includes(type)) {
+      return NextResponse.json(
+        { message: t('validation.bad_request') },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (status && !allowedStatus.includes(status)) {
       return NextResponse.json(
@@ -223,6 +232,7 @@ export async function GET(
         : undefined,
       license: licenseKeyLookup ? { licenseKeyLookup } : undefined,
       ipAddress: ipSearch ? { contains: ipSearch } : undefined,
+      type: type ? type : undefined,
     } as Prisma.RequestLogWhereInput;
 
     const session = await getSession({

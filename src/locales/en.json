@@ -121,7 +121,6 @@
     "customers": "Customers",
     "products": "Products",
     "search_ip": "Search IP-address",
-    "warning": "Warning",
     "path": "Path",
     "search": "Search",
     "address": "Address",
@@ -138,9 +137,11 @@
     "version": "Version",
     "country": "Country",
     "days": "Days",
+    "download": "Download",
+    "verify": "Verify",
+    "heartbeat": "Heartbeat",
     "devices": "Devices",
     "all": "All",
-    "valid": "Valid",
     "invitation_sent": "Invitation sent",
     "delete": "Delete",
     "selected": "Selected",
@@ -486,7 +487,8 @@
       "select_log": "Select a log to view details",
       "search_ip": "Search IP...",
       "no_logs_title": "You have no logs",
-      "no_logs_description": "No logs found. Logs are created when a license verify request is made. You can view the details of the request and response here."
+      "no_logs_description": "No logs found. Logs are created when a license verify request is made. You can view the details of the request and response here.",
+      "query_params": "Query parameters"
     },
     "customers": {
       "customer_deleted": "Customer deleted",

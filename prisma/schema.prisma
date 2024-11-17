@@ -326,6 +326,7 @@ model RequestLog {
   latitude         Float?
   country          String?
   status           RequestStatus
+  type             RequestType   @default(UNKNOWN)
   statusCode       Int
   version          String
   userAgent        String?
@@ -335,6 +336,7 @@ model RequestLog {
   method           RequestMethod
   requestBody      Json?
   responseBody     Json?
+  requestQuery     Json?
   teamId           String
   team             Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
   licenseId        String?
@@ -350,6 +352,13 @@ model RequestLog {
   createdAt        DateTime      @default(now())
 
   @@index([teamId, createdAt])
+}
+
+enum RequestType {
+  UNKNOWN
+  HEARTBEAT
+  VERIFY
+  DOWNLOAD
 }
 
 enum RequestMethod {

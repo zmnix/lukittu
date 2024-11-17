@@ -54,6 +54,7 @@ export default function LogViewer() {
   >(null);
   const [showDetails, setShowDetails] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [customerIds, setCustomerIds] = useState<string[]>([]);
   const [productIds, setProductIds] = useState<string[]>([]);
   const [licenseSearch, setLicenseSearch] = useState('');
@@ -64,6 +65,7 @@ export default function LogViewer() {
   });
 
   const [tempStatus, setTempStatus] = useState(statusFilter);
+  const [tempType, setTempType] = useState(typeFilter);
   const [tempDateRange, setTempDateRange] = useState(dateRange);
   const [tempLicenseSearch, setTempLicenseSearch] = useState(licenseSearch);
   const [tempIpSearch, setTempIpSearch] = useState(ipSearch);
@@ -71,6 +73,7 @@ export default function LogViewer() {
   const [tempCustomerIds, setTempCustomerIds] = useState(customerIds);
 
   const DEFAULT_STATUS = 'all';
+  const DEFAULT_TYPE = 'all';
   const DEFAULT_DATE_RANGE = {
     from: addDays(new Date(), -7),
     to: new Date(),
@@ -81,6 +84,7 @@ export default function LogViewer() {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (statusFilter !== 'all') count++;
+    if (typeFilter !== 'all') count++;
     if (customerIds.length > 0) count++;
     if (productIds.length > 0) count++;
     if (licenseSearch) count++;
@@ -89,6 +93,7 @@ export default function LogViewer() {
     return count;
   }, [
     statusFilter,
+    typeFilter,
     customerIds,
     productIds,
     licenseSearch,
@@ -111,6 +116,9 @@ export default function LogViewer() {
 
     if (statusFilter !== 'all') {
       params.append('status', statusFilter);
+    }
+    if (typeFilter !== 'all') {
+      params.append('type', typeFilter);
     }
     if (customerIds.length > 0) {
       params.append('customerIds', customerIds.join(','));
@@ -208,6 +216,7 @@ export default function LogViewer() {
     teamCtx.selectedTeam,
     setSize,
     statusFilter,
+    typeFilter,
     customerIds,
     productIds,
     licenseSearch,
@@ -218,6 +227,8 @@ export default function LogViewer() {
   const handleResetToDefault = () => {
     setStatusFilter(DEFAULT_STATUS);
     setTempStatus(DEFAULT_STATUS);
+    setTypeFilter(DEFAULT_TYPE);
+    setTempType(DEFAULT_TYPE);
     setCustomerIds(DEFAULT_IDS);
     setTempCustomerIds(DEFAULT_IDS);
     setProductIds(DEFAULT_IDS);
@@ -235,10 +246,10 @@ export default function LogViewer() {
       <FilterChip
         activeValue={
           statusFilter === 'success'
-            ? t('general.valid')
+            ? 200
             : statusFilter === 'error'
-              ? t('general.error')
-              : t('general.warning')
+              ? 500
+              : 400
         }
         isActive={statusFilter !== 'all'}
         label={t('general.status')}
@@ -267,7 +278,7 @@ export default function LogViewer() {
               onClick={() => setTempStatus('success')}
             >
               <CheckCircle className="h-4 w-4 text-[#22c55e]" />
-              {t('general.valid')}
+              200
             </Button>
             <Button
               className="flex items-center justify-start gap-2"
@@ -275,7 +286,7 @@ export default function LogViewer() {
               onClick={() => setTempStatus('error')}
             >
               <XCircle className="h-4 w-4 text-red-500" />
-              {t('general.error')}
+              500
             </Button>
             <Button
               className="flex items-center justify-start gap-2"
@@ -283,7 +294,7 @@ export default function LogViewer() {
               onClick={() => setTempStatus('warning')}
             >
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              {t('general.warning')}
+              400
             </Button>
           </div>
         </div>
@@ -419,6 +430,62 @@ export default function LogViewer() {
         />
       </FilterChip>
 
+      <FilterChip
+        activeValue={
+          typeFilter === 'HEARTBEAT'
+            ? t('general.heartbeat')
+            : typeFilter === 'VERIFY'
+              ? t('general.verify')
+              : typeFilter === 'DOWNLOAD'
+                ? t('general.download')
+                : undefined
+        }
+        isActive={typeFilter !== 'all'}
+        label={t('general.type')}
+        popoverTitle={t('general.select_type')}
+        onApply={() => setTypeFilter(tempType)}
+        onClear={() => {
+          setTempType(typeFilter);
+        }}
+        onReset={() => {
+          setTypeFilter('all');
+          setTempType('all');
+        }}
+      >
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-1 gap-2">
+            <Button
+              className="justify-start"
+              variant={tempType === 'all' ? 'default' : 'outline'}
+              onClick={() => setTempType('all')}
+            >
+              {t('general.all')}
+            </Button>
+            <Button
+              className="justify-start"
+              variant={tempType === 'HEARTBEAT' ? 'default' : 'outline'}
+              onClick={() => setTempType('HEARTBEAT')}
+            >
+              {t('general.heartbeat')}
+            </Button>
+            <Button
+              className="justify-start"
+              variant={tempType === 'VERIFY' ? 'default' : 'outline'}
+              onClick={() => setTempType('VERIFY')}
+            >
+              {t('general.verify')}
+            </Button>
+            <Button
+              className="justify-start"
+              variant={tempType === 'DOWNLOAD' ? 'default' : 'outline'}
+              onClick={() => setTempType('DOWNLOAD')}
+            >
+              {t('general.download')}
+            </Button>
+          </div>
+        </div>
+      </FilterChip>
+
       <div className="flex gap-2">
         <Button
           className="h-7 rounded-full text-xs"
@@ -434,6 +501,8 @@ export default function LogViewer() {
             onClick={() => {
               setStatusFilter(DEFAULT_STATUS);
               setTempStatus(DEFAULT_STATUS);
+              setTypeFilter(DEFAULT_TYPE);
+              setTempType(DEFAULT_TYPE);
               setCustomerIds(DEFAULT_IDS);
               setTempCustomerIds(DEFAULT_IDS);
               setProductIds(DEFAULT_IDS);
@@ -677,8 +746,8 @@ export default function LogViewer() {
                         </p>
                         <p className="text-sm">
                           {selectedLog.browser || selectedLog.os
-                            ? `${selectedLog.browser ?? ''} - ${
-                                selectedLog.os ?? ''
+                            ? `${selectedLog.browser ?? t('general.unknown')} ${
+                                selectedLog.os ? `(${selectedLog.os})` : ''
                               }`
                             : t('general.unknown')}
                         </p>
@@ -721,14 +790,30 @@ export default function LogViewer() {
                       </Button>
                     </div>
                     <Separator className="my-4" />
-                    <h3 className="mb-2 font-semibold">
-                      {t('dashboard.logs.request_body')}
-                    </h3>
-                    <pre className="overflow-x-auto rounded-md bg-muted p-4">
-                      <code>
-                        {JSON.stringify(selectedLog.requestBody, null, 2)}
-                      </code>
-                    </pre>
+                    {selectedLog.method === 'GET' && (
+                      <>
+                        <h3 className="mb-2 font-semibold">
+                          {t('dashboard.logs.query_params')}
+                        </h3>
+                        <pre className="overflow-x-auto rounded-md bg-muted p-4">
+                          <code>
+                            {JSON.stringify(selectedLog.requestQuery, null, 2)}
+                          </code>
+                        </pre>
+                      </>
+                    )}
+                    {selectedLog.method === 'POST' && (
+                      <>
+                        <h3 className="mb-2 font-semibold">
+                          {t('dashboard.logs.request_body')}
+                        </h3>
+                        <pre className="overflow-x-auto rounded-md bg-muted p-4">
+                          <code>
+                            {JSON.stringify(selectedLog.requestBody, null, 2)}
+                          </code>
+                        </pre>
+                      </>
+                    )}
                     <h3 className="mb-2 mt-4 font-semibold">
                       {t('dashboard.logs.response_body')}
                     </h3>

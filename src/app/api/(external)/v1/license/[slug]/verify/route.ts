@@ -20,6 +20,7 @@ import {
   IpLimitPeriod,
   ReleaseFile,
   RequestStatus,
+  RequestType,
 } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -35,6 +36,7 @@ export async function POST(
     body: null,
     request,
     requestTime,
+    type: RequestType.VERIFY,
   };
 
   try {
@@ -198,7 +200,7 @@ export async function POST(
 
     const productHasReleases = (matchingProduct?.releases.length ?? 0) > 0;
 
-    const matchingRelease = matchingProduct?.releases?.find(
+    const matchingRelease = matchingProduct?.releases.find(
       (release) => release.version === version,
     );
 
@@ -386,7 +388,7 @@ export async function POST(
     commonBase.releaseId = matchingRelease?.id;
     commonBase.releaseFileId =
       matchingRelease && 'file' in matchingRelease
-        ? (matchingRelease.file as ReleaseFile)?.id
+        ? (matchingRelease.file as ReleaseFile).id
         : undefined;
 
     if (license.suspended) {

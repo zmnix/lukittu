@@ -1,5 +1,5 @@
 import { HttpStatus } from '@/types/http-status';
-import { RequestMethod, RequestStatus } from '@prisma/client';
+import { RequestMethod, RequestStatus, RequestType } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import 'server-only';
 import prisma from '../database/prisma';
@@ -12,6 +12,7 @@ interface LogRequestProps {
   pathname: string;
   requestBody: any;
   responseBody: any;
+  requestQuery?: any;
   requestTime: Date;
   statusCode: number;
   status: RequestStatus;
@@ -22,6 +23,7 @@ interface LogRequestProps {
   method: string;
   deviceIdentifier?: string;
   releaseId?: string;
+  type: RequestType;
   releaseFileId?: string;
 }
 
@@ -34,10 +36,12 @@ export async function logRequest({
   customerId,
   productId,
   licenseKeyLookup,
+  requestQuery,
   deviceIdentifier,
   teamId,
   method,
   pathname,
+  type,
   releaseFileId,
   releaseId,
 }: LogRequestProps) {
@@ -65,7 +69,9 @@ export async function logRequest({
         responseTime: new Date().getTime() - requestTime.getTime(),
         status,
         requestBody,
+        requestQuery,
         responseBody,
+        type,
         deviceIdentifier,
         ipAddress,
         release: releaseId ? { connect: { id: releaseId } } : undefined,
@@ -100,6 +106,7 @@ interface HandleLoggedRequestResponse {
   requestTime: Date;
   status: RequestStatus;
   deviceIdentifier?: string;
+  query?: any;
   response: {
     data: any;
     result: {
@@ -112,6 +119,7 @@ interface HandleLoggedRequestResponse {
   httpStatus: HttpStatus;
   customerId?: string;
   productId?: string;
+  type: RequestType;
   teamId?: string;
   releaseId?: string;
   releaseFileId?: string;
@@ -131,6 +139,7 @@ export interface ExternalVerifyResponse {
 
 export async function loggedResponse({
   body,
+  query,
   request,
   requestTime,
   status,
@@ -143,6 +152,7 @@ export async function loggedResponse({
   deviceIdentifier,
   releaseFileId,
   releaseId,
+  type,
 }: HandleLoggedRequestResponse): Promise<NextResponse<ExternalVerifyResponse>> {
   const responseBody = {
     data: response.data,
@@ -167,10 +177,12 @@ export async function loggedResponse({
       productId,
       licenseKeyLookup,
       teamId,
+      requestQuery: query,
       statusCode: httpStatus,
       method: request.method,
       releaseFileId,
       releaseId,
+      type,
     });
   }
 

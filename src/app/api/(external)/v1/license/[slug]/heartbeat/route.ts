@@ -20,6 +20,7 @@ import {
   IpLimitPeriod,
   ReleaseFile,
   RequestStatus,
+  RequestType,
 } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -35,6 +36,7 @@ export async function POST(
     body: null,
     request,
     requestTime,
+    type: RequestType.HEARTBEAT,
   };
 
   try {
@@ -198,7 +200,7 @@ export async function POST(
 
     const productHasReleases = (matchingProduct?.releases.length ?? 0) > 0;
 
-    const matchingRelease = matchingProduct?.releases?.find(
+    const matchingRelease = matchingProduct?.releases.find(
       (release) => release.version === version,
     );
 
