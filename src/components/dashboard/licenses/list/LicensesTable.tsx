@@ -205,6 +205,23 @@ export function LicensesTable() {
           onChange={setTempCustomerIds}
         />
       </FilterChip>
+
+      {(search || productIds.length > 0 || customerIds.length > 0) && (
+        <Button
+          className="h-7 rounded-full text-xs"
+          size="sm"
+          onClick={() => {
+            setDebounceSearch('');
+            setSearch('');
+            setProductIds([]);
+            setTempProductIds([]);
+            setCustomerIds([]);
+            setTempCustomerIds([]);
+          }}
+        >
+          {t('general.clear_all')}
+        </Button>
+      )}
     </div>
   );
 
