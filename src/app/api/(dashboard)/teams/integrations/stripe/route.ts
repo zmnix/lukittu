@@ -87,7 +87,7 @@ export async function POST(
     }
 
     const stripe = new Stripe(apiKey, {
-      apiVersion: '2024-10-28.acacia',
+      apiVersion: '2024-11-20.acacia',
     });
 
     try {
