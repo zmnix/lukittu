@@ -4,30 +4,32 @@ import { logger } from '@/lib/logging/logger';
 import {
   ExternalVerifyResponse,
   loggedResponse,
+  logRequest,
 } from '@/lib/logging/request-log';
+import { getFileFromPrivateS3 } from '@/lib/providers/aws-s3';
 import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
-import { generateHMAC, signChallenge } from '@/lib/security/crypto';
+import {
+  createEncryptionStream,
+  generateHMAC,
+  privateDecrypt,
+} from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
 import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getIp } from '@/lib/utils/header-helpers';
-import {
-  VerifyLicenseSchema,
-  verifyLicenseSchema,
-} from '@/lib/validation/licenses/verify-license-schema';
+import { downloadReleaseSchema } from '@/lib/validation/products/download-release-schema';
 import { HttpStatus } from '@/types/http-status';
 import {
   BlacklistType,
   IpLimitPeriod,
-  ReleaseFile,
   RequestStatus,
   RequestType,
 } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(
+export async function GET(
   request: NextRequest,
   props: { params: Promise<{ slug: string }> },
-): Promise<NextResponse<ExternalVerifyResponse>> {
+): Promise<NextResponse<ExternalVerifyResponse> | Response> {
   const params = await props.params;
   const requestTime = new Date();
   const teamId = params.slug;
@@ -36,7 +38,8 @@ export async function POST(
     body: null,
     request,
     requestTime,
-    type: RequestType.VERIFY,
+    type: RequestType.DOWNLOAD,
+    query: null as any,
   };
 
   try {
@@ -56,8 +59,16 @@ export async function POST(
       });
     }
 
-    const body = (await request.json()) as VerifyLicenseSchema;
-    const validated = await verifyLicenseSchema().safeParseAsync(body);
+    const searchParams = request.nextUrl.searchParams;
+    const payload = {
+      licenseKey: searchParams.get('licenseKey') || undefined,
+      customerId: searchParams.get('customerId') || undefined,
+      productId: searchParams.get('productId') || undefined,
+      version: searchParams.get('version') || undefined,
+      sessionKey: searchParams.get('sessionKey') || undefined,
+      deviceIdentifier: searchParams.get('deviceIdentifier') || undefined,
+    };
+    const validated = await downloadReleaseSchema().safeParseAsync(payload);
 
     if (!validated.success) {
       return loggedResponse({
@@ -75,10 +86,14 @@ export async function POST(
       });
     }
 
+    loggedResponseBase.query = validated.data;
+
     const ipAddress = await getIp();
+
+    // TODO: Enable rate limiting
     if (ipAddress) {
-      const key = `license-verify:${ipAddress}`;
-      const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
+      const key = `license-encrypted:${ipAddress}`;
+      const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
       if (isLimited) {
         return loggedResponse({
@@ -105,8 +120,8 @@ export async function POST(
             privateKey: false,
           },
         },
-        blacklist: true,
         settings: true,
+        blacklist: true,
       },
     });
 
@@ -130,12 +145,72 @@ export async function POST(
 
     const {
       licenseKey,
+      deviceIdentifier,
       customerId,
       productId,
-      challenge,
-      deviceIdentifier,
       version,
+      sessionKey,
     } = validated.data;
+
+    const privateKey = team.keyPair?.privateKey!;
+
+    const getSessionKey = async () => {
+      try {
+        const decryptedBuffer = await privateDecrypt(sessionKey, privateKey);
+        return Buffer.from(decryptedBuffer).toString('hex');
+      } catch (error) {
+        logger.error(
+          'Error occurred while decrypting session key in download route',
+          error,
+        );
+        return null;
+      }
+    };
+
+    const validatedSessionKey = await getSessionKey();
+
+    if (!validatedSessionKey) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        status: RequestStatus.INVALID_SESSION_KEY,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Invalid session key',
+          },
+        },
+        httpStatus: HttpStatus.BAD_REQUEST,
+      });
+    }
+
+    const validatedSessionKeyHash = generateHMAC(validatedSessionKey);
+    const sessionKeyRatelimitKey = `session-key:${teamId}:${validatedSessionKeyHash}`;
+
+    const isSessionKeyLimited = await isRateLimited(
+      sessionKeyRatelimitKey,
+      1,
+      900,
+    ); // 1 request per 15 minutes
+
+    if (isSessionKeyLimited) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        status: RequestStatus.RATE_LIMIT,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Rate limited',
+          },
+        },
+        httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+      });
+    }
 
     const licenseKeyLookup = generateHMAC(`${licenseKey}:${teamId}`);
 
@@ -160,15 +235,19 @@ export async function POST(
       include: {
         customers: true,
         products: {
+          where: {
+            id: productId,
+          },
           include: {
             releases: {
               where: {
-                status: 'PUBLISHED',
+                file: {
+                  isNot: null,
+                },
               },
               include: {
                 file: true,
               },
-              take: 1,
             },
           },
         },
@@ -184,11 +263,8 @@ export async function POST(
     });
 
     const licenseHasCustomers = Boolean(license?.customers.length);
-    const licenseHasProducts = Boolean(license?.products.length);
 
-    const hasStrictProducts = settings.strictProducts || false;
     const hasStrictCustomers = settings.strictCustomers || false;
-    const hasStrictReleases = settings.strictReleases || false;
 
     const matchingCustomer = license?.customers.find(
       (customer) => customer.id === customerId,
@@ -196,12 +272,6 @@ export async function POST(
 
     const matchingProduct = license?.products.find(
       (product) => product.id === productId,
-    );
-
-    const productHasReleases = (matchingProduct?.releases.length ?? 0) > 0;
-
-    const matchingRelease = matchingProduct?.releases.find(
-      (release) => release.version === version,
     );
 
     const commonBase = {
@@ -233,6 +303,91 @@ export async function POST(
 
     commonBase.licenseKeyLookup = licenseKeyLookup;
 
+    if (!matchingProduct) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.PRODUCT_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Product not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    const versionMatchRelease = matchingProduct.releases.find(
+      (v) => v.version === version,
+    );
+    if (version) {
+      if (!versionMatchRelease) {
+        return loggedResponse({
+          ...loggedResponseBase,
+          ...commonBase,
+          status: RequestStatus.RELEASE_NOT_FOUND,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'Release not found',
+            },
+          },
+          httpStatus: HttpStatus.NOT_FOUND,
+        });
+      }
+    }
+
+    const latestRelease = matchingProduct.releases.find(
+      (release) => release.latest,
+    );
+
+    // Should never happen
+    if (!latestRelease) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.RELEASE_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Latest release not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    const releaseToUse = version ? versionMatchRelease : latestRelease;
+    const fileToUse = version ? versionMatchRelease?.file : latestRelease.file;
+
+    // Should never happen
+    if (!fileToUse) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.RELEASE_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'File not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      });
+    }
+
+    commonBase.releaseId = releaseToUse?.id;
+    commonBase.releaseFileId = fileToUse.id;
+
     const blacklistedIps = team.blacklist.filter(
       (b) => b.type === BlacklistType.IP_ADDRESS,
     );
@@ -240,7 +395,6 @@ export async function POST(
 
     if (ipAddress && blacklistedIpList.includes(ipAddress)) {
       await updateBlacklistHits(teamId, BlacklistType.IP_ADDRESS, ipAddress);
-
       return loggedResponse({
         ...loggedResponseBase,
         ...commonBase,
@@ -343,54 +497,6 @@ export async function POST(
       });
     }
 
-    const strictModeNoProductId =
-      hasStrictProducts && licenseHasProducts && !productId;
-    const noProductMatch = licenseHasProducts && productId && !matchingProduct;
-
-    if (strictModeNoProductId || noProductMatch) {
-      return loggedResponse({
-        ...loggedResponseBase,
-        ...commonBase,
-        status: RequestStatus.PRODUCT_NOT_FOUND,
-        response: {
-          data: null,
-          result: {
-            timestamp: new Date(),
-            valid: false,
-            details: 'Product not found',
-          },
-        },
-        httpStatus: HttpStatus.NOT_FOUND,
-      });
-    }
-
-    const strictModeNoVersion =
-      hasStrictReleases && productHasReleases && !version;
-    const noVersionMatch = productHasReleases && version && !matchingRelease;
-
-    if (strictModeNoVersion || noVersionMatch) {
-      return loggedResponse({
-        ...loggedResponseBase,
-        ...commonBase,
-        status: RequestStatus.RELEASE_NOT_FOUND,
-        response: {
-          data: null,
-          result: {
-            timestamp: new Date(),
-            valid: false,
-            details: 'Release not found with specified version',
-          },
-        },
-        httpStatus: HttpStatus.NOT_FOUND,
-      });
-    }
-
-    commonBase.releaseId = matchingRelease?.id;
-    commonBase.releaseFileId =
-      matchingRelease && 'file' in matchingRelease
-        ? (matchingRelease.file as ReleaseFile).id
-        : undefined;
-
     if (license.suspended) {
       return loggedResponse({
         ...loggedResponseBase,
@@ -469,7 +575,6 @@ export async function POST(
     }
 
     if (license.ipLimit) {
-      const ipAddress = await getIp();
       const existingIps = license.requestLogs.map((log) => log.ipAddress);
       const ipLimitReached = existingIps.length >= license.ipLimit;
 
@@ -492,82 +597,141 @@ export async function POST(
       }
     }
 
-    if (deviceIdentifier) {
-      if (license.seats) {
-        const deviceTimeout = settings.deviceTimeout || 60; // Timeout in minutes
+    if (license.seats) {
+      const deviceTimeout = settings.deviceTimeout || 60;
 
-        const activeSeats = license.devices.filter(
-          (device) =>
-            new Date(device.lastBeatAt).getTime() >
-            new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
-        );
+      const activeSeats = license.devices.filter(
+        (device) =>
+          new Date(device.lastBeatAt).getTime() >
+          new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
+      );
 
-        const seatsIncludesClient = activeSeats.some(
-          (seat) => seat.deviceIdentifier === deviceIdentifier,
-        );
+      const seatsIncludesClient = activeSeats.some(
+        (seat) => seat.deviceIdentifier === deviceIdentifier,
+      );
 
-        if (!seatsIncludesClient && activeSeats.length >= license.seats) {
-          return loggedResponse({
-            ...loggedResponseBase,
-            ...commonBase,
-            status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
-            response: {
-              data: null,
-              result: {
-                timestamp: new Date(),
-                valid: false,
-                details: 'License seat limit reached',
-              },
+      if (!seatsIncludesClient && activeSeats.length >= license.seats) {
+        return loggedResponse({
+          ...loggedResponseBase,
+          ...commonBase,
+          status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'License seat limit reached',
             },
-            httpStatus: HttpStatus.FORBIDDEN,
-          });
-        }
+          },
+          httpStatus: HttpStatus.FORBIDDEN,
+        });
       }
+    }
 
-      await prisma.device.upsert({
-        where: {
-          licenseId_deviceIdentifier: {
-            licenseId: license.id,
-            deviceIdentifier,
+    await prisma.device.upsert({
+      where: {
+        licenseId_deviceIdentifier: {
+          licenseId: license.id,
+          deviceIdentifier,
+        },
+      },
+      update: {
+        lastBeatAt: new Date(),
+        ipAddress,
+      },
+      create: {
+        ipAddress,
+        teamId: team.id,
+        deviceIdentifier,
+        lastBeatAt: new Date(),
+        licenseId: license.id,
+      },
+    });
+
+    const file = await getFileFromPrivateS3(
+      process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
+      fileToUse.key,
+    );
+
+    if (!file) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.RELEASE_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'File not found',
           },
         },
-        update: {
-          lastBeatAt: new Date(),
-          ipAddress: await getIp(),
-        },
-        create: {
-          teamId,
-          deviceIdentifier,
-          lastBeatAt: new Date(),
-          licenseId: license.id,
-        },
+        httpStatus: HttpStatus.NOT_FOUND,
       });
     }
 
-    const privateKey = team.keyPair?.privateKey!;
+    const fileStream = file.Body?.transformToWebStream();
 
-    const challengeResponse = challenge
-      ? signChallenge(challenge, privateKey)
-      : undefined;
-
-    return loggedResponse({
-      ...loggedResponseBase,
-      ...commonBase,
-      status: RequestStatus.VALID,
-      response: {
-        data: null,
-        result: {
-          timestamp: new Date(),
-          valid: true,
-          details: 'License is valid',
-          challengeResponse,
+    if (!fileStream) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.INTERNAL_SERVER_ERROR,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Internal server error',
+          },
         },
+        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+
+    const encryptedStream = fileStream.pipeThrough(
+      createEncryptionStream(validatedSessionKey),
+    );
+
+    logRequest({
+      deviceIdentifier,
+      pathname: request.nextUrl.pathname,
+      requestBody: null,
+      responseBody: null,
+      requestTime,
+      status: RequestStatus.VALID,
+      customerId,
+      productId,
+      licenseKeyLookup,
+      teamId,
+      type: RequestType.DOWNLOAD,
+      statusCode: HttpStatus.OK,
+      method: request.method,
+      releaseId: releaseToUse?.id,
+      releaseFileId: fileToUse.id,
+    });
+
+    return new Response(encryptedStream, {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Security-Policy': "default-src 'none'",
+        'X-Content-Type-Options': 'nosniff',
+        'X-File-Size': fileToUse.size.toString(),
+        'X-Product-Name': matchingProduct.name,
+        ...(releaseToUse?.version ? { 'X-Version': releaseToUse.version } : {}),
+        ...(process.env.version
+          ? { 'X-Lukittu-Version': process.env.version }
+          : {}),
+        ...(fileToUse.mainClassName
+          ? {
+              'X-Main-Class': fileToUse.mainClassName,
+            }
+          : {}),
       },
-      httpStatus: HttpStatus.OK,
     });
   } catch (error) {
     logger.error(
-      "Error occurred in '(external)/v1/license/[slug]/verify' route",
+      "Error occurred in '(external)/v1/client/teams/[slug]/verification/classloader' route",
       error,
     );
 

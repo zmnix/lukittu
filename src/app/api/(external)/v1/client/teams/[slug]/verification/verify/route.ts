@@ -11,9 +11,9 @@ import { isRateLimited } from '@/lib/security/rate-limiter';
 import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getIp } from '@/lib/utils/header-helpers';
 import {
-  licenseHeartbeatSchema,
-  LicenseHeartbeatSchema,
-} from '@/lib/validation/licenses/license-heartbeat-schema';
+  VerifyLicenseSchema,
+  verifyLicenseSchema,
+} from '@/lib/validation/licenses/verify-license-schema';
 import { HttpStatus } from '@/types/http-status';
 import {
   BlacklistType,
@@ -36,7 +36,7 @@ export async function POST(
     body: null,
     request,
     requestTime,
-    type: RequestType.HEARTBEAT,
+    type: RequestType.VERIFY,
   };
 
   try {
@@ -56,8 +56,8 @@ export async function POST(
       });
     }
 
-    const body = (await request.json()) as LicenseHeartbeatSchema;
-    const validated = await licenseHeartbeatSchema().safeParseAsync(body);
+    const body = (await request.json()) as VerifyLicenseSchema;
+    const validated = await verifyLicenseSchema().safeParseAsync(body);
 
     if (!validated.success) {
       return loggedResponse({
@@ -77,8 +77,8 @@ export async function POST(
 
     const ipAddress = await getIp();
     if (ipAddress) {
-      const key = `license-heartbeat:${ipAddress}`;
-      const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
+      const key = `license-verify:${ipAddress}`;
+      const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
 
       if (isLimited) {
         return loggedResponse({
@@ -105,8 +105,8 @@ export async function POST(
             privateKey: false,
           },
         },
-        settings: true,
         blacklist: true,
+        settings: true,
       },
     });
 
@@ -130,10 +130,10 @@ export async function POST(
 
     const {
       licenseKey,
-      deviceIdentifier,
       customerId,
       productId,
       challenge,
+      deviceIdentifier,
       version,
     } = validated.data;
 
@@ -388,7 +388,7 @@ export async function POST(
     commonBase.releaseId = matchingRelease?.id;
     commonBase.releaseFileId =
       matchingRelease && 'file' in matchingRelease
-        ? (matchingRelease.file as ReleaseFile | null)?.id
+        ? (matchingRelease.file as ReleaseFile).id
         : undefined;
 
     if (license.suspended) {
@@ -469,6 +469,7 @@ export async function POST(
     }
 
     if (license.ipLimit) {
+      const ipAddress = await getIp();
       const existingIps = license.requestLogs.map((log) => log.ipAddress);
       const ipLimitReached = existingIps.length >= license.ipLimit;
 
@@ -491,56 +492,57 @@ export async function POST(
       }
     }
 
-    if (license.seats) {
-      const deviceTimeout = settings.deviceTimeout || 60;
+    if (deviceIdentifier) {
+      if (license.seats) {
+        const deviceTimeout = settings.deviceTimeout || 60; // Timeout in minutes
 
-      const activeSeats = license.devices.filter(
-        (device) =>
-          new Date(device.lastBeatAt).getTime() >
-          new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
-      );
+        const activeSeats = license.devices.filter(
+          (device) =>
+            new Date(device.lastBeatAt).getTime() >
+            new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
+        );
 
-      const seatsIncludesClient = activeSeats.some(
-        (seat) => seat.deviceIdentifier === deviceIdentifier,
-      );
+        const seatsIncludesClient = activeSeats.some(
+          (seat) => seat.deviceIdentifier === deviceIdentifier,
+        );
 
-      if (!seatsIncludesClient && activeSeats.length >= license.seats) {
-        return loggedResponse({
-          ...loggedResponseBase,
-          ...commonBase,
-          status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
-          response: {
-            data: null,
-            result: {
-              timestamp: new Date(),
-              valid: false,
-              details: 'License seat limit reached',
+        if (!seatsIncludesClient && activeSeats.length >= license.seats) {
+          return loggedResponse({
+            ...loggedResponseBase,
+            ...commonBase,
+            status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
+            response: {
+              data: null,
+              result: {
+                timestamp: new Date(),
+                valid: false,
+                details: 'License seat limit reached',
+              },
             },
-          },
-          httpStatus: HttpStatus.FORBIDDEN,
-        });
+            httpStatus: HttpStatus.FORBIDDEN,
+          });
+        }
       }
-    }
 
-    await prisma.device.upsert({
-      where: {
-        licenseId_deviceIdentifier: {
-          licenseId: license.id,
-          deviceIdentifier,
+      await prisma.device.upsert({
+        where: {
+          licenseId_deviceIdentifier: {
+            licenseId: license.id,
+            deviceIdentifier,
+          },
         },
-      },
-      update: {
-        lastBeatAt: new Date(),
-        ipAddress,
-      },
-      create: {
-        ipAddress,
-        teamId: team.id,
-        deviceIdentifier,
-        lastBeatAt: new Date(),
-        licenseId: license.id,
-      },
-    });
+        update: {
+          lastBeatAt: new Date(),
+          ipAddress: await getIp(),
+        },
+        create: {
+          teamId,
+          deviceIdentifier,
+          lastBeatAt: new Date(),
+          licenseId: license.id,
+        },
+      });
+    }
 
     const privateKey = team.keyPair?.privateKey!;
 
@@ -557,7 +559,7 @@ export async function POST(
         result: {
           timestamp: new Date(),
           valid: true,
-          details: 'License heartbeat successful',
+          details: 'License is valid',
           challengeResponse,
         },
       },
@@ -565,7 +567,7 @@ export async function POST(
     });
   } catch (error) {
     logger.error(
-      "Error occurred in '(external)/v1/license/[slug]/heartbeat' route",
+      "Error occurred in '(external)/v1/client/teams/[slug]/verification/verify' route",
       error,
     );
 
