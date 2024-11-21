@@ -126,7 +126,7 @@ interface HandleLoggedRequestResponse {
   licenseKeyLookup?: string;
 }
 
-export interface ExternalVerifyResponse {
+export interface IExternalVerificationResponse {
   data: any;
   result: {
     timestamp: Date;
@@ -153,7 +153,9 @@ export async function loggedResponse({
   releaseFileId,
   releaseId,
   type,
-}: HandleLoggedRequestResponse): Promise<NextResponse<ExternalVerifyResponse>> {
+}: HandleLoggedRequestResponse): Promise<
+  NextResponse<IExternalVerificationResponse>
+> {
   const responseBody = {
     data: response.data,
     result: {

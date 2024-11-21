@@ -2,7 +2,7 @@ import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
 import {
-  ExternalVerifyResponse,
+  IExternalVerificationResponse,
   loggedResponse,
 } from '@/lib/logging/request-log';
 import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
@@ -11,9 +11,9 @@ import { isRateLimited } from '@/lib/security/rate-limiter';
 import { iso2toIso3 } from '@/lib/utils/country-helpers';
 import { getIp } from '@/lib/utils/header-helpers';
 import {
-  VerifyLicenseSchema,
-  verifyLicenseSchema,
-} from '@/lib/validation/licenses/verify-license-schema';
+  licenseHeartbeatSchema,
+  LicenseHeartbeatSchema,
+} from '@/lib/validation/licenses/license-heartbeat-schema';
 import { HttpStatus } from '@/types/http-status';
 import {
   BlacklistType,
@@ -26,17 +26,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  props: { params: Promise<{ slug: string }> },
-): Promise<NextResponse<ExternalVerifyResponse>> {
+  props: { params: Promise<{ teamId: string }> },
+): Promise<NextResponse<IExternalVerificationResponse>> {
   const params = await props.params;
   const requestTime = new Date();
-  const teamId = params.slug;
+  const teamId = params.teamId;
 
   const loggedResponseBase = {
     body: null,
     request,
     requestTime,
-    type: RequestType.VERIFY,
+    type: RequestType.HEARTBEAT,
   };
 
   try {
@@ -56,8 +56,8 @@ export async function POST(
       });
     }
 
-    const body = (await request.json()) as VerifyLicenseSchema;
-    const validated = await verifyLicenseSchema().safeParseAsync(body);
+    const body = (await request.json()) as LicenseHeartbeatSchema;
+    const validated = await licenseHeartbeatSchema().safeParseAsync(body);
 
     if (!validated.success) {
       return loggedResponse({
@@ -77,8 +77,8 @@ export async function POST(
 
     const ipAddress = await getIp();
     if (ipAddress) {
-      const key = `license-verify:${ipAddress}`;
-      const isLimited = await isRateLimited(key, 25, 60); // 25 requests per minute
+      const key = `license-heartbeat:${ipAddress}`;
+      const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
       if (isLimited) {
         return loggedResponse({
@@ -105,8 +105,8 @@ export async function POST(
             privateKey: false,
           },
         },
-        blacklist: true,
         settings: true,
+        blacklist: true,
       },
     });
 
@@ -130,10 +130,10 @@ export async function POST(
 
     const {
       licenseKey,
+      deviceIdentifier,
       customerId,
       productId,
       challenge,
-      deviceIdentifier,
       version,
     } = validated.data;
 
@@ -388,7 +388,7 @@ export async function POST(
     commonBase.releaseId = matchingRelease?.id;
     commonBase.releaseFileId =
       matchingRelease && 'file' in matchingRelease
-        ? (matchingRelease.file as ReleaseFile).id
+        ? (matchingRelease.file as ReleaseFile | null)?.id
         : undefined;
 
     if (license.suspended) {
@@ -469,7 +469,6 @@ export async function POST(
     }
 
     if (license.ipLimit) {
-      const ipAddress = await getIp();
       const existingIps = license.requestLogs.map((log) => log.ipAddress);
       const ipLimitReached = existingIps.length >= license.ipLimit;
 
@@ -492,57 +491,56 @@ export async function POST(
       }
     }
 
-    if (deviceIdentifier) {
-      if (license.seats) {
-        const deviceTimeout = settings.deviceTimeout || 60; // Timeout in minutes
+    if (license.seats) {
+      const deviceTimeout = settings.deviceTimeout || 60;
 
-        const activeSeats = license.devices.filter(
-          (device) =>
-            new Date(device.lastBeatAt).getTime() >
-            new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
-        );
+      const activeSeats = license.devices.filter(
+        (device) =>
+          new Date(device.lastBeatAt).getTime() >
+          new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
+      );
 
-        const seatsIncludesClient = activeSeats.some(
-          (seat) => seat.deviceIdentifier === deviceIdentifier,
-        );
+      const seatsIncludesClient = activeSeats.some(
+        (seat) => seat.deviceIdentifier === deviceIdentifier,
+      );
 
-        if (!seatsIncludesClient && activeSeats.length >= license.seats) {
-          return loggedResponse({
-            ...loggedResponseBase,
-            ...commonBase,
-            status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
-            response: {
-              data: null,
-              result: {
-                timestamp: new Date(),
-                valid: false,
-                details: 'License seat limit reached',
-              },
+      if (!seatsIncludesClient && activeSeats.length >= license.seats) {
+        return loggedResponse({
+          ...loggedResponseBase,
+          ...commonBase,
+          status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'License seat limit reached',
             },
-            httpStatus: HttpStatus.FORBIDDEN,
-          });
-        }
-      }
-
-      await prisma.device.upsert({
-        where: {
-          licenseId_deviceIdentifier: {
-            licenseId: license.id,
-            deviceIdentifier,
           },
-        },
-        update: {
-          lastBeatAt: new Date(),
-          ipAddress: await getIp(),
-        },
-        create: {
-          teamId,
-          deviceIdentifier,
-          lastBeatAt: new Date(),
-          licenseId: license.id,
-        },
-      });
+          httpStatus: HttpStatus.FORBIDDEN,
+        });
+      }
     }
+
+    await prisma.device.upsert({
+      where: {
+        licenseId_deviceIdentifier: {
+          licenseId: license.id,
+          deviceIdentifier,
+        },
+      },
+      update: {
+        lastBeatAt: new Date(),
+        ipAddress,
+      },
+      create: {
+        ipAddress,
+        teamId: team.id,
+        deviceIdentifier,
+        lastBeatAt: new Date(),
+        licenseId: license.id,
+      },
+    });
 
     const privateKey = team.keyPair?.privateKey!;
 
@@ -559,7 +557,7 @@ export async function POST(
         result: {
           timestamp: new Date(),
           valid: true,
-          details: 'License is valid',
+          details: 'License heartbeat successful',
           challengeResponse,
         },
       },
@@ -567,7 +565,7 @@ export async function POST(
     });
   } catch (error) {
     logger.error(
-      "Error occurred in '(external)/v1/client/teams/[slug]/verification/verify' route",
+      "Error occurred in '(external)/v1/client/teams/[teamId]/verification/heartbeat' route",
       error,
     );
 
