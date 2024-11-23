@@ -28,11 +28,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  props: { params: Promise<{ teamid: string }> },
+  props: { params: Promise<{ teamId: string }> },
 ): Promise<NextResponse<IExternalVerificationResponse> | Response> {
   const params = await props.params;
   const requestTime = new Date();
-  const teamId = params.teamid;
+  const teamId = params.teamId;
 
   const loggedResponseBase = {
     body: null,
