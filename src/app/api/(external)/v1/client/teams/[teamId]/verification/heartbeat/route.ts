@@ -262,9 +262,9 @@ export async function POST(
     );
     const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
 
-    if (blacklistedCountryList.length > 0) {
-      const geoData = await getCloudflareVisitorData();
+    const geoData = await getCloudflareVisitorData();
 
+    if (blacklistedCountryList.length > 0) {
       if (geoData?.alpha2) {
         const inIso3 = iso2toIso3(geoData.alpha2!)!;
 
@@ -536,6 +536,7 @@ export async function POST(
       update: {
         lastBeatAt: new Date(),
         ipAddress,
+        country: geoData?.alpha3 || null,
       },
       create: {
         ipAddress,
@@ -543,6 +544,7 @@ export async function POST(
         deviceIdentifier,
         lastBeatAt: new Date(),
         licenseId: license.id,
+        country: geoData?.alpha3 || null,
       },
     });
 

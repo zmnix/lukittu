@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import 'server-only';
 import { logger } from '../logging/logger';
+import { iso2toIso3 } from '../utils/country-helpers';
 
 export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
   try {
@@ -26,6 +27,7 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
 
 interface CloudflareVisitorData {
   alpha2: string;
+  alpha3: string;
   long: number;
   lat: number;
 }
@@ -44,6 +46,7 @@ export const getCloudflareVisitorData =
 
     return {
       alpha2,
+      alpha3: iso2toIso3(alpha2)!,
       long: parseFloat(long),
       lat: parseFloat(lat),
     };
