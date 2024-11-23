@@ -24,6 +24,7 @@ import { getInitials } from '@/lib/utils/text-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import {
   ArrowDownUp,
+  Bot,
   ChevronDown,
   ChevronRight,
   Clock,
@@ -171,12 +172,18 @@ export default function AuditLogTable() {
                                 )}
                               </AvatarImage>
                               <AvatarFallback className="bg-primary text-xs text-white">
-                                {getInitials(auditLog.user?.fullName ?? '??')}
+                                {auditLog.system ? (
+                                  <Bot className="h-8 w-8" />
+                                ) : (
+                                  getInitials(auditLog.user?.fullName ?? '??')
+                                )}
                               </AvatarFallback>
                             </Avatar>
                             <div className="overflow-hidden">
                               <p className="truncate font-medium">
-                                {auditLog.user?.email}
+                                {auditLog.system
+                                  ? t('general.system')
+                                  : auditLog.user?.email}
                               </p>
                               <div className="flex items-center gap-1">
                                 <div className="truncate text-sm font-semibold text-muted-foreground">
@@ -228,9 +235,11 @@ export default function AuditLogTable() {
                               </h3>
                               <p
                                 className="truncate text-sm text-muted-foreground"
-                                title={auditLog.user?.email}
+                                title={
+                                  auditLog.user?.email ?? t('general.system')
+                                }
                               >
-                                {auditLog.user?.email}
+                                {auditLog.user?.email ?? t('general.system')}
                               </p>
                             </div>
                             <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
@@ -379,12 +388,19 @@ export default function AuditLogTable() {
                                 )}
                               </AvatarImage>
                               <AvatarFallback className="bg-primary text-xs text-white">
-                                {getInitials(auditLog.user?.fullName ?? '??')}
+                                {auditLog.system ? (
+                                  <Bot className="h-6 w-6" />
+                                ) : (
+                                  getInitials(auditLog.user?.fullName ?? '??')
+                                )}
                               </AvatarFallback>
                             </Avatar>
                             <span>
                               <b>
-                                {auditLog.user?.email ?? t('general.unknown')}
+                                {auditLog.system
+                                  ? t('general.system')
+                                  : (auditLog.user?.email ??
+                                    t('general.unknown'))}
                               </b>{' '}
                               {t(
                                 `dashboard.audit_logs.actions_types.${auditLog.action.toLowerCase()}` as any,

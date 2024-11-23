@@ -14,6 +14,7 @@ type RecentAuditLogs = {
   targetType: AuditLogTargetType;
   action: AuditLogAction;
   country: string | null;
+  system: boolean;
   alpha2: string | null;
   imageUrl: string | null;
   fullName: string | null;
@@ -104,6 +105,7 @@ export async function GET(
         action: log.action,
         country: iso3ToName(log.country),
         alpha2: iso3toIso2(log.country),
+        system: log.system,
         imageUrl: log.user?.imageUrl ?? null,
         fullName: log.user?.fullName ?? null,
         email: log.user?.email ?? null,

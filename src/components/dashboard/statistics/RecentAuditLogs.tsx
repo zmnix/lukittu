@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import { getInitials } from '@/lib/utils/text-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowLeft, ArrowRight, Logs } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bot, Logs } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
@@ -138,11 +138,19 @@ export default function RecentAuditLogs() {
                           )}
                         </AvatarImage>
                         <AvatarFallback className="bg-primary text-xs text-white">
-                          {getInitials(row.fullName ?? '??')}
+                          {row.system ? (
+                            <Bot className="h-6 w-6" />
+                          ) : (
+                            getInitials(row.fullName ?? '??')
+                          )}
                         </AvatarFallback>
                       </Avatar>
                       <span>
-                        <b>{row.email ?? t('general.unknown')}</b>{' '}
+                        <b>
+                          {row.system
+                            ? t('general.system')
+                            : (row.email ?? t('general.unknown'))}
+                        </b>{' '}
                         {t(
                           `dashboard.audit_logs.actions_types.${row.action.toLowerCase()}` as any,
                         )}
