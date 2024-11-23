@@ -88,9 +88,7 @@ export async function POST(
     if (existingCustomer) {
       return NextResponse.json(
         {
-          data: {
-            customer: existingCustomer,
-          },
+          data: existingCustomer,
           result: {
             details: 'Customer already exists',
             timestamp: new Date(),
@@ -118,9 +116,7 @@ export async function POST(
     });
 
     const response: IExternalDevResponse = {
-      data: {
-        customer,
-      },
+      data: customer,
       result: {
         details: 'Customer created',
         timestamp: new Date(),
