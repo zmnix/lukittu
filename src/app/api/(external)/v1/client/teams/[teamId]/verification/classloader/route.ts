@@ -698,6 +698,7 @@ export async function GET(
       pathname: request.nextUrl.pathname,
       requestBody: null,
       responseBody: null,
+      requestQuery: validated.data,
       requestTime,
       status: RequestStatus.VALID,
       customerId,
