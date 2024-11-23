@@ -1,5 +1,6 @@
 'use client';
 import { IProductsReleasesCreateResponse } from '@/app/api/(dashboard)/products/releases/route';
+import MetadataFields from '@/components/shared/form/MetadataFields';
 import { ProductSelector } from '@/components/shared/form/ProductSelector';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { FileIcon, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 
@@ -64,11 +65,6 @@ export default function SetReleaseModal() {
       setAsLatest: false,
       keepExistingFile: false,
     },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'metadata',
   });
 
   useEffect(() => {
@@ -222,10 +218,6 @@ export default function SetReleaseModal() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddMetadata = () => {
-    append({ key: '', value: '', locked: false });
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -408,60 +400,7 @@ export default function SetReleaseModal() {
                   </div>
                 )}
               </FormItem>
-              {fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`metadata.${index}.key`}
-                    render={({ field }) => (
-                      <FormItem className="w-[calc(100%-90px)]">
-                        <FormLabel>
-                          {t('general.key')} {index + 1}
-                        </FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`metadata.${index}.value`}
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>
-                          {t('general.value')} {index + 1}
-                        </FormLabel>
-                        <FormControl>
-                          <div className="flex items-center gap-2">
-                            <Input {...field} />
-                            <Button
-                              className="shrink-0 pl-0"
-                              size="icon"
-                              type="button"
-                              variant="secondary"
-                              onClick={() => remove(index)}
-                            >
-                              <X size={24} />
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              ))}
-              <Button
-                className="pl-0"
-                size="sm"
-                type="button"
-                variant="link"
-                onClick={handleAddMetadata}
-              >
-                {t('general.add_metadata')}
-              </Button>
+              <MetadataFields form={form} />
               <button className="hidden" type="submit" />
             </form>
           </Form>

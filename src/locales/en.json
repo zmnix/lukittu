@@ -256,7 +256,10 @@
     "expires_at": "Expires at",
     "upload_photo": "Upload a photo",
     "device_identifier": "Device identifier",
-    "remove_photo": "Remove photo"
+    "remove_photo": "Remove photo",
+    "unlock_metadata": "Unlock metadata",
+    "locked_metadata_warning": "This metadata field is locked. These fields are typically locked because they are system-generated. Modifying this field may cause issues with integrations that depend on this data.",
+    "confirm": "Confirm"
   },
   "auth": {
     "waitlist": {
