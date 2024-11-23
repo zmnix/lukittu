@@ -3,17 +3,9 @@ import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
 import { verifyApiAuthorization } from '@/lib/security/api-key-auth';
 import { decryptLicenseKey } from '@/lib/security/crypto';
+import { IExternalDevResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { NextRequest, NextResponse } from 'next/server';
-
-export interface IExternalDevResponse {
-  data: any;
-  result: {
-    timestamp: Date;
-    valid: boolean;
-    details: string;
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -56,9 +48,9 @@ export async function GET(
       );
     }
 
-    const isValidApiKey = await verifyApiAuthorization(teamId);
+    const { team } = await verifyApiAuthorization(teamId);
 
-    if (!isValidApiKey) {
+    if (!team) {
       return NextResponse.json(
         {
           data: null,

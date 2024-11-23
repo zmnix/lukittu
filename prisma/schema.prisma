@@ -313,6 +313,7 @@ model AuditLog {
   teamId       String
   team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
   action       AuditLogAction
+  system       Boolean            @default(false)
   createdAt    DateTime           @default(now())
 
   @@index([teamId, createdAt])

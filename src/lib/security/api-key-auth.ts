@@ -1,18 +1,26 @@
+import { Limits, Team } from '@prisma/client';
 import crypto from 'crypto';
 import { headers } from 'next/headers';
 import 'server-only';
+import { regex } from '../constants/regex';
 import prisma from '../database/prisma';
 import { logger } from '../logging/logger';
 
+type TeamWithLimits = Team & { limits: Limits };
+
 export const verifyApiAuthorization = async (
   teamId: string,
-): Promise<boolean> => {
+): Promise<{ team: TeamWithLimits | null }> => {
   try {
+    if (!regex.uuidV4.test(teamId)) {
+      return { team: null };
+    }
+
     const headersList = await headers();
     const authHeader = headersList.get('authorization');
 
     if (!authHeader?.toLowerCase().startsWith('bearer ')) {
-      return false;
+      return { team: null };
     }
 
     const providedKey = authHeader.substring(7);
@@ -34,16 +42,22 @@ export const verifyApiAuthorization = async (
             key: false,
           },
         },
+        limits: true,
       },
     });
 
     if (!team || !team.apiKeys.length) {
-      return false;
+      return { team: null };
     }
 
-    return true;
+    if (!team.limits) {
+      logger.error('No limits found for team', teamId);
+      return { team: null };
+    }
+
+    return { team } as { team: TeamWithLimits };
   } catch (error) {
     logger.error('Error in verifyApiAuthorization', error);
-    return false;
+    return { team: null };
   }
 };

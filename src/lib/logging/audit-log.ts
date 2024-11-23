@@ -6,8 +6,7 @@ import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getUserAgent } from '../utils/header-helpers';
 import { logger } from './logger';
 
-interface CreateAuditLogProps {
-  userId: string;
+interface BaseAuditLogProps {
   teamId: string;
   action: AuditLogAction;
   targetId: string;
@@ -16,8 +15,21 @@ interface CreateAuditLogProps {
   responseBody?: any;
 }
 
+interface SystemAuditLogProps extends BaseAuditLogProps {
+  system: true;
+  userId?: never;
+}
+
+interface UserAuditLogProps extends BaseAuditLogProps {
+  userId: string;
+  system?: never;
+}
+
+type CreateAuditLogProps = SystemAuditLogProps | UserAuditLogProps;
+
 export const createAuditLog = async ({
   userId,
+  system,
   teamId,
   action,
   targetId,
@@ -25,6 +37,14 @@ export const createAuditLog = async ({
   requestBody,
   responseBody,
 }: CreateAuditLogProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (userId && system) {
+    throw new Error('Cannot specify both userId and system');
+  }
+  if (!userId && !system) {
+    throw new Error('Must specify either userId or system');
+  }
+
   const ipAddress = await getIp();
   const userAgent = await getUserAgent();
   const geoData = await getCloudflareVisitorData();
@@ -49,7 +69,8 @@ export const createAuditLog = async ({
         targetType,
         requestBody,
         responseBody,
-        userId,
+        userId: userId || null,
+        system: system || false,
         country: countryAlpha3,
       },
     });

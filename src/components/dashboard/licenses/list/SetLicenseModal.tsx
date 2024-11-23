@@ -75,6 +75,7 @@ export default function SetLicenseModal() {
       seats: null,
       expirationType: 'NEVER',
       metadata: [],
+      sendEmailDelivery: false,
     },
   });
 

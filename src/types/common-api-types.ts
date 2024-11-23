@@ -3,3 +3,12 @@ export interface ErrorResponse {
   message: string;
   [key: string]: any;
 }
+
+export interface IExternalDevResponse<T = any> {
+  data: T;
+  result: {
+    timestamp: Date;
+    valid: boolean;
+    details: string;
+  };
+}

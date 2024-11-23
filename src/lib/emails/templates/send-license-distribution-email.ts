@@ -7,7 +7,7 @@ import { sendEmail } from '../nodemailer';
 interface SendLicenseDistributionEmailProps {
   customer: Customer;
   licenseKey: string;
-  license: License & { products: Product[] };
+  license: Omit<License, 'licenseKeyLookup'> & { products: Product[] };
   team: Team & { settings?: Settings | null };
 }
 
