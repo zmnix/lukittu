@@ -43,6 +43,7 @@ export const verifyApiAuthorization = async (
           },
         },
         limits: true,
+        settings: true,
       },
     });
 
