@@ -575,7 +575,11 @@ export async function GET(
     }
 
     if (license.ipLimit) {
-      const existingIps = license.requestLogs.map((log) => log.ipAddress);
+      const existingIps = Array.from(
+        new Set(
+          license.requestLogs.map((log) => log.ipAddress).filter(Boolean),
+        ),
+      );
       const ipLimitReached = existingIps.length >= license.ipLimit;
 
       // TODO: @KasperiP: Maybe add separate table for storing IP addresses because user's probably want to also remove old IP addresses
