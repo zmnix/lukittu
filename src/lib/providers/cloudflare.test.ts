@@ -56,6 +56,7 @@ describe('getCloudflareVisitorData', () => {
     const result = await getCloudflareVisitorData();
     expect(result).toEqual({
       alpha2: 'US',
+      alpha3: 'USA',
       long: -122.4194,
       lat: 37.7749,
     });
