@@ -69,8 +69,8 @@ export default function LicensesPreviewTable({
     pageSize: '10',
     ...(sortColumn && { sortColumn }),
     ...(sortDirection && { sortDirection }),
-    ...(customerId && { customerId }),
-    ...(productId && { productId }),
+    ...(customerId && { customerIds: customerId }),
+    ...(productId && { productIds: productId }),
   });
 
   const { data, error, isLoading } = useSWR<ILicensesGetSuccessResponse>(

@@ -1,9 +1,8 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
-import { getCloudflareVisitorData } from '@/lib/providers/cloudflare';
 import { getSession } from '@/lib/security/session';
-import { iso2toIso3 } from '@/lib/utils/country-helpers';
+import { iso2toIso3, iso3toIso2 } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
@@ -135,8 +134,6 @@ export async function GET(
       where,
     });
 
-    const geoData = await getCloudflareVisitorData();
-
     const devices = team.devices;
 
     const devicesWithStatus = devices.map((device) => {
@@ -153,8 +150,8 @@ export async function GET(
 
       return {
         ...device,
-        country: iso2toIso3(geoData?.alpha2 ?? null),
-        alpha2: geoData?.alpha2 ?? null,
+        country: iso2toIso3(device.country),
+        alpha2: iso3toIso2(device.country),
         status,
       };
     });
