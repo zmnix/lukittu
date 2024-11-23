@@ -83,10 +83,12 @@ export default function SetCustomerModal() {
           ctx.customerToEdit.metadata as {
             key: string;
             value: string;
+            locked: boolean;
           }[]
         ).map((m) => ({
           key: m.key,
           value: m.value,
+          locked: m.locked,
         })),
       );
     }
@@ -154,7 +156,7 @@ export default function SetCustomerModal() {
   };
 
   const handleAddMetadata = () => {
-    append({ key: '', value: '' });
+    append({ key: '', value: '', locked: false });
   };
 
   const handleOpenChange = (open: boolean) => {

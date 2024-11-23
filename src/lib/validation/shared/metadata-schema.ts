@@ -22,5 +22,6 @@ export const metadataSchema = (
         .max(255, {
           message: t?.('validation.metadata_value_max_length'),
         }),
+      locked: z.boolean(),
     }),
   );

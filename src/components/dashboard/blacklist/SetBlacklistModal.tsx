@@ -72,10 +72,12 @@ export default function SetBlacklistModal() {
           ctx.blacklistToEdit.metadata as {
             key: string;
             value: string;
+            locked: boolean;
           }[]
         ).map((m) => ({
           key: m.key,
           value: m.value,
+          locked: m.locked,
         })),
       );
     }
@@ -143,7 +145,7 @@ export default function SetBlacklistModal() {
   };
 
   const handleAddMetadata = () => {
-    append({ key: '', value: '' });
+    append({ key: '', value: '', locked: false });
   };
 
   const handleOpenChange = (open: boolean) => {

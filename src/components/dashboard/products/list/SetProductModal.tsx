@@ -62,10 +62,12 @@ export default function SetProductModal() {
           ctx.productToEdit.metadata as {
             key: string;
             value: string;
+            locked: boolean;
           }[]
         ).map((m) => ({
           key: m.key,
           value: m.value,
+          locked: m.locked,
         })),
       );
     }
@@ -133,7 +135,7 @@ export default function SetProductModal() {
   };
 
   const handleAddMetadata = () => {
-    append({ key: '', value: '' });
+    append({ key: '', value: '', locked: false });
   };
 
   const handleOpenChange = (open: boolean) => {

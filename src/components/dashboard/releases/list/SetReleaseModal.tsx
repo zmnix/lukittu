@@ -84,10 +84,12 @@ export default function SetReleaseModal() {
           ctx.releaseToEdit.metadata as {
             key: string;
             value: string;
+            locked: boolean;
           }[]
         ).map((m) => ({
           key: m.key,
           value: m.value,
+          locked: m.locked,
         })),
       );
     }
@@ -223,7 +225,7 @@ export default function SetReleaseModal() {
   };
 
   const handleAddMetadata = () => {
-    append({ key: '', value: '' });
+    append({ key: '', value: '', locked: false });
   };
 
   const handleOpenChange = (open: boolean) => {

@@ -126,10 +126,12 @@ export default function SetLicenseModal() {
           ctx.licenseToEdit.metadata as {
             key: string;
             value: string;
+            locked: boolean;
           }[]
         ).map((m) => ({
           key: m.key,
           value: m.value,
+          locked: m.locked,
         })),
       );
     }
@@ -228,7 +230,7 @@ export default function SetLicenseModal() {
   };
 
   const handleAddMetadata = () => {
-    append({ key: '', value: '' });
+    append({ key: '', value: '', locked: false });
   };
 
   const handleOpenChange = (open: boolean) => {
