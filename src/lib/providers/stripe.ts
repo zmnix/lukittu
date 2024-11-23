@@ -80,16 +80,19 @@ export const handleInvoicePaid = async (
 
       const metadata = [
         {
-          key: 'Stripe sub',
+          key: 'STRIPE_SUB',
           value: subscription.id,
+          locked: true,
         },
         {
-          key: 'Stripe cus',
+          key: 'STRIPE_CS',
           value: stripeCustomerId,
+          locked: true,
         },
         {
-          key: 'Stripe prod',
+          key: 'STRIPE_PROD',
           value: product.id,
+          locked: true,
         },
       ];
 
@@ -387,16 +390,19 @@ export const handleCheckoutSessionCompleted = async (
 
     const metadata = [
       {
-        key: 'Stripe cs',
+        key: 'STRIPE_CS',
         value: session.id,
+        locked: true,
       },
       {
-        key: 'Stripe pi',
+        key: 'STRIPE_PI',
         value: item.price!.id,
+        locked: true,
       },
       {
-        key: 'Stripe prod',
+        key: 'STRIPE_PROD',
         value: product.id,
+        locked: true,
       },
     ];
 
