@@ -56,6 +56,115 @@ const AuditLogMapPreview = dynamic(() => import('./AuditLogMapPreview'), {
   ssr: false,
 });
 
+const ExpandedContent = React.memo(
+  ({
+    auditLog,
+    setSelectedAuditLog,
+    setAuditLogModalOpen,
+  }: {
+    auditLog: IAuditLogsGetSuccessResponse['auditLogs'][number];
+    setSelectedAuditLog: (
+      log: IAuditLogsGetSuccessResponse['auditLogs'][number],
+    ) => void;
+    setAuditLogModalOpen: (open: boolean) => void;
+  }) => {
+    const t = useTranslations();
+
+    return (
+      <div className="rounded-md p-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid gap-3">
+            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+              <h3 className="text-sm font-semibold">{t('general.user')}</h3>
+              <p className="truncate text-sm text-muted-foreground">
+                {auditLog.user?.email}
+              </p>
+            </div>
+            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+              <h3 className="text-sm font-semibold">
+                {t('general.ip_address')}
+              </h3>
+              <p className="flex items-center gap-1 truncate text-sm text-muted-foreground">
+                {auditLog.alpha2 && (
+                  <CountryFlag
+                    countryCode={auditLog.alpha2}
+                    countryName={auditLog.country}
+                  />
+                )}
+                {auditLog.ipAddress ?? t('general.unknown')}
+              </p>
+            </div>
+            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+              <h3 className="text-sm font-semibold">{t('general.browser')}</h3>
+              <p className="truncate text-sm text-muted-foreground">
+                {auditLog.browser ?? t('general.unknown')}
+              </p>
+            </div>
+            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+              <h3 className="text-sm font-semibold">
+                {t('general.operating_system')}
+              </h3>
+              <p className="truncate text-sm text-muted-foreground">
+                {auditLog.os ?? t('general.unknown')}
+              </p>
+            </div>
+            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+              <h3 className="text-sm font-semibold">{t('general.device')}</h3>
+              <p className="truncate text-sm text-muted-foreground">
+                {auditLog.device ?? t('general.unknown')}
+              </p>
+            </div>
+            {['CUSTOMER', 'LICENSE', 'PRODUCT'].includes(
+              auditLog.targetType,
+            ) && (
+              <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
+                <h3 className="text-sm font-semibold">
+                  {t(`general.${auditLog.targetType.toLowerCase()}` as any)}
+                </h3>
+                <Link
+                  className="truncate text-sm font-semibold text-primary hover:underline"
+                  href={`/dashboard/${auditLog.targetType.toLowerCase()}s/${auditLog.targetId}`}
+                  title={auditLog.targetId}
+                >
+                  {auditLog.targetId}
+                </Link>
+              </div>
+            )}
+            <div>
+              <Button
+                className="mt-3"
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setSelectedAuditLog(auditLog);
+                  setAuditLogModalOpen(true);
+                }}
+              >
+                {t('dashboard.audit_logs.show_request')}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="grid rounded-lg bg-muted max-md:min-h-80">
+            {auditLog.latitude && auditLog.longitude ? (
+              <AuditLogMapPreview
+                latitude={auditLog.latitude}
+                longitude={auditLog.longitude}
+              />
+            ) : (
+              <div className="flex items-center justify-center rounded-lg border-2 border-dashed">
+                <MapPinOff className="h-16 w-16 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+ExpandedContent.displayName = 'ExpandedContent';
+
 export default function AuditLogTable() {
   const teamCtx = useContext(TeamContext);
   const t = useTranslations();
@@ -72,6 +181,7 @@ export default function AuditLogTable() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
+  const [animatingRows, setAnimatingRows] = useState<Set<string>>(new Set());
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -101,12 +211,26 @@ export default function AuditLogTable() {
 
   const toggleRow = (id: string) => {
     const newExpandedRows = new Set(expandedRows);
+    const newAnimatingRows = new Set(animatingRows);
+
     if (newExpandedRows.has(id)) {
       newExpandedRows.delete(id);
+      newAnimatingRows.add(id);
+
+      setTimeout(() => {
+        setAnimatingRows((prev) => {
+          const updated = new Set(prev);
+          updated.delete(id);
+          return updated;
+        });
+      }, 500);
     } else {
       newExpandedRows.add(id);
+      newAnimatingRows.add(id);
     }
+
     setExpandedRows(newExpandedRows);
+    setAnimatingRows(newAnimatingRows);
   };
 
   return (
@@ -232,93 +356,14 @@ export default function AuditLogTable() {
                         <div
                           className={`expanded-content ${expandedRows.has(auditLog.id) ? 'open z-20' : ''}`}
                         >
-                          <div className="mt-6 grid gap-3">
-                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                              <h3 className="text-sm font-semibold">
-                                {t('general.user')}
-                              </h3>
-                              <p
-                                className="truncate text-sm text-muted-foreground"
-                                title={
-                                  auditLog.user?.email ?? t('general.system')
-                                }
-                              >
-                                {auditLog.user?.email ?? t('general.system')}
-                              </p>
-                            </div>
-                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                              <h3 className="text-sm font-semibold">
-                                {t('general.ip_address')}
-                              </h3>
-                              <div
-                                className="flex items-center gap-1 truncate text-sm text-muted-foreground"
-                                title={auditLog.ipAddress ?? ''}
-                              >
-                                {auditLog.alpha2 && (
-                                  <CountryFlag
-                                    countryCode={auditLog.alpha2}
-                                    countryName={auditLog.country}
-                                  />
-                                )}
-                                <span>
-                                  {auditLog.ipAddress ?? t('general.unknown')}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                              <h3 className="text-sm font-semibold">
-                                {t('general.browser')}
-                              </h3>
-                              <p
-                                className="truncate text-sm text-muted-foreground"
-                                title={auditLog.browser ?? ''}
-                              >
-                                {auditLog.browser ?? t('general.unknown')}
-                              </p>
-                            </div>
-                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                              <h3 className="text-sm font-semibold">
-                                {t('general.operating_system')}
-                              </h3>
-                              <p className="truncate text-sm text-muted-foreground">
-                                {auditLog.os ?? t('general.unknown')}
-                              </p>
-                            </div>
-                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                              <h3 className="text-sm font-semibold">
-                                {t('general.device')}
-                              </h3>
-                              <p className="truncate text-sm text-muted-foreground">
-                                {auditLog.device ?? t('general.unknown')}
-                              </p>
-                            </div>
-                            <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                              <h3 className="text-sm font-semibold">
-                                {t(
-                                  `general.${auditLog.targetType.toLowerCase()}` as any,
-                                )}
-                              </h3>
-                              <Link
-                                className="truncate text-sm font-semibold text-primary hover:underline"
-                                href={`/dashboard/${auditLog.targetType.toLowerCase()}s/${auditLog.targetId}`}
-                                title={auditLog.targetId}
-                              >
-                                {auditLog.targetId}
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="mt-4 grid rounded-lg bg-muted max-md:min-h-60">
-                            {auditLog.latitude && auditLog.longitude ? (
-                              <AuditLogMapPreview
-                                latitude={auditLog.latitude}
-                                longitude={auditLog.longitude}
-                              />
-                            ) : (
-                              <div className="flex items-center justify-center rounded-lg border-2 border-dashed">
-                                <MapPinOff className="h-16 w-16 text-muted-foreground" />
-                              </div>
-                            )}
-                          </div>
+                          {(expandedRows.has(auditLog.id) ||
+                            animatingRows.has(auditLog.id)) && (
+                            <ExpandedContent
+                              auditLog={auditLog}
+                              setAuditLogModalOpen={setAuditLogModalOpen}
+                              setSelectedAuditLog={setSelectedAuditLog}
+                            />
+                          )}
                         </div>
                       </div>
                     ))}
@@ -433,107 +478,14 @@ export default function AuditLogTable() {
                             <div
                               className={`expanded-content ${expandedRows.has(auditLog.id) ? 'open' : ''}`}
                             >
-                              <div className="rounded-md p-4">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                  <div className="grid gap-3">
-                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                                      <h3 className="text-sm font-semibold">
-                                        {t('general.user')}
-                                      </h3>
-                                      <p className="truncate text-sm text-muted-foreground">
-                                        {auditLog.user?.email}
-                                      </p>
-                                    </div>
-                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                                      <h3 className="text-sm font-semibold">
-                                        {t('general.ip_address')}
-                                      </h3>
-                                      <p className="flex items-center gap-1 truncate text-sm text-muted-foreground">
-                                        {auditLog.alpha2 && (
-                                          <CountryFlag
-                                            countryCode={auditLog.alpha2}
-                                            countryName={auditLog.country}
-                                          />
-                                        )}
-                                        {auditLog.ipAddress ??
-                                          t('general.unknown')}
-                                      </p>
-                                    </div>
-                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                                      <h3 className="text-sm font-semibold">
-                                        {t('general.browser')}
-                                      </h3>
-                                      <p className="truncate text-sm text-muted-foreground">
-                                        {auditLog.browser ??
-                                          t('general.unknown')}
-                                      </p>
-                                    </div>
-                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                                      <h3 className="text-sm font-semibold">
-                                        {t('general.operating_system')}
-                                      </h3>
-                                      <p className="truncate text-sm text-muted-foreground">
-                                        {auditLog.os ?? t('general.unknown')}
-                                      </p>
-                                    </div>
-                                    <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                                      <h3 className="text-sm font-semibold">
-                                        {t('general.device')}
-                                      </h3>
-                                      <p className="truncate text-sm text-muted-foreground">
-                                        {auditLog.device ??
-                                          t('general.unknown')}
-                                      </p>
-                                    </div>
-                                    {[
-                                      'CUSTOMER',
-                                      'LICENSE',
-                                      'PRODUCT',
-                                    ].includes(auditLog.targetType) && (
-                                      <div className="grid grid-cols-[180px,1fr] items-center gap-2 max-sm:grid-cols-1 max-sm:gap-0">
-                                        <h3 className="text-sm font-semibold">
-                                          {t(
-                                            `general.${auditLog.targetType.toLowerCase()}` as any,
-                                          )}
-                                        </h3>
-                                        <Link
-                                          className="truncate text-sm font-semibold text-primary hover:underline"
-                                          href={`/dashboard/${auditLog.targetType.toLowerCase()}s/${auditLog.targetId}`}
-                                          title={auditLog.targetId}
-                                        >
-                                          {auditLog.targetId}
-                                        </Link>
-                                      </div>
-                                    )}
-                                    <div>
-                                      <Button
-                                        className="mt-3"
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={() => {
-                                          setSelectedAuditLog(auditLog);
-                                          setAuditLogModalOpen(true);
-                                        }}
-                                      >
-                                        {t('dashboard.audit_logs.show_request')}
-                                        <ExternalLink className="ml-2 h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  <div className="grid rounded-lg bg-muted max-md:min-h-80">
-                                    {auditLog.latitude && auditLog.longitude ? (
-                                      <AuditLogMapPreview
-                                        latitude={auditLog.latitude}
-                                        longitude={auditLog.longitude}
-                                      />
-                                    ) : (
-                                      <div className="flex items-center justify-center rounded-lg border-2 border-dashed">
-                                        <MapPinOff className="h-16 w-16 text-muted-foreground" />
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
+                              {(expandedRows.has(auditLog.id) ||
+                                animatingRows.has(auditLog.id)) && (
+                                <ExpandedContent
+                                  auditLog={auditLog}
+                                  setAuditLogModalOpen={setAuditLogModalOpen}
+                                  setSelectedAuditLog={setSelectedAuditLog}
+                                />
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
