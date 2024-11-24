@@ -3,6 +3,12 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Check, X } from 'lucide-react';
@@ -121,9 +127,19 @@ export const ProductsSearchFilter = ({
                 id={product.id}
                 onCheckedChange={() => handleSelect(product.id)}
               />
-              <label className="flex-1 text-sm" htmlFor={product.id}>
-                {product.name}
-              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label
+                      className="flex-1 truncate text-sm font-medium"
+                      htmlFor={product.id}
+                    >
+                      {product.name}
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent>{product.name}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Check
                 className={cn(
                   'h-4 w-4',

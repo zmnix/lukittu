@@ -3,6 +3,12 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Check, X } from 'lucide-react';
@@ -120,18 +126,43 @@ export const CustomersSearchFilter = ({
           </p>
         ) : (
           filteredCustomers.map((customer) => (
-            <div key={customer.id} className="flex items-center space-x-2">
+            <div
+              key={customer.id}
+              className="grid grid-cols-[auto_1fr_auto] items-start gap-x-2 pr-2"
+            >
               <Checkbox
                 checked={value.includes(customer.id)}
+                className="mt-1"
                 id={customer.id}
                 onCheckedChange={() => handleSelect(customer.id)}
               />
-              <label className="flex-1 text-sm" htmlFor={customer.id}>
-                {customer.fullName ?? 'N/A'} - {customer.email}
-              </label>
+              <div className="flex flex-col">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="truncate text-sm font-medium">
+                        {customer.fullName ?? 'N/A'}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {customer.fullName ?? 'N/A'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="truncate text-sm text-muted-foreground">
+                        {customer.email}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{customer.email}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <Check
                 className={cn(
-                  'h-4 w-4',
+                  'mt-1 h-4 w-4',
                   value.includes(customer.id) ? 'opacity-100' : 'opacity-0',
                 )}
               />
