@@ -4,6 +4,7 @@ import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { Prisma } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -24,6 +25,7 @@ export type IStatisticsRequestsGetResponse =
   | IStatisticsRequestsGetSuccessResponse;
 
 const allowedTimeRanges = ['1h', '24h', '7d', '30d'] as const;
+const allowedTypes = ['VERIFY', 'DOWNLOAD', 'HEARTBEAT'];
 
 const getStartDate = (timeRange: '1h' | '24h' | '7d' | '30d') => {
   const now = new Date();
@@ -83,7 +85,23 @@ export async function GET(
   const searchParams = request.nextUrl.searchParams;
 
   const licenseId = searchParams.get('licenseId');
-  let timeRange = searchParams.get('timeRange') as '1h' | '24h' | '7d' | '30d';
+  const type = searchParams.get('type') as string;
+
+  if (type && !allowedTypes.includes(type)) {
+    return NextResponse.json(
+      {
+        message: t('validation.bad_request'),
+      },
+      { status: HttpStatus.BAD_REQUEST },
+    );
+  }
+
+  let timeRange = searchParams.get('timeRange') as
+    | '1h'
+    | '24h'
+    | '7d'
+    | '30d'
+    | null;
   if (!timeRange || !allowedTimeRanges.includes(timeRange)) {
     timeRange = '24h';
   }
@@ -119,10 +137,11 @@ export async function GET(
               requestLogs: {
                 where: {
                   licenseId: licenseId ? licenseId : undefined,
+                  type: type ? type : undefined,
                   createdAt: {
                     gte: getStartDate(timeRange),
                   },
-                },
+                } as Prisma.RequestLogWhereInput,
                 select: {
                   createdAt: true,
                   status: true,
@@ -173,12 +192,10 @@ export async function GET(
           );
         }
 
-        if (timeRange === '30d') {
-          return (
-            new Date(log.createdAt).getTime() >
-            new Date().setDate(new Date().getDate() - 30)
-          );
-        }
+        return (
+          new Date(log.createdAt).getTime() >
+          new Date().setDate(new Date().getDate() - 30)
+        );
       })
       .sort(
         (a, b) =>

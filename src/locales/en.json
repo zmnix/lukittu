@@ -137,7 +137,7 @@
     "version": "Version",
     "country": "Country",
     "days": "Days",
-    "download": "Download",
+    "classloader": "Classloader",
     "verify": "Verify",
     "heartbeat": "Heartbeat",
     "devices": "Devices",

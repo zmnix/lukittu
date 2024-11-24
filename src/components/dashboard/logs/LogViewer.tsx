@@ -437,7 +437,7 @@ export default function LogViewer() {
             : typeFilter === 'VERIFY'
               ? t('general.verify')
               : typeFilter === 'DOWNLOAD'
-                ? t('general.download')
+                ? t('general.classloader')
                 : undefined
         }
         isActive={typeFilter !== 'all'}
@@ -480,7 +480,7 @@ export default function LogViewer() {
               variant={tempType === 'DOWNLOAD' ? 'default' : 'outline'}
               onClick={() => setTempType('DOWNLOAD')}
             >
-              {t('general.download')}
+              {t('general.classloader')}
             </Button>
           </div>
         </div>

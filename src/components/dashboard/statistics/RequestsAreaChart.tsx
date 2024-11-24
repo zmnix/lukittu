@@ -73,14 +73,15 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
   const teamCtx = useContext(TeamContext);
 
   const [timeRange, setTimeRange] = useState('24h');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   const { data: response, error } =
     useSWR<IStatisticsRequestsGetSuccessResponse>(
       teamCtx.selectedTeam
         ? [
             `/api/statistics/requests?timeRange=${timeRange}${
-              licenseId ? `&licenseId=${licenseId}` : ''
-            }`,
+              typeFilter !== 'all' ? `&type=${typeFilter}` : ''
+            }${licenseId ? `&licenseId=${licenseId}` : ''}`,
             teamCtx.selectedTeam,
           ]
         : null,
@@ -112,8 +113,8 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
-        <div className="grid flex-1 gap-1">
+      <CardHeader className="flex flex-col border-b py-5 sm:flex-row sm:items-center">
+        <div className="grid gap-1">
           <CardTitle className="text-xl">
             {t('dashboard.dashboard.requests')}
           </CardTitle>
@@ -121,25 +122,49 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
             {t('dashboard.dashboard.requests_description')}
           </CardDescription>
         </div>
-        <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger className="w-[160px] rounded-lg sm:ml-auto">
-            <SelectValue placeholder={t('dashboard.dashboard.last_24_hours')} />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            <SelectItem className="rounded-lg" value="1h">
-              {t('dashboard.dashboard.last_hour')}
-            </SelectItem>
-            <SelectItem className="rounded-lg" value="24h">
-              {t('dashboard.dashboard.last_24_hours')}
-            </SelectItem>
-            <SelectItem className="rounded-lg" value="7d">
-              {t('dashboard.dashboard.last_7_days')}
-            </SelectItem>
-            <SelectItem className="rounded-lg" value="30d">
-              {t('dashboard.dashboard.last_30_days')}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="mt-4 flex w-full flex-col gap-2 sm:ml-auto sm:mt-0 sm:w-auto sm:flex-row">
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-full rounded-lg sm:w-[140px]">
+              <SelectValue placeholder={t('general.all')} />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem className="rounded-lg" value="all">
+                {t('general.all')}
+              </SelectItem>
+              <SelectItem className="rounded-lg" value="HEARTBEAT">
+                {t('general.heartbeat')}
+              </SelectItem>
+              <SelectItem className="rounded-lg" value="VERIFY">
+                {t('general.verify')}
+              </SelectItem>
+              <SelectItem className="rounded-lg" value="DOWNLOAD">
+                {t('general.classloader')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-full rounded-lg sm:w-[140px]">
+              <SelectValue
+                placeholder={t('dashboard.dashboard.last_24_hours')}
+              />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem className="rounded-lg" value="1h">
+                {t('dashboard.dashboard.last_hour')}
+              </SelectItem>
+              <SelectItem className="rounded-lg" value="24h">
+                {t('dashboard.dashboard.last_24_hours')}
+              </SelectItem>
+              <SelectItem className="rounded-lg" value="7d">
+                {t('dashboard.dashboard.last_7_days')}
+              </SelectItem>
+              <SelectItem className="rounded-lg" value="30d">
+                {t('dashboard.dashboard.last_30_days')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
