@@ -48,8 +48,8 @@ export default function DataCards() {
 
   const comparedToPrevious = data?.trends.activeLicensesPreviousPeriod
     ? data.activeLicenses > data.trends.activeLicensesPreviousPeriod
-      ? `+${((data.activeLicenses - data.trends.activeLicensesPreviousPeriod) / data.trends.activeLicensesPreviousPeriod) * 100}%`
-      : `-${((data.trends.activeLicensesPreviousPeriod - data.activeLicenses) / data.trends.activeLicensesPreviousPeriod) * 100}%`
+      ? `+${(((data.activeLicenses - data.trends.activeLicensesPreviousPeriod) / data.trends.activeLicensesPreviousPeriod) * 100).toFixed(2)}%`
+      : `-${(((data.trends.activeLicensesPreviousPeriod - data.activeLicenses) / data.trends.activeLicensesPreviousPeriod) * 100).toFixed(2)}%`
     : '+0%';
 
   return (
