@@ -22,6 +22,42 @@ interface LicenseDistributionEmailTemplateProps {
   businessLogoUrl?: string;
 }
 
+const convertFormattedText = (text: string) => {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  const parts = [];
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    parts.push(
+      <a key={match.index} href={match[2]} style={{ color: '#4153af' }}>
+        {match[1]}
+      </a>,
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.map((part, index) => {
+    if (typeof part === 'string') {
+      return part.split(/(\*\*.*?\*\*)/).map((subPart, subIndex) => {
+        if (subPart.startsWith('**') && subPart.endsWith('**')) {
+          return <b key={`${index}-${subIndex}`}>{subPart.slice(2, -2)}</b>;
+        }
+        return subPart;
+      });
+    }
+    return part;
+  });
+};
+
 export const LicenseDistributionEmailTemplate = ({
   customerName,
   licenseKey,
@@ -93,14 +129,17 @@ export const LicenseDistributionEmailTemplate = ({
           )}
 
           {businessMessage && (
-            <Text style={customMessage}>
-              {businessMessage.split('\n').map((line, index) => (
-                <Fragment key={index}>
-                  {line}
-                  <br />
-                </Fragment>
-              ))}
-            </Text>
+            <>
+              <Hr style={hr} />
+              <Text style={customMessage}>
+                {businessMessage.split('\n').map((line, index) => (
+                  <Fragment key={index}>
+                    {convertFormattedText(line)}
+                    <br />
+                  </Fragment>
+                ))}
+              </Text>
+            </>
           )}
 
           <Hr style={hr} />
