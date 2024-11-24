@@ -33,12 +33,12 @@ import {
   MapPinOff,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-import AuditLogMapPreview from './AuditLogMapPreview';
 import AuditLogRequestModal from './AuditLogRequestModal';
 
 const fetchAuditLogs = async (url: string) => {
@@ -51,6 +51,10 @@ const fetchAuditLogs = async (url: string) => {
 
   return data;
 };
+
+const AuditLogMapPreview = dynamic(() => import('./AuditLogMapPreview'), {
+  ssr: false,
+});
 
 export default function AuditLogTable() {
   const teamCtx = useContext(TeamContext);
