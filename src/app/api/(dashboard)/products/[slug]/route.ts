@@ -135,10 +135,6 @@ export async function GET(
   }
 }
 
-type ProductDeleteRequest = {
-  productNameConfirmation: string;
-};
-
 type IProductsDeleteSuccessResponse = {
   success: boolean;
 };
@@ -156,7 +152,6 @@ export async function DELETE(
 
   try {
     const body = await request.json();
-    const { productNameConfirmation } = body as ProductDeleteRequest;
     const productId = params.slug;
 
     if (!productId || !regex.uuidV4.test(productId)) {
@@ -230,15 +225,6 @@ export async function DELETE(
           message: t('validation.product_not_found'),
         },
         { status: HttpStatus.NOT_FOUND },
-      );
-    }
-
-    if (productNameConfirmation !== product.name.toUpperCase()) {
-      return NextResponse.json(
-        {
-          message: t('validation.bad_request'),
-        },
-        { status: HttpStatus.BAD_REQUEST },
       );
     }
 

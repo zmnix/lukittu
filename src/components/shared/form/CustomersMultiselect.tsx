@@ -116,20 +116,21 @@ export const CustomersMultiselect = ({
 
   const handleSelect = useCallback(
     (customerId: string) => {
-      setSelectedItems((current) => {
-        if (current.includes(customerId)) {
-          const newSelected = current.filter((i) => i !== customerId);
-          onChange(newSelected);
-          return newSelected;
-        } else {
-          const newSelected = [...current, customerId];
-          onChange(newSelected);
-          return newSelected;
-        }
-      });
+      const currentSelected = [...selectedItems];
+      if (currentSelected.includes(customerId)) {
+        onChange(currentSelected.filter((i) => i !== customerId));
+      } else {
+        const newSelected = [...currentSelected, customerId];
+        setSelectedItems(newSelected);
+        onChange(newSelected);
+      }
     },
-    [onChange],
+    [onChange, selectedItems],
   );
+
+  useEffect(() => {
+    setSelectedItems(initialValue);
+  }, [initialValue]);
 
   const handleReset = () => {
     setSelectedItems([]);

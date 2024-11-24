@@ -447,6 +447,10 @@
       "no_licenses_assigned": "No licenses assigned"
     },
     "licenses": {
+      "remove_product": "Remove product",
+      "remove_product_warning": "Are you sure you want to remove this product from the license?",
+      "remove_customer": "Remove customer",
+      "remove_customer_warning": "Are you sure you want to remove this customer from the license?",
       "select_expiration_start": "Select expiration start",
       "last_beat_at": "Last beat at",
       "delete_license": "Delete license",
@@ -494,6 +498,7 @@
       "query_params": "Query parameters"
     },
     "customers": {
+      "delete_customer_confirm_input": "Please type <code>{name}</code> to confirm",
       "customer_deleted": "Customer deleted",
       "customer_created": "Customer created",
       "customer_updated": "Customer updated",

@@ -30,16 +30,12 @@ export function DeleteProductConfirmModal() {
 
   if (!product) return null;
 
-  const handleDeleteProduct = async (
-    productId: string,
-    productNameConfirmation: string,
-  ) => {
+  const handleDeleteProduct = async (productId: string) => {
     const response = await fetch(`/api/products/${productId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ productNameConfirmation }),
     });
 
     const data = (await response.json()) as IProductsDeleteResponse;
@@ -50,10 +46,7 @@ export function DeleteProductConfirmModal() {
   const onSubmit = async () => {
     setLoading(true);
     try {
-      const res = await handleDeleteProduct(
-        product.id,
-        productNameConfirmation,
-      );
+      const res = await handleDeleteProduct(product.id);
 
       if ('message' in res) {
         toast.error(res.message);

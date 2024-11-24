@@ -6,6 +6,16 @@ import { CustomersMultiselect } from '@/components/shared/form/CustomersMultisel
 import MetadataFields from '@/components/shared/form/MetadataFields';
 import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
 import LoadingButton from '@/components/shared/LoadingButton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import {
@@ -61,6 +71,11 @@ export default function SetLicenseModal() {
     license: false,
     product: false,
   });
+
+  const [removingProduct, setRemovingProduct] = useState<string | null>(null);
+  const [removingCustomer, setRemovingCustomer] = useState<string | null>(null);
+  const [pendingProductIds, setPendingProductIds] = useState<string[]>([]);
+  const [pendingCustomerIds, setPendingCustomerIds] = useState<string[]>([]);
 
   const form = useForm<SetLicenseScheama>({
     resolver: zodResolver(setLicenseSchema(t)),
@@ -231,6 +246,56 @@ export default function SetLicenseModal() {
     if (!open) {
       ctx.setLicenseToEdit(null);
     }
+  };
+
+  const handleProductChange = (productIds: string[]) => {
+    const currentIds = form.getValues('productIds');
+    const removedId = currentIds.find((id) => !productIds.includes(id));
+
+    if (removedId && productIds.length < currentIds.length) {
+      setRemovingProduct(removedId);
+      setPendingProductIds(productIds);
+    } else {
+      form.setValue('productIds', productIds);
+    }
+  };
+
+  const handleCustomerChange = (customerIds: string[]) => {
+    const currentIds = form.getValues('customerIds');
+    const removedId = currentIds.find((id) => !customerIds.includes(id));
+
+    if (removedId && customerIds.length < currentIds.length) {
+      setRemovingCustomer(removedId);
+      setPendingCustomerIds(customerIds);
+    } else {
+      form.setValue('customerIds', customerIds);
+    }
+  };
+
+  const handleProductRemoveConfirm = () => {
+    if (removingProduct) {
+      form.setValue('productIds', pendingProductIds);
+      setRemovingProduct(null);
+      setPendingProductIds([]);
+    }
+  };
+
+  const handleCustomerRemoveConfirm = () => {
+    if (removingCustomer) {
+      form.setValue('customerIds', pendingCustomerIds);
+      setRemovingCustomer(null);
+      setPendingCustomerIds([]);
+    }
+  };
+
+  const handleProductRemoveCancel = () => {
+    setRemovingProduct(null);
+    setPendingProductIds([]);
+  };
+
+  const handleCustomerRemoveCancel = () => {
+    setRemovingCustomer(null);
+    setPendingCustomerIds([]);
   };
 
   return (
@@ -489,9 +554,7 @@ export default function SetLicenseModal() {
                 </FormLabel>
                 <ProductsMultiselect
                   initialValue={form.getValues('productIds')}
-                  onChange={(productIds) =>
-                    form.setValue('productIds', productIds)
-                  }
+                  onChange={handleProductChange}
                 />
               </FormItem>
 
@@ -501,9 +564,7 @@ export default function SetLicenseModal() {
                 </FormLabel>
                 <CustomersMultiselect
                   initialValue={form.getValues('customerIds')}
-                  onChange={(customerIds) =>
-                    form.setValue('customerIds', customerIds)
-                  }
+                  onChange={handleCustomerChange}
                 />
               </FormItem>
               <FormField
@@ -551,6 +612,50 @@ export default function SetLicenseModal() {
           </ResponsiveDialogFooter>
         </ResponsiveDialogContent>
       </ResponsiveDialog>
+
+      <AlertDialog
+        open={removingProduct !== null}
+        onOpenChange={handleProductRemoveCancel}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('dashboard.licenses.remove_product')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('dashboard.licenses.remove_product_warning')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('general.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleProductRemoveConfirm}>
+              {t('general.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={removingCustomer !== null}
+        onOpenChange={handleCustomerRemoveCancel}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('dashboard.licenses.remove_customer')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('dashboard.licenses.remove_customer_warning')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('general.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCustomerRemoveConfirm}>
+              {t('general.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

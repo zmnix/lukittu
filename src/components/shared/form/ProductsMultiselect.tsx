@@ -111,20 +111,21 @@ export const ProductsMultiselect = ({
 
   const handleSelect = useCallback(
     (productId: string) => {
-      setSelectedItems((current) => {
-        if (current.includes(productId)) {
-          const newSelected = current.filter((i) => i !== productId);
-          onChange(newSelected);
-          return newSelected;
-        } else {
-          const newSelected = [...current, productId];
-          onChange(newSelected);
-          return newSelected;
-        }
-      });
+      const currentSelected = [...selectedItems];
+      if (currentSelected.includes(productId)) {
+        onChange(currentSelected.filter((i) => i !== productId));
+      } else {
+        const newSelected = [...currentSelected, productId];
+        setSelectedItems(newSelected);
+        onChange(newSelected);
+      }
     },
-    [onChange],
+    [onChange, selectedItems],
   );
+
+  useEffect(() => {
+    setSelectedItems(initialValue);
+  }, [initialValue]);
 
   const handleReset = () => {
     setSelectedItems([]);
