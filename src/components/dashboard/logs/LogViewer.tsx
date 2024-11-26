@@ -689,7 +689,7 @@ export default function LogViewer() {
                           {t('general.code')}
                         </p>
                         <Badge
-                          className="text-xs"
+                          className="max-w-full text-xs"
                           variant={
                             selectedLog.statusCode >= 200 &&
                             selectedLog.statusCode < 300
@@ -707,7 +707,7 @@ export default function LogViewer() {
                           ) : (
                             <AlertTriangle className="mr-1 h-3 w-3" />
                           )}
-                          {selectedLog.status}
+                          <span className="truncate">{selectedLog.status}</span>
                         </Badge>
                       </div>
                       <div>
