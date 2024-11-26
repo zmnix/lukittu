@@ -582,25 +582,48 @@ export default function LogViewer() {
                                 variant="ghost"
                                 onClick={() => handleLogClick(l)}
                               >
-                                <Badge
-                                  className="mr-2 max-sm:hidden"
-                                  variant={
-                                    l.statusCode >= 200 && l.statusCode < 300
-                                      ? 'success'
-                                      : l.statusCode === 500
-                                        ? 'error'
-                                        : 'warning'
-                                  }
-                                >
-                                  {l.statusCode >= 200 && l.statusCode < 300 ? (
-                                    <CheckCircle className="mr-1 h-3 w-3" />
-                                  ) : l.statusCode === 500 ? (
-                                    <XCircle className="mr-1 h-3 w-3" />
-                                  ) : (
-                                    <AlertTriangle className="mr-1 h-3 w-3" />
-                                  )}
-                                  {l.status}
-                                </Badge>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge
+                                        className="mr-2 flex w-full max-w-fit shrink-[1] truncate max-sm:hidden"
+                                        variant={
+                                          l.statusCode >= 200 &&
+                                          l.statusCode < 300
+                                            ? 'success'
+                                            : l.statusCode === 500
+                                              ? 'error'
+                                              : 'warning'
+                                        }
+                                      >
+                                        {l.statusCode >= 200 &&
+                                        l.statusCode < 300 ? (
+                                          <CheckCircle className="mr-1 h-3 w-3 flex-shrink-0" />
+                                        ) : l.statusCode === 500 ? (
+                                          <XCircle className="mr-1 h-3 w-3 flex-shrink-0" />
+                                        ) : (
+                                          <AlertTriangle className="mr-1 h-3 w-3 flex-shrink-0" />
+                                        )}
+                                        <span className="truncate">
+                                          {l.status}
+                                        </span>
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <div className="flex items-center gap-1">
+                                        {l.statusCode >= 200 &&
+                                        l.statusCode < 300 ? (
+                                          <CheckCircle className="h-3 w-3 flex-shrink-0 text-[#22c55e]" />
+                                        ) : l.statusCode === 500 ? (
+                                          <XCircle className="h-3 w-3 flex-shrink-0 text-red-500" />
+                                        ) : (
+                                          <AlertTriangle className="h-3 w-3 flex-shrink-0 text-yellow-500" />
+                                        )}
+                                        <p>{l.status}</p>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                                 <span className="hidden max-sm:block">
                                   {l.statusCode >= 200 && l.statusCode < 300 ? (
                                     <CheckCircle className="mr-1 h-3 w-3 text-[#237f26] dark:text-green-400" />
@@ -611,7 +634,7 @@ export default function LogViewer() {
                                   )}
                                 </span>
                                 <span className="mr-2">{l.method}</span>
-                                <span className="truncate text-muted-foreground">
+                                <span className="shrink-[2] truncate text-muted-foreground">
                                   {l.path}
                                 </span>
                                 <DateConverter
