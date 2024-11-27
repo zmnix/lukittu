@@ -151,7 +151,6 @@ export async function DELETE(
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const body = await request.json();
     const productId = params.slug;
 
     if (!productId || !regex.uuidV4.test(productId)) {
@@ -275,7 +274,6 @@ export async function DELETE(
       action: AuditLogAction.DELETE_PRODUCT,
       targetId: product.id,
       targetType: AuditLogTargetType.PRODUCT,
-      requestBody: body,
       responseBody: response,
     });
 

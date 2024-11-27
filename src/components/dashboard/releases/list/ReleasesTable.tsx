@@ -86,7 +86,9 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
 
   const releases = data?.releases ?? [];
   const totalReleases = data?.totalResults ?? 1;
-  const noLatestRelease = data?.releases.length && !data.hasLatestRelease;
+  const noLatestRelease = Boolean(
+    data?.releases.length && !data.hasLatestRelease,
+  );
 
   return (
     <ReleaseModalProvider>
