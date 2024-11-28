@@ -374,19 +374,34 @@ export default function SetReleaseModal() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-lg border px-2 py-1">
-                    <span className="flex w-full items-center gap-2">
-                      <FileIcon className="h-8 w-8" />
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {file?.name ?? ctx.releaseToEdit?.file?.name}
-                        {' - '}
-                        {bytesToSize(
-                          file?.size ?? ctx.releaseToEdit?.file?.size ?? 0,
-                        )}
-                      </span>
-                    </span>
+                  <div className="flex items-center justify-between gap-4 rounded-lg border p-2 pl-1">
+                    <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+                      <div className="shrink-0 rounded-md p-2">
+                        <FileIcon className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className="truncate text-sm font-medium">
+                          {file?.name ?? ctx.releaseToEdit?.file?.name}
+                        </p>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-4 text-xs text-muted-foreground">
+                          <span className="shrink-0">
+                            {bytesToSize(
+                              file?.size ?? ctx.releaseToEdit?.file?.size ?? 0,
+                            )}
+                          </span>
+                          {ctx.releaseToEdit?.file && !file && (
+                            <span className="truncate">
+                              {t('general.uploaded')}:{' '}
+                              {new Date(
+                                ctx.releaseToEdit.updatedAt,
+                              ).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                     <Button
-                      className="shrink-0 pl-0"
+                      className="h-8 w-8 shrink-0"
                       size="icon"
                       type="button"
                       variant="ghost"
@@ -395,7 +410,7 @@ export default function SetReleaseModal() {
                         form.setValue('keepExistingFile', false);
                       }}
                     >
-                      <X size={24} />
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
