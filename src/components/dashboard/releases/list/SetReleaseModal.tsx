@@ -1,5 +1,6 @@
 'use client';
 import { IProductsReleasesCreateResponse } from '@/app/api/(dashboard)/products/releases/route';
+import { LicensesMultiselect } from '@/components/shared/form/LicensesMultiselect';
 import MetadataFields from '@/components/shared/form/MetadataFields';
 import { ProductSelector } from '@/components/shared/form/ProductSelector';
 import LoadingButton from '@/components/shared/LoadingButton';
@@ -64,6 +65,7 @@ export default function SetReleaseModal() {
       productId: '',
       setAsLatest: false,
       keepExistingFile: false,
+      licenseIds: [],
     },
   });
 
@@ -74,6 +76,7 @@ export default function SetReleaseModal() {
       form.setValue('status', ctx.releaseToEdit.status);
       form.setValue('productId', ctx.releaseToEdit.productId);
       form.setValue('setAsLatest', ctx.releaseToEdit.latest || false);
+      form.setValue('licenseIds', ctx.releaseToEdit.licenseIds ?? []);
       form.setValue(
         'metadata',
         (
@@ -93,6 +96,8 @@ export default function SetReleaseModal() {
 
   const keepExistingFile = form.watch('keepExistingFile');
   const releaseStatus = form.watch('status');
+  const selectedLicenses = form.watch('licenseIds');
+  const hasLicenseRestrictions = selectedLicenses.length > 0;
 
   const handleReleaseCreate = async (payload: SetReleaseSchema) => {
     const formData = new FormData();
@@ -326,12 +331,22 @@ export default function SetReleaseModal() {
                       <FormControl>
                         <Checkbox
                           checked={field.value}
+                          disabled={hasLicenseRestrictions}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
                           {t('dashboard.releases.set_as_latest')}
+                          {hasLicenseRestrictions && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              (
+                              {t(
+                                'dashboard.releases.disabled_due_to_license_restrictions',
+                              )}
+                              )
+                            </span>
+                          )}
                         </FormLabel>
                         <FormDescription>
                           {t('dashboard.releases.set_as_latest_description')}
@@ -415,6 +430,33 @@ export default function SetReleaseModal() {
                   </div>
                 )}
               </FormItem>
+              <FormField
+                control={form.control}
+                name="licenseIds"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>{t('general.restrict_to_licenses')}</FormLabel>
+                    <FormControl>
+                      <LicensesMultiselect
+                        disabled={form.getValues('setAsLatest')}
+                        initialValue={form.getValues('licenseIds')}
+                        onChange={(licenseIds) => {
+                          form.setValue('licenseIds', licenseIds);
+                          if (licenseIds.length > 0) {
+                            form.setValue('setAsLatest', false);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {selectedLicenses.length === 0
+                        ? t('dashboard.releases.no_license_restrictions')
+                        : t('dashboard.releases.license_restrictions_applied')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <MetadataFields form={form} />
               <button className="hidden" type="submit" />
             </form>

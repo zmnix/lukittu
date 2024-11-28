@@ -86,6 +86,7 @@ export async function PUT(
       version,
       keepExistingFile,
       setAsLatest,
+      licenseIds,
     } = validated.data;
 
     if (file) {
@@ -213,6 +214,34 @@ export async function PUT(
       );
     }
 
+    if (licenseIds.length) {
+      const licenses = await prisma.license.findMany({
+        where: {
+          id: {
+            in: licenseIds,
+          },
+        },
+      });
+
+      if (licenses.length !== licenseIds.length) {
+        return NextResponse.json(
+          {
+            message: t('validation.license_not_found'),
+          },
+          { status: HttpStatus.NOT_FOUND },
+        );
+      }
+
+      if (setAsLatest || (existingRelease.latest && status === 'PUBLISHED')) {
+        return NextResponse.json(
+          {
+            message: t('validation.latest_release_not_allowed_with_licenses'),
+          },
+          { status: HttpStatus.BAD_REQUEST },
+        );
+      }
+    }
+
     await prisma.$transaction(async (prisma) => {
       const existingReleaseFile = await prisma.releaseFile.findUnique({
         where: { releaseId },
@@ -337,6 +366,9 @@ export async function PUT(
           version,
           teamId: team.id,
           latest: Boolean(setAsLatest && isPublished),
+          allowedLicenses: {
+            set: licenseIds.map((id) => ({ id })),
+          },
           file: file
             ? {
                 create: {

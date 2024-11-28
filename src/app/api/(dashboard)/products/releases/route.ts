@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { metadata, productId, status, version, setAsLatest } = body;
+    const { metadata, productId, status, version, setAsLatest, licenseIds } =
+      body;
 
     if (file && !(file instanceof File)) {
       return NextResponse.json(
@@ -193,6 +194,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (licenseIds.length) {
+      const licenses = await prisma.license.findMany({
+        where: {
+          id: {
+            in: licenseIds,
+          },
+        },
+      });
+
+      if (licenses.length !== licenseIds.length) {
+        return NextResponse.json(
+          {
+            message: t('validation.license_not_found'),
+          },
+          { status: HttpStatus.NOT_FOUND },
+        );
+      }
+
+      if (setAsLatest) {
+        return NextResponse.json(
+          {
+            message: t('validation.latest_release_not_allowed_with_licenses'),
+          },
+          { status: HttpStatus.BAD_REQUEST },
+        );
+      }
+    }
+
     if (
       previousProductReleases.find(
         (release) =>
@@ -312,6 +341,13 @@ export async function POST(request: NextRequest) {
           teamId: team.id,
           createdByUserId: session.user.id,
           latest: Boolean(setAsLatest && isPublished),
+          allowedLicenses: licenseIds.length
+            ? {
+                connect: licenseIds.map((id) => ({
+                  id,
+                })),
+              }
+            : undefined,
           file: file
             ? {
                 create: {
@@ -364,6 +400,7 @@ export type IProductsReleasesGetSuccessResponse = {
   releases: (Release & {
     file: ReleaseFile | null;
     product: Product;
+    licenseIds: string[];
   })[];
   totalResults: number;
   hasLatestRelease: boolean;
@@ -457,6 +494,11 @@ export async function GET(
                 include: {
                   product: true,
                   file: true,
+                  allowedLicenses: {
+                    select: {
+                      id: true,
+                    },
+                  },
                 },
                 skip,
                 take,
@@ -501,7 +543,10 @@ export async function GET(
         where,
       }),
     ]);
-    const releases = session.user.teams[0].releases;
+    const releases = session.user.teams[0].releases.map((release) => ({
+      ...release,
+      licenseIds: release.allowedLicenses.map((license) => license.id),
+    }));
 
     const hasLatestRelease = releases.some((release) => release.latest);
 

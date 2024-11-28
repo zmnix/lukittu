@@ -33,5 +33,6 @@ export const setReleaseSchema = (
       keepExistingFile: z.boolean(),
       status: z.enum(['PUBLISHED', 'DRAFT', 'DEPRECATED', 'ARCHIVED']),
       metadata: metadataSchema(t),
+      licenseIds: z.array(z.string().uuid()),
     })
     .strict();

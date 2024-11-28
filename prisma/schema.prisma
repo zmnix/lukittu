@@ -204,6 +204,7 @@ model Release {
   updatedAt       DateTime      @updatedAt
   product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId       String
+  allowedLicenses License[]
   file            ReleaseFile?
   requestLogs     RequestLog[]
 
@@ -270,6 +271,7 @@ model License {
   team             Team                   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   products         Product[]
   customers        Customer[]
+  allowedReleases  Release[]
   createdByUserId  String?
   createdBy        User?                  @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt        DateTime               @default(now())
@@ -471,4 +473,5 @@ enum RequestStatus {
   IP_BLACKLISTED
   RELEASE_NOT_FOUND
   INVALID_SESSION_KEY
+  NO_ACCESS_TO_RELEASE
 }

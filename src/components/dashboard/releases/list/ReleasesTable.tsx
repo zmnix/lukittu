@@ -18,12 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { bytesToSize } from '@/lib/utils/number-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ReleaseModalProvider } from '@/providers/ReleasesModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp, CloudOff, CloudUpload, Rss } from 'lucide-react';
+import { ArrowDownUp, CloudOff, CloudUpload, Lock, Rss } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -174,6 +180,28 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                                 <Rss className="mr-1 h-3 w-3" />
                                 {t('general.latest')}
                               </Badge>
+                            )}
+                            {release.licenseIds.length > 0 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge
+                                      className="text-xs"
+                                      variant="secondary"
+                                    >
+                                      <Lock className="mr-1 h-2.5 w-2.5" />
+                                      <span className="pointer-events-none">
+                                        {release.licenseIds.length}
+                                      </span>
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {t(
+                                      'dashboard.releases.license_restricted_tooltip',
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </div>
                         </TableCell>

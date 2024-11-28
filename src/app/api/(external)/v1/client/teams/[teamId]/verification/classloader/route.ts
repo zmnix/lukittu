@@ -247,6 +247,11 @@ export async function GET(
               },
               include: {
                 file: true,
+                allowedLicenses: {
+                  select: {
+                    id: true,
+                  },
+                },
               },
             },
           },
@@ -346,8 +351,7 @@ export async function GET(
       (release) => release.latest,
     );
 
-    // Should never happen
-    if (!latestRelease) {
+    if (!latestRelease && !versionMatchRelease) {
       return loggedResponse({
         ...loggedResponseBase,
         ...commonBase,
@@ -357,7 +361,7 @@ export async function GET(
           result: {
             timestamp: new Date(),
             valid: false,
-            details: 'Latest release not found',
+            details: 'Release not found',
           },
         },
         httpStatus: HttpStatus.NOT_FOUND,
@@ -365,10 +369,9 @@ export async function GET(
     }
 
     const releaseToUse = version ? versionMatchRelease : latestRelease;
-    const fileToUse = version ? versionMatchRelease?.file : latestRelease.file;
+    const fileToUse = version ? versionMatchRelease?.file : latestRelease?.file;
 
-    // Should never happen
-    if (!fileToUse) {
+    if (!fileToUse || !releaseToUse) {
       return loggedResponse({
         ...loggedResponseBase,
         ...commonBase,
@@ -378,7 +381,7 @@ export async function GET(
           result: {
             timestamp: new Date(),
             valid: false,
-            details: 'File not found',
+            details: 'File or release not found',
           },
         },
         httpStatus: HttpStatus.NOT_FOUND,
@@ -387,6 +390,27 @@ export async function GET(
 
     commonBase.releaseId = releaseToUse?.id;
     commonBase.releaseFileId = fileToUse.id;
+
+    if (releaseToUse.allowedLicenses.length) {
+      const allowedLicenses = releaseToUse.allowedLicenses.map((al) => al.id);
+
+      if (!allowedLicenses.includes(license.id)) {
+        return loggedResponse({
+          ...loggedResponseBase,
+          ...commonBase,
+          status: RequestStatus.NO_ACCESS_TO_RELEASE,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'License does not have access to this release',
+            },
+          },
+          httpStatus: HttpStatus.FORBIDDEN,
+        });
+      }
+    }
 
     const blacklistedIps = team.blacklist.filter(
       (b) => b.type === BlacklistType.IP_ADDRESS,

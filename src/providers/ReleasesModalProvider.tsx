@@ -7,6 +7,7 @@ import { createContext, useState } from 'react';
 
 type ReleaseExtended = Release & {
   file: ReleaseFile | null;
+  licenseIds: string[];
 };
 
 export const ReleaseModalContext = createContext({
