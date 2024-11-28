@@ -133,7 +133,7 @@ export const ProductsMultiselect = ({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} modal onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           className="w-full justify-between font-normal text-muted-foreground"
