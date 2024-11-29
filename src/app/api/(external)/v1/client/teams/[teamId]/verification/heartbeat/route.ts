@@ -529,7 +529,7 @@ export async function POST(
     }
 
     await prisma.$transaction(async (tx) => {
-      tx.device.upsert({
+      await tx.device.upsert({
         where: {
           licenseId_deviceIdentifier: {
             licenseId: license.id,
@@ -554,7 +554,7 @@ export async function POST(
       if (matchingRelease || latestRelease) {
         const idToUse = matchingRelease?.id || latestRelease?.id;
 
-        tx.release.update({
+        await tx.release.update({
           where: { id: idToUse },
           data: {
             lastSeenAt: new Date(),
