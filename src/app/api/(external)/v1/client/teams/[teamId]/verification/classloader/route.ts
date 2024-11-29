@@ -21,6 +21,7 @@ import { HttpStatus } from '@/types/http-status';
 import {
   BlacklistType,
   IpLimitPeriod,
+  ReleaseStatus,
   RequestStatus,
   RequestType,
 } from '@prisma/client';
@@ -388,8 +389,42 @@ export async function GET(
       });
     }
 
-    commonBase.releaseId = releaseToUse?.id;
+    commonBase.releaseId = releaseToUse.id;
     commonBase.releaseFileId = fileToUse.id;
+
+    if (releaseToUse.status === ReleaseStatus.ARCHIVED) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.RELEASE_ARCHIVED,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Release is archived',
+          },
+        },
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
+    }
+
+    if (releaseToUse.status === ReleaseStatus.DRAFT) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        ...commonBase,
+        status: RequestStatus.RELEASE_DRAFT,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Release is draft',
+          },
+        },
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
+    }
 
     if (releaseToUse.allowedLicenses.length) {
       const allowedLicenses = releaseToUse.allowedLicenses.map((al) => al.id);
@@ -738,7 +773,7 @@ export async function GET(
       type: RequestType.DOWNLOAD,
       statusCode: HttpStatus.OK,
       method: request.method,
-      releaseId: releaseToUse?.id,
+      releaseId: releaseToUse.id,
       releaseFileId: fileToUse.id,
     });
 
@@ -749,7 +784,8 @@ export async function GET(
         'X-Content-Type-Options': 'nosniff',
         'X-File-Size': fileToUse.size.toString(),
         'X-Product-Name': matchingProduct.name,
-        ...(releaseToUse?.version ? { 'X-Version': releaseToUse.version } : {}),
+        'X-Release-Status': releaseToUse.status,
+        ...(releaseToUse.version ? { 'X-Version': releaseToUse.version } : {}),
         ...(process.env.version
           ? { 'X-Lukittu-Version': process.env.version }
           : {}),
