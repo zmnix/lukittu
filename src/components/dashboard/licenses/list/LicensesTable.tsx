@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -33,6 +34,7 @@ import {
   LicenseStatus,
 } from '@/lib/licenses/license-status';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { metadataSchema } from '@/lib/validation/shared/metadata-schema';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import {
@@ -106,6 +108,10 @@ export function LicensesTable() {
   );
   const [tempProductIds, setTempProductIds] = useState<string[]>([]);
   const [tempCustomerIds, setTempCustomerIds] = useState<string[]>([]);
+  const [metadataKey, setMetadataKey] = useState('');
+  const [metadataValue, setMetadataValue] = useState('');
+  const [tempMetadataKey, setTempMetadataKey] = useState('');
+  const [tempMetadataValue, setTempMetadataValue] = useState('');
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -115,6 +121,8 @@ export function LicensesTable() {
     ...(search && { search }),
     ...(productIds.length && { productIds: productIds.join(',') }),
     ...(customerIds.length && { customerIds: customerIds.join(',') }),
+    ...(metadataKey && { metadataKey }),
+    ...(metadataValue && { metadataValue }),
   });
 
   const { data, error, isLoading } = useSWR<ILicensesGetSuccessResponse>(
@@ -206,7 +214,72 @@ export function LicensesTable() {
         />
       </FilterChip>
 
-      {(search || productIds.length > 0 || customerIds.length > 0) && (
+      <FilterChip
+        activeValue={
+          metadataKey && metadataValue
+            ? `${metadataKey}: ${metadataValue}`
+            : t('general.metadata')
+        }
+        disabled={Boolean(!tempMetadataKey || !tempMetadataValue)}
+        isActive={Boolean(metadataKey && metadataValue)}
+        label={t('general.metadata')}
+        popoverTitle={t('general.metadata')}
+        onApply={async () => {
+          try {
+            await metadataSchema(t).parseAsync([
+              {
+                key: tempMetadataKey,
+                value: tempMetadataValue,
+                locked: false,
+              },
+            ]);
+            setMetadataKey(tempMetadataKey);
+            setMetadataValue(tempMetadataValue);
+          } catch (error) {
+            setTempMetadataKey('');
+            setTempMetadataValue('');
+            toast.error(t('validation.invalid_metadata'));
+          }
+        }}
+        onClear={() => {
+          setTempMetadataKey(metadataKey);
+          setTempMetadataValue(metadataValue);
+        }}
+        onReset={() => {
+          setMetadataKey('');
+          setMetadataValue('');
+          setTempMetadataKey('');
+          setTempMetadataValue('');
+        }}
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <Label htmlFor="metadata-key">{t('general.key')}</Label>
+            <Input
+              className="mt-2"
+              id="metadata-key"
+              placeholder={t('general.key')}
+              value={tempMetadataKey}
+              onChange={(e) => setTempMetadataKey(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="metadata-value">{t('general.value')}</Label>
+            <Input
+              className="mt-2"
+              id="metadata-value"
+              placeholder={t('general.value')}
+              value={tempMetadataValue}
+              onChange={(e) => setTempMetadataValue(e.target.value)}
+            />
+          </div>
+        </div>
+      </FilterChip>
+
+      {(search ||
+        productIds.length > 0 ||
+        customerIds.length > 0 ||
+        (metadataKey && metadataValue)) && (
         <Button
           className="h-7 rounded-full text-xs"
           size="sm"
@@ -217,6 +290,10 @@ export function LicensesTable() {
             setTempProductIds([]);
             setCustomerIds([]);
             setTempCustomerIds([]);
+            setMetadataKey('');
+            setMetadataValue('');
+            setTempMetadataKey('');
+            setTempMetadataValue('');
           }}
         >
           {t('general.clear_all')}

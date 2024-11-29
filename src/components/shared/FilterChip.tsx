@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface FilterChipProps {
@@ -14,9 +15,9 @@ interface FilterChipProps {
   popoverTitle?: string;
   isActive?: boolean;
   activeValue?: string | number;
-  selectedLabel?: string;
   className?: string;
   children: React.ReactNode;
+  disabled?: boolean;
   onApply?: () => void;
   onClear?: () => void;
   popoverContentClassName?: string;
@@ -29,8 +30,8 @@ export function FilterChip({
   popoverTitle,
   isActive,
   activeValue,
-  selectedLabel,
   className,
+  disabled,
   children,
   onApply,
   onClear,
@@ -38,6 +39,8 @@ export function FilterChip({
   onPopoverOpenChange,
   onReset,
 }: FilterChipProps) {
+  const t = useTranslations();
+
   const [open, setOpen] = useState(false);
 
   const handleOpenChange = (open: boolean) => {
@@ -98,16 +101,17 @@ export function FilterChip({
           </div>
           <div className="flex items-center justify-between border-t pt-4">
             <Button size="sm" variant="ghost" onClick={handleClear}>
-              Clear
+              {t('general.clear')}
             </Button>
             <Button
+              disabled={disabled}
               size="sm"
               onClick={() => {
                 onApply?.();
                 setOpen(false);
               }}
             >
-              Apply
+              {t('general.apply')}
             </Button>
           </div>
         </div>

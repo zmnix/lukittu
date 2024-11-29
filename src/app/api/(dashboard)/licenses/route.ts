@@ -65,11 +65,36 @@ export async function GET(
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
+    let metadata = searchParams.get('metadataKey') as string | undefined;
+    let metadataValue = searchParams.get('metadataValue') as string | undefined;
     const productIds = (searchParams.get('productIds') as string) || '';
     const customerIds = (searchParams.get('customerIds') as string) || '';
 
     const productIdsFormatted: string[] = [];
     const customerIdsFormatted: string[] = [];
+
+    if ((metadata && !metadataValue) || (!metadata && metadataValue)) {
+      metadata = undefined;
+      metadataValue = undefined;
+    }
+
+    if (metadata && metadataValue) {
+      if (metadata && (metadata.length < 1 || metadata.length > 255)) {
+        metadata = undefined;
+        metadataValue = undefined;
+      }
+
+      if (
+        metadataValue &&
+        (metadataValue.length < 1 || metadataValue.length > 255)
+      ) {
+        metadata = undefined;
+        metadataValue = undefined;
+      }
+    }
+
+    const hasValidMetadata = Boolean(metadata && metadataValue);
+    const metadataJson = [{ key: metadata, value: metadataValue }];
 
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
@@ -133,6 +158,11 @@ export async function GET(
                 in: customerIdsFormatted,
               },
             },
+          }
+        : undefined,
+      metadata: hasValidMetadata
+        ? {
+            array_contains: metadataJson,
           }
         : undefined,
     } as Prisma.LicenseWhereInput;

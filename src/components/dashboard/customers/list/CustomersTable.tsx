@@ -4,6 +4,7 @@ import {
   ICustomersGetSuccessResponse,
 } from '@/app/api/(dashboard)/customers/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { FilterChip } from '@/components/shared/FilterChip';
 import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
@@ -11,6 +12,7 @@ import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -22,6 +24,7 @@ import {
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { metadataSchema } from '@/lib/validation/shared/metadata-schema';
 import { CustomerModalProvider } from '@/providers/CustomerModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import { ArrowDownUp, Clock, Filter, Search, Users } from 'lucide-react';
@@ -62,6 +65,10 @@ export function CustomersTable() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
+  const [metadataKey, setMetadataKey] = useState('');
+  const [metadataValue, setMetadataValue] = useState('');
+  const [tempMetadataKey, setTempMetadataKey] = useState('');
+  const [tempMetadataValue, setTempMetadataValue] = useState('');
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -69,6 +76,8 @@ export function CustomersTable() {
     ...(sortColumn && { sortColumn }),
     ...(sortDirection && { sortDirection }),
     ...(search && { search }),
+    ...(metadataKey && { metadataKey }),
+    ...(metadataValue && { metadataValue }),
   });
 
   const { data, error, isLoading } = useSWR<ICustomersGetSuccessResponse>(
@@ -134,16 +143,99 @@ export function CustomersTable() {
         <CardContent>
           {hasCustomers && teamCtx.selectedTeam ? (
             <>
-              <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
-                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
-                <Input
-                  className="pl-8"
-                  placeholder={t('dashboard.customers.search_customer')}
-                  value={debounceSearch}
-                  onChange={(e) => {
-                    setDebounceSearch(e.target.value);
+              <div className="mb-4 flex flex-wrap items-center gap-4 max-lg:hidden">
+                <div className="relative flex w-full min-w-[33%] max-w-xs items-center">
+                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+                  <Input
+                    className="pl-8"
+                    placeholder={t('dashboard.customers.search_customer')}
+                    value={debounceSearch}
+                    onChange={(e) => {
+                      setDebounceSearch(e.target.value);
+                    }}
+                  />
+                </div>
+
+                <FilterChip
+                  activeValue={
+                    metadataKey && metadataValue
+                      ? `${metadataKey}: ${metadataValue}`
+                      : t('general.metadata')
+                  }
+                  disabled={Boolean(!tempMetadataKey || !tempMetadataValue)}
+                  isActive={Boolean(metadataKey && metadataValue)}
+                  label={t('general.metadata')}
+                  popoverTitle={t('general.metadata')}
+                  onApply={async () => {
+                    try {
+                      await metadataSchema(t).parseAsync([
+                        {
+                          key: tempMetadataKey,
+                          value: tempMetadataValue,
+                          locked: false,
+                        },
+                      ]);
+                      setMetadataKey(tempMetadataKey);
+                      setMetadataValue(tempMetadataValue);
+                    } catch (error) {
+                      setTempMetadataKey('');
+                      setTempMetadataValue('');
+                      toast.error(t('validation.invalid_metadata'));
+                    }
                   }}
-                />
+                  onClear={() => {
+                    setTempMetadataKey(metadataKey);
+                    setTempMetadataValue(metadataValue);
+                  }}
+                  onReset={() => {
+                    setMetadataKey('');
+                    setMetadataValue('');
+                    setTempMetadataKey('');
+                    setTempMetadataValue('');
+                  }}
+                >
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <Label htmlFor="metadata-key">{t('general.key')}</Label>
+                      <Input
+                        className="mt-2"
+                        id="metadata-key"
+                        placeholder={t('general.key')}
+                        value={tempMetadataKey}
+                        onChange={(e) => setTempMetadataKey(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="metadata-value">
+                        {t('general.value')}
+                      </Label>
+                      <Input
+                        className="mt-2"
+                        id="metadata-value"
+                        placeholder={t('general.value')}
+                        value={tempMetadataValue}
+                        onChange={(e) => setTempMetadataValue(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </FilterChip>
+
+                {(search || (metadataKey && metadataValue)) && (
+                  <Button
+                    className="h-7 rounded-full text-xs"
+                    size="sm"
+                    onClick={() => {
+                      setDebounceSearch('');
+                      setSearch('');
+                      setMetadataKey('');
+                      setMetadataValue('');
+                      setTempMetadataKey('');
+                      setTempMetadataValue('');
+                    }}
+                  >
+                    {t('general.clear_all')}
+                  </Button>
+                )}
               </div>
               <div className="flex flex-col md:hidden">
                 {isLoading
