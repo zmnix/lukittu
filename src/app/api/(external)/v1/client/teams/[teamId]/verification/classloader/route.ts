@@ -691,27 +691,35 @@ export async function GET(
       }
     }
 
-    await prisma.device.upsert({
-      where: {
-        licenseId_deviceIdentifier: {
-          licenseId: license.id,
-          deviceIdentifier,
+    await prisma.$transaction([
+      prisma.device.upsert({
+        where: {
+          licenseId_deviceIdentifier: {
+            licenseId: license.id,
+            deviceIdentifier,
+          },
         },
-      },
-      update: {
-        lastBeatAt: new Date(),
-        ipAddress,
-        country: geoData?.alpha3 || null,
-      },
-      create: {
-        ipAddress,
-        teamId: team.id,
-        deviceIdentifier,
-        lastBeatAt: new Date(),
-        licenseId: license.id,
-        country: geoData?.alpha3 || null,
-      },
-    });
+        update: {
+          lastBeatAt: new Date(),
+          ipAddress,
+          country: geoData?.alpha3 || null,
+        },
+        create: {
+          ipAddress,
+          teamId: team.id,
+          deviceIdentifier,
+          lastBeatAt: new Date(),
+          licenseId: license.id,
+          country: geoData?.alpha3 || null,
+        },
+      }),
+      prisma.release.update({
+        where: { id: releaseToUse.id },
+        data: {
+          lastSeenAt: new Date(),
+        },
+      }),
+    ]);
 
     const file = await getFileFromPrivateS3(
       process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,

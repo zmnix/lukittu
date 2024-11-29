@@ -204,6 +204,8 @@ export async function POST(
       (release) => release.version === version,
     );
 
+    const latestRelease = matchingProduct?.releases.find((r) => r.latest);
+
     const commonBase = {
       teamId,
       customerId: matchingCustomer ? customerId : undefined,
@@ -526,26 +528,39 @@ export async function POST(
       }
     }
 
-    await prisma.device.upsert({
-      where: {
-        licenseId_deviceIdentifier: {
-          licenseId: license.id,
-          deviceIdentifier,
+    await prisma.$transaction(async (tx) => {
+      tx.device.upsert({
+        where: {
+          licenseId_deviceIdentifier: {
+            licenseId: license.id,
+            deviceIdentifier,
+          },
         },
-      },
-      update: {
-        lastBeatAt: new Date(),
-        ipAddress,
-        country: geoData?.alpha3 || null,
-      },
-      create: {
-        ipAddress,
-        teamId: team.id,
-        deviceIdentifier,
-        lastBeatAt: new Date(),
-        licenseId: license.id,
-        country: geoData?.alpha3 || null,
-      },
+        update: {
+          lastBeatAt: new Date(),
+          ipAddress,
+          country: geoData?.alpha3 || null,
+        },
+        create: {
+          ipAddress,
+          teamId: team.id,
+          deviceIdentifier,
+          lastBeatAt: new Date(),
+          licenseId: license.id,
+          country: geoData?.alpha3 || null,
+        },
+      });
+
+      if (matchingRelease || latestRelease) {
+        const idToUse = matchingRelease?.id || latestRelease?.id;
+
+        tx.release.update({
+          where: { id: idToUse },
+          data: {
+            lastSeenAt: new Date(),
+          },
+        });
+      }
     });
 
     const privateKey = team.keyPair?.privateKey!;

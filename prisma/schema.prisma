@@ -202,6 +202,7 @@ model Release {
   createdBy       User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  lastSeenAt      DateTime?
   product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId       String
   allowedLicenses License[]

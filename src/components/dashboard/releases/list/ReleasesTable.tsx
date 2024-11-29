@@ -140,6 +140,9 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                       {t('general.file')}
                     </TableHead>
                     <TableHead className="truncate">
+                      {t('general.last_seen')}
+                    </TableHead>
+                    <TableHead className="truncate">
                       <Button
                         variant="ghost"
                         onClick={() => {
@@ -229,6 +232,13 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                             <span className="flex items-center gap-2">
                               <CloudOff size={18} />
                             </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="truncate">
+                          {release.lastSeenAt ? (
+                            <DateConverter date={release.lastSeenAt} />
+                          ) : (
+                            <span className="text-muted-foreground">N/A</span>
                           )}
                         </TableCell>
                         <TableCell
