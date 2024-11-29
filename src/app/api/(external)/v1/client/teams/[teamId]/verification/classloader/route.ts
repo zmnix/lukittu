@@ -794,14 +794,10 @@ export async function GET(
         'X-Product-Name': matchingProduct.name,
         'X-Release-Status': releaseToUse.status,
         'X-Release-Created-At': releaseToUse.createdAt.toISOString(),
+        'X-File-Created-At': fileToUse.createdAt.toISOString(),
+        'X-Version': releaseToUse.version,
         ...(latestRelease?.version
           ? { 'X-Latest-Version': latestRelease.version }
-          : {}),
-        ...(releaseToUse.version ? { 'X-Version': releaseToUse.version } : {}),
-        ...(releaseToUse.file?.createdAt
-          ? {
-              'X-File-Created-At': releaseToUse.file.createdAt.toISOString(),
-            }
           : {}),
         ...(process.env.version
           ? { 'X-Lukittu-Version': process.env.version }
