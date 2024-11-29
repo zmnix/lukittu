@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     const teamId = searchParams.get('teamId');
 
     if (!teamId || !regex.uuidV4.test(teamId)) {
+      logger.error('Invalid teamId', { teamId });
       return NextResponse.json(
         {
           message: 'Invalid teamId',
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     const isLimited = await isRateLimited(key, 60, 10); // 60 requests per 10 seconds
 
     if (isLimited) {
+      logger.error('Rate limited', { key });
       return NextResponse.json(
         {
           message: 'Too many requests. Please try again later.',
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest) {
     const sig = request.headers.get('stripe-signature')!;
 
     if (!sig || !rawBody) {
+      logger.error('Invalid request', { sig, rawBody });
       return NextResponse.json(
         {
           message: 'Invalid request',
@@ -59,6 +62,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!team || !team.stripeIntegration) {
+      logger.error('Team not found', { teamId });
       return NextResponse.json(
         {
           message: 'Team not found',
@@ -70,6 +74,7 @@ export async function POST(request: NextRequest) {
     const integration = team.stripeIntegration;
 
     if (!integration.active) {
+      logger.error('Stripe integration is not active', { teamId });
       return NextResponse.json(
         {
           message: 'Stripe integration is not active',
