@@ -1,16 +1,18 @@
 'use client';
 import { ILogsGetSuccessResponse } from '@/app/api/(dashboard)/logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
-import { FilterChip } from '@/components/shared/FilterChip';
-import { CustomersSearchFilter } from '@/components/shared/form/CustomersSearchFilter';
-import { ProductsSearchFilter } from '@/components/shared/form/ProductsSearchFilter';
+import { CustomerFilterChip } from '@/components/shared/filtering/CustomerFilterChip';
+import { DateRangeFilterChip } from '@/components/shared/filtering/DateRangeFilterChip';
+import { IpFilterChip } from '@/components/shared/filtering/IpFilterChip';
+import { LicenseFilterChip } from '@/components/shared/filtering/LicenseFilterChip';
+import { ProductFilterChip } from '@/components/shared/filtering/ProductFilterChip';
+import { StatusFilterChip } from '@/components/shared/filtering/StatusFilterChip';
+import { TypeFilterChip } from '@/components/shared/filtering/TypeFilterChip';
 import LoadingButton from '@/components/shared/LoadingButton';
 import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Card, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
@@ -18,10 +20,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
-import { addDays, format } from 'date-fns';
+import { addDays } from 'date-fns';
 import {
   AlertTriangle,
   CheckCircle,
@@ -47,7 +48,6 @@ export default function LogViewer() {
   const locale = useLocale();
   const teamCtx = useContext(TeamContext);
   const isFirstLoad = useRef(true);
-  const isDesktop = useMediaQuery('(min-width: 640px)');
 
   const [selectedLog, setSelectedLog] = useState<
     ILogsGetSuccessResponse['logs'][number] | null
@@ -243,248 +243,54 @@ export default function LogViewer() {
 
   const renderFilterChips = () => (
     <div className="flex flex-wrap items-center gap-2">
-      <FilterChip
-        activeValue={
-          statusFilter === 'success'
-            ? 200
-            : statusFilter === 'error'
-              ? 500
-              : 400
-        }
-        isActive={statusFilter !== 'all'}
-        label={t('general.status')}
-        popoverTitle={t('general.select_status')}
-        onApply={() => setStatusFilter(tempStatus)}
-        onClear={() => {
-          setTempStatus(statusFilter);
-        }}
-        onReset={() => {
-          setStatusFilter('all');
-          setTempStatus('all');
-        }}
-      >
-        <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              className="justify-start"
-              variant={tempStatus === 'all' ? 'default' : 'outline'}
-              onClick={() => setTempStatus('all')}
-            >
-              {t('general.all')}
-            </Button>
-            <Button
-              className="flex items-center justify-start gap-2"
-              variant={tempStatus === 'success' ? 'default' : 'outline'}
-              onClick={() => setTempStatus('success')}
-            >
-              <CheckCircle className="h-4 w-4 text-[#22c55e]" />
-              200
-            </Button>
-            <Button
-              className="flex items-center justify-start gap-2"
-              variant={tempStatus === 'error' ? 'default' : 'outline'}
-              onClick={() => setTempStatus('error')}
-            >
-              <XCircle className="h-4 w-4 text-red-500" />
-              500
-            </Button>
-            <Button
-              className="flex items-center justify-start gap-2"
-              variant={tempStatus === 'warning' ? 'default' : 'outline'}
-              onClick={() => setTempStatus('warning')}
-            >
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              400
-            </Button>
-          </div>
-        </div>
-      </FilterChip>
+      <StatusFilterChip
+        setStatus={setStatusFilter}
+        setTempStatus={setTempStatus}
+        status={statusFilter}
+        tempStatus={tempStatus}
+      />
 
-      <FilterChip
-        activeValue={
-          dateRange?.from && dateRange.to
-            ? `${format(dateRange.from, 'MMM d')} - ${format(dateRange.to, 'MMM d')}`
-            : undefined
-        }
-        isActive={!!dateRange?.from || !!dateRange?.to}
-        label={t('general.date')}
-        popoverContentClassName="min-w-[280px] md:w-auto md:min-w-[600px] max-h-[calc(100vh-100px)] overflow-y-auto flex flex-col"
-        popoverTitle={t('general.select_date_range')}
-        onApply={() => setDateRange(tempDateRange)}
-        onClear={() => {
-          setTempDateRange(dateRange);
-        }}
-        onReset={() => {
-          setDateRange(undefined);
-          setTempDateRange({
-            from: addDays(new Date(), -7),
-            to: new Date(),
-          });
-        }}
-      >
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <Calendar
-            className="w-full md:w-auto"
-            disabled={(date) =>
-              date > new Date() || date < new Date('2000-01-01')
-            }
-            mode="range"
-            numberOfMonths={isDesktop ? 2 : 1}
-            selected={tempDateRange}
-            onSelect={setTempDateRange}
-          />
-        </div>
-      </FilterChip>
+      <DateRangeFilterChip
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        setTempDateRange={setTempDateRange}
+        tempDateRange={tempDateRange}
+      />
 
-      <FilterChip
-        activeValue={licenseSearch}
-        isActive={!!licenseSearch}
-        label={t('general.license')}
-        popoverTitle={t('general.search_license')}
-        onApply={() => setLicenseSearch(tempLicenseSearch)}
-        onClear={() => {
-          setTempLicenseSearch(licenseSearch);
-        }}
-        onReset={() => {
-          setLicenseSearch('');
-          setTempLicenseSearch('');
-        }}
-      >
-        <div className="flex flex-col gap-2">
-          <Input
-            placeholder={t('dashboard.licenses.search_license')}
-            value={tempLicenseSearch}
-            onChange={(e) => setTempLicenseSearch(e.target.value)}
-          />
-        </div>
-      </FilterChip>
+      <LicenseFilterChip
+        licenseSearch={licenseSearch}
+        setLicenseSearch={setLicenseSearch}
+        setTempLicenseSearch={setTempLicenseSearch}
+        tempLicenseSearch={tempLicenseSearch}
+      />
 
-      <FilterChip
-        activeValue={ipSearch}
-        isActive={!!ipSearch}
-        label={t('general.ip_address')}
-        popoverTitle={t('general.search_ip')}
-        onApply={() => setIpSearch(tempIpSearch)}
-        onClear={() => {
-          setTempIpSearch(ipSearch);
-        }}
-        onReset={() => {
-          setIpSearch('');
-          setTempIpSearch('');
-        }}
-      >
-        <div className="flex flex-col gap-2">
-          <Input
-            placeholder={t('dashboard.logs.search_ip')}
-            value={tempIpSearch}
-            onChange={(e) => setTempIpSearch(e.target.value)}
-          />
-        </div>
-      </FilterChip>
+      <IpFilterChip
+        ipSearch={ipSearch}
+        setIpSearch={setIpSearch}
+        setTempIpSearch={setTempIpSearch}
+        tempIpSearch={tempIpSearch}
+      />
 
-      <FilterChip
-        activeValue={
-          productIds.length > 0
-            ? `${productIds.length} ${t('general.selected')}`
-            : t('general.products')
-        }
-        isActive={productIds.length > 0}
-        label={t('general.product')}
-        popoverTitle={t('general.select_products')}
-        onApply={() => setProductIds(tempProductIds)}
-        onClear={() => {
-          setTempProductIds(productIds);
-        }}
-        onReset={() => {
-          setProductIds([]);
-          setTempProductIds([]);
-        }}
-      >
-        <ProductsSearchFilter
-          value={tempProductIds}
-          onChange={setTempProductIds}
-        />
-      </FilterChip>
+      <ProductFilterChip
+        productIds={productIds}
+        setProductIds={setProductIds}
+        setTempProductIds={setTempProductIds}
+        tempProductIds={tempProductIds}
+      />
 
-      <FilterChip
-        activeValue={
-          customerIds.length > 0
-            ? `${customerIds.length} ${t('general.selected')}`
-            : t('general.customers')
-        }
-        isActive={customerIds.length > 0}
-        label={t('general.customer')}
-        popoverTitle={t('general.select_customers')}
-        onApply={() => setCustomerIds(tempCustomerIds)}
-        onClear={() => {
-          setTempCustomerIds(customerIds);
-        }}
-        onReset={() => {
-          setCustomerIds([]);
-          setTempCustomerIds([]);
-        }}
-      >
-        <CustomersSearchFilter
-          value={tempCustomerIds}
-          onChange={setTempCustomerIds}
-        />
-      </FilterChip>
+      <CustomerFilterChip
+        customerIds={customerIds}
+        setCustomerIds={setCustomerIds}
+        setTempCustomerIds={setTempCustomerIds}
+        tempCustomerIds={tempCustomerIds}
+      />
 
-      <FilterChip
-        activeValue={
-          typeFilter === 'HEARTBEAT'
-            ? t('general.heartbeat')
-            : typeFilter === 'VERIFY'
-              ? t('general.verify')
-              : typeFilter === 'DOWNLOAD'
-                ? t('general.classloader')
-                : undefined
-        }
-        isActive={typeFilter !== 'all'}
-        label={t('general.type')}
-        popoverTitle={t('general.select_type')}
-        onApply={() => setTypeFilter(tempType)}
-        onClear={() => {
-          setTempType(typeFilter);
-        }}
-        onReset={() => {
-          setTypeFilter('all');
-          setTempType('all');
-        }}
-      >
-        <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-1 gap-2">
-            <Button
-              className="justify-start"
-              variant={tempType === 'all' ? 'default' : 'outline'}
-              onClick={() => setTempType('all')}
-            >
-              {t('general.all')}
-            </Button>
-            <Button
-              className="justify-start"
-              variant={tempType === 'HEARTBEAT' ? 'default' : 'outline'}
-              onClick={() => setTempType('HEARTBEAT')}
-            >
-              {t('general.heartbeat')}
-            </Button>
-            <Button
-              className="justify-start"
-              variant={tempType === 'VERIFY' ? 'default' : 'outline'}
-              onClick={() => setTempType('VERIFY')}
-            >
-              {t('general.verify')}
-            </Button>
-            <Button
-              className="justify-start"
-              variant={tempType === 'DOWNLOAD' ? 'default' : 'outline'}
-              onClick={() => setTempType('DOWNLOAD')}
-            >
-              {t('general.classloader')}
-            </Button>
-          </div>
-        </div>
-      </FilterChip>
+      <TypeFilterChip
+        setTempType={setTempType}
+        setType={setTypeFilter}
+        tempType={tempType}
+        type={typeFilter}
+      />
 
       <div className="flex gap-2">
         <Button

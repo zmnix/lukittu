@@ -4,11 +4,11 @@ import {
   ILicensesGetSuccessResponse,
 } from '@/app/api/(dashboard)/licenses/route';
 import { DateConverter } from '@/components/shared/DateConverter';
-import { FilterChip } from '@/components/shared/FilterChip';
+import { CustomerFilterChip } from '@/components/shared/filtering/CustomerFilterChip';
+import { MetadataFilterChip } from '@/components/shared/filtering/MetadataFilterChip';
+import { ProductFilterChip } from '@/components/shared/filtering/ProductFilterChip';
 import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
-import { CustomersSearchFilter } from '@/components/shared/form/CustomersSearchFilter';
 import { ProductsMultiselect } from '@/components/shared/form/ProductsMultiselect';
-import { ProductsSearchFilter } from '@/components/shared/form/ProductsSearchFilter';
 import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -34,7 +33,6 @@ import {
   LicenseStatus,
 } from '@/lib/licenses/license-status';
 import { cn } from '@/lib/utils/tailwind-helpers';
-import { metadataSchema } from '@/lib/validation/shared/metadata-schema';
 import { LicenseModalProvider } from '@/providers/LicenseModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
 import {
@@ -166,115 +164,30 @@ export function LicensesTable() {
         />
       </div>
 
-      <FilterChip
-        activeValue={
-          productIds.length > 0
-            ? `${productIds.length} ${t('general.selected')}`
-            : t('general.products')
-        }
-        isActive={productIds.length > 0}
-        label={t('general.product')}
-        popoverTitle={t('general.select_products')}
-        onApply={() => setProductIds(tempProductIds)}
-        onClear={() => {
-          setTempProductIds(productIds);
-        }}
-        onReset={() => {
-          setProductIds([]);
-          setTempProductIds([]);
-        }}
-      >
-        <ProductsSearchFilter
-          value={tempProductIds}
-          onChange={setTempProductIds}
-        />
-      </FilterChip>
+      <ProductFilterChip
+        productIds={productIds}
+        setProductIds={setProductIds}
+        setTempProductIds={setTempProductIds}
+        tempProductIds={tempProductIds}
+      />
 
-      <FilterChip
-        activeValue={
-          customerIds.length > 0
-            ? `${customerIds.length} ${t('general.selected')}`
-            : t('general.customers')
-        }
-        isActive={customerIds.length > 0}
-        label={t('general.customer')}
-        popoverTitle={t('general.select_customers')}
-        onApply={() => setCustomerIds(tempCustomerIds)}
-        onClear={() => {
-          setTempCustomerIds(customerIds);
-        }}
-        onReset={() => {
-          setCustomerIds([]);
-          setTempCustomerIds([]);
-        }}
-      >
-        <CustomersSearchFilter
-          value={tempCustomerIds}
-          onChange={setTempCustomerIds}
-        />
-      </FilterChip>
+      <CustomerFilterChip
+        customerIds={customerIds}
+        setCustomerIds={setCustomerIds}
+        setTempCustomerIds={setTempCustomerIds}
+        tempCustomerIds={tempCustomerIds}
+      />
 
-      <FilterChip
-        activeValue={
-          metadataKey && metadataValue
-            ? `${metadataKey}: ${metadataValue}`
-            : t('general.metadata')
-        }
-        disabled={Boolean(!tempMetadataKey || !tempMetadataValue)}
-        isActive={Boolean(metadataKey && metadataValue)}
-        label={t('general.metadata')}
-        popoverTitle={t('general.metadata')}
-        onApply={async () => {
-          try {
-            await metadataSchema(t).parseAsync([
-              {
-                key: tempMetadataKey,
-                value: tempMetadataValue,
-                locked: false,
-              },
-            ]);
-            setMetadataKey(tempMetadataKey);
-            setMetadataValue(tempMetadataValue);
-          } catch (error) {
-            setTempMetadataKey('');
-            setTempMetadataValue('');
-            toast.error(t('validation.invalid_metadata'));
-          }
-        }}
-        onClear={() => {
-          setTempMetadataKey(metadataKey);
-          setTempMetadataValue(metadataValue);
-        }}
-        onReset={() => {
-          setMetadataKey('');
-          setMetadataValue('');
-          setTempMetadataKey('');
-          setTempMetadataValue('');
-        }}
-      >
-        <div className="flex flex-col gap-4">
-          <div>
-            <Label htmlFor="metadata-key">{t('general.key')}</Label>
-            <Input
-              className="mt-2"
-              id="metadata-key"
-              placeholder={t('general.key')}
-              value={tempMetadataKey}
-              onChange={(e) => setTempMetadataKey(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="metadata-value">{t('general.value')}</Label>
-            <Input
-              className="mt-2"
-              id="metadata-value"
-              placeholder={t('general.value')}
-              value={tempMetadataValue}
-              onChange={(e) => setTempMetadataValue(e.target.value)}
-            />
-          </div>
-        </div>
-      </FilterChip>
+      <MetadataFilterChip
+        metadataKey={metadataKey}
+        metadataValue={metadataValue}
+        setMetadataKey={setMetadataKey}
+        setMetadataValue={setMetadataValue}
+        setTempMetadataKey={setTempMetadataKey}
+        setTempMetadataValue={setTempMetadataValue}
+        tempMetadataKey={tempMetadataKey}
+        tempMetadataValue={tempMetadataValue}
+      />
 
       {(search ||
         productIds.length > 0 ||
