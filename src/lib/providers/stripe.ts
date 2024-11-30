@@ -1,3 +1,4 @@
+import { Limits, Settings, StripeIntegration, Team } from '@prisma/client';
 import 'server-only';
 import Stripe from 'stripe';
 import { regex } from '../constants/regex';
@@ -7,9 +8,19 @@ import { generateUniqueLicense } from '../licenses/generate-license';
 import { logger } from '../logging/logger';
 import { encryptLicenseKey, generateHMAC } from '../security/crypto';
 
+type ExtendedTeam = Team & {
+  settings: Settings | null;
+  limits: Limits | null;
+  stripeIntegration: StripeIntegration | null;
+  _count: {
+    licenses: number;
+    customers: number;
+  };
+};
+
 export const handleInvoicePaid = async (
   invoice: Stripe.Invoice,
-  teamId: string,
+  team: ExtendedTeam,
   stripe: Stripe,
 ) => {
   try {
@@ -66,6 +77,20 @@ export const handleInvoicePaid = async (
         return;
       }
 
+      if (team._count.licenses >= (team.limits?.maxLicenses ?? 0)) {
+        logger.info(
+          'Skipping: Team has reached the maximum number of licenses',
+        );
+        return;
+      }
+
+      if (team._count.customers >= (team.limits?.maxCustomers ?? 0)) {
+        logger.info(
+          'Skipping: Team has reached the maximum number of customers',
+        );
+        return;
+      }
+
       const parsedIpLimit = parseInt(ipLimit || '');
       if (ipLimit && (isNaN(parsedIpLimit) || parsedIpLimit < 0)) {
         logger.info('Skipping: Invalid ip_limit');
@@ -101,20 +126,20 @@ export const handleInvoicePaid = async (
           where: {
             email_teamId: {
               email: stripeCustomer.email!,
-              teamId,
+              teamId: team.id,
             },
           },
           create: {
             email: stripeCustomer.email!,
             fullName: stripeCustomer.name ?? undefined,
-            teamId,
+            teamId: team.id,
             metadata,
           },
           update: {},
         });
 
-        const licenseKey = await generateUniqueLicense(teamId);
-        const hmac = generateHMAC(`${licenseKey}:${teamId}`);
+        const licenseKey = await generateUniqueLicense(team.id);
+        const hmac = generateHMAC(`${licenseKey}:${team.id}`);
 
         if (!licenseKey) {
           logger.error('Failed to generate a unique license key');
@@ -126,7 +151,7 @@ export const handleInvoicePaid = async (
         const license = await prisma.license.create({
           data: {
             licenseKey: encryptedLicenseKey,
-            teamId,
+            teamId: team.id,
             customers: {
               connect: {
                 id: lukittuCustomer.id,
@@ -145,11 +170,6 @@ export const handleInvoicePaid = async (
             expirationDate: new Date(subscription.current_period_end * 1000),
           },
           include: {
-            team: {
-              include: {
-                settings: true,
-              },
-            },
             products: true,
           },
         });
@@ -168,7 +188,7 @@ export const handleInvoicePaid = async (
           customer: lukittuCustomer,
           licenseKey,
           license,
-          team: license.team,
+          team,
         });
 
         return license;
@@ -176,7 +196,7 @@ export const handleInvoicePaid = async (
 
       logger.info('License created for subscription', {
         subscriptionId: subscription.id,
-        teamId,
+        teamId: team.id,
       });
 
       return license;
@@ -210,7 +230,7 @@ export const handleInvoicePaid = async (
       logger.info('License expiration updated on subscription renewal', {
         licenseId: updatedLicense.id,
         subscriptionId: subscription.id,
-        teamId,
+        teamId: team.id,
       });
 
       return updatedLicense;
@@ -226,7 +246,7 @@ export const handleInvoicePaid = async (
 
 export const handleSubscriptionDeleted = async (
   subscription: Stripe.Subscription,
-  teamId: string,
+  team: ExtendedTeam,
 ) => {
   try {
     const licenseId = subscription.metadata.lukittu_license_id;
@@ -262,7 +282,7 @@ export const handleSubscriptionDeleted = async (
     logger.info('Subscription deleted and license expired', {
       licenseId,
       subscriptionId: subscription.id,
-      teamId,
+      teamId: team.id,
     });
 
     return updatedLicense;
@@ -273,7 +293,7 @@ export const handleSubscriptionDeleted = async (
 
 export const handleCheckoutSessionCompleted = async (
   session: Stripe.Checkout.Session,
-  teamId: string,
+  team: ExtendedTeam,
   stripe: Stripe,
 ) => {
   try {
@@ -317,6 +337,16 @@ export const handleCheckoutSessionCompleted = async (
       return;
     }
 
+    if (team._count.licenses >= (team.limits?.maxLicenses ?? 0)) {
+      logger.info('Skipping: Team has reached the maximum number of licenses');
+      return;
+    }
+
+    if (team._count.customers >= (team.limits?.maxCustomers ?? 0)) {
+      logger.info('Skipping: Team has reached the maximum number of customers');
+      return;
+    }
+
     const product = await stripe.products.retrieve(
       item.price.product as string,
     );
@@ -332,7 +362,7 @@ export const handleCheckoutSessionCompleted = async (
 
     if (!lukittuProductId || !regex.uuidV4.test(lukittuProductId)) {
       logger.info(
-        'Skipping: No product_id found in the product metadata or inva lid product_id.',
+        'Skipping: No product_id found in the product metadata or invalid product_id.',
       );
       return;
     }
@@ -340,7 +370,7 @@ export const handleCheckoutSessionCompleted = async (
     const productExists = await prisma.product.findUnique({
       where: {
         id: lukittuProductId,
-        teamId,
+        teamId: team.id,
       },
     });
 
@@ -424,7 +454,7 @@ export const handleCheckoutSessionCompleted = async (
         where: {
           email_teamId: {
             email: customer.email!,
-            teamId,
+            teamId: team.id,
           },
         },
         create: {
@@ -442,14 +472,14 @@ export const handleCheckoutSessionCompleted = async (
                 },
               }
             : undefined,
-          teamId,
+          teamId: team.id,
           metadata,
         },
         update: {},
       });
 
-      const licenseKey = await generateUniqueLicense(teamId);
-      const hmac = generateHMAC(`${licenseKey}:${teamId}`);
+      const licenseKey = await generateUniqueLicense(team.id);
+      const hmac = generateHMAC(`${licenseKey}:${team.id}`);
 
       if (!licenseKey) {
         logger.error('Failed to generate a unique license key');
@@ -461,7 +491,7 @@ export const handleCheckoutSessionCompleted = async (
       const license = await prisma.license.create({
         data: {
           licenseKey: encryptedLicenseKey,
-          teamId,
+          teamId: team.id,
           customers: {
             connect: {
               id: lukittuCustomer.id,
@@ -482,11 +512,6 @@ export const handleCheckoutSessionCompleted = async (
           expirationDate,
         },
         include: {
-          team: {
-            include: {
-              settings: true,
-            },
-          },
           products: true,
         },
       });
@@ -495,7 +520,7 @@ export const handleCheckoutSessionCompleted = async (
         customer: lukittuCustomer,
         licenseKey,
         license,
-        team: license.team,
+        team,
       });
 
       await stripe.paymentIntents.update(session.payment_intent as string, {

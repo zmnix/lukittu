@@ -58,11 +58,19 @@ export async function POST(request: NextRequest) {
       },
       include: {
         stripeIntegration: true,
+        settings: true,
+        limits: true,
+        _count: {
+          select: {
+            licenses: true,
+            customers: true,
+          },
+        },
       },
     });
 
-    if (!team || !team.stripeIntegration) {
-      logger.error('Team not found', { teamId });
+    if (!team || !team.stripeIntegration || !team.limits || !team.settings) {
+      logger.error('Team not found or missing required fields', { teamId });
       return NextResponse.json(
         {
           message: 'Team not found',
@@ -95,13 +103,13 @@ export async function POST(request: NextRequest) {
 
     switch (event.type) {
       case 'invoice.paid':
-        await handleInvoicePaid(event.data.object, teamId, stripe);
+        await handleInvoicePaid(event.data.object, team, stripe);
         break;
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object, teamId);
+        await handleSubscriptionDeleted(event.data.object, team);
         break;
       case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(event.data.object, teamId, stripe);
+        await handleCheckoutSessionCompleted(event.data.object, team, stripe);
         break;
       default:
         return NextResponse.json({ success: true });
