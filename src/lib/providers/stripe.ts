@@ -145,7 +145,11 @@ export const handleInvoicePaid = async (
             expirationDate: new Date(subscription.current_period_end * 1000),
           },
           include: {
-            team: true,
+            team: {
+              include: {
+                settings: true,
+              },
+            },
             products: true,
           },
         });
@@ -478,7 +482,11 @@ export const handleCheckoutSessionCompleted = async (
           expirationDate,
         },
         include: {
-          team: true,
+          team: {
+            include: {
+              settings: true,
+            },
+          },
           products: true,
         },
       });
