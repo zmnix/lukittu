@@ -304,6 +304,15 @@ export const handleCheckoutSessionCompleted = async (
       return;
     }
 
+    const paymentIntent = await stripe.paymentIntents.retrieve(
+      session.payment_intent as string,
+    );
+
+    if (paymentIntent.metadata.lukittu_license_id) {
+      logger.info('Skipping: License already exists for payment intent');
+      return;
+    }
+
     const product = await stripe.products.retrieve(
       item.price.product as string,
     );
