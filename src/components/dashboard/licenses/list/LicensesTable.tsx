@@ -5,6 +5,10 @@ import {
 } from '@/app/api/(dashboard)/licenses/route';
 import { DateConverter } from '@/components/shared/DateConverter';
 import { CustomerFilterChip } from '@/components/shared/filtering/CustomerFilterChip';
+import {
+  ComparisonMode,
+  IpCountFilterChip,
+} from '@/components/shared/filtering/IpCountFilterChip';
 import { MetadataFilterChip } from '@/components/shared/filtering/MetadataFilterChip';
 import { ProductFilterChip } from '@/components/shared/filtering/ProductFilterChip';
 import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
@@ -110,6 +114,14 @@ export function LicensesTable() {
   const [metadataValue, setMetadataValue] = useState('');
   const [tempMetadataKey, setTempMetadataKey] = useState('');
   const [tempMetadataValue, setTempMetadataValue] = useState('');
+  const [ipCountMin, setIpCountMin] = useState('');
+  const [ipCountMax, setIpCountMax] = useState('');
+  const [tempIpCountMin, setTempIpCountMin] = useState('');
+  const [tempIpCountMax, setTempIpCountMax] = useState('');
+  const [ipCountComparisonMode, setIpCountComparisonMode] =
+    useState<ComparisonMode>('');
+  const [tempIpCountComparisonMode, setTempIpCountComparisonMode] =
+    useState<ComparisonMode>('equals');
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -121,6 +133,9 @@ export function LicensesTable() {
     ...(customerIds.length && { customerIds: customerIds.join(',') }),
     ...(metadataKey && { metadataKey }),
     ...(metadataValue && { metadataValue }),
+    ...(ipCountMin && { ipCountMin }),
+    ...(ipCountMax && ipCountComparisonMode === 'between' && { ipCountMax }),
+    ...(ipCountComparisonMode && { ipCountComparisonMode }),
   });
 
   const { data, error, isLoading } = useSWR<ILicensesGetSuccessResponse>(
@@ -187,6 +202,21 @@ export function LicensesTable() {
         setTempMetadataValue={setTempMetadataValue}
         tempMetadataKey={tempMetadataKey}
         tempMetadataValue={tempMetadataValue}
+      />
+
+      <IpCountFilterChip
+        comparisonMode={ipCountComparisonMode}
+        ipCountMax={ipCountMax}
+        ipCountMin={ipCountMin}
+        setComparisonMode={setIpCountComparisonMode}
+        setIpCountMax={setIpCountMax}
+        setIpCountMin={setIpCountMin}
+        setTempComparisonMode={setTempIpCountComparisonMode}
+        setTempIpCountMax={setTempIpCountMax}
+        setTempIpCountMin={setTempIpCountMin}
+        tempComparisonMode={tempIpCountComparisonMode}
+        tempIpCountMax={tempIpCountMax}
+        tempIpCountMin={tempIpCountMin}
       />
 
       {(search ||

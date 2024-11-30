@@ -46,7 +46,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const selectedTeam = await getSelectedTeam();
 
-    if (!selectedTeam) {
+    if (!selectedTeam || !regex.uuidV4.test(selectedTeam)) {
       return NextResponse.json(
         {
           message: t('validation.team_not_found'),
@@ -139,9 +139,57 @@ export async function GET(
       ? generateHMAC(`${search}:${selectedTeam}`)
       : undefined;
 
+    const ipCountMin = searchParams.get('ipCountMin');
+    const ipCountMax = searchParams.get('ipCountMax');
+    const ipCountComparisonMode = searchParams.get('ipCountComparisonMode');
+
+    let ipCountFilter: Prisma.LicenseWhereInput | undefined;
+
+    if (ipCountMin) {
+      const min = parseInt(ipCountMin);
+      if (!isNaN(min) && min >= 0) {
+        const uniqueIpCounts = await prisma.$queryRaw<
+          { id: string; ip_count: number }[]
+        >`
+        SELECT l.id, COUNT(DISTINCT rl."ipAddress") as ip_count 
+        FROM "License" l
+        LEFT JOIN "RequestLog" rl ON l.id = rl."licenseId"
+        WHERE l."teamId" = ${Prisma.sql`${selectedTeam}`}
+        AND rl."ipAddress" IS NOT NULL
+        GROUP BY l.id
+      `;
+
+        const filteredLicenseIds = uniqueIpCounts
+          .filter((license) => {
+            const ipCount = Number(license.ip_count);
+            switch (ipCountComparisonMode) {
+              case 'between':
+                const max = parseInt(ipCountMax || '');
+                return !isNaN(max) && ipCount >= min && ipCount <= max;
+              case 'equals':
+                return ipCount === min;
+              case 'greater':
+                return ipCount > min;
+              case 'less':
+                return ipCount < min;
+              default:
+                return false;
+            }
+          })
+          .map((license) => license.id);
+
+        ipCountFilter = {
+          id: {
+            in: filteredLicenseIds,
+          },
+        };
+      }
+    }
+
     const where = {
       teamId: selectedTeam,
       licenseKeyLookup,
+      ...ipCountFilter,
       products: productIdsFormatted.length
         ? {
             some: {
