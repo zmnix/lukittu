@@ -118,6 +118,8 @@
     "max_releases_reached": "Your team has reached the maximum number of releases allowed for the current plan. Please upgrade to add more releases."
   },
   "general": {
+    "ip_addresses": "IP-addresses",
+    "request_count": "Request count",
     "select_date_range": "Select date range",
     "clear_all": "Clear all",
     "customers": "Customers",
@@ -462,6 +464,7 @@
       "no_licenses_assigned": "No licenses assigned"
     },
     "licenses": {
+      "no_ip_addresses": "No IP-addresses",
       "remove_product": "Remove product",
       "remove_product_warning": "Are you sure you want to remove this product from the license?",
       "remove_customer": "Remove customer",
