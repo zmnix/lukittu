@@ -92,6 +92,7 @@ describe('Stripe Integration', () => {
         retrieve: jest.fn(),
       },
       paymentIntents: {
+        retrieve: jest.fn(),
         update: jest.fn(),
       },
       subscriptions: {
@@ -159,6 +160,11 @@ describe('Stripe Integration', () => {
       status: 'paid',
     });
 
+    (mockStripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      id: 'pi_123',
+      metadata: {},
+    });
+
     (generateUniqueLicense as jest.Mock).mockResolvedValue('test-license-key');
     (generateHMAC as jest.Mock).mockReturnValue('test-hmac');
     (encryptLicenseKey as jest.Mock).mockReturnValue('encrypted-license-key');
@@ -178,6 +184,9 @@ describe('Stripe Integration', () => {
       );
 
       expect(result).toBeDefined();
+      expect(mockStripe.paymentIntents.retrieve).toHaveBeenCalledWith(
+        mockSession.payment_intent,
+      );
       expect(mockStripe.checkout.sessions.retrieve).toHaveBeenCalledWith(
         mockSession.id,
         { expand: ['line_items'] },
@@ -189,6 +198,22 @@ describe('Stripe Integration', () => {
         'Stripe checkout session completed',
         expect.any(Object),
       );
+    });
+
+    test('skips if license already exists for payment intent', async () => {
+      (mockStripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+        id: 'pi_123',
+        metadata: {
+          lukittu_license_id: 'existing_license',
+        },
+      });
+
+      await handleCheckoutSessionCompleted(mockSession, teamId, mockStripe);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Skipping: License already exists for payment intent',
+      );
+      expect(prismaMock.license.create).not.toHaveBeenCalled();
     });
 
     test('skips processing when payment status is not paid', async () => {
