@@ -76,7 +76,7 @@ export default function DataCards() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {comparedToPrevious}{' '}
-                {t('dashboard.dashboard.compared_to_last_period').toLowerCase()}
+                {t('dashboard.dashboard.compared_to_last_hour').toLowerCase()}
               </p>
             </>
           )}

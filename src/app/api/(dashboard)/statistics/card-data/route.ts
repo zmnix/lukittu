@@ -1,8 +1,10 @@
+import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
 import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
+import { Prisma } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
@@ -63,16 +65,9 @@ export async function GET(): Promise<
                 },
               },
               licenses: {
-                include: {
-                  devices: {
-                    where: {
-                      lastBeatAt: {
-                        gte: new Date(
-                          new Date().getTime() - 60 * 60 * 2 * 1000,
-                        ),
-                      },
-                    },
-                  },
+                select: {
+                  id: true,
+                  createdAt: true,
                 },
               },
             },
@@ -96,30 +91,36 @@ export async function GET(): Promise<
     }
 
     const team = session.user.teams[0];
-    const settings = team.settings;
-    const deviceTimeout = settings?.deviceTimeout || 60; // Minutes
 
-    const devices = team.licenses
-      .flatMap((license) => license.devices)
-      .filter(
-        (device) =>
-          new Date(device.lastBeatAt) >=
-          new Date(new Date().getTime() - deviceTimeout * 60 * 2 * 1000),
-      );
+    const now = new Date();
+    const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-    const activeDevices = devices.filter(
-      (device) =>
-        new Date(device.lastBeatAt) >=
-        new Date(new Date().getTime() - deviceTimeout * 60 * 1000),
-    );
-
-    const activeLicensesPreviousPeriod = devices.length - activeDevices.length;
+    const [currentActive, previousActive] = await Promise.all([
+      prisma.$queryRaw<[{ count: number }]>(
+        Prisma.sql`
+          SELECT COUNT(DISTINCT "licenseId") as count
+          FROM "RequestLog"
+          WHERE "teamId" = ${team.id}
+          AND "createdAt" >= ${hourAgo}
+        `,
+      ),
+      prisma.$queryRaw<[{ count: number }]>(
+        Prisma.sql`
+          SELECT COUNT(DISTINCT "licenseId") as count
+          FROM "RequestLog"
+          WHERE "teamId" = ${team.id}
+          AND "createdAt" >= ${twoHoursAgo}
+          AND "createdAt" < ${hourAgo}
+        `,
+      ),
+    ]);
 
     const data: CardData = {
       totalLicenses: team.licenses.length,
       totalProducts: team.products.length,
       totalCustomers: team.customers.length,
-      activeLicenses: activeDevices.length,
+      activeLicenses: Number(currentActive[0].count || 0),
       trends: {
         licensesLastWeek: team.licenses.filter(
           (license) =>
@@ -136,7 +137,7 @@ export async function GET(): Promise<
             new Date(customer.createdAt) >=
             new Date(new Date().setDate(new Date().getDate() - 7)),
         ).length,
-        activeLicensesPreviousPeriod,
+        activeLicensesPreviousPeriod: Number(previousActive[0].count || 0),
       },
     };
 
