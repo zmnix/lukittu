@@ -62,6 +62,21 @@ export async function GET(
       );
     }
 
+    const limits = await prisma.limits.findUnique({
+      where: {
+        teamId: selectedTeam,
+      },
+    });
+
+    if (!limits) {
+      return NextResponse.json(
+        {
+          message: t('validation.team_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
     }
@@ -81,9 +96,17 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    const logRetentionDays = limits.logRetention;
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - logRetentionDays);
+
     const where = {
       teamId: selectedTeam,
       licenseId,
+      lastBeatAt: {
+        gte: startDate,
+      },
     } as Prisma.DeviceWhereInput;
 
     const session = await getSession({

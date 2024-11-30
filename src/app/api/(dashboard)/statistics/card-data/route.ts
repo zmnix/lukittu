@@ -64,7 +64,15 @@ export async function GET(): Promise<
               },
               licenses: {
                 include: {
-                  devices: true,
+                  devices: {
+                    where: {
+                      lastBeatAt: {
+                        gte: new Date(
+                          new Date().getTime() - 60 * 60 * 2 * 1000,
+                        ),
+                      },
+                    },
+                  },
                 },
               },
             },

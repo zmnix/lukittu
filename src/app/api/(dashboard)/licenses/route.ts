@@ -146,22 +146,43 @@ export async function GET(
     let ipCountFilter: Prisma.LicenseWhereInput | undefined;
 
     if (ipCountMin) {
+      const teamLimits = await prisma.limits.findUnique({
+        where: {
+          teamId: selectedTeam,
+        },
+      });
+
+      if (!teamLimits) {
+        return NextResponse.json(
+          {
+            message: t('validation.team_not_found'),
+          },
+          { status: HttpStatus.NOT_FOUND },
+        );
+      }
+
+      const logRetentionDays = teamLimits.logRetention;
+
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - logRetentionDays);
+
       const min = parseInt(ipCountMin);
       if (!isNaN(min) && min >= 0) {
         const uniqueIpCounts = await prisma.$queryRaw<
-          { id: string; ip_count: number }[]
+          { id: string; ipCount: number }[]
         >`
-        SELECT l.id, COUNT(DISTINCT rl."ipAddress") as ip_count 
+        SELECT l.id, COUNT(DISTINCT rl."ipAddress") as ipCount 
         FROM "License" l
         LEFT JOIN "RequestLog" rl ON l.id = rl."licenseId"
         WHERE l."teamId" = ${Prisma.sql`${selectedTeam}`}
         AND rl."ipAddress" IS NOT NULL
+        AND rl."createdAt" >= ${Prisma.sql`${startDate}`}
         GROUP BY l.id
       `;
 
         const filteredLicenseIds = uniqueIpCounts
           .filter((license) => {
-            const ipCount = Number(license.ip_count);
+            const ipCount = Number(license.ipCount);
             switch (ipCountComparisonMode) {
               case 'between':
                 const max = parseInt(ipCountMax || '');
