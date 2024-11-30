@@ -25,7 +25,10 @@ export const handleInvoicePaid = async (
 ) => {
   try {
     if (!invoice.billing_reason) {
-      logger.info('Skipping: No billing reason associated with invoice');
+      logger.info('Skipping: No billing reason associated with invoice', {
+        invoiceId: invoice.id,
+        teamId: team.id,
+      });
       return;
     }
 
@@ -37,7 +40,11 @@ export const handleInvoicePaid = async (
 
     if (invoice.billing_reason === 'subscription_create') {
       if (lukittuLicenseId) {
-        logger.info('Skipping: License already exists for subscription');
+        logger.info('Skipping: License already exists for subscription', {
+          subscriptionId: subscription.id,
+          licenseId: lukittuLicenseId,
+          teamId: team.id,
+        });
         return;
       }
 
@@ -60,7 +67,11 @@ export const handleInvoicePaid = async (
       const seats = product.metadata.seats as string | undefined;
 
       if (!lukittuProductId || !regex.uuidV4.test(lukittuProductId)) {
-        logger.info('Skipping: Invalid or missing product_id in metadata');
+        logger.info('Skipping: Invalid or missing product_id in metadata', {
+          productId: lukittuProductId,
+          subscriptionId: subscription.id,
+          teamId: team.id,
+        });
         return;
       }
 
@@ -80,6 +91,11 @@ export const handleInvoicePaid = async (
       if (team._count.licenses >= (team.limits?.maxLicenses ?? 0)) {
         logger.info(
           'Skipping: Team has reached the maximum number of licenses',
+          {
+            teamId: team.id,
+            currentLicenses: team._count.licenses,
+            maxLicenses: team.limits?.maxLicenses,
+          },
         );
         return;
       }
@@ -87,6 +103,11 @@ export const handleInvoicePaid = async (
       if (team._count.customers >= (team.limits?.maxCustomers ?? 0)) {
         logger.info(
           'Skipping: Team has reached the maximum number of customers',
+          {
+            teamId: team.id,
+            currentCustomers: team._count.customers,
+            maxCustomers: team.limits?.maxCustomers,
+          },
         );
         return;
       }
@@ -197,6 +218,9 @@ export const handleInvoicePaid = async (
       logger.info('License created for subscription', {
         subscriptionId: subscription.id,
         teamId: team.id,
+        licenseId: license?.id,
+        customerId: stripeCustomerId,
+        productId: lukittuProductId,
       });
 
       return license;
@@ -204,7 +228,11 @@ export const handleInvoicePaid = async (
 
     if (invoice.billing_reason === 'subscription_cycle') {
       if (!lukittuLicenseId || !regex.uuidV4.test(lukittuLicenseId)) {
-        logger.info('Skipping: No license ID found for subscription renewal');
+        logger.info('Skipping: No license ID found for subscription renewal', {
+          subscriptionId: subscription.id,
+          teamId: team.id,
+          licenseId: lukittuLicenseId,
+        });
         return;
       }
 
@@ -231,6 +259,7 @@ export const handleInvoicePaid = async (
         licenseId: updatedLicense.id,
         subscriptionId: subscription.id,
         teamId: team.id,
+        newExpirationDate: subscription.current_period_end,
       });
 
       return updatedLicense;
@@ -238,9 +267,17 @@ export const handleInvoicePaid = async (
 
     logger.info('Skipping: Unhandled billing reason', {
       billingReason: invoice.billing_reason,
+      invoiceId: invoice.id,
+      teamId: team.id,
+      subscriptionId: invoice.subscription,
     });
   } catch (error) {
-    logger.error('Error in handleInvoicePaid', error);
+    logger.error('Error in handleInvoicePaid', {
+      error,
+      invoiceId: invoice.id,
+      teamId: team.id,
+      subscriptionId: invoice.subscription,
+    });
   }
 };
 
@@ -252,7 +289,11 @@ export const handleSubscriptionDeleted = async (
     const licenseId = subscription.metadata.lukittu_license_id;
 
     if (!licenseId || !regex.uuidV4.test(licenseId)) {
-      logger.info('Skipping: License ID not found in subscription metadata');
+      logger.info('Skipping: License ID not found in subscription metadata', {
+        subscriptionId: subscription.id,
+        teamId: team.id,
+        metadata: subscription.metadata,
+      });
       return;
     }
 
@@ -283,11 +324,16 @@ export const handleSubscriptionDeleted = async (
       licenseId,
       subscriptionId: subscription.id,
       teamId: team.id,
+      expirationDate: new Date().toISOString(),
     });
 
     return updatedLicense;
   } catch (error) {
-    logger.error('Error occurred in handleSubscriptionDeleted', error);
+    logger.error('Error occurred in handleSubscriptionDeleted', {
+      error,
+      subscriptionId: subscription.id,
+      teamId: team.id,
+    });
   }
 };
 
@@ -298,9 +344,12 @@ export const handleCheckoutSessionCompleted = async (
 ) => {
   try {
     if (session.payment_status !== 'paid' || session.mode !== 'payment') {
-      logger.info(
-        "Skipping: Payment status is not 'paid' or session is not a payment session.",
-      );
+      logger.info('Skipping: Invalid payment status or session mode', {
+        sessionId: session.id,
+        teamId: team.id,
+        paymentStatus: session.payment_status,
+        mode: session.mode,
+      });
       return;
     }
 
@@ -542,13 +591,21 @@ export const handleCheckoutSessionCompleted = async (
     }
 
     logger.info('Stripe checkout session completed', {
+      sessionId: session.id,
       licenseId: license.id,
-      licenseKey: license.licenseKey,
-      teamId: license.teamId,
+      teamId: team.id,
+      customerEmail: customer.email,
+      productId: lukittuProductId,
+      paymentIntentId: session.payment_intent,
     });
 
     return license;
   } catch (error) {
-    logger.error('Error occurred in handleCheckoutSessionCompleted', error);
+    logger.error('Error occurred in handleCheckoutSessionCompleted', {
+      error,
+      sessionId: session.id,
+      teamId: team.id,
+      paymentIntentId: session.payment_intent,
+    });
   }
 };
