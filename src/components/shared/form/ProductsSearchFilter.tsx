@@ -1,4 +1,7 @@
-import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
+import {
+  IProductsGetResponse,
+  IProductsGetSuccessResponse,
+} from '@/app/api/(dashboard)/products/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,13 +16,22 @@ import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import useSWRInfinite from 'swr/infinite';
 
 interface ProductsSearchFilterProps {
   value: string[];
   onChange: (value: string[]) => void;
 }
+
+const PAGE_SIZE = 25;
 
 const fetchProducts = async (url: string) => {
   const response = await fetch(url);
@@ -40,18 +52,34 @@ export const ProductsSearchFilter = ({
   const teamCtx = useContext(TeamContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const searchParams = new URLSearchParams({
-    pageSize: '25',
-    search: debouncedSearchQuery,
-  });
+  const getKey = (
+    pageIndex: number,
+    previousPageData: IProductsGetResponse | null,
+  ) => {
+    if (!teamCtx.selectedTeam) return null;
+    if (previousPageData && !previousPageData.products.length) return null;
 
-  const { data, isLoading } = useSWR<IProductsGetResponse>(
-    teamCtx.selectedTeam
-      ? ['/api/products', teamCtx.selectedTeam, searchParams.toString()]
-      : null,
-    ([url, _, params]) => fetchProducts(`${url}?${params}`),
-  );
+    const searchParams = new URLSearchParams({
+      pageSize: String(PAGE_SIZE),
+      page: String(pageIndex + 1),
+      search: debouncedSearchQuery,
+    });
+
+    return ['/api/products', teamCtx.selectedTeam, searchParams.toString()];
+  };
+
+  const { data, isLoading, size, setSize, isValidating } =
+    useSWRInfinite<IProductsGetSuccessResponse>(
+      getKey,
+      ([url, _, params]) => fetchProducts(`${url}?${params}`),
+      {
+        revalidateAll: false,
+        revalidateOnFocus: false,
+        revalidateFirstPage: false,
+      },
+    );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -62,10 +90,12 @@ export const ProductsSearchFilter = ({
 
   const products = useMemo(() => {
     if (!data || 'message' in data) return [];
-    return data.products.map((product) => ({
-      name: product.name,
-      id: product.id,
-    }));
+    return data.flatMap((page) =>
+      page.products.map((product) => ({
+        name: product.name,
+        id: product.id,
+      })),
+    );
   }, [data]);
 
   const filteredProducts = useMemo(
@@ -91,6 +121,36 @@ export const ProductsSearchFilter = ({
     onChange([]);
   };
 
+  const hasMore = useMemo(() => {
+    if (!data || data.length === 0) return false;
+    const lastPage = data[data.length - 1];
+    return lastPage.products.length === PAGE_SIZE;
+  }, [data]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isValidating && hasMore) {
+          setSize(size + 1);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '150px',
+      },
+    );
+
+    const sentinel = container.querySelector('[data-sentinel]');
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => observer.disconnect();
+  }, [size, setSize, isValidating, hasMore]);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="relative">
@@ -110,44 +170,51 @@ export const ProductsSearchFilter = ({
           </Button>
         )}
       </div>
-      <div className="max-h-[300px] space-y-2 overflow-y-auto">
-        {isLoading ? (
-          <div className="flex justify-center py-2">
-            <LoadingSpinner />
-          </div>
-        ) : filteredProducts.length === 0 ? (
+      <div
+        ref={scrollContainerRef}
+        className="max-h-[300px] space-y-2 overflow-y-auto"
+      >
+        {filteredProducts.length === 0 && !isLoading ? (
           <p className="text-center text-sm text-muted-foreground">
             {t('general.no_results')}
           </p>
         ) : (
-          filteredProducts.map((product) => (
-            <div key={product.id} className="flex items-center space-x-2">
-              <Checkbox
-                checked={value.includes(product.id)}
-                id={product.id}
-                onCheckedChange={() => handleSelect(product.id)}
-              />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <label
-                      className="flex-1 truncate text-sm font-medium"
-                      htmlFor={product.id}
-                    >
-                      {product.name}
-                    </label>
-                  </TooltipTrigger>
-                  <TooltipContent>{product.name}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Check
-                className={cn(
-                  'h-4 w-4',
-                  value.includes(product.id) ? 'opacity-100' : 'opacity-0',
-                )}
-              />
-            </div>
-          ))
+          <>
+            {filteredProducts.map((product) => (
+              <div key={product.id} className="flex items-center space-x-2">
+                <Checkbox
+                  checked={value.includes(product.id)}
+                  id={product.id}
+                  onCheckedChange={() => handleSelect(product.id)}
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label
+                        className="flex-1 truncate text-sm font-medium"
+                        htmlFor={product.id}
+                      >
+                        {product.name}
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>{product.name}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <Check
+                  className={cn(
+                    'h-4 w-4',
+                    value.includes(product.id) ? 'opacity-100' : 'opacity-0',
+                  )}
+                />
+              </div>
+            ))}
+            {(isLoading || isValidating) && (
+              <div className="flex justify-center py-2">
+                <LoadingSpinner />
+              </div>
+            )}
+            <div className="h-0" data-sentinel />
+          </>
         )}
       </div>
     </div>

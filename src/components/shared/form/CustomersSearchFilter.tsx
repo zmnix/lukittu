@@ -1,4 +1,7 @@
-import { ICustomersGetResponse } from '@/app/api/(dashboard)/customers/route';
+import {
+  ICustomersGetResponse,
+  ICustomersGetSuccessResponse,
+} from '@/app/api/(dashboard)/customers/route';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,13 +16,22 @@ import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import useSWRInfinite from 'swr/infinite';
 
 interface CustomersSearchFilterProps {
   value: string[];
   onChange: (value: string[]) => void;
 }
+
+const PAGE_SIZE = 25;
 
 const fetchCustomers = async (url: string) => {
   const response = await fetch(url);
@@ -40,18 +52,34 @@ export const CustomersSearchFilter = ({
   const teamCtx = useContext(TeamContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const searchParams = new URLSearchParams({
-    pageSize: '25',
-    search: debouncedSearchQuery,
-  });
+  const getKey = (
+    pageIndex: number,
+    previousPageData: ICustomersGetResponse | null,
+  ) => {
+    if (!teamCtx.selectedTeam) return null;
+    if (previousPageData && !previousPageData.customers.length) return null;
 
-  const { data, isLoading } = useSWR<ICustomersGetResponse>(
-    teamCtx.selectedTeam
-      ? ['/api/customers', teamCtx.selectedTeam, searchParams.toString()]
-      : null,
-    ([url, _, params]) => fetchCustomers(`${url}?${params}`),
-  );
+    const searchParams = new URLSearchParams({
+      pageSize: String(PAGE_SIZE),
+      page: String(pageIndex + 1),
+      search: debouncedSearchQuery,
+    });
+
+    return ['/api/customers', teamCtx.selectedTeam, searchParams.toString()];
+  };
+
+  const { data, isLoading, size, setSize, isValidating } =
+    useSWRInfinite<ICustomersGetSuccessResponse>(
+      getKey,
+      ([url, _, params]) => fetchCustomers(`${url}?${params}`),
+      {
+        revalidateAll: false,
+        revalidateOnFocus: false,
+        revalidateFirstPage: false,
+      },
+    );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,12 +89,14 @@ export const CustomersSearchFilter = ({
   }, [searchQuery]);
 
   const customers = useMemo(() => {
-    if (!data || 'message' in data) return [];
-    return data.customers.map((customer) => ({
-      id: customer.id,
-      fullName: customer.fullName,
-      email: customer.email,
-    }));
+    if (!data || 'message' in data[0]) return [];
+    return data.flatMap((page) =>
+      page.customers.map((customer) => ({
+        id: customer.id,
+        fullName: customer.fullName,
+        email: customer.email,
+      })),
+    );
   }, [data]);
 
   const filteredCustomers = useMemo(
@@ -80,6 +110,36 @@ export const CustomersSearchFilter = ({
       ),
     [searchQuery, customers],
   );
+
+  const hasMore = useMemo(() => {
+    if (!data || data.length === 0) return false;
+    const lastPage = data[data.length - 1];
+    return lastPage.customers.length === PAGE_SIZE;
+  }, [data]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isValidating && hasMore) {
+          setSize(size + 1);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '150px',
+      },
+    );
+
+    const sentinel = container.querySelector('[data-sentinel]');
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => observer.disconnect();
+  }, [size, setSize, isValidating, hasMore]);
 
   const handleSelect = useCallback(
     (customerId: string) => {
@@ -115,59 +175,66 @@ export const CustomersSearchFilter = ({
           </Button>
         )}
       </div>
-      <div className="max-h-[300px] space-y-2 overflow-y-auto">
-        {isLoading ? (
-          <div className="flex justify-center py-2">
-            <LoadingSpinner />
-          </div>
-        ) : filteredCustomers.length === 0 ? (
+      <div
+        ref={scrollContainerRef}
+        className="max-h-[300px] space-y-2 overflow-y-auto"
+      >
+        {filteredCustomers.length === 0 && !isLoading ? (
           <p className="text-center text-sm text-muted-foreground">
             {t('general.no_results')}
           </p>
         ) : (
-          filteredCustomers.map((customer) => (
-            <div
-              key={customer.id}
-              className="grid grid-cols-[auto_1fr_auto] items-start gap-x-2 pr-2"
-            >
-              <Checkbox
-                checked={value.includes(customer.id)}
-                className="mt-1"
-                id={customer.id}
-                onCheckedChange={() => handleSelect(customer.id)}
-              />
-              <div className="flex flex-col">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="truncate text-sm font-medium">
+          <>
+            {filteredCustomers.map((customer) => (
+              <div
+                key={customer.id}
+                className="grid grid-cols-[auto_1fr_auto] items-start gap-x-2 pr-2"
+              >
+                <Checkbox
+                  checked={value.includes(customer.id)}
+                  className="mt-1"
+                  id={customer.id}
+                  onCheckedChange={() => handleSelect(customer.id)}
+                />
+                <div className="flex flex-col">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="truncate text-sm font-medium">
+                          {customer.fullName ?? 'N/A'}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
                         {customer.fullName ?? 'N/A'}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {customer.fullName ?? 'N/A'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="truncate text-sm text-muted-foreground">
-                        {customer.email}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{customer.email}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="truncate text-sm text-muted-foreground">
+                          {customer.email}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{customer.email}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Check
+                  className={cn(
+                    'mt-1 h-4 w-4',
+                    value.includes(customer.id) ? 'opacity-100' : 'opacity-0',
+                  )}
+                />
               </div>
-              <Check
-                className={cn(
-                  'mt-1 h-4 w-4',
-                  value.includes(customer.id) ? 'opacity-100' : 'opacity-0',
-                )}
-              />
-            </div>
-          ))
+            ))}
+            {(isLoading || isValidating) && (
+              <div className="flex justify-center py-2">
+                <LoadingSpinner />
+              </div>
+            )}
+            <div className="h-0" data-sentinel />
+          </>
         )}
       </div>
     </div>
