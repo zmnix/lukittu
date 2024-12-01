@@ -26,41 +26,9 @@ jobs:
       - name: Run translation key check
         run: node src/locales/checkTranslations.js
 
-  lint:
-    name: Lint
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'latest'
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 'latest'
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run linting
-        run: pnpm lint
-
-  test:
-    name: Run Tests
-    timeout-minutes: 10
+  verify:
+    name: Lint and Test
+    timeout-minutes: 8
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,13 +51,14 @@ jobs:
           path: |
             ${{ steps.pnpm-cache.outputs.STORE_PATH }}
             .next/cache
-          key: ${{ runner.os }}-nextjs-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+            node_modules/.cache
+          key: ${{ runner.os }}-nextjs-pnpm-${{ hashFiles('**/pnpm-lock.yaml', '**/package.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-pnpm-
             ${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - run: pnpm lint & pnpm test
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -99,15 +68,17 @@ jobs:
           retention-days: 7
 
   build:
-    needs: [check-translation, test, lint]
+    needs: [check-translation, verify]
     name: Build Docker Image
-    timeout-minutes: 15
+    timeout-minutes: 10
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
 
       - name: Configure environment
         run: |
@@ -132,8 +103,14 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.REGISTRY_USERNAME }}/${{ secrets.IMAGE }}:latest
-          cache-from: type=gha
+          cache-from: |
+            type=gha
+            type=registry,ref=${{ secrets.REGISTRY_USERNAME }}/${{ secrets.IMAGE }}:latest
           cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          platforms: linux/amd64
+          provenance: false
 
   deploy:
     needs: build
