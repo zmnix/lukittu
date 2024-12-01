@@ -154,7 +154,7 @@ export const MultiSelect = React.forwardRef<
       placeholder = 'Select options',
       animation = 0,
       maxCount = 3,
-      modalPopover = false,
+      modalPopover = true,
       asChild = false,
       className,
       onSearch,
@@ -209,16 +209,6 @@ export const MultiSelect = React.forwardRef<
       const newSelectedValues = selectedValues.slice(0, maxCount);
       setSelectedValues(newSelectedValues);
       onValueChange(newSelectedValues);
-    };
-
-    const toggleAll = () => {
-      if (selectedValues.length === options.length) {
-        handleClear();
-      } else {
-        const allValues = options.map((option) => option.value);
-        setSelectedValues(allValues);
-        onValueChange(allValues);
-      }
     };
 
     const handleSearch = (value: string) => {
