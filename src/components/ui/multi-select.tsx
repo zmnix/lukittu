@@ -167,14 +167,18 @@ export const MultiSelect = React.forwardRef<
     const [selectedValues, setSelectedValues] = React.useState<string[]>(
       value ?? defaultValue,
     );
+    const [selectedOptions, setSelectedOptions] = React.useState(
+      options.filter((opt) => (value ?? defaultValue).includes(opt.value)),
+    );
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
 
     React.useEffect(() => {
       if (value !== undefined) {
         setSelectedValues(value);
+        setSelectedOptions(options.filter((opt) => value.includes(opt.value)));
       }
-    }, [value]);
+    }, [value, options]);
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>,
@@ -193,6 +197,18 @@ export const MultiSelect = React.forwardRef<
       const newSelectedValues = selectedValues.includes(option)
         ? selectedValues.filter((value) => value !== option)
         : [...selectedValues, option];
+
+      const selectedOption = options.find((opt) => opt.value === option);
+      if (selectedOption) {
+        setSelectedOptions((prev) =>
+          newSelectedValues.includes(option)
+            ? [...prev, selectedOption].filter(
+                (opt, index, self) =>
+                  self.findIndex((o) => o.value === opt.value) === index,
+              )
+            : prev.filter((opt) => opt.value !== option),
+        );
+      }
 
       onValueChange(newSelectedValues);
     };
@@ -244,7 +260,9 @@ export const MultiSelect = React.forwardRef<
               <div className="flex w-full items-center justify-between">
                 <div className="flex flex-wrap items-center">
                   {selectedValues.slice(0, maxCount).map((value) => {
-                    const option = options.find((o) => o.value === value);
+                    const option = selectedOptions.find(
+                      (o) => o.value === value,
+                    );
                     const IconComponent = option?.icon;
                     return (
                       <Badge
@@ -351,31 +369,39 @@ export const MultiSelect = React.forwardRef<
                     </div>
                   </CommandItem>
                 ) : (
-                  options.map((option) => {
-                    const isSelected = selectedValues.includes(option.value);
-                    return (
-                      <CommandItem
-                        key={option.value}
-                        onSelect={() => toggleOption(option.value)}
-                        className="cursor-pointer"
-                      >
-                        <div
-                          className={cn(
-                            'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
-                            isSelected
-                              ? 'bg-primary text-primary-foreground'
-                              : 'opacity-50 [&_svg]:invisible',
-                          )}
+                  options
+                    .filter((option) =>
+                      searchValue
+                        ? option.label
+                            .toLowerCase()
+                            .includes(searchValue.toLowerCase())
+                        : true,
+                    )
+                    .map((option) => {
+                      const isSelected = selectedValues.includes(option.value);
+                      return (
+                        <CommandItem
+                          key={option.value}
+                          onSelect={() => toggleOption(option.value)}
+                          className="cursor-pointer"
                         >
-                          <CheckIcon className="h-4 w-4" />
-                        </div>
-                        {option.icon && (
-                          <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span>{option.label}</span>
-                      </CommandItem>
-                    );
-                  })
+                          <div
+                            className={cn(
+                              'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                              isSelected
+                                ? 'bg-primary text-primary-foreground'
+                                : 'opacity-50 [&_svg]:invisible',
+                            )}
+                          >
+                            <CheckIcon className="h-4 w-4" />
+                          </div>
+                          {option.icon && (
+                            <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                          )}
+                          <span>{option.label}</span>
+                        </CommandItem>
+                      );
+                    })
                 )}
               </CommandGroup>
               <CommandSeparator />
