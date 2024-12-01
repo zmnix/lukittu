@@ -50,7 +50,7 @@ import {
 } from '@/lib/validation/licenses/set-license-schema';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { RefreshCw, X } from 'lucide-react';
+import { Calendar, Clock, Infinity, RefreshCw, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useContext, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -147,6 +147,27 @@ export default function SetLicenseModal() {
       );
     }
   }, [ctx.licenseToEdit, form]);
+
+  useEffect(() => {
+    if (ctx.licenseModalOpen && !ctx.licenseToEdit) {
+      if (ctx.initialProductIds.length > 0) {
+        form.setValue('productIds', ctx.initialProductIds, {
+          shouldValidate: true,
+        });
+      }
+      if (ctx.initialCustomerIds.length > 0) {
+        form.setValue('customerIds', ctx.initialCustomerIds, {
+          shouldValidate: true,
+        });
+      }
+    }
+  }, [
+    ctx.licenseModalOpen,
+    ctx.licenseToEdit,
+    ctx.initialProductIds,
+    ctx.initialCustomerIds,
+    form,
+  ]);
 
   const handleLicenseGenerate = async () => {
     setLoading((prev) => ({ ...prev, license: true }));
@@ -352,29 +373,31 @@ export default function SetLicenseModal() {
                 <div className="flex gap-2">
                   <Button
                     className={cn(
-                      'w-full',
+                      'w-full gap-2',
                       expirationType === 'NEVER' && 'border-2 border-primary',
                     )}
                     type="button"
                     variant="outline"
                     onClick={() => handleExpirationTypeChange('NEVER')}
                   >
+                    <Infinity className="h-4 w-4" />
                     {t('general.never')}
                   </Button>
                   <Button
                     className={cn(
-                      'w-full',
+                      'w-full gap-2',
                       expirationType === 'DATE' && 'border-2 border-primary',
                     )}
                     type="button"
                     variant="outline"
                     onClick={() => handleExpirationTypeChange('DATE')}
                   >
+                    <Calendar className="h-4 w-4" />
                     {t('general.date')}
                   </Button>
                   <Button
                     className={cn(
-                      'w-full',
+                      'w-full gap-2',
                       expirationType === 'DURATION' &&
                         'border-2 border-primary',
                     )}
@@ -382,6 +405,7 @@ export default function SetLicenseModal() {
                     variant="outline"
                     onClick={() => handleExpirationTypeChange('DURATION')}
                   >
+                    <Clock className="h-4 w-4" />
                     {t('general.duration')}
                   </Button>
                 </div>

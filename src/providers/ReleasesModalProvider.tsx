@@ -21,12 +21,15 @@ export const ReleaseModalContext = createContext({
   releaseToDelete: null as Release | null,
   releaseToDeleteModalOpen: false,
   releaseModalOpen: false,
+  productId: undefined as string | undefined,
 });
 
 export const ReleaseModalProvider = ({
   children,
+  productId,
 }: {
   children: React.ReactNode;
+  productId?: string;
 }) => {
   const [releaseToDelete, setReleaseToDelete] = useState<Release | null>(null);
   const [releaseToDeleteModalOpen, setReleaseToDeleteModalOpen] =
@@ -62,6 +65,7 @@ export const ReleaseModalProvider = ({
         releaseToDelete,
         releaseToDeleteModalOpen,
         releaseModalOpen,
+        productId,
       }}
     >
       <DeleteDeleteConfirmModal />

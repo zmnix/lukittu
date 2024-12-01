@@ -51,10 +51,6 @@ const MAX_FILE_SIZE = 1024 * 1024 * 10; // 10 MB
 export default function SetReleaseModal() {
   const t = useTranslations();
   const ctx = useContext(ReleaseModalContext);
-  const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const { mutate } = useSWRConfig();
 
   const form = useForm<SetReleaseSchema>({
     resolver: zodResolver(setReleaseSchema(t)),
@@ -62,12 +58,17 @@ export default function SetReleaseModal() {
       status: 'DRAFT',
       version: '',
       metadata: [],
-      productId: '',
+      productId: ctx.productId || '',
       setAsLatest: false,
       keepExistingFile: false,
       licenseIds: [],
     },
   });
+
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const { mutate } = useSWRConfig();
 
   useEffect(() => {
     if (ctx.releaseToEdit) {
@@ -254,28 +255,30 @@ export default function SetReleaseModal() {
               className="space-y-4 max-md:px-2"
               onSubmit={form.handleSubmit(onSubmit)}
             >
-              <FormItem>
-                <Label
-                  className={
-                    form.formState.errors.productId ? 'text-destructive' : ''
-                  }
-                >
-                  {t('general.product')} *
-                </Label>
-                <ProductSelector
-                  initialValue={ctx.releaseToEdit?.productId}
-                  onChange={(productId) =>
-                    form.setValue('productId', productId ?? '', {
-                      shouldValidate: true,
-                    })
-                  }
-                />
-                {form.formState.errors.productId && (
-                  <FormMessage>
-                    {form.formState.errors.productId.message}
-                  </FormMessage>
-                )}
-              </FormItem>
+              {!ctx.productId && (
+                <FormItem>
+                  <Label
+                    className={
+                      form.formState.errors.productId ? 'text-destructive' : ''
+                    }
+                  >
+                    {t('general.product')} *
+                  </Label>
+                  <ProductSelector
+                    initialValue={ctx.releaseToEdit?.productId}
+                    onChange={(productId) =>
+                      form.setValue('productId', productId ?? '', {
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                  {form.formState.errors.productId && (
+                    <FormMessage>
+                      {form.formState.errors.productId.message}
+                    </FormMessage>
+                  )}
+                </FormItem>
+              )}
               <FormField
                 control={form.control}
                 name="version"

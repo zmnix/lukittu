@@ -97,7 +97,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
   );
 
   return (
-    <ReleaseModalProvider>
+    <ReleaseModalProvider productId={productId}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-bold">

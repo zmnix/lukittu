@@ -23,12 +23,18 @@ export const LicenseModalContext = createContext({
   licenseToDeleteModalOpen: false,
   licenseEmailDeliveryModalOpen: false,
   licenseEmailDelivery: null as LicenseExtended | null,
+  initialProductIds: [] as string[],
+  initialCustomerIds: [] as string[],
 });
 
 export const LicenseModalProvider = ({
   children,
+  initialProductIds = [],
+  initialCustomerIds = [],
 }: {
   children: React.ReactNode;
+  initialProductIds?: string[];
+  initialCustomerIds?: string[];
 }) => {
   const [licenseToDelete, setLicenseToDelete] = useState<Omit<
     License,
@@ -60,6 +66,8 @@ export const LicenseModalProvider = ({
         licenseToDeleteModalOpen,
         licenseEmailDeliveryModalOpen,
         licenseEmailDelivery,
+        initialProductIds,
+        initialCustomerIds,
       }}
     >
       <LicenseEmailDeliveryModal />

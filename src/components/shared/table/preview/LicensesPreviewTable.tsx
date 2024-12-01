@@ -90,7 +90,10 @@ export default function LicensesPreviewTable({
   const totalLicenses = data?.totalResults ?? 1;
 
   return (
-    <LicenseModalProvider>
+    <LicenseModalProvider
+      initialCustomerIds={customerId ? [customerId] : []}
+      initialProductIds={productId ? [productId] : []}
+    >
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center gap-2 border-b py-5">
           <CardTitle className="flex w-full items-center text-xl font-bold">
