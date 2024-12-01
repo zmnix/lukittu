@@ -53,29 +53,23 @@ export const ProductsMultiselect = ({
       ),
   );
 
-  const options = useMemo(() => {
-    const defaultOptions =
+  const defaultOptions = useMemo(
+    () =>
       selectedProducts?.map((product) => ({
         label: product.name,
         value: product.id,
-      })) ?? [];
+      })) ?? [],
+    [selectedProducts],
+  );
 
-    if (!data || 'message' in data) return defaultOptions;
+  const options = useMemo(() => {
+    if (!data || 'message' in data) return [];
 
-    const fetchedOptions = data.products.map((product) => ({
+    return data.products.map((product) => ({
       label: product.name,
       value: product.id,
     }));
-
-    return Array.from(
-      new Map(
-        [...defaultOptions, ...fetchedOptions].map((item) => [
-          item.value,
-          item,
-        ]),
-      ).values(),
-    );
-  }, [data, selectedProducts]);
+  }, [data]);
 
   const handleValueChange = (newValue: string[], isClear?: boolean) => {
     if (isClear) {
@@ -98,6 +92,7 @@ export const ProductsMultiselect = ({
   return (
     <MultiSelect
       className="bg-background"
+      defaultOptions={defaultOptions}
       loading={isLoading}
       options={options}
       placeholder={t('general.select_products')}

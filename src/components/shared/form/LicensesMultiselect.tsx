@@ -55,29 +55,23 @@ export const LicensesMultiselect = ({
       ),
   );
 
-  const options = useMemo(() => {
-    const defaultOptions =
+  const defaultOptions = useMemo(
+    () =>
       selectedLicenses?.map((license) => ({
         label: license.licenseKey,
         value: license.id,
-      })) ?? [];
+      })) ?? [],
+    [selectedLicenses],
+  );
 
-    if (!data || 'message' in data) return defaultOptions;
+  const options = useMemo(() => {
+    if (!data || 'message' in data) return [];
 
-    const fetchedOptions = data.licenses.map((license) => ({
+    return data.licenses.map((license) => ({
       label: license.licenseKey,
       value: license.id,
     }));
-
-    return Array.from(
-      new Map(
-        [...defaultOptions, ...fetchedOptions].map((item) => [
-          item.value,
-          item,
-        ]),
-      ).values(),
-    );
-  }, [data, selectedLicenses]);
+  }, [data]);
 
   const handleValueChange = (newValue: string[], isClear?: boolean) => {
     if (isClear) {
@@ -100,6 +94,7 @@ export const LicensesMultiselect = ({
   return (
     <MultiSelect
       className="bg-background"
+      defaultOptions={defaultOptions}
       disabled={disabled}
       loading={isLoading}
       options={options}

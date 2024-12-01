@@ -53,29 +53,23 @@ export const CustomersMultiselect = ({
       ),
   );
 
-  const options = useMemo(() => {
-    const defaultOptions =
+  const defaultOptions = useMemo(
+    () =>
       selectedCustomers?.map((customer) => ({
         label: customer.email,
         value: customer.id,
-      })) ?? [];
+      })) ?? [],
+    [selectedCustomers],
+  );
 
-    if (!data || 'message' in data) return defaultOptions;
+  const options = useMemo(() => {
+    if (!data || 'message' in data) return [];
 
-    const fetchedOptions = data.customers.map((customer) => ({
+    return data.customers.map((customer) => ({
       label: customer.email,
       value: customer.id,
     }));
-
-    return Array.from(
-      new Map(
-        [...defaultOptions, ...fetchedOptions].map((item) => [
-          item.value,
-          item,
-        ]),
-      ).values(),
-    );
-  }, [data, selectedCustomers]);
+  }, [data]);
 
   const handleValueChange = (newValue: string[], isClear?: boolean) => {
     if (isClear) {
@@ -98,6 +92,7 @@ export const CustomersMultiselect = ({
   return (
     <MultiSelect
       className="bg-background"
+      defaultOptions={defaultOptions}
       loading={isLoading}
       options={options}
       placeholder={t('general.select_customers')}

@@ -138,6 +138,19 @@ interface MultiSelectProps
    * Optional, defaults to false.
    */
   loading?: boolean;
+
+  /**
+   * An array of default option objects to be displayed in the multi-select component.
+   * Each option object has a label, value, and an optional icon.
+   */
+  defaultOptions?: {
+    /** The text to display for the option. */
+    label: string;
+    /** The unique value associated with the option. */
+    value: string;
+    /** Optional icon component to display alongside the option. */
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
 }
 
 export const MultiSelect = React.forwardRef<
@@ -147,6 +160,7 @@ export const MultiSelect = React.forwardRef<
   (
     {
       options,
+      defaultOptions = [],
       onValueChange,
       variant,
       value = [],
@@ -163,13 +177,31 @@ export const MultiSelect = React.forwardRef<
     },
     ref,
   ) => {
+    // Keep track of all seen options to maintain labels
+    const [seenOptions, setSeenOptions] = React.useState<typeof options>([]);
+
+    // Update seen options whenever new options come in
+    React.useEffect(() => {
+      setSeenOptions((prev) => {
+        const newOptions = [...prev];
+        options.forEach((opt) => {
+          if (!newOptions.find((o) => o.value === opt.value)) {
+            newOptions.push(opt);
+          }
+        });
+        return newOptions;
+      });
+    }, [options]);
+
+    const selectedOptions = React.useMemo(() => {
+      const allOptions = [...defaultOptions, ...seenOptions];
+      return value
+        .map((val) => allOptions.find((opt) => opt.value === val))
+        .filter((opt): opt is NonNullable<typeof opt> => opt !== undefined);
+    }, [value, seenOptions, defaultOptions]);
+
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
-
-    const selectedOptions = React.useMemo(
-      () => options.filter((opt) => value.includes(opt.value)),
-      [value, options],
-    );
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>,
@@ -337,6 +369,7 @@ export const MultiSelect = React.forwardRef<
                     </div>
                   </CommandItem>
                 ) : (
+                  // Only show search results in the selection list
                   options
                     .filter((option) =>
                       searchValue
