@@ -257,12 +257,16 @@ export function LicensesTable() {
           {
             type: 'multiselect',
             key: 'products',
-            component: ProductsMultiselect,
+            component: (props) => (
+              <ProductsMultiselect {...props} selectedProducts={undefined} />
+            ),
           },
           {
             type: 'multiselect',
             key: 'customers',
-            component: CustomersMultiselect,
+            component: (props) => (
+              <CustomersMultiselect {...props} selectedCustomers={undefined} />
+            ),
           },
         ]}
         initialFilters={{

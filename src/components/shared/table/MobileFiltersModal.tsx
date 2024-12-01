@@ -15,7 +15,12 @@ interface MobileFilterOption {
   type: 'search' | 'multiselect';
   key: string;
   placeholder?: string;
-  component?: React.ComponentType<any>;
+  component?: React.ComponentType<{
+    value?: string[];
+    onChange: (value: string[], isClear?: boolean) => void;
+    selectedProducts?: any[];
+    selectedCustomers?: any[];
+  }>;
 }
 
 interface MobileFilterModalProps {
@@ -79,7 +84,7 @@ export default function MobileFilterModal({
               )}
               {option.type === 'multiselect' && option.component && (
                 <option.component
-                  initialValue={tempFilters[option.key] || []}
+                  value={tempFilters[option.key] || []}
                   onChange={(value: any) => updateFilter(option.key, value)}
                 />
               )}
