@@ -124,12 +124,13 @@ export const CustomersSearchFilter = ({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isValidating && hasMore) {
-          setSize(size + 1);
+          void setSize(size + 1);
         }
       },
       {
+        root: container,
         threshold: 0.1,
-        rootMargin: '150px',
+        rootMargin: '150px 0px',
       },
     );
 
