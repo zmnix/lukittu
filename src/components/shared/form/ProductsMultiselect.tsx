@@ -1,27 +1,11 @@
 import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils/tailwind-helpers';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { TeamContext } from '@/providers/TeamProvider';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-import { LoadingSpinner } from '../LoadingSpinner';
 
 const fetchProducts = async (url: string) => {
   const response = await fetch(url);
@@ -35,33 +19,20 @@ const fetchProducts = async (url: string) => {
 };
 
 interface ProductsMultiselectProps {
-  onChange: (productIds: string[]) => void;
-  initialValue?: string[];
+  onChange: (productIds: string[], isClear?: boolean) => void;
+  value?: string[];
+  selectedProducts: Product[] | undefined;
 }
 
 export const ProductsMultiselect = ({
   onChange,
-  initialValue = [],
+  value = [],
+  selectedProducts,
 }: ProductsMultiselectProps) => {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
-
-  const [open, setOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>(initialValue);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-
-  const searchParams = new URLSearchParams({
-    pageSize: '25',
-    search: debouncedSearchQuery,
-  });
-
-  const { data, isLoading, error } = useSWR<IProductsGetResponse>(
-    teamCtx.selectedTeam
-      ? ['/api/products', teamCtx.selectedTeam, searchParams.toString()]
-      : null,
-    ([url, _, params]) => fetchProducts(`${url}?${params}`),
-  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,148 +41,70 @@ export const ProductsMultiselect = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error.message ?? t('general.server_error'));
-    }
-  }, [error, t]);
+  const { data, isLoading, error } = useSWR<IProductsGetResponse>(
+    teamCtx.selectedTeam
+      ? ['/api/products', teamCtx.selectedTeam, debouncedSearchQuery]
+      : null,
+    ([url]) =>
+      fetchProducts(
+        `${url}?pageSize=25${
+          debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''
+        }`,
+      ),
+  );
 
-  const products = useMemo(() => {
-    if (!data || 'message' in data) return [];
-    return data.products.map((product) => ({
-      name: product.name,
-      id: product.id,
+  const options = useMemo(() => {
+    const defaultOptions =
+      selectedProducts?.map((product) => ({
+        label: product.name,
+        value: product.id,
+      })) ?? [];
+
+    if (!data || 'message' in data) return defaultOptions;
+
+    const fetchedOptions = data.products.map((product) => ({
+      label: product.name,
+      value: product.id,
     }));
-  }, [data]);
 
-  const filteredProducts = useMemo(
-    () =>
-      products.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      ),
-    [searchQuery, products],
-  );
+    return Array.from(
+      new Map(
+        [...defaultOptions, ...fetchedOptions].map((item) => [
+          item.value,
+          item,
+        ]),
+      ).values(),
+    );
+  }, [data, selectedProducts]);
 
-  const highlightText = useCallback((text: string, highlight: string) => {
-    if (!highlight.trim()) {
-      return text;
+  const handleValueChange = (newValue: string[], isClear?: boolean) => {
+    if (isClear) {
+      onChange([], true);
+      return;
     }
 
-    const regex = new RegExp(`(${highlight})`, 'gi');
-    const parts = text.split(regex);
-
-    return parts.map((part, index) =>
-      part.toLowerCase() === highlight.toLowerCase() ? (
-        <strong key={index}>{part}</strong>
-      ) : (
-        part
-      ),
-    );
-  }, []);
-
-  const handleSelect = useCallback(
-    (productId: string) => {
-      const currentSelected = [...selectedItems];
-      if (currentSelected.includes(productId)) {
-        onChange(currentSelected.filter((i) => i !== productId));
-      } else {
-        const newSelected = [...currentSelected, productId];
-        setSelectedItems(newSelected);
-        onChange(newSelected);
-      }
-    },
-    [onChange, selectedItems],
-  );
-
-  useEffect(() => {
-    setSelectedItems(initialValue);
-  }, [initialValue]);
-
-  const handleReset = () => {
-    setSelectedItems([]);
-    onChange([]);
+    const removedId = value.find((id) => !newValue.includes(id));
+    if (removedId && newValue.length < value.length) {
+      onChange(newValue);
+    } else {
+      onChange(newValue);
+    }
   };
 
-  return (
-    <Popover open={open} modal onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          className="w-full justify-between font-normal text-muted-foreground"
-          disabled={isLoading}
-          role="combobox"
-          variant="outline"
-        >
-          {selectedItems.length > 0
-            ? `${selectedItems.length} ${t('general.selected')}`
-            : t('general.select_products')}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="popover-content-width-full w-full p-0">
-        <Command
-          filter={(value, search) => {
-            const item = products.find((product) => product.id === value);
+  if (error) {
+    toast.error(error.message ?? t('general.server_error'));
+  }
 
-            return item?.name.toLowerCase().includes(search.toLowerCase())
-              ? 1
-              : 0;
-          }}
-        >
-          <div className="flex w-full items-center border-b px-3">
-            <CommandInput
-              placeholder={t('dashboard.licenses.search_product')}
-              value={searchQuery}
-              disableBorder
-              onValueChange={setSearchQuery}
-            />
-            {selectedItems.length > 0 && (
-              <Button
-                className="h-8 px-2"
-                variant="ghost"
-                onClick={handleReset}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <CommandEmpty>{t('general.no_results')}</CommandEmpty>
-          <CommandGroup>
-            <CommandList>
-              {isLoading ? (
-                <CommandItem>
-                  <div className="flex w-full items-center justify-center">
-                    <LoadingSpinner />
-                  </div>
-                </CommandItem>
-              ) : (
-                filteredProducts.map((product) => (
-                  <CommandItem
-                    key={product.id}
-                    value={product.id}
-                    onSelect={() => handleSelect(product.id)}
-                  >
-                    <Checkbox
-                      checked={selectedItems.includes(product.id)}
-                      className="mr-2"
-                      onCheckedChange={() => handleSelect(product.id)}
-                      onClick={(e) => e.preventDefault()}
-                    />
-                    <p>{highlightText(product.name, debouncedSearchQuery)}</p>
-                    <Check
-                      className={cn(
-                        'ml-auto h-4 w-4',
-                        selectedItems.includes(product.id)
-                          ? 'opacity-100'
-                          : 'opacity-0',
-                      )}
-                    />
-                  </CommandItem>
-                ))
-              )}
-            </CommandList>
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+  return (
+    <MultiSelect
+      className="bg-background"
+      loading={isLoading}
+      options={options}
+      placeholder={t('general.select_products')}
+      searchValue={searchQuery}
+      value={value}
+      onSearch={setSearchQuery}
+      onValueChange={handleValueChange}
+    />
   );
 };

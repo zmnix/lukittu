@@ -77,7 +77,10 @@ export default function SetReleaseModal() {
       form.setValue('status', ctx.releaseToEdit.status);
       form.setValue('productId', ctx.releaseToEdit.productId);
       form.setValue('setAsLatest', ctx.releaseToEdit.latest || false);
-      form.setValue('licenseIds', ctx.releaseToEdit.licenseIds ?? []);
+      form.setValue(
+        'licenseIds',
+        ctx.releaseToEdit.allowedLicenses.map((l) => l.id),
+      );
       form.setValue(
         'metadata',
         (
@@ -442,7 +445,8 @@ export default function SetReleaseModal() {
                     <FormControl>
                       <LicensesMultiselect
                         disabled={form.getValues('setAsLatest')}
-                        initialValue={form.getValues('licenseIds')}
+                        selectedLicenses={ctx.releaseToEdit?.allowedLicenses}
+                        value={form.watch('licenseIds')}
                         onChange={(licenseIds) => {
                           form.setValue('licenseIds', licenseIds);
                           if (licenseIds.length > 0) {

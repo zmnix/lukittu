@@ -269,10 +269,16 @@ export default function SetLicenseModal() {
     }
   };
 
-  const handleProductChange = (productIds: string[]) => {
+  const handleProductChange = (productIds: string[], isClear?: boolean) => {
     const currentIds = form.getValues('productIds');
-    const removedId = currentIds.find((id) => !productIds.includes(id));
 
+    if (isClear && currentIds.length > 0) {
+      setRemovingProduct('all');
+      setPendingProductIds([]);
+      return;
+    }
+
+    const removedId = currentIds.find((id) => !productIds.includes(id));
     if (removedId && productIds.length < currentIds.length) {
       setRemovingProduct(removedId);
       setPendingProductIds(productIds);
@@ -281,10 +287,16 @@ export default function SetLicenseModal() {
     }
   };
 
-  const handleCustomerChange = (customerIds: string[]) => {
+  const handleCustomerChange = (customerIds: string[], isClear?: boolean) => {
     const currentIds = form.getValues('customerIds');
-    const removedId = currentIds.find((id) => !customerIds.includes(id));
 
+    if (isClear && currentIds.length > 0) {
+      setRemovingCustomer('all');
+      setPendingCustomerIds([]);
+      return;
+    }
+
+    const removedId = currentIds.find((id) => !customerIds.includes(id));
     if (removedId && customerIds.length < currentIds.length) {
       setRemovingCustomer(removedId);
       setPendingCustomerIds(customerIds);
@@ -577,7 +589,8 @@ export default function SetLicenseModal() {
                   {t('dashboard.licenses.assigned_products')}
                 </FormLabel>
                 <ProductsMultiselect
-                  initialValue={form.getValues('productIds')}
+                  selectedProducts={ctx.licenseToEdit?.products}
+                  value={form.watch('productIds')}
                   onChange={handleProductChange}
                 />
               </FormItem>
@@ -587,7 +600,8 @@ export default function SetLicenseModal() {
                   {t('dashboard.licenses.assigned_customers')}
                 </FormLabel>
                 <CustomersMultiselect
-                  initialValue={form.getValues('customerIds')}
+                  selectedCustomers={ctx.licenseToEdit?.customers}
+                  value={form.watch('customerIds')}
                   onChange={handleCustomerChange}
                 />
               </FormItem>

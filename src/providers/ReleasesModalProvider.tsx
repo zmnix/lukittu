@@ -2,12 +2,12 @@
 import { IProductsReleasesSetLatestResponse } from '@/app/api/(dashboard)/products/releases/set-latest/route';
 import SetReleaseModal from '@/components/dashboard/releases/list/SetReleaseModal';
 import { DeleteDeleteConfirmModal } from '@/components/dashboard/releases/ReleaseDeleteConfirmModal';
-import { Release, ReleaseFile } from '@prisma/client';
+import { License, Release, ReleaseFile } from '@prisma/client';
 import { createContext, useState } from 'react';
 
 type ReleaseExtended = Release & {
   file: ReleaseFile | null;
-  licenseIds: string[];
+  allowedLicenses: Omit<License, 'licenseKeyLookup'>[];
 };
 
 export const ReleaseModalContext = createContext({

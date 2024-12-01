@@ -184,7 +184,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                                 {t('general.latest')}
                               </Badge>
                             )}
-                            {release.licenseIds.length > 0 && (
+                            {release.allowedLicenses.length > 0 && (
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -194,7 +194,7 @@ export function ReleasesTable({ productId }: ReleasesTableProps) {
                                     >
                                       <Lock className="mr-1 h-2.5 w-2.5" />
                                       <span className="pointer-events-none">
-                                        {release.licenseIds.length}
+                                        {release.allowedLicenses.length}
                                       </span>
                                     </Badge>
                                   </TooltipTrigger>
