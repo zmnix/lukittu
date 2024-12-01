@@ -185,11 +185,6 @@ export const MultiSelect = React.forwardRef<
     ) => {
       if (event.key === 'Enter') {
         setIsPopoverOpen(true);
-      } else if (event.key === 'Backspace' && !event.currentTarget.value) {
-        const newSelectedValues = [...selectedValues];
-        newSelectedValues.pop();
-        setSelectedValues(newSelectedValues);
-        onValueChange(newSelectedValues);
       }
     };
 
