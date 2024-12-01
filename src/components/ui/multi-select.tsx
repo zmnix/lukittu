@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { useTranslations } from 'next-intl';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 
 /**
@@ -151,6 +152,12 @@ interface MultiSelectProps
     /** Optional icon component to display alongside the option. */
     icon?: React.ComponentType<{ className?: string }>;
   }[];
+
+  /** Whether there are more items to load */
+  hasMore?: boolean;
+
+  /** Callback when user scrolls near bottom */
+  onLoadMore?: () => void;
 }
 
 export const MultiSelect = React.forwardRef<
@@ -161,6 +168,8 @@ export const MultiSelect = React.forwardRef<
     {
       options,
       defaultOptions = [],
+      hasMore = false,
+      onLoadMore,
       onValueChange,
       variant,
       value = [],
@@ -177,10 +186,9 @@ export const MultiSelect = React.forwardRef<
     },
     ref,
   ) => {
-    // Keep track of all seen options to maintain labels
+    const t = useTranslations();
     const [seenOptions, setSeenOptions] = React.useState<typeof options>([]);
 
-    // Update seen options whenever new options come in
     React.useEffect(() => {
       setSeenOptions((prev) => {
         const newOptions = [...prev];
@@ -202,6 +210,9 @@ export const MultiSelect = React.forwardRef<
 
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
+
+    const commandListRef = React.useRef<HTMLDivElement>(null);
+    const [scrollPosition, setScrollPosition] = React.useState(0);
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>,
@@ -238,6 +249,27 @@ export const MultiSelect = React.forwardRef<
         onSearch(value);
       }
     };
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+      if (!hasMore || !onLoadMore || loading) return;
+
+      // Save scroll position before loading more
+      setScrollPosition(e.currentTarget.scrollTop);
+
+      const bottom =
+        e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
+        e.currentTarget.clientHeight * 1.5;
+      if (bottom) {
+        onLoadMore();
+      }
+    };
+
+    // Restore scroll position after new items are loaded
+    React.useEffect(() => {
+      if (commandListRef.current && !loading) {
+        commandListRef.current.scrollTop = scrollPosition;
+      }
+    }, [options, loading]);
 
     return (
       <Popover
@@ -297,7 +329,7 @@ export const MultiSelect = React.forwardRef<
                       )}
                       style={{ animationDuration: `${animation}s` }}
                     >
-                      {`+ ${value.length - maxCount} more`}
+                      {`+ ${value.length - maxCount} ${t('general.more')}`}
                       <XCircle
                         className="ml-2 h-4 w-4 cursor-pointer"
                         onClick={(event) => {
@@ -346,63 +378,59 @@ export const MultiSelect = React.forwardRef<
         >
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="Search..."
+              placeholder={`${t('general.search')}...`}
               value={searchValue}
               onValueChange={handleSearch}
               onKeyDown={handleInputKeyDown}
             />
-            <CommandList>
+            <CommandList ref={commandListRef} onScroll={handleScroll}>
               <CommandEmpty>
-                {loading ? (
+                {loading && options.length === 0 ? (
                   <div className="flex items-center justify-center">
                     <LoadingSpinner />
                   </div>
                 ) : (
-                  'No results found.'
+                  t('general.no_results')
                 )}
               </CommandEmpty>
               <CommandGroup>
-                {loading ? (
-                  <CommandItem className="flex items-center justify-center">
-                    <div className="flex items-center justify-center py-4">
-                      <LoadingSpinner />
-                    </div>
-                  </CommandItem>
-                ) : (
-                  // Only show search results in the selection list
-                  options
-                    .filter((option) =>
-                      searchValue
-                        ? option.label
-                            .toLowerCase()
-                            .includes(searchValue.toLowerCase())
-                        : true,
-                    )
-                    .map((option) => {
-                      const isSelected = value.includes(option.value);
-                      return (
-                        <CommandItem
-                          key={option.value}
-                          onSelect={() => toggleOption(option.value)}
-                          className="cursor-pointer"
-                        >
-                          <div
-                            className={cn(
-                              'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
-                              isSelected
-                                ? 'bg-primary text-primary-foreground'
-                                : 'opacity-50 [&_svg]:invisible',
-                            )}
-                          >
-                            <CheckIcon className="h-4 w-4" />
-                          </div>
-                          {option.icon && (
-                            <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                {options
+                  .filter((option) =>
+                    searchValue
+                      ? option.label
+                          .toLowerCase()
+                          .includes(searchValue.toLowerCase())
+                      : true,
+                  )
+                  .map((option) => {
+                    const isSelected = value.includes(option.value);
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => toggleOption(option.value)}
+                        className="cursor-pointer"
+                      >
+                        <div
+                          className={cn(
+                            'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                            isSelected
+                              ? 'bg-primary text-primary-foreground'
+                              : 'opacity-50 [&_svg]:invisible',
                           )}
-                          <span>{option.label}</span>
-                        </CommandItem>
-                      );
-                    })
+                        >
+                          <CheckIcon className="h-4 w-4" />
+                        </div>
+                        {option.icon && (
+                          <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span>{option.label}</span>
+                      </CommandItem>
+                    );
+                  })}
+                {(hasMore || loading) && (
+                  <CommandItem className="flex justify-center">
+                    <LoadingSpinner />
+                  </CommandItem>
                 )}
               </CommandGroup>
               <CommandSeparator />
@@ -414,7 +442,7 @@ export const MultiSelect = React.forwardRef<
                         onSelect={handleClear}
                         className="flex-1 cursor-pointer justify-center"
                       >
-                        Clear
+                        {t('general.clear')}
                       </CommandItem>
                       <Separator
                         orientation="vertical"
@@ -426,7 +454,7 @@ export const MultiSelect = React.forwardRef<
                     onSelect={() => setIsPopoverOpen(false)}
                     className="max-w-full flex-1 cursor-pointer justify-center"
                   >
-                    Close
+                    {t('general.close')}
                   </CommandItem>
                 </div>
               </CommandGroup>

@@ -1,9 +1,12 @@
-import { IProductsGetResponse } from '@/app/api/(dashboard)/products/route';
+import {
+  IProductsGetResponse,
+  IProductsGetSuccessResponse,
+} from '@/app/api/(dashboard)/products/route';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Product } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
@@ -33,6 +36,11 @@ export const ProductsMultiselect = ({
   const teamCtx = useContext(TeamContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  const [allProducts, setAllProducts] = useState<
+    IProductsGetSuccessResponse['products']
+  >([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,11 +51,11 @@ export const ProductsMultiselect = ({
 
   const { data, isLoading, error } = useSWR<IProductsGetResponse>(
     teamCtx.selectedTeam
-      ? ['/api/products', teamCtx.selectedTeam, debouncedSearchQuery]
+      ? ['/api/products', teamCtx.selectedTeam, debouncedSearchQuery, page]
       : null,
     ([url]) =>
       fetchProducts(
-        `${url}?pageSize=25${
+        `${url}?pageSize=${pageSize}&page=${page}${
           debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''
         }`,
       ),
@@ -62,14 +70,38 @@ export const ProductsMultiselect = ({
     [selectedProducts],
   );
 
-  const options = useMemo(() => {
-    if (!data || 'message' in data) return [];
+  useEffect(() => {
+    setAllProducts([]);
+    setPage(1);
+  }, [debouncedSearchQuery]);
 
-    return data.products.map((product) => ({
-      label: product.name,
-      value: product.id,
-    }));
-  }, [data]);
+  useEffect(() => {
+    if (!data || 'message' in data) {
+      if (data && 'message' in data) {
+        toast.error(data.message || t('general.server_error'));
+      }
+      return;
+    }
+
+    setAllProducts((prev) => {
+      const newProducts = [...prev];
+      data.products.forEach((product) => {
+        if (!newProducts.find((p) => p.id === product.id)) {
+          newProducts.push(product);
+        }
+      });
+      return newProducts;
+    });
+  }, [data, t]);
+
+  const options = useMemo(
+    () =>
+      allProducts.map((product) => ({
+        label: product.name,
+        value: product.id,
+      })),
+    [allProducts],
+  );
 
   const handleValueChange = (newValue: string[], isClear?: boolean) => {
     if (isClear) {
@@ -85,6 +117,16 @@ export const ProductsMultiselect = ({
     }
   };
 
+  const handleLoadMore = useCallback(() => {
+    if (data && data.products.length === pageSize) {
+      setPage((prev) => prev + 1);
+    }
+  }, [data, pageSize]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery]);
+
   if (error) {
     toast.error(error.message ?? t('general.server_error'));
   }
@@ -93,11 +135,13 @@ export const ProductsMultiselect = ({
     <MultiSelect
       className="bg-background"
       defaultOptions={defaultOptions}
+      hasMore={data?.products.length === pageSize}
       loading={isLoading}
       options={options}
       placeholder={t('general.select_products')}
       searchValue={searchQuery}
       value={value}
+      onLoadMore={handleLoadMore}
       onSearch={setSearchQuery}
       onValueChange={handleValueChange}
     />

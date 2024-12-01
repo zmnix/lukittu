@@ -1,9 +1,12 @@
-import { ILicensesGetResponse } from '@/app/api/(dashboard)/licenses/route';
+import {
+  ILicensesGetResponse,
+  ILicensesGetSuccessResponse,
+} from '@/app/api/(dashboard)/licenses/route';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TeamContext } from '@/providers/TeamProvider';
 import { License } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
@@ -35,6 +38,11 @@ export const LicensesMultiselect = ({
   const teamCtx = useContext(TeamContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  const [allLicenses, setAllLicenses] = useState<
+    ILicensesGetSuccessResponse['licenses']
+  >([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,7 +53,7 @@ export const LicensesMultiselect = ({
 
   const { data, isLoading, error } = useSWR<ILicensesGetResponse>(
     teamCtx.selectedTeam
-      ? ['/api/licenses', teamCtx.selectedTeam, debouncedSearchQuery]
+      ? ['/api/licenses', teamCtx.selectedTeam, debouncedSearchQuery, page]
       : null,
     ([url]) =>
       fetchLicenses(
@@ -54,6 +62,30 @@ export const LicensesMultiselect = ({
         }`,
       ),
   );
+
+  useEffect(() => {
+    setAllLicenses([]);
+    setPage(1);
+  }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (!data || 'message' in data) {
+      if (data && 'message' in data) {
+        toast.error(data.message || t('general.server_error'));
+      }
+      return;
+    }
+
+    setAllLicenses((prev) => {
+      const newLicenses = [...prev];
+      data.licenses.forEach((license) => {
+        if (!newLicenses.find((l) => l.id === license.id)) {
+          newLicenses.push(license);
+        }
+      });
+      return newLicenses;
+    });
+  }, [data, t]);
 
   const defaultOptions = useMemo(
     () =>
@@ -64,14 +96,20 @@ export const LicensesMultiselect = ({
     [selectedLicenses],
   );
 
-  const options = useMemo(() => {
-    if (!data || 'message' in data) return [];
+  const options = useMemo(
+    () =>
+      allLicenses.map((license) => ({
+        label: license.licenseKey,
+        value: license.id,
+      })),
+    [allLicenses],
+  );
 
-    return data.licenses.map((license) => ({
-      label: license.licenseKey,
-      value: license.id,
-    }));
-  }, [data]);
+  const handleLoadMore = useCallback(() => {
+    if (data?.licenses.length === pageSize) {
+      setPage((prev) => prev + 1);
+    }
+  }, [data, pageSize]);
 
   const handleValueChange = (newValue: string[], isClear?: boolean) => {
     if (isClear) {
@@ -96,11 +134,13 @@ export const LicensesMultiselect = ({
       className="bg-background"
       defaultOptions={defaultOptions}
       disabled={disabled}
+      hasMore={data?.licenses.length === pageSize}
       loading={isLoading}
       options={options}
       placeholder={t('general.select_licenses')}
       searchValue={searchQuery}
       value={value}
+      onLoadMore={handleLoadMore}
       onSearch={setSearchQuery}
       onValueChange={handleValueChange}
     />

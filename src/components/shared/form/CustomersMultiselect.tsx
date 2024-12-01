@@ -1,9 +1,12 @@
-import { ICustomersGetResponse } from '@/app/api/(dashboard)/customers/route';
+import {
+  ICustomersGetResponse,
+  ICustomersGetSuccessResponse,
+} from '@/app/api/(dashboard)/customers/route';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { TeamContext } from '@/providers/TeamProvider';
 import { Customer } from '@prisma/client';
 import { useTranslations } from 'next-intl';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 
@@ -33,6 +36,11 @@ export const CustomersMultiselect = ({
   const teamCtx = useContext(TeamContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  const [allCustomers, setAllCustomers] = useState<
+    ICustomersGetSuccessResponse['customers']
+  >([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,15 +51,39 @@ export const CustomersMultiselect = ({
 
   const { data, isLoading, error } = useSWR<ICustomersGetResponse>(
     teamCtx.selectedTeam
-      ? ['/api/customers', teamCtx.selectedTeam, debouncedSearchQuery]
+      ? ['/api/customers', teamCtx.selectedTeam, debouncedSearchQuery, page]
       : null,
     ([url]) =>
       fetchCustomers(
-        `${url}?pageSize=25${
+        `${url}?pageSize=${pageSize}${
           debouncedSearchQuery ? `&search=${debouncedSearchQuery}` : ''
-        }`,
+        }&page=${page}`,
       ),
   );
+
+  useEffect(() => {
+    setAllCustomers([]);
+    setPage(1);
+  }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (!data || 'message' in data) {
+      if (data && 'message' in data) {
+        toast.error(data.message || t('general.server_error'));
+      }
+      return;
+    }
+
+    setAllCustomers((prev) => {
+      const newCustomers = [...prev];
+      data.customers.forEach((customer) => {
+        if (!newCustomers.find((c) => c.id === customer.id)) {
+          newCustomers.push(customer);
+        }
+      });
+      return newCustomers;
+    });
+  }, [data, t]);
 
   const defaultOptions = useMemo(
     () =>
@@ -62,14 +94,20 @@ export const CustomersMultiselect = ({
     [selectedCustomers],
   );
 
-  const options = useMemo(() => {
-    if (!data || 'message' in data) return [];
+  const options = useMemo(
+    () =>
+      allCustomers.map((customer) => ({
+        label: customer.email,
+        value: customer.id,
+      })),
+    [allCustomers],
+  );
 
-    return data.customers.map((customer) => ({
-      label: customer.email,
-      value: customer.id,
-    }));
-  }, [data]);
+  const handleLoadMore = useCallback(() => {
+    if (data?.customers.length === pageSize) {
+      setPage((prev) => prev + 1);
+    }
+  }, [data, pageSize]);
 
   const handleValueChange = (newValue: string[], isClear?: boolean) => {
     if (isClear) {
@@ -93,11 +131,13 @@ export const CustomersMultiselect = ({
     <MultiSelect
       className="bg-background"
       defaultOptions={defaultOptions}
+      hasMore={data?.customers.length === pageSize}
       loading={isLoading}
       options={options}
       placeholder={t('general.select_customers')}
       searchValue={searchQuery}
       value={value}
+      onLoadMore={handleLoadMore}
       onSearch={setSearchQuery}
       onValueChange={handleValueChange}
     />
