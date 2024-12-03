@@ -61,7 +61,11 @@ export const ReleasesActionDropdown = ({
       <DropdownMenuContent align="end" className="font-medium" forceMount>
         <DropdownMenuItem
           className="hover:cursor-pointer"
-          disabled={release.latest || release.status !== 'PUBLISHED'}
+          disabled={Boolean(
+            release.latest ||
+              release.status !== 'PUBLISHED' ||
+              release.allowedLicenses.length,
+          )}
           onClick={(e) => {
             e.stopPropagation();
             handleLatestRelease();

@@ -66,7 +66,11 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              releases: true,
+              releases: {
+                include: {
+                  allowedLicenses: true,
+                },
+              },
             },
           },
         },
@@ -108,6 +112,15 @@ export async function POST(
       return NextResponse.json(
         {
           message: t('validation.latest_release_must_be_published'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (release.allowedLicenses.length) {
+      return NextResponse.json(
+        {
+          message: t('validation.latest_release_not_allowed_with_licenses'),
         },
         { status: HttpStatus.BAD_REQUEST },
       );
