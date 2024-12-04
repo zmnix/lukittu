@@ -15,8 +15,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.701.0",
-    "@aws-sdk/lib-storage": "^3.701.0",
+    "@aws-sdk/client-s3": "^3.705.0",
+    "@aws-sdk/lib-storage": "^3.705.0",
     "@hookform/resolvers": "^3.9.1",
     "@marsidev/react-turnstile": "^0.7.2",
     "@prisma/client": "^5.22.0",
@@ -40,7 +40,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@radix-ui/react-visually-hidden": "^1.1.0",
     "@react-email/components": "0.0.25",
-    "@sentry/nextjs": "^8.41.0",
+    "@sentry/nextjs": "^8.42.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
@@ -96,11 +96,11 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-mock-extended": "2.0.4",
     "postcss": "^8.4.49",
-    "prettier": "^3.4.1",
+    "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "prisma": "^5.22.0",
     "react-email": "3.0.1",
-    "tailwindcss": "^3.4.15",
+    "tailwindcss": "^3.4.16",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   },
