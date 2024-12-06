@@ -87,6 +87,15 @@ export async function GET(
       });
     }
 
+    const {
+      licenseKey,
+      deviceIdentifier,
+      customerId,
+      productId,
+      version,
+      sessionKey,
+    } = validated.data;
+
     loggedResponseBase.query = validated.data;
 
     const ipAddress = await getIp();
@@ -97,6 +106,33 @@ export async function GET(
       const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
       if (isLimited) {
+        return loggedResponse({
+          ...loggedResponseBase,
+          status: RequestStatus.RATE_LIMIT,
+          response: {
+            data: null,
+            result: {
+              timestamp: new Date(),
+              valid: false,
+              details: 'Rate limited',
+            },
+          },
+          httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+        });
+      }
+    }
+
+    if (licenseKey) {
+      // Rate limit license key requests
+      const licenseKeyRatelimitKey = `license-key:${teamId}:${licenseKey}`;
+
+      const isLicenseKeyLimited = await isRateLimited(
+        licenseKeyRatelimitKey,
+        5,
+        60,
+      ); // 5 requests per 1 minute
+
+      if (isLicenseKeyLimited) {
         return loggedResponse({
           ...loggedResponseBase,
           status: RequestStatus.RATE_LIMIT,
@@ -143,15 +179,6 @@ export async function GET(
         httpStatus: HttpStatus.NOT_FOUND,
       });
     }
-
-    const {
-      licenseKey,
-      deviceIdentifier,
-      customerId,
-      productId,
-      version,
-      sessionKey,
-    } = validated.data;
 
     const privateKey = team.keyPair?.privateKey!;
 
