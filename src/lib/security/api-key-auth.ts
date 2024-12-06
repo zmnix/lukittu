@@ -32,6 +32,7 @@ export const verifyApiAuthorization = async (
     const team = await prisma.team.findUnique({
       where: {
         id: teamId,
+        deletedAt: null,
       },
       include: {
         apiKeys: {

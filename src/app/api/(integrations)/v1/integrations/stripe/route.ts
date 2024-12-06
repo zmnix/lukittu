@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
     const team = await prisma.team.findUnique({
       where: {
         id: teamId,
+        deletedAt: null,
       },
       include: {
         stripeIntegration: true,

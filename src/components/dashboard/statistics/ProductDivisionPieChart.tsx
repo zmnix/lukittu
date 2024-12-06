@@ -107,7 +107,7 @@ export function ProductDivisionPieChart() {
     (acc, { name, id }, index) => {
       acc[id] = {
         label: name,
-        color: `hsl(var(--chart-${index + 1}))`,
+        color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
       return acc;
     },

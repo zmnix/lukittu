@@ -76,6 +76,7 @@ export async function GET(
     const team = await prisma.team.findUnique({
       where: {
         id: selectedTeam,
+        deletedAt: null,
       },
       include: {
         limits: true,

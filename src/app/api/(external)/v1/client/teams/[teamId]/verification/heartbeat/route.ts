@@ -98,7 +98,7 @@ export async function POST(
     }
 
     const team = await prisma.team.findUnique({
-      where: { id: teamId },
+      where: { id: teamId, deletedAt: null },
       include: {
         keyPair: {
           omit: {
