@@ -185,6 +185,7 @@ export default function SetCustomerModal() {
                   <FormControl>
                     <Input
                       placeholder="support@lukittu.com"
+                      type="email"
                       {...field}
                       required
                     />

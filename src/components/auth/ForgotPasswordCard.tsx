@@ -125,7 +125,11 @@ export default function ForgotPasswordCard() {
                   <FormItem>
                     <FormLabel>{t('general.email')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="support@lukittu.com" {...field} />
+                      <Input
+                        placeholder="support@lukittu.com"
+                        type="email"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

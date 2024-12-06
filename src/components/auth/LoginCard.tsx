@@ -179,7 +179,13 @@ export default function LoginCard() {
                   <FormItem>
                     <FormLabel>{t('general.email')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="support@lukittu.com" {...field} />
+                      <Input
+                        autoComplete="email"
+                        id="email"
+                        placeholder="support@lukittu.com"
+                        type="email"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -204,6 +210,7 @@ export default function LoginCard() {
                     <FormControl>
                       <div className="relative">
                         <Input
+                          autoComplete="current-password"
                           id="password"
                           placeholder="********"
                           type={showPassword ? 'text' : 'password'}
