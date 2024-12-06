@@ -180,6 +180,18 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
               )}
             </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">
+              {t('dashboard.licenses.concurrent_users')}
+            </h3>
+            <div className="text-sm text-muted-foreground">
+              {license ? (
+                (license.seats ?? <Infinity className="h-4 w-4 shrink-0" />)
+              ) : (
+                <Skeleton className="h-4 w-full" />
+              )}
+            </div>
+          </div>
           {showMore && (
             <>
               <div className="flex flex-col gap-2">
