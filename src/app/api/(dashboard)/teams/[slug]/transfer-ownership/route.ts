@@ -9,6 +9,7 @@ import { HttpStatus } from '@/types/http-status';
 import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
 type ITeamsTransferOwnershipRequest = {
   newOwnerId: string;
@@ -59,9 +60,11 @@ export async function POST(
           teams: {
             where: {
               deletedAt: null,
+              id: teamId,
             },
             include: {
               users: true,
+              subscription: true,
             },
           },
         },
@@ -97,13 +100,47 @@ export async function POST(
       );
     }
 
-    if (!team.users.find((u) => u.id === newOwnerId)) {
+    const newOwner = team.users.find((u) => u.id === newOwnerId);
+    if (!newOwner) {
       return NextResponse.json(
         {
           message: t('validation.user_not_in_team'),
         },
         { status: HttpStatus.BAD_REQUEST },
       );
+    }
+
+    // If the team has a subscription, we need to detach all payment methods from the old owner
+    // and update the customer email to the new owner's email. This is to ensure that the new owner
+    // can manage the subscription. We also need to remove the default payment method from the customer.
+    if (team.subscription) {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: '2024-11-20.acacia',
+      });
+
+      const customer = await stripe.customers.retrieve(
+        team.subscription.stripeCustomerId,
+      );
+
+      if (!customer.deleted) {
+        const paymentMethods = await stripe.paymentMethods.list({
+          customer: customer.id,
+        });
+
+        for (const paymentMethod of paymentMethods.data) {
+          await stripe.paymentMethods.detach(paymentMethod.id);
+        }
+
+        await stripe.customers.update(customer.id, {
+          email: newOwner.email,
+          address: null,
+          name: newOwner.fullName,
+          invoice_settings: {
+            default_payment_method: undefined,
+          },
+          default_source: undefined,
+        });
+      }
     }
 
     await prisma.team.update({

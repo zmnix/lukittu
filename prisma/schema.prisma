@@ -74,6 +74,22 @@ model Team {
   deletedAt         DateTime?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  subscription      Subscription?
+}
+
+model Subscription {
+  id                   String    @id @default(uuid())
+  teamId               String    @unique
+  team                 Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId String    @unique
+  stripeCustomerId     String    @unique
+  status               String    @default("active")
+  canceledAt           DateTime?
+  billingPeriodEndsAt  DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([teamId])
 }
 
 model StripeIntegration {
