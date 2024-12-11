@@ -57,15 +57,17 @@ export default function TeamValidationSettings({
     },
   });
 
+  const { reset, handleSubmit, control, setValue } = form;
+
   useEffect(() => {
-    form.reset({
+    reset({
       strictCustomers: team?.settings.strictCustomers ?? false,
       strictProducts: team?.settings.strictProducts ?? false,
       strictReleases: team?.settings.strictReleases ?? false,
       deviceTimeout: team?.settings.deviceTimeout ?? 60,
       ipLimitPeriod: team?.settings.ipLimitPeriod ?? 'DAY',
     });
-  }, [form, team]);
+  }, [team, reset]);
 
   const onSubmit = async (payload: SetTeamValidationSettingsSchema) => {
     setLoading(true);
@@ -105,10 +107,10 @@ export default function TeamValidationSettings({
         <Form {...form}>
           <form
             className="space-y-2 max-md:px-2"
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit)}
           >
             <FormField
-              control={form.control}
+              control={control}
               name="strictCustomers"
               render={({ field }) => (
                 <FormItem>
@@ -134,7 +136,7 @@ export default function TeamValidationSettings({
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="strictProducts"
               render={({ field }) => (
                 <FormItem>
@@ -160,7 +162,7 @@ export default function TeamValidationSettings({
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="strictReleases"
               render={({ field }) => (
                 <FormItem>
@@ -186,7 +188,7 @@ export default function TeamValidationSettings({
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="ipLimitPeriod"
               render={({ field }) => (
                 <FormItem>
@@ -215,7 +217,7 @@ export default function TeamValidationSettings({
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="deviceTimeout"
               render={({ field }) => (
                 <FormItem>
@@ -234,7 +236,7 @@ export default function TeamValidationSettings({
                         if (!e.target.value || e.target.value === '0') {
                           e.target.value = '1';
                         }
-                        form.setValue('deviceTimeout', +e.target.value);
+                        setValue('deviceTimeout', +e.target.value);
                       }}
                     />
                   </FormControl>
@@ -252,7 +254,7 @@ export default function TeamValidationSettings({
           size="sm"
           type="submit"
           variant="secondary"
-          onClick={form.handleSubmit(onSubmit)}
+          onClick={handleSubmit(onSubmit)}
         >
           <Save className="mr-2 h-4 w-4" />
           {t('general.save')}

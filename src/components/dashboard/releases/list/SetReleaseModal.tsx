@@ -65,6 +65,17 @@ export default function SetReleaseModal() {
     },
   });
 
+  const {
+    setValue,
+    handleSubmit,
+    watch,
+    formState,
+    setError,
+    reset,
+    control,
+    getValues,
+  } = form;
+
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -72,16 +83,16 @@ export default function SetReleaseModal() {
 
   useEffect(() => {
     if (ctx.releaseToEdit) {
-      form.setValue('keepExistingFile', ctx.releaseToEdit.file !== null);
-      form.setValue('version', ctx.releaseToEdit.version);
-      form.setValue('status', ctx.releaseToEdit.status);
-      form.setValue('productId', ctx.releaseToEdit.productId);
-      form.setValue('setAsLatest', ctx.releaseToEdit.latest || false);
-      form.setValue(
+      setValue('keepExistingFile', ctx.releaseToEdit.file !== null);
+      setValue('version', ctx.releaseToEdit.version);
+      setValue('status', ctx.releaseToEdit.status);
+      setValue('productId', ctx.releaseToEdit.productId);
+      setValue('setAsLatest', ctx.releaseToEdit.latest || false);
+      setValue(
         'licenseIds',
         ctx.releaseToEdit.allowedLicenses.map((l) => l.id),
       );
-      form.setValue(
+      setValue(
         'metadata',
         (
           ctx.releaseToEdit.metadata as {
@@ -96,11 +107,11 @@ export default function SetReleaseModal() {
         })),
       );
     }
-  }, [ctx.releaseToEdit, form]);
+  }, [ctx.releaseToEdit, setValue]);
 
-  const keepExistingFile = form.watch('keepExistingFile');
-  const releaseStatus = form.watch('status');
-  const selectedLicenses = form.watch('licenseIds');
+  const keepExistingFile = watch('keepExistingFile');
+  const releaseStatus = watch('status');
+  const selectedLicenses = watch('licenseIds');
   const hasLicenseRestrictions = selectedLicenses.length > 0;
 
   const handleReleaseCreate = async (payload: SetReleaseSchema) => {
@@ -203,7 +214,7 @@ export default function SetReleaseModal() {
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetReleaseSchema, {
+          return setError(res.field as keyof SetReleaseSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -231,7 +242,7 @@ export default function SetReleaseModal() {
 
   const handleOpenChange = (open: boolean) => {
     ctx.setReleaseModalOpen(open);
-    form.reset();
+    reset();
     setFile(null);
     if (!open) {
       ctx.setReleaseToEdit(null);
@@ -256,13 +267,13 @@ export default function SetReleaseModal() {
           <Form {...form}>
             <form
               className="space-y-4 max-md:px-2"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
             >
               {!ctx.productId && (
                 <FormItem>
                   <Label
                     className={
-                      form.formState.errors.productId ? 'text-destructive' : ''
+                      formState.errors.productId ? 'text-destructive' : ''
                     }
                   >
                     {t('general.product')} *
@@ -270,20 +281,20 @@ export default function SetReleaseModal() {
                   <ProductSelector
                     initialValue={ctx.releaseToEdit?.productId}
                     onChange={(productId) =>
-                      form.setValue('productId', productId ?? '', {
+                      setValue('productId', productId ?? '', {
                         shouldValidate: true,
                       })
                     }
                   />
-                  {form.formState.errors.productId && (
+                  {formState.errors.productId && (
                     <FormMessage>
-                      {form.formState.errors.productId.message}
+                      {formState.errors.productId.message}
                     </FormMessage>
                   )}
                 </FormItem>
               )}
               <FormField
-                control={form.control}
+                control={control}
                 name="version"
                 render={({ field }) => (
                   <FormItem>
@@ -296,7 +307,7 @@ export default function SetReleaseModal() {
                 )}
               />
               <FormField
-                control={form.control}
+                control={control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
@@ -330,7 +341,7 @@ export default function SetReleaseModal() {
               />
               {releaseStatus === 'PUBLISHED' && (
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="setAsLatest"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
@@ -428,7 +439,7 @@ export default function SetReleaseModal() {
                       variant="ghost"
                       onClick={() => {
                         setFile(null);
-                        form.setValue('keepExistingFile', false);
+                        setValue('keepExistingFile', false);
                       }}
                     >
                       <X className="h-4 w-4" />
@@ -437,20 +448,20 @@ export default function SetReleaseModal() {
                 )}
               </FormItem>
               <FormField
-                control={form.control}
+                control={control}
                 name="licenseIds"
                 render={() => (
                   <FormItem>
                     <FormLabel>{t('general.restrict_to_licenses')}</FormLabel>
                     <FormControl>
                       <LicensesMultiselect
-                        disabled={form.getValues('setAsLatest')}
+                        disabled={getValues('setAsLatest')}
                         selectedLicenses={ctx.releaseToEdit?.allowedLicenses}
-                        value={form.watch('licenseIds')}
+                        value={watch('licenseIds')}
                         onChange={(licenseIds) => {
-                          form.setValue('licenseIds', licenseIds);
+                          setValue('licenseIds', licenseIds);
                           if (licenseIds.length > 0) {
-                            form.setValue('setAsLatest', false);
+                            setValue('setAsLatest', false);
                           }
                         }}
                       />
@@ -484,7 +495,7 @@ export default function SetReleaseModal() {
                 className="w-full"
                 pending={loading}
                 type="submit"
-                onClick={() => form.handleSubmit(onSubmit)()}
+                onClick={() => handleSubmit(onSubmit)()}
               >
                 {ctx.releaseToEdit
                   ? t('dashboard.releases.update_release')

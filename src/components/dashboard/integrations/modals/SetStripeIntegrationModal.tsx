@@ -61,21 +61,23 @@ export default function SetStripeIntegrationModal({
     },
   });
 
+  const { setValue, handleSubmit, reset, control } = form;
+
   useEffect(() => {
     if (stripeIntegration) {
-      form.setValue('active', stripeIntegration.active);
-      form.setValue('apiKey', stripeIntegration.apiKey);
-      form.setValue('webhookSecret', stripeIntegration.webhookSecret);
+      setValue('active', stripeIntegration.active);
+      setValue('apiKey', stripeIntegration.apiKey);
+      setValue('webhookSecret', stripeIntegration.webhookSecret);
     } else {
-      form.setValue('active', true);
-      form.setValue('apiKey', '');
-      form.setValue('webhookSecret', '');
+      setValue('active', true);
+      setValue('apiKey', '');
+      setValue('webhookSecret', '');
     }
-  }, [stripeIntegration, form, open]);
+  }, [stripeIntegration, open, setValue]);
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
-    form.reset();
+    reset();
   };
 
   const handleStripeIntegrationSet = async (
@@ -158,10 +160,10 @@ export default function SetStripeIntegrationModal({
         <Form {...form}>
           <form
             className="space-y-4 max-md:px-2"
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit)}
           >
             <FormField
-              control={form.control}
+              control={control}
               name="apiKey"
               render={({ field }) => (
                 <FormItem>
@@ -194,7 +196,7 @@ export default function SetStripeIntegrationModal({
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="webhookSecret"
               render={({ field }) => (
                 <FormItem>
@@ -229,7 +231,7 @@ export default function SetStripeIntegrationModal({
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="active"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
@@ -276,7 +278,7 @@ export default function SetStripeIntegrationModal({
               className="w-full"
               pending={submitting}
               type="submit"
-              onClick={() => form.handleSubmit(onSubmit)()}
+              onClick={() => handleSubmit(onSubmit)()}
             >
               {Boolean(stripeIntegration)
                 ? t('general.edit')

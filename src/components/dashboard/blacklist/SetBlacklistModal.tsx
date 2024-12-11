@@ -54,13 +54,24 @@ export default function SetBlacklistModal() {
     },
   });
 
-  const type = form.watch('type');
+  const {
+    setValue,
+    handleSubmit,
+    watch,
+    formState,
+    setError,
+    reset,
+    getValues,
+    control,
+  } = form;
+
+  const type = watch('type');
 
   useEffect(() => {
     if (ctx.blacklistToEdit) {
-      form.setValue('type', ctx.blacklistToEdit.type);
-      form.setValue('value', ctx.blacklistToEdit.value);
-      form.setValue(
+      setValue('type', ctx.blacklistToEdit.type);
+      setValue('value', ctx.blacklistToEdit.value);
+      setValue(
         'metadata',
         (
           ctx.blacklistToEdit.metadata as {
@@ -75,7 +86,7 @@ export default function SetBlacklistModal() {
         })),
       );
     }
-  }, [ctx.blacklistToEdit, form]);
+  }, [ctx.blacklistToEdit, setValue]);
 
   const handleBlacklistCreate = async (payload: SetBlacklistSchema) => {
     const response = await fetch('/api/blacklist', {
@@ -114,7 +125,7 @@ export default function SetBlacklistModal() {
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetBlacklistSchema, {
+          return setError(res.field as keyof SetBlacklistSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -140,7 +151,7 @@ export default function SetBlacklistModal() {
 
   const handleOpenChange = (open: boolean) => {
     ctx.setBlacklistModalOpen(open);
-    form.reset();
+    reset();
     if (!open) {
       ctx.setBlacklistToEdit(null);
     }
@@ -164,10 +175,10 @@ export default function SetBlacklistModal() {
           <Form {...form}>
             <form
               className="space-y-4 max-md:px-2"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
             >
               <FormField
-                control={form.control}
+                control={control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
@@ -200,18 +211,18 @@ export default function SetBlacklistModal() {
                 <div className="space-y-2">
                   <FormLabel>{t('general.value')}</FormLabel>
                   <CountrySelector
-                    value={form.getValues('value')}
-                    onChange={(value) => form.setValue('value', value)}
+                    value={getValues('value')}
+                    onChange={(value) => setValue('value', value)}
                   />
-                  {form.formState.errors.value && (
+                  {formState.errors.value && (
                     <div className="text-[0.8rem] text-destructive">
-                      {form.formState.errors.value.message}
+                      {formState.errors.value.message}
                     </div>
                   )}
                 </div>
               ) : (
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="value"
                   render={({ field }) => (
                     <FormItem>
@@ -244,7 +255,7 @@ export default function SetBlacklistModal() {
                 className="w-full"
                 pending={loading}
                 type="submit"
-                onClick={() => form.handleSubmit(onSubmit)()}
+                onClick={() => handleSubmit(onSubmit)()}
               >
                 {ctx.blacklistToEdit
                   ? t('dashboard.blacklist.edit_blacklist')

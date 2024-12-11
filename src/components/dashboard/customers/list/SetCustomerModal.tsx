@@ -55,23 +55,22 @@ export default function SetCustomerModal() {
     },
   });
 
+  const { setValue, handleSubmit, reset, setError, control } = form;
+
   useEffect(() => {
     if (ctx.customerToEdit) {
-      form.setValue('email', ctx.customerToEdit.email);
-      form.setValue('fullName', ctx.customerToEdit.fullName);
-      form.setValue('address.city', ctx.customerToEdit.address?.city ?? null);
-      form.setValue(
-        'address.country',
-        ctx.customerToEdit.address?.country ?? null,
-      );
-      form.setValue('address.line1', ctx.customerToEdit.address?.line1 ?? null);
-      form.setValue('address.line2', ctx.customerToEdit.address?.line2 ?? null);
-      form.setValue(
+      setValue('email', ctx.customerToEdit.email);
+      setValue('fullName', ctx.customerToEdit.fullName);
+      setValue('address.city', ctx.customerToEdit.address?.city ?? null);
+      setValue('address.country', ctx.customerToEdit.address?.country ?? null);
+      setValue('address.line1', ctx.customerToEdit.address?.line1 ?? null);
+      setValue('address.line2', ctx.customerToEdit.address?.line2 ?? null);
+      setValue(
         'address.postalCode',
         ctx.customerToEdit.address?.postalCode ?? null,
       );
-      form.setValue('address.state', ctx.customerToEdit.address?.state ?? null);
-      form.setValue(
+      setValue('address.state', ctx.customerToEdit.address?.state ?? null);
+      setValue(
         'metadata',
         (
           ctx.customerToEdit.metadata as {
@@ -86,7 +85,7 @@ export default function SetCustomerModal() {
         })),
       );
     }
-  }, [ctx.customerToEdit, form]);
+  }, [ctx.customerToEdit, setValue]);
 
   const handleCustomerCreate = async (payload: SetCustomerSchema) => {
     const response = await fetch('/api/customers', {
@@ -125,7 +124,7 @@ export default function SetCustomerModal() {
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetCustomerSchema, {
+          return setError(res.field as keyof SetCustomerSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -151,7 +150,7 @@ export default function SetCustomerModal() {
 
   const handleOpenChange = (open: boolean) => {
     ctx.setCustomerModalOpen(open);
-    form.reset();
+    reset();
     if (!open) {
       ctx.setCustomerToEdit(null);
     }
@@ -174,10 +173,10 @@ export default function SetCustomerModal() {
         <Form {...form}>
           <form
             className="space-y-4 max-md:px-2"
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit)}
           >
             <FormField
-              control={form.control}
+              control={control}
               name="email"
               render={({ field }) => (
                 <FormItem>
@@ -195,7 +194,7 @@ export default function SetCustomerModal() {
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
               name="fullName"
               render={({ field }) => (
                 <FormItem>
@@ -206,9 +205,9 @@ export default function SetCustomerModal() {
                       value={field.value ?? ''}
                       onChange={(e) => {
                         if (!e.target.value) {
-                          return form.setValue('fullName', null);
+                          return setValue('fullName', null);
                         }
-                        return form.setValue('fullName', e.target.value);
+                        return setValue('fullName', e.target.value);
                       }}
                     />
                   </FormControl>
@@ -220,7 +219,7 @@ export default function SetCustomerModal() {
               <h3 className="text-lg font-medium">{t('general.address')}</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="address.line1"
                   render={({ field }) => (
                     <FormItem>
@@ -231,12 +230,9 @@ export default function SetCustomerModal() {
                           value={field.value ?? ''}
                           onChange={(e) => {
                             if (!e.target.value) {
-                              return form.setValue('address.line1', null);
+                              return setValue('address.line1', null);
                             }
-                            return form.setValue(
-                              'address.line1',
-                              e.target.value,
-                            );
+                            return setValue('address.line1', e.target.value);
                           }}
                         />
                       </FormControl>
@@ -245,7 +241,7 @@ export default function SetCustomerModal() {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="address.line2"
                   render={({ field }) => (
                     <FormItem>
@@ -256,12 +252,9 @@ export default function SetCustomerModal() {
                           value={field.value ?? ''}
                           onChange={(e) => {
                             if (!e.target.value) {
-                              return form.setValue('address.line2', null);
+                              return setValue('address.line2', null);
                             }
-                            return form.setValue(
-                              'address.line2',
-                              e.target.value,
-                            );
+                            return setValue('address.line2', e.target.value);
                           }}
                         />
                       </FormControl>
@@ -270,7 +263,7 @@ export default function SetCustomerModal() {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="address.city"
                   render={({ field }) => (
                     <FormItem>
@@ -281,12 +274,9 @@ export default function SetCustomerModal() {
                           value={field.value ?? ''}
                           onChange={(e) => {
                             if (!e.target.value) {
-                              return form.setValue('address.city', null);
+                              return setValue('address.city', null);
                             }
-                            return form.setValue(
-                              'address.city',
-                              e.target.value,
-                            );
+                            return setValue('address.city', e.target.value);
                           }}
                         />
                       </FormControl>
@@ -295,7 +285,7 @@ export default function SetCustomerModal() {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="address.state"
                   render={({ field }) => (
                     <FormItem>
@@ -306,12 +296,9 @@ export default function SetCustomerModal() {
                           value={field.value ?? ''}
                           onChange={(e) => {
                             if (!e.target.value) {
-                              return form.setValue('address.state', null);
+                              return setValue('address.state', null);
                             }
-                            return form.setValue(
-                              'address.state',
-                              e.target.value,
-                            );
+                            return setValue('address.state', e.target.value);
                           }}
                         />
                       </FormControl>
@@ -320,7 +307,7 @@ export default function SetCustomerModal() {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="address.postalCode"
                   render={({ field }) => (
                     <FormItem>
@@ -331,9 +318,9 @@ export default function SetCustomerModal() {
                           value={field.value ?? ''}
                           onChange={(e) => {
                             if (!e.target.value) {
-                              return form.setValue('address.postalCode', null);
+                              return setValue('address.postalCode', null);
                             }
-                            return form.setValue(
+                            return setValue(
                               'address.postalCode',
                               e.target.value,
                             );
@@ -345,7 +332,7 @@ export default function SetCustomerModal() {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="address.country"
                   render={({ field }) => (
                     <FormItem>
@@ -356,12 +343,9 @@ export default function SetCustomerModal() {
                           value={field.value ?? ''}
                           onChange={(e) => {
                             if (!e.target.value) {
-                              return form.setValue('address.country', null);
+                              return setValue('address.country', null);
                             }
-                            return form.setValue(
-                              'address.country',
-                              e.target.value,
-                            );
+                            return setValue('address.country', e.target.value);
                           }}
                         />
                       </FormControl>
@@ -391,7 +375,7 @@ export default function SetCustomerModal() {
               className="w-full"
               pending={loading}
               type="submit"
-              onClick={() => form.handleSubmit(onSubmit)()}
+              onClick={() => handleSubmit(onSubmit)()}
             >
               {t('dashboard.customers.add_customer')}
             </LoadingButton>

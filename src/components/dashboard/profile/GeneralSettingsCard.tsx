@@ -51,15 +51,17 @@ export default function GeneralSettingsCard() {
     },
   });
 
+  const { handleSubmit, reset, setError, control, formState } = form;
+
   useEffect(() => {
     if (user) {
-      form.reset({ fullName: user.fullName });
+      reset({ fullName: user.fullName });
     }
-  }, [form, user]);
+  }, [user, reset]);
 
   const handleCancel = () => {
     setEdit(false);
-    form.reset();
+    reset();
   };
 
   const handleProfileUpdate = async (payload: UpdateProfileSchema) => {
@@ -81,7 +83,7 @@ export default function GeneralSettingsCard() {
     try {
       const res = await handleProfileUpdate(data);
       if ('message' in res) {
-        return form.setError(res.field as keyof UpdateProfileSchema, {
+        return setError(res.field as keyof UpdateProfileSchema, {
           type: 'manual',
           message: res.message,
         });
@@ -191,7 +193,7 @@ export default function GeneralSettingsCard() {
     input.click();
   };
 
-  const isTouched = form.formState.isDirty || form.formState.isSubmitting;
+  const isTouched = formState.isDirty || formState.isSubmitting;
 
   return (
     <>
@@ -209,7 +211,7 @@ export default function GeneralSettingsCard() {
           <Form {...form}>
             <form
               className="flex max-w-md flex-1 flex-col gap-6"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
             >
               <div>
                 <div className="relative">
@@ -270,7 +272,7 @@ export default function GeneralSettingsCard() {
                 </div>
                 {edit ? (
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="fullName"
                     render={({ field }) => (
                       <FormItem className="w-2/3 max-sm:w-full">

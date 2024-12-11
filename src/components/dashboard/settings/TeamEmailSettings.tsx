@@ -58,13 +58,15 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
     },
   });
 
-  const emailMessage = form.watch('emailMessage');
+  const { handleSubmit, reset, control, watch } = form;
+
+  const emailMessage = watch('emailMessage');
 
   useEffect(() => {
-    form.reset({
+    reset({
       emailMessage: team?.settings.emailMessage ?? '',
     });
-  }, [form, team]);
+  }, [team, reset]);
 
   const onSubmit = async (payload: SetTeamEmailSettingsSchema) => {
     setLoading(true);
@@ -96,7 +98,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
     if (team) {
       setImageUrl(team.settings.emailImageUrl ?? null);
     }
-  }, [team, form]);
+  }, [team]);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -180,7 +182,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
         <Form {...form}>
           <form
             className="space-y-2 max-md:px-2"
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit)}
           >
             <div className="relative">
               <div className="mb-1">
@@ -247,7 +249,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
               </DropdownMenu>
             </div>
             <FormField
-              control={form.control}
+              control={control}
               name="emailMessage"
               render={({ field }) => (
                 <FormItem>
@@ -280,7 +282,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
           size="sm"
           type="submit"
           variant="secondary"
-          onClick={form.handleSubmit(onSubmit)}
+          onClick={handleSubmit(onSubmit)}
         >
           <Save className="mr-2 h-4 w-4" />
           {t('general.save')}

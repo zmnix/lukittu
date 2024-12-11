@@ -46,11 +46,13 @@ export default function SetProductModal() {
     },
   });
 
+  const { setValue, handleSubmit, reset, setError, control } = form;
+
   useEffect(() => {
     if (ctx.productToEdit) {
-      form.setValue('name', ctx.productToEdit.name);
-      form.setValue('url', ctx.productToEdit.url ?? '');
-      form.setValue(
+      setValue('name', ctx.productToEdit.name);
+      setValue('url', ctx.productToEdit.url ?? '');
+      setValue(
         'metadata',
         (
           ctx.productToEdit.metadata as {
@@ -65,7 +67,7 @@ export default function SetProductModal() {
         })),
       );
     }
-  }, [ctx.productToEdit, form]);
+  }, [ctx.productToEdit, setValue]);
 
   const handleProductCreate = async (payload: SetProductSchema) => {
     const response = await fetch('/api/products', {
@@ -104,7 +106,7 @@ export default function SetProductModal() {
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetProductSchema, {
+          return setError(res.field as keyof SetProductSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -130,7 +132,7 @@ export default function SetProductModal() {
 
   const handleOpenChange = (open: boolean) => {
     ctx.setProductModalOpen(open);
-    form.reset();
+    reset();
     if (!open) {
       ctx.setProductToEdit(null);
     }
@@ -154,10 +156,10 @@ export default function SetProductModal() {
           <Form {...form}>
             <form
               className="space-y-4 max-md:px-2"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
             >
               <FormField
-                control={form.control}
+                control={control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
@@ -176,7 +178,7 @@ export default function SetProductModal() {
                 )}
               />
               <FormField
-                control={form.control}
+                control={control}
                 name="url"
                 render={({ field }) => (
                   <FormItem>
@@ -208,7 +210,7 @@ export default function SetProductModal() {
                 className="w-full"
                 pending={loading}
                 type="submit"
-                onClick={() => form.handleSubmit(onSubmit)()}
+                onClick={() => handleSubmit(onSubmit)()}
               >
                 {ctx.productToEdit
                   ? t('dashboard.products.edit_product')

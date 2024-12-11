@@ -53,6 +53,8 @@ export default function SetTeamModal({
     },
   });
 
+  const { reset, handleSubmit, setError, control } = form;
+
   const handleTeamCreate = async (payload: SetTeamSchema) => {
     const response = await fetch('/api/teams', {
       method: 'POST',
@@ -84,7 +86,7 @@ export default function SetTeamModal({
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetTeamSchema, {
+          return setError(res.field as keyof SetTeamSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -131,14 +133,14 @@ export default function SetTeamModal({
   };
 
   useEffect(() => {
-    form.reset({
+    reset({
       name: teamToEdit?.name || '',
     });
-  }, [form, teamToEdit?.name, teamToEdit?.id]);
+  }, [teamToEdit?.name, reset]);
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
-    form.reset();
+    reset();
   };
 
   return (
@@ -155,9 +157,9 @@ export default function SetTeamModal({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
         <Form {...form}>
-          <form className="max-md:px-2" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="max-md:px-2" onSubmit={handleSubmit(onSubmit)}>
             <FormField
-              control={form.control}
+              control={control}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -192,7 +194,7 @@ export default function SetTeamModal({
               className="w-full"
               pending={loading}
               type="submit"
-              onClick={() => form.handleSubmit(onSubmit)()}
+              onClick={() => handleSubmit(onSubmit)()}
             >
               {Boolean(teamToEdit) ? t('general.edit') : t('general.create')}
             </LoadingButton>

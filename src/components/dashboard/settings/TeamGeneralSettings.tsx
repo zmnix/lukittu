@@ -63,12 +63,14 @@ export default function TeamGeneralSettings({
     },
   });
 
+  const { handleSubmit, reset, setError, control } = form;
+
   useEffect(() => {
     if (team) {
       setImageUrl(team.imageUrl ?? null);
-      form.reset({ name: team.name });
+      reset({ name: team.name });
     }
-  }, [team, form]);
+  }, [team, reset]);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -177,7 +179,7 @@ export default function TeamGeneralSettings({
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetTeamSchema, {
+          return setError(res.field as keyof SetTeamSchema, {
             type: 'manual',
             message: res.message,
           });
@@ -218,7 +220,7 @@ export default function TeamGeneralSettings({
         <Form {...form}>
           <form
             className="space-y-2 max-md:px-2"
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit)}
           >
             <div className="relative">
               <div className="mb-1 text-sm font-semibold">
@@ -270,7 +272,7 @@ export default function TeamGeneralSettings({
               </DropdownMenu>
             </div>
             <FormField
-              control={form.control}
+              control={control}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -297,7 +299,7 @@ export default function TeamGeneralSettings({
           size="sm"
           type="submit"
           variant="secondary"
-          onClick={form.handleSubmit(onSubmit)}
+          onClick={handleSubmit(onSubmit)}
         >
           <Save className="mr-2 h-4 w-4" />
           {t('general.save')}

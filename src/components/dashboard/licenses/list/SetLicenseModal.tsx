@@ -95,28 +95,31 @@ export default function SetLicenseModal() {
     },
   });
 
+  const { handleSubmit, setError, reset, setValue, getValues, watch, control } =
+    form;
+
   const expirationType = useWatch({
-    control: form.control,
+    control,
     name: 'expirationType',
     defaultValue: 'NEVER',
   });
 
   useEffect(() => {
     if (ctx.licenseToEdit) {
-      form.setValue('suspended', ctx.licenseToEdit.suspended);
-      form.setValue('licenseKey', ctx.licenseToEdit.licenseKey);
-      form.setValue(
+      setValue('suspended', ctx.licenseToEdit.suspended);
+      setValue('licenseKey', ctx.licenseToEdit.licenseKey);
+      setValue(
         'productIds',
         ctx.licenseToEdit.products.map((p) => p.id),
       );
-      form.setValue(
+      setValue(
         'customerIds',
         ctx.licenseToEdit.customers.map((c) => c.id),
       );
-      form.setValue('expirationType', ctx.licenseToEdit.expirationType);
+      setValue('expirationType', ctx.licenseToEdit.expirationType);
 
       if (ctx.licenseToEdit.expirationType === 'DATE') {
-        form.setValue(
+        setValue(
           'expirationDate',
           ctx.licenseToEdit.expirationDate
             ? new Date(ctx.licenseToEdit.expirationDate)
@@ -125,13 +128,13 @@ export default function SetLicenseModal() {
       }
 
       if (ctx.licenseToEdit.expirationType === 'DURATION') {
-        form.setValue('expirationStart', ctx.licenseToEdit.expirationStart);
-        form.setValue('expirationDays', ctx.licenseToEdit.expirationDays);
+        setValue('expirationStart', ctx.licenseToEdit.expirationStart);
+        setValue('expirationDays', ctx.licenseToEdit.expirationDays);
       }
 
-      form.setValue('seats', ctx.licenseToEdit.seats);
-      form.setValue('ipLimit', ctx.licenseToEdit.ipLimit);
-      form.setValue(
+      setValue('seats', ctx.licenseToEdit.seats);
+      setValue('ipLimit', ctx.licenseToEdit.ipLimit);
+      setValue(
         'metadata',
         (
           ctx.licenseToEdit.metadata as {
@@ -146,17 +149,17 @@ export default function SetLicenseModal() {
         })),
       );
     }
-  }, [ctx.licenseToEdit, form]);
+  }, [ctx.licenseToEdit, setValue]);
 
   useEffect(() => {
     if (ctx.licenseModalOpen && !ctx.licenseToEdit) {
       if (ctx.initialProductIds.length > 0) {
-        form.setValue('productIds', ctx.initialProductIds, {
+        setValue('productIds', ctx.initialProductIds, {
           shouldValidate: true,
         });
       }
       if (ctx.initialCustomerIds.length > 0) {
-        form.setValue('customerIds', ctx.initialCustomerIds, {
+        setValue('customerIds', ctx.initialCustomerIds, {
           shouldValidate: true,
         });
       }
@@ -175,7 +178,7 @@ export default function SetLicenseModal() {
       const response = await fetch('/api/licenses/generate');
       const data = (await response.json()) as ILicensesGenerateResponse;
       const licenseKey = data.licenseKey;
-      form.setValue('licenseKey', licenseKey, { shouldValidate: true });
+      setValue('licenseKey', licenseKey, { shouldValidate: true });
     } catch (error: any) {
       toast.error(error.message ?? t('general.server_error'));
     } finally {
@@ -212,19 +215,19 @@ export default function SetLicenseModal() {
   };
 
   const handleExpirationTypeChange = (type: 'NEVER' | 'DATE' | 'DURATION') => {
-    form.setValue('expirationType', type);
+    setValue('expirationType', type);
     if (type === 'NEVER') {
-      form.setValue('expirationDate', null);
-      form.setValue('expirationDays', null);
-      form.setValue('expirationStart', null);
+      setValue('expirationDate', null);
+      setValue('expirationDays', null);
+      setValue('expirationStart', null);
     }
     if (type === 'DATE') {
-      form.setValue('expirationDays', null);
-      form.setValue('expirationStart', null);
+      setValue('expirationDays', null);
+      setValue('expirationStart', null);
     }
     if (type === 'DURATION') {
-      form.setValue('expirationStart', 'CREATION');
-      form.setValue('expirationDate', null);
+      setValue('expirationStart', 'CREATION');
+      setValue('expirationDate', null);
     }
   };
 
@@ -237,7 +240,7 @@ export default function SetLicenseModal() {
 
       if ('message' in res) {
         if (res.field) {
-          return form.setError(res.field as keyof SetLicenseScheama, {
+          return setError(res.field as keyof SetLicenseScheama, {
             type: 'manual',
             message: res.message,
           });
@@ -263,14 +266,14 @@ export default function SetLicenseModal() {
 
   const handleOpenChange = (open: boolean) => {
     ctx.setLicenseModalOpen(open);
-    form.reset();
+    reset();
     if (!open) {
       ctx.setLicenseToEdit(null);
     }
   };
 
   const handleProductChange = (productIds: string[], isClear?: boolean) => {
-    const currentIds = form.getValues('productIds');
+    const currentIds = getValues('productIds');
 
     if (isClear && currentIds.length > 0) {
       setRemovingProduct('all');
@@ -283,12 +286,12 @@ export default function SetLicenseModal() {
       setRemovingProduct(removedId);
       setPendingProductIds(productIds);
     } else {
-      form.setValue('productIds', productIds);
+      setValue('productIds', productIds);
     }
   };
 
   const handleCustomerChange = (customerIds: string[], isClear?: boolean) => {
-    const currentIds = form.getValues('customerIds');
+    const currentIds = getValues('customerIds');
 
     if (isClear && currentIds.length > 0) {
       setRemovingCustomer('all');
@@ -301,13 +304,13 @@ export default function SetLicenseModal() {
       setRemovingCustomer(removedId);
       setPendingCustomerIds(customerIds);
     } else {
-      form.setValue('customerIds', customerIds);
+      setValue('customerIds', customerIds);
     }
   };
 
   const handleProductRemoveConfirm = () => {
     if (removingProduct) {
-      form.setValue('productIds', pendingProductIds);
+      setValue('productIds', pendingProductIds);
       setRemovingProduct(null);
       setPendingProductIds([]);
     }
@@ -315,7 +318,7 @@ export default function SetLicenseModal() {
 
   const handleCustomerRemoveConfirm = () => {
     if (removingCustomer) {
-      form.setValue('customerIds', pendingCustomerIds);
+      setValue('customerIds', pendingCustomerIds);
       setRemovingCustomer(null);
       setPendingCustomerIds([]);
     }
@@ -349,10 +352,10 @@ export default function SetLicenseModal() {
           <Form {...form}>
             <form
               className="space-y-4 max-md:px-2"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
             >
               <FormField
-                control={form.control}
+                control={control}
                 name="licenseKey"
                 render={({ field }) => (
                   <FormItem>
@@ -424,7 +427,7 @@ export default function SetLicenseModal() {
               </div>
               {expirationType === 'DATE' && (
                 <FormField
-                  control={form.control}
+                  control={control}
                   name="expirationDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
@@ -442,9 +445,9 @@ export default function SetLicenseModal() {
                             value={field.value ?? undefined}
                             onChange={(date) => {
                               if (!date) {
-                                return form.setValue('expirationDate', null);
+                                return setValue('expirationDate', null);
                               }
-                              form.setValue('expirationDate', date);
+                              setValue('expirationDate', date);
                             }}
                           />
                           <Button
@@ -452,9 +455,7 @@ export default function SetLicenseModal() {
                             size="icon"
                             type="button"
                             variant="ghost"
-                            onClick={() =>
-                              form.setValue('expirationDate', null)
-                            }
+                            onClick={() => setValue('expirationDate', null)}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -468,7 +469,7 @@ export default function SetLicenseModal() {
               {expirationType === 'DURATION' && (
                 <>
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="expirationStart"
                     render={({ field }) => (
                       <FormItem>
@@ -502,7 +503,7 @@ export default function SetLicenseModal() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={control}
                     name="expirationDays"
                     render={({ field }) => (
                       <FormItem>
@@ -520,9 +521,9 @@ export default function SetLicenseModal() {
                             value={field.value ?? ''}
                             onChange={(e) => {
                               if (!e.target.value || e.target.value === '0') {
-                                return form.setValue('expirationDays', null);
+                                return setValue('expirationDays', null);
                               }
-                              form.setValue('expirationDays', +e.target.value);
+                              setValue('expirationDays', +e.target.value);
                             }}
                           />
                         </FormControl>
@@ -533,7 +534,7 @@ export default function SetLicenseModal() {
                 </>
               )}
               <FormField
-                control={form.control}
+                control={control}
                 name="ipLimit"
                 render={({ field }) => (
                   <FormItem>
@@ -547,9 +548,9 @@ export default function SetLicenseModal() {
                         value={field.value ?? ''}
                         onChange={(e) => {
                           if (!e.target.value || e.target.value === '0') {
-                            return form.setValue('ipLimit', null);
+                            return setValue('ipLimit', null);
                           }
-                          form.setValue('ipLimit', +e.target.value);
+                          setValue('ipLimit', +e.target.value);
                         }}
                       />
                     </FormControl>
@@ -558,7 +559,7 @@ export default function SetLicenseModal() {
                 )}
               />
               <FormField
-                control={form.control}
+                control={control}
                 name="seats"
                 render={({ field }) => (
                   <FormItem>
@@ -574,9 +575,9 @@ export default function SetLicenseModal() {
                         value={field.value ?? ''}
                         onChange={(e) => {
                           if (!e.target.value || e.target.value === '0') {
-                            return form.setValue('seats', null);
+                            return setValue('seats', null);
                           }
-                          form.setValue('seats', +e.target.value);
+                          setValue('seats', +e.target.value);
                         }}
                       />
                     </FormControl>
@@ -590,7 +591,7 @@ export default function SetLicenseModal() {
                 </FormLabel>
                 <ProductsMultiselect
                   selectedProducts={ctx.licenseToEdit?.products}
-                  value={form.watch('productIds')}
+                  value={watch('productIds')}
                   onChange={handleProductChange}
                 />
               </FormItem>
@@ -601,12 +602,12 @@ export default function SetLicenseModal() {
                 </FormLabel>
                 <CustomersMultiselect
                   selectedCustomers={ctx.licenseToEdit?.customers}
-                  value={form.watch('customerIds')}
+                  value={watch('customerIds')}
                   onChange={handleCustomerChange}
                 />
               </FormItem>
               <FormField
-                control={form.control}
+                control={control}
                 name="suspended"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
@@ -640,7 +641,7 @@ export default function SetLicenseModal() {
                 className="w-full"
                 disabled={loading.license || loading.product}
                 pending={submitting}
-                onClick={() => form.handleSubmit(onSubmit)()}
+                onClick={() => handleSubmit(onSubmit)()}
               >
                 {ctx.licenseToEdit
                   ? t('dashboard.licenses.edit_license')
