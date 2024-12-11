@@ -134,6 +134,18 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        const existingDeletedSubscription =
+          await prisma.subscription.findUnique({
+            where: { teamId: deletedSubscription.metadata.lukittu_team_id },
+          });
+
+        if (!existingDeletedSubscription) {
+          logger.info('Subscription not found in database, skipping update', {
+            event,
+          });
+          return NextResponse.json({ success: true });
+        }
+
         await prisma.subscription.update({
           where: { teamId: deletedSubscription.metadata.lukittu_team_id },
           data: {
@@ -154,6 +166,17 @@ export async function POST(request: NextRequest) {
             { message: 'Team ID not found' },
             { status: HttpStatus.OK },
           );
+        }
+
+        const existingSubscription = await prisma.subscription.findUnique({
+          where: { teamId: updatedSubscription.metadata.lukittu_team_id },
+        });
+
+        if (!existingSubscription) {
+          logger.info('Subscription not found in database, skipping update', {
+            event,
+          });
+          return NextResponse.json({ success: true });
         }
 
         await prisma.subscription.update({

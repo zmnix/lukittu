@@ -140,6 +140,7 @@ export default function TeamsTable() {
       return;
     }
 
+    toast.success(t('dashboard.profile.delete_team_success'));
     router.refresh();
   };
 

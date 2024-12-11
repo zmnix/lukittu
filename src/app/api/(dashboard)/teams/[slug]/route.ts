@@ -21,6 +21,7 @@ import {
 } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
 export interface ITeamsDeleteRequest {
   teamNameConfirmation: string;
@@ -71,6 +72,7 @@ export async function DELETE(
       },
       include: {
         users: true,
+        subscription: true,
       },
     });
 
@@ -108,6 +110,22 @@ export async function DELETE(
         },
         { status: HttpStatus.BAD_REQUEST },
       );
+    }
+
+    // Cancel the subscription if it exists
+    if (team.subscription) {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: '2024-11-20.acacia',
+      });
+
+      const subscription = await stripe.subscriptions.retrieve(
+        team.subscription.stripeSubscriptionId,
+      );
+
+      // Cancel the subscription
+      await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true,
+      });
     }
 
     await prisma.team.update({

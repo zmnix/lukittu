@@ -118,6 +118,10 @@ export async function POST(
         apiVersion: '2024-11-20.acacia',
       });
 
+      const subscription = await stripe.subscriptions.retrieve(
+        team.subscription.stripeSubscriptionId,
+      );
+
       const customer = await stripe.customers.retrieve(
         team.subscription.stripeCustomerId,
       );
@@ -141,6 +145,10 @@ export async function POST(
           default_source: undefined,
         });
       }
+
+      await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true,
+      });
     }
 
     await prisma.team.update({
