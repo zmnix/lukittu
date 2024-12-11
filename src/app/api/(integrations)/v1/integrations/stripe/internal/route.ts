@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
             stripeSubscriptionId: invoice.subscription as string,
             billingPeriodEndsAt: new Date(invoice.period_end * 1000),
             status: subscription.status as string,
+            canceledAt: null,
           },
           create: {
             teamId,
