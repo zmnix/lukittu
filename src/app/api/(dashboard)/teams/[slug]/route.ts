@@ -16,6 +16,7 @@ import {
   AuditLogTargetType,
   Limits,
   Settings,
+  Subscription,
   Team,
   User,
 } from '@prisma/client';
@@ -278,6 +279,7 @@ export type ITeamGetSuccessResponse = {
     publicKey: string;
     settings: Settings;
     limits: Limits;
+    subscription: Subscription | null;
     apiKeys: (Omit<ApiKey, 'key'> & {
       createdBy: {
         fullName: string;
@@ -328,6 +330,7 @@ export async function GET(
               keyPair: true,
               settings: true,
               limits: true,
+              subscription: true,
               apiKeys: {
                 include: {
                   createdBy: {

@@ -1,5 +1,6 @@
 import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Copy } from 'lucide-react';
+import { CheckCircle2, Copy, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -90,6 +91,29 @@ export function TeamDetails({ team }: TeamDetailsProps) {
               )}
             </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">
+              {t('general.subscription')}
+            </h3>
+            <div className="text-sm text-muted-foreground">
+              {team ? (
+                team.subscription?.status === 'active' ? (
+                  <Badge className="text-xs" variant="success">
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    {t('general.active')}
+                  </Badge>
+                ) : (
+                  <Badge className="text-xs" variant="secondary">
+                    <XCircle className="mr-1 h-3 w-3" />
+                    {t('general.inactive')}
+                  </Badge>
+                )
+              ) : (
+                <Skeleton className="h-4 w-full" />
+              )}
+            </div>
+          </div>
+
           {showMore && (
             <>
               <div className="flex flex-col gap-2">

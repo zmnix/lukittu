@@ -10,7 +10,13 @@ import {
 } from '@/lib/validation/team/set-team-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType, Team, User } from '@prisma/client';
+import {
+  AuditLogAction,
+  AuditLogTargetType,
+  Subscription,
+  Team,
+  User,
+} from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,6 +24,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export type ITeamsGetSuccessResponse = {
   teams: (Team & {
     users: Omit<User, 'passwordHash'>[];
+    subscription: Subscription | null;
   })[];
 };
 
@@ -38,6 +45,7 @@ export async function GET(): Promise<
             },
             include: {
               users: true,
+              subscription: true,
             },
           },
         },

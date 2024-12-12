@@ -26,8 +26,14 @@ import {
 } from '@/components/ui/table';
 import { AuthContext } from '@/providers/AuthProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { Team, User } from '@prisma/client';
-import { ChevronsUp, ChevronUp, Ellipsis } from 'lucide-react';
+import { Subscription, Team, User } from '@prisma/client';
+import {
+  CheckCircle2,
+  ChevronsUp,
+  ChevronUp,
+  Ellipsis,
+  XCircle,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
@@ -157,7 +163,10 @@ export default function TeamsTable() {
   };
 
   const handleTeamDeleteConfirm = (
-    team: Team & { users: Omit<User, 'passwordHash'>[] },
+    team: Team & {
+      users: Omit<User, 'passwordHash'>[];
+      subscription: Subscription | null;
+    },
   ) => {
     if (team.users.length > 1) {
       toast.error(t('dashboard.profile.delete_team_not_empty_title'), {
@@ -209,6 +218,9 @@ export default function TeamsTable() {
               <TableRow>
                 <TableHead className="truncate">{t('general.name')}</TableHead>
                 <TableHead className="truncate">{t('general.role')}</TableHead>
+                <TableHead className="truncate">
+                  {t('general.subscription')}
+                </TableHead>
                 <TableHead className="truncate text-right">
                   {t('general.actions')}
                 </TableHead>
@@ -232,6 +244,19 @@ export default function TeamsTable() {
                           ? t('general.owner')
                           : t('general.member')}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="truncate">
+                      {team.subscription?.status === 'active' ? (
+                        <Badge className="text-xs" variant="success">
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          {t('general.active')}
+                        </Badge>
+                      ) : (
+                        <Badge className="text-xs" variant="secondary">
+                          <XCircle className="mr-1 h-3 w-3" />
+                          {t('general.inactive')}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="truncate py-0 text-right">
                       <DropdownMenu>
