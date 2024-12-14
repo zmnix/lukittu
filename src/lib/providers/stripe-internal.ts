@@ -4,6 +4,7 @@ import { HttpStatus } from '@/types/http-status';
 import { NextResponse } from 'next/server';
 import 'server-only';
 import Stripe from 'stripe';
+import { sendDiscordWebhook } from './discord-webhook';
 
 async function getProductMetadata(stripe: Stripe, priceId: string) {
   const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
@@ -28,6 +29,35 @@ async function getProductMetadata(stripe: Stripe, priceId: string) {
 
 export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
   const invoice = event.data.object as Stripe.Invoice;
+
+  await sendDiscordWebhook(process.env.DISCORD_WEBHOOK_STRIPE!, {
+    embeds: [
+      {
+        title: '💰 Invoice Paid',
+        color: 0x00ff00,
+        fields: [
+          {
+            name: 'Amount',
+            value: `$${(invoice.amount_paid / 100).toFixed(2)}`,
+            inline: true,
+          },
+          {
+            name: 'Customer ID',
+            value: `[${invoice.customer}](https://dashboard.stripe.com/customers/${invoice.customer})`,
+            inline: true,
+          },
+          {
+            name: 'Subscription ID',
+            value: invoice.subscription
+              ? `[${invoice.subscription}](https://dashboard.stripe.com/subscriptions/${invoice.subscription})`
+              : 'N/A',
+            inline: true,
+          },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
 
   if (!invoice.subscription) {
     logger.error('Invoice paid, but not a subscription', { event });
@@ -121,6 +151,43 @@ export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
 export async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
 ) {
+  await sendDiscordWebhook(process.env.DISCORD_WEBHOOK_STRIPE!, {
+    embeds: [
+      {
+        title: '🗑️ Subscription Deleted',
+        color: 0xff0000,
+        fields: [
+          {
+            name: 'Team ID',
+            value: subscription.metadata.lukittu_team_id || 'N/A',
+            inline: true,
+          },
+          {
+            name: 'Customer ID',
+            value: `[${subscription.customer}](https://dashboard.stripe.com/customers/${subscription.customer})`,
+            inline: true,
+          },
+          {
+            name: 'Subscription ID',
+            value: `[${subscription.id}](https://dashboard.stripe.com/subscriptions/${subscription.id})`,
+            inline: true,
+          },
+          {
+            name: 'Status',
+            value: `\`${subscription.status}\``,
+            inline: true,
+          },
+          {
+            name: 'Ends',
+            value: `<t:${Math.floor(subscription.current_period_end)}:f>`,
+            inline: true,
+          },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
+
   const teamId = subscription.metadata.lukittu_team_id;
   if (!teamId) {
     logger.error('Team ID not found', { subscription });
@@ -152,6 +219,90 @@ export async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
   stripe: Stripe,
 ) {
+  let title: string;
+  let color: number;
+
+  if (subscription.cancel_at_period_end) {
+    title = '🛑 Subscription Scheduled for Cancellation';
+    color = 0xffa500; // Orange
+  } else if (subscription.status === 'past_due') {
+    title = '⚠️ Subscription Payment Past Due';
+    color = 0xff6b6b; // Red-Orange
+  } else if (subscription.status === 'unpaid') {
+    title = '❌ Subscription Payment Failed';
+    color = 0xff0000; // Red
+  } else if (subscription.status === 'trialing') {
+    title = '🎯 Subscription Trial Started';
+    color = 0x00ff00; // Green
+  } else if (subscription.status === 'active') {
+    title = '✅ Subscription Updated';
+    color = 0x0099ff; // Blue
+  } else {
+    title = '📝 Subscription Status Changed';
+    color = 0x808080; // Gray
+  }
+
+  const currentPrice = subscription.items.data[0].price;
+  const formattedAmount = `$${(currentPrice.unit_amount || 0) / 100}/${currentPrice.recurring?.interval || 'one-time'}`;
+
+  const periodEndTimestamp = Math.floor(subscription.current_period_end);
+  const trialEndTimestamp = subscription.trial_end
+    ? Math.floor(subscription.trial_end)
+    : null;
+
+  const fields: Array<{ name: string; value: string; inline?: boolean }> = [
+    {
+      name: 'Team ID',
+      value: subscription.metadata.lukittu_team_id || 'N/A',
+      inline: true,
+    },
+    {
+      name: 'Customer ID',
+      value: `[${subscription.customer}](https://dashboard.stripe.com/customers/${subscription.customer})`,
+      inline: true,
+    },
+    {
+      name: 'Subscription ID',
+      value: `[${subscription.id}](https://dashboard.stripe.com/subscriptions/${subscription.id})`,
+      inline: true,
+    },
+    { name: 'Status', value: `\`${subscription.status}\``, inline: true },
+    { name: 'Price', value: `\`${formattedAmount}\``, inline: true },
+    {
+      name: 'Current Period End',
+      value: `<t:${periodEndTimestamp}:f>`,
+      inline: true,
+    },
+    {
+      name: subscription.cancel_at_period_end
+        ? 'Cancellation Effect'
+        : 'Renewal',
+      value: subscription.cancel_at_period_end
+        ? '⚠️ Will cancel at period end'
+        : '🔄 Will auto-renew',
+      inline: true,
+    },
+  ];
+
+  if (trialEndTimestamp) {
+    fields.push({
+      name: 'Trial Ends',
+      value: `<t:${trialEndTimestamp}:f>`,
+      inline: true,
+    });
+  }
+
+  await sendDiscordWebhook(process.env.DISCORD_WEBHOOK_STRIPE!, {
+    embeds: [
+      {
+        title,
+        color,
+        fields,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
+
   const teamId = subscription.metadata.lukittu_team_id;
   if (!teamId) {
     logger.error('Team ID not found', { subscription });
