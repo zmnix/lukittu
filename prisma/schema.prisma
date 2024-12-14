@@ -130,7 +130,7 @@ model Limits {
   maxProducts           Int      @default(3)
   logRetention          Int      @default(30)
   maxCustomers          Int      @default(100)
-  maxTeamMembers        Int      @default(10)
+  maxTeamMembers        Int      @default(3)
   maxBlacklist          Int      @default(100)
   maxStorage            Int      @default(100) // in MB
   maxApiKeys            Int      @default(10)
