@@ -114,6 +114,31 @@ export function TeamDetails({ team }: TeamDetailsProps) {
             </div>
           </div>
 
+          {team?.subscription?.status === 'active' && (
+            <>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-semibold">{t('general.plan')}</h3>
+                <div className="text-sm text-muted-foreground">
+                  {team.subscription.plan}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-semibold">
+                  {t('general.billing_period_ends')}
+                </h3>
+                <div className="text-sm text-muted-foreground">
+                  <DateConverter
+                    date={
+                      team.subscription.billingPeriodEndsAt
+                        ? new Date(team.subscription.billingPeriodEndsAt)
+                        : new Date(0)
+                    }
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           {showMore && (
             <>
               <div className="flex flex-col gap-2">

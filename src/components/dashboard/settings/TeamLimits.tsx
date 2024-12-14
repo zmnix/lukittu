@@ -8,10 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { bytesToMb } from '@/lib/utils/number-helpers';
-import { Clock, Mail } from 'lucide-react';
+import { AuthContext } from '@/providers/AuthProvider';
+import { TeamContext } from '@/providers/TeamProvider';
+import { Clock, CreditCard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useContext } from 'react';
 
 interface TeamLimitsProps {
   team: ITeamGetSuccessResponse['team'] | null;
@@ -19,6 +28,14 @@ interface TeamLimitsProps {
 
 export default function TeamLimits({ team }: TeamLimitsProps) {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
+  const authCtx = useContext(AuthContext);
+
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
+
+  const isTeamOwner = selectedTeam?.ownerId === authCtx.session?.user.id;
 
   const limits = [
     {
@@ -49,6 +66,10 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
     },
   ];
 
+  const handleSubscriptionManagement = async () => {
+    window.location.href = '/api/billing/subscription-management';
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -76,7 +97,7 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
             </div>
           </div>
         ))}
-        <div className="flex items-center justify-between border-t pt-2">
+        <div className="flex items-center justify-between border-t pt-4">
           <div className="flex items-center">
             <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">
@@ -101,10 +122,28 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
             ),
           })}
         </p>
-        <Button size="sm">
-          <Mail className="mr-2 h-4 w-4" />
-          {t('dashboard.settings.contact_support')}
-        </Button>
+        <TooltipProvider>
+          <Tooltip delayDuration={50}>
+            <TooltipTrigger asChild>
+              <div className="w-full">
+                <Button
+                  className="flex items-center gap-2"
+                  disabled={!isTeamOwner}
+                  size="sm"
+                  onClick={handleSubscriptionManagement}
+                >
+                  <CreditCard className="h-5 w-5" />
+                  {t('dashboard.subscriptions.manage_subscription')}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {!isTeamOwner && (
+              <TooltipContent>
+                {t('dashboard.members.only_for_owners')}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );
