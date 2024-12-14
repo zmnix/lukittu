@@ -80,34 +80,39 @@ export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
     subscription.items.data[0].price.id,
   );
 
-  const lukittuSubscription = await prisma.$transaction(async (prisma) => {
-    const lukittuSubscription = await prisma.subscription.upsert({
-      where: { teamId },
-      update: {
-        stripeSubscriptionId: invoice.subscription as string,
-        billingPeriodEndsAt: new Date(invoice.period_end * 1000),
-        status: subscription.status as string,
-        plan: productMetadata.plan,
-        canceledAt: null,
-      },
-      create: {
-        teamId,
-        status: subscription.status as string,
-        stripeSubscriptionId: invoice.subscription as string,
-        stripeCustomerId: subscription.customer as string,
-        billingPeriodEndsAt: new Date(invoice.period_end * 1000),
-        plan: productMetadata.plan,
-      },
-    });
+  const lukittuSubscription = await prisma.$transaction(
+    async (prisma) => {
+      const lukittuSubscription = await prisma.subscription.upsert({
+        where: { teamId },
+        update: {
+          stripeSubscriptionId: invoice.subscription as string,
+          billingPeriodEndsAt: new Date(invoice.period_end * 1000),
+          status: subscription.status as string,
+          plan: productMetadata.plan,
+          canceledAt: null,
+        },
+        create: {
+          teamId,
+          status: subscription.status as string,
+          stripeSubscriptionId: invoice.subscription as string,
+          stripeCustomerId: subscription.customer as string,
+          billingPeriodEndsAt: new Date(invoice.period_end * 1000),
+          plan: productMetadata.plan,
+        },
+      });
 
-    await prisma.limits.upsert({
-      where: { teamId },
-      update: productMetadata.limits,
-      create: { teamId, ...productMetadata.limits },
-    });
+      await prisma.limits.upsert({
+        where: { teamId },
+        update: productMetadata.limits,
+        create: { teamId, ...productMetadata.limits },
+      });
 
-    return lukittuSubscription;
-  });
+      return lukittuSubscription;
+    },
+    {
+      isolationLevel: 'Serializable',
+    },
+  );
 
   logger.info('Subscription updated', { lukittuSubscription });
   return NextResponse.json({ success: true });
@@ -171,25 +176,50 @@ export async function handleSubscriptionUpdated(
   );
   const isActive = subscription.status === 'active';
 
-  await prisma.$transaction(async (prisma) => {
-    await prisma.subscription.update({
-      where: { teamId },
-      data: {
-        status: subscription.status,
-        plan: productMetadata.plan,
-        billingPeriodEndsAt: isActive
-          ? new Date(subscription.current_period_end * 1000)
-          : undefined,
-      },
-    });
+  const newBillingPeriodEnd = isActive
+    ? new Date(subscription.current_period_end * 1000)
+    : undefined;
 
-    await prisma.limits.upsert({
-      where: { teamId },
-      update: productMetadata.limits,
-      create: { teamId, ...productMetadata.limits },
-    });
+  const shouldUpdateBillingPeriod =
+    newBillingPeriodEnd &&
+    (!existingSubscription.billingPeriodEndsAt ||
+      newBillingPeriodEnd > existingSubscription.billingPeriodEndsAt);
+
+  logger.info('Subscription period evaluation', {
+    currentEnd: existingSubscription.billingPeriodEndsAt,
+    newEnd: newBillingPeriodEnd,
+    willUpdate: shouldUpdateBillingPeriod,
   });
 
-  logger.info('Subscription updated', { subscription });
+  await prisma.$transaction(
+    async (prisma) => {
+      await prisma.subscription.update({
+        where: { teamId },
+        data: {
+          status: subscription.status,
+          plan: productMetadata.plan,
+          billingPeriodEndsAt: shouldUpdateBillingPeriod
+            ? newBillingPeriodEnd
+            : undefined,
+        },
+      });
+
+      await prisma.limits.upsert({
+        where: { teamId },
+        update: productMetadata.limits,
+        create: { teamId, ...productMetadata.limits },
+      });
+    },
+    {
+      isolationLevel: 'Serializable',
+    },
+  );
+
+  logger.info('Subscription updated', {
+    subscription,
+    billingPeriodEndsAt: shouldUpdateBillingPeriod
+      ? newBillingPeriodEnd
+      : 'unchanged',
+  });
   return NextResponse.json({ success: true });
 }
