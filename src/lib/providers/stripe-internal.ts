@@ -86,7 +86,7 @@ export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
         where: { teamId },
         update: {
           stripeSubscriptionId: invoice.subscription as string,
-          billingPeriodEndsAt: new Date(invoice.period_end * 1000),
+          billingPeriodEndsAt: new Date(subscription.current_period_end * 1000),
           status: subscription.status as string,
           plan: productMetadata.plan,
           canceledAt: null,
@@ -96,7 +96,7 @@ export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
           status: subscription.status as string,
           stripeSubscriptionId: invoice.subscription as string,
           stripeCustomerId: subscription.customer as string,
-          billingPeriodEndsAt: new Date(invoice.period_end * 1000),
+          billingPeriodEndsAt: new Date(subscription.current_period_end * 1000),
           plan: productMetadata.plan,
         },
       });
@@ -174,22 +174,8 @@ export async function handleSubscriptionUpdated(
     stripe,
     subscription.items.data[0].price.id,
   );
+
   const isActive = subscription.status === 'active';
-
-  const newBillingPeriodEnd = isActive
-    ? new Date(subscription.current_period_end * 1000)
-    : undefined;
-
-  const shouldUpdateBillingPeriod =
-    newBillingPeriodEnd &&
-    (!existingSubscription.billingPeriodEndsAt ||
-      newBillingPeriodEnd > existingSubscription.billingPeriodEndsAt);
-
-  logger.info('Subscription period evaluation', {
-    currentEnd: existingSubscription.billingPeriodEndsAt,
-    newEnd: newBillingPeriodEnd,
-    willUpdate: shouldUpdateBillingPeriod,
-  });
 
   await prisma.$transaction(
     async (prisma) => {
@@ -198,9 +184,9 @@ export async function handleSubscriptionUpdated(
         data: {
           status: subscription.status,
           plan: productMetadata.plan,
-          billingPeriodEndsAt: shouldUpdateBillingPeriod
-            ? newBillingPeriodEnd
-            : undefined,
+          billingPeriodEndsAt: isActive
+            ? new Date(subscription.current_period_end * 1000)
+            : null,
         },
       });
 
@@ -215,11 +201,5 @@ export async function handleSubscriptionUpdated(
     },
   );
 
-  logger.info('Subscription updated', {
-    subscription,
-    billingPeriodEndsAt: shouldUpdateBillingPeriod
-      ? newBillingPeriodEnd
-      : 'unchanged',
-  });
   return NextResponse.json({ success: true });
 }
