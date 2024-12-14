@@ -194,7 +194,12 @@ export default function TeamGeneralSettings({
           user: {
             ...ctx.session.user,
             teams: ctx.session.user.teams.map((team) =>
-              team.id === res.team.id ? res.team : team,
+              team.id === res.team.id
+                ? {
+                    ...team,
+                    ...res.team,
+                  }
+                : team,
             ),
           },
         });

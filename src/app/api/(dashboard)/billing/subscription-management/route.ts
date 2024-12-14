@@ -1,10 +1,13 @@
 import { logger } from '@/lib/logging/logger';
 import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
+import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';
+
+export type IBillingSubscriptionManagementGetResponse = ErrorResponse;
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const t = await getTranslations({ locale: await getLanguage() });
@@ -71,12 +74,43 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     if (team.subscription) {
-      const portalSession = await stripe.billingPortal.sessions.create({
+      const subscription = await stripe.subscriptions.retrieve(
+        team.subscription.stripeSubscriptionId,
+      );
+
+      if (subscription.status === 'active') {
+        const portalSession = await stripe.billingPortal.sessions.create({
+          customer: team.subscription.stripeCustomerId,
+          return_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+        });
+
+        return NextResponse.redirect(portalSession.url, {
+          status: HttpStatus.TEMPORARY_REDIRECT,
+        });
+      }
+
+      const checkoutSession = await stripe.checkout.sessions.create({
+        mode: 'subscription',
         customer: team.subscription.stripeCustomerId,
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+        line_items: [
+          {
+            price: process.env.STRIPE_PRICE_ID!,
+            quantity: 1,
+          },
+        ],
+        success_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+        metadata: {
+          lukittu_team_id: team.id,
+        },
+        subscription_data: {
+          metadata: {
+            lukittu_team_id: team.id,
+          },
+        },
       });
 
-      return NextResponse.redirect(portalSession.url, {
+      return NextResponse.redirect(checkoutSession.url!, {
         status: HttpStatus.TEMPORARY_REDIRECT,
       });
     }
@@ -101,7 +135,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    return NextResponse.redirect(checkoutSession.url!, {
+    const redirectUrl = checkoutSession.url!;
+
+    return NextResponse.redirect(redirectUrl, {
       status: HttpStatus.TEMPORARY_REDIRECT,
     });
   } catch (error) {

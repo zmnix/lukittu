@@ -26,6 +26,7 @@ DROP INDEX "_TeamUsers_AB_unique";
 CREATE TABLE "Subscription" (
     "id" TEXT NOT NULL,
     "teamId" TEXT NOT NULL,
+    "plan" TEXT NOT NULL,
     "stripeSubscriptionId" TEXT NOT NULL,
     "stripeCustomerId" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'active',

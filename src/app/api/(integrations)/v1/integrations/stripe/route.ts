@@ -5,7 +5,7 @@ import {
   handleCheckoutSessionCompleted,
   handleInvoicePaid,
   handleSubscriptionDeleted,
-} from '@/lib/providers/stripe';
+} from '@/lib/providers/stripe-external';
 import { isRateLimited } from '@/lib/security/rate-limiter';
 import { HttpStatus } from '@/types/http-status';
 import { NextRequest, NextResponse } from 'next/server';

@@ -103,7 +103,12 @@ export default function SetTeamModal({
             user: {
               ...authCtx.session.user,
               teams: authCtx.session.user.teams.map((team) =>
-                team.id === res.team.id ? res.team : team,
+                team.id === res.team.id
+                  ? {
+                      ...team,
+                      ...res.team,
+                    }
+                  : team,
               ),
             },
           });
@@ -112,7 +117,10 @@ export default function SetTeamModal({
             ...authCtx.session,
             user: {
               ...authCtx.session.user,
-              teams: [...authCtx.session.user.teams, res.team],
+              teams: [
+                ...authCtx.session.user.teams,
+                { ...res.team, subscription: null },
+              ],
             },
           });
         }

@@ -9,7 +9,7 @@ import {
   handleCheckoutSessionCompleted,
   handleInvoicePaid,
   handleSubscriptionDeleted,
-} from './stripe';
+} from './stripe-external';
 
 type ExtendedTeam = Team & {
   settings: Settings | null;

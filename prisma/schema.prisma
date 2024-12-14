@@ -81,6 +81,7 @@ model Subscription {
   id                   String    @id @default(uuid())
   teamId               String    @unique
   team                 Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  plan                 String
   stripeSubscriptionId String    @unique
   stripeCustomerId     String    @unique
   status               String    @default("active")

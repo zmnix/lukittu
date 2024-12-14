@@ -533,12 +533,11 @@
       "delete_customer_confirm_description": "You are about to delete customer <strong>{name}</strong>! This will <strong>permanently delete</strong> this customer. This action cannot be undone."
     },
     "subscriptions": {
-      "upgrade_to_premium": "Upgrade to premium",
+      "upgrade_to_premium": "Upgrade your plan",
       "manage_subscription": "Manage subscription",
       "free_plan": "Free plan",
-      "custom_plan": "Custom plan",
-      "using_free_description": "You are currently using the free plan. Upgrade to the custom plan for increased limits!",
-      "using_custom_description": "You are currently using the custom plan. Manage your subscription below."
+      "using_free_description": "You are currently using the free plan. Upgrade to the paid plan for increased limits & get more features!",
+      "using_paid_plan": "You are currently using the paid plan. Manage your subscription below."
     },
     "audit_logs": {
       "show_request": "Show request",

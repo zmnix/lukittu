@@ -3,14 +3,16 @@ import { getSession } from '@/lib/security/session';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Session, Team, User } from '@prisma/client';
+import { Session, Subscription, Team, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
 export type ISessionsGetCurrentSuccessResponse = {
   session: Omit<Session, 'sessionId'> & {
     user: Omit<User, 'passwordHash'> & {
-      teams: Team[];
+      teams: (Team & {
+        subscription: Subscription | null;
+      })[];
     };
   };
 };
@@ -31,6 +33,9 @@ export async function GET(): Promise<
           teams: {
             where: {
               deletedAt: null,
+            },
+            include: {
+              subscription: true,
             },
           },
         },

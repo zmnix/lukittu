@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 'use client';
 import ConfettiButton from '@/components/shared/ConfettiButton';
+import LoadingButton from '@/components/shared/LoadingButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +27,8 @@ import {
 } from '@/components/ui/tooltip';
 import { getMenuList } from '@/lib/utils/navigation-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { AuthContext } from '@/providers/AuthProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -38,7 +41,7 @@ import {
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Messages } from '../../../../global';
 import { CollapseMenuButton } from './CollapseMenuButton';
 
@@ -86,7 +89,16 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
   const router = useRouter();
-  const isCustom = false;
+  const teamCtx = useContext(TeamContext);
+  const authCtx = useContext(AuthContext);
+
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
+
+  const isActiveSubscription = selectedTeam?.subscription?.status === 'active';
+
+  const isTeamOwner = selectedTeam?.ownerId === authCtx.session?.user?.id;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -184,7 +196,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchDialogOpen, flattenedMenuItems, selectedIndex, onClose]);
+  }, [searchDialogOpen, flattenedMenuItems, selectedIndex, onClose, router]);
 
   // Reset selected index when search term changes
   useEffect(() => {
@@ -230,6 +242,10 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
       ...prev,
       [translation]: !prev[translation],
     }));
+  };
+
+  const handleSubscriptionManagement = async () => {
+    window.location.href = '/api/billing/subscription-management';
   };
 
   const handleLinkClick = () => {
@@ -455,16 +471,18 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
               >
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-bold">
-                    {isCustom
-                      ? t('dashboard.subscriptions.custom_plan')
+                    {isActiveSubscription
+                      ? selectedTeam.subscription?.plan
                       : t('dashboard.subscriptions.free_plan')}
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     <Badge
                       className="uppercase"
-                      variant={isCustom ? 'primary' : 'secondary'}
+                      variant={isActiveSubscription ? 'primary' : 'secondary'}
                     >
-                      {isCustom ? t('general.active') : t('general.basic')}
+                      {isActiveSubscription
+                        ? t('general.active')
+                        : t('general.basic')}
                     </Badge>
                     {isExpanded ? (
                       <ChevronUpIcon className="h-5 w-5" />
@@ -479,25 +497,57 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
               >
                 <CardContent className="px-4 pb-0 pt-0">
                   <CardDescription className="mb-4">
-                    {isCustom
-                      ? t('dashboard.subscriptions.using_custom_description')
+                    {isActiveSubscription
+                      ? t('dashboard.subscriptions.using_paid_plan')
                       : t('dashboard.subscriptions.using_free_description')}
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="px-4">
-                  {!isCustom ? (
-                    <ConfettiButton className="flex w-full items-center gap-2">
-                      <Rocket className="h-5 w-5" />
-                      {t('dashboard.subscriptions.upgrade_to_premium')}
-                    </ConfettiButton>
+                  {!isActiveSubscription ? (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={50}>
+                        <TooltipTrigger asChild>
+                          <div className="w-full">
+                            <ConfettiButton
+                              className="flex w-full items-center gap-2"
+                              disabled={!isTeamOwner}
+                              onClick={handleSubscriptionManagement}
+                            >
+                              <Rocket className="h-5 w-5" />
+                              {t('dashboard.subscriptions.upgrade_to_premium')}
+                            </ConfettiButton>
+                          </div>
+                        </TooltipTrigger>
+                        {!isTeamOwner && (
+                          <TooltipContent>
+                            {t('dashboard.members.only_for_owners')}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   ) : (
-                    <Button
-                      className="flex w-full items-center gap-2"
-                      size="sm"
-                    >
-                      <CreditCard className="h-5 w-5" />
-                      {t('dashboard.subscriptions.manage_subscription')}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={50}>
+                        <TooltipTrigger asChild>
+                          <div className="w-full">
+                            <LoadingButton
+                              className="flex w-full items-center gap-2"
+                              disabled={!isTeamOwner}
+                              size="sm"
+                              onClick={handleSubscriptionManagement}
+                            >
+                              <CreditCard className="h-5 w-5" />
+                              {t('dashboard.subscriptions.manage_subscription')}
+                            </LoadingButton>
+                          </div>
+                        </TooltipTrigger>
+                        {!isTeamOwner && (
+                          <TooltipContent>
+                            {t('dashboard.members.only_for_owners')}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </CardFooter>
               </div>
@@ -515,7 +565,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
                     className="flex w-full items-center justify-center"
                     size="sm"
                   >
-                    {isCustom ? (
+                    {isActiveSubscription ? (
                       <CreditCard className="h-5 w-5" />
                     ) : (
                       <Rocket className="h-5 w-5" />
@@ -525,7 +575,7 @@ export function Menu({ isOpen, topSpacing = true, onClose }: MenuProps) {
               </TooltipTrigger>
               {isOpen === false && (
                 <TooltipContent side="right">
-                  {isCustom
+                  {isActiveSubscription
                     ? t('dashboard.subscriptions.manage_subscription')
                     : t('dashboard.subscriptions.upgrade_to_premium')}
                 </TooltipContent>
