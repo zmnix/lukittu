@@ -197,7 +197,7 @@ export const CustomersSearchFilter = ({
                   id={customer.id}
                   onCheckedChange={() => handleSelect(customer.id)}
                 />
-                <div className="flex flex-col">
+                <div className="grid">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
