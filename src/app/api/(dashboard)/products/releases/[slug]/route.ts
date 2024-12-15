@@ -179,6 +179,15 @@ export async function PUT(
       );
     }
 
+    if (file && !team.limits.allowClassloader) {
+      return NextResponse.json(
+        {
+          message: t('validation.paid_subsciption_required'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
     if (!team.products.length) {
       return NextResponse.json(
         {

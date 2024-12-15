@@ -1,7 +1,7 @@
 'use client';
 import { ITeamsAcceptInviteResponse } from '@/app/api/(dashboard)/teams/invite/[slug]/route';
 import { regex } from '@/lib/constants/regex';
-import { Subscription, Team } from '@prisma/client';
+import { Limits, Subscription, Team } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -19,7 +19,10 @@ export const TeamContext = createContext({
   loading: true,
   selectedTeam: '',
   selectTeam: (teamId: string) => {},
-  teams: [] as (Team & { subscription: Subscription | null })[],
+  teams: [] as (Team & {
+    subscription: Subscription | null;
+    limits: Limits | null;
+  })[],
 });
 
 export const TeamProvider = ({ children }: { children: React.ReactNode }) => {

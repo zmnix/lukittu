@@ -159,12 +159,15 @@ export async function GET(
         },
         settings: true,
         blacklist: true,
+        limits: true,
       },
     });
 
     const settings = team?.settings;
+    const limits = team?.limits;
+    const keyPair = team?.keyPair;
 
-    if (!team || !settings) {
+    if (!team || !settings || !limits || !keyPair) {
       return loggedResponse({
         ...loggedResponseBase,
         status: RequestStatus.TEAM_NOT_FOUND,
@@ -180,7 +183,25 @@ export async function GET(
       });
     }
 
-    const privateKey = team.keyPair?.privateKey!;
+    if (!limits.allowClassloader) {
+      return loggedResponse({
+        ...loggedResponseBase,
+        teamId,
+        status: RequestStatus.FORBIDDEN,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details:
+              'Using classloader requires a higher plan. Either upgrade or contact support.',
+          },
+        },
+        httpStatus: HttpStatus.FORBIDDEN,
+      });
+    }
+
+    const privateKey = keyPair.privateKey;
 
     const getSessionKey = async () => {
       try {

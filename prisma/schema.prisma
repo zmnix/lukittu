@@ -132,10 +132,11 @@ model Limits {
   maxCustomers          Int      @default(100)
   maxTeamMembers        Int      @default(3)
   maxBlacklist          Int      @default(100)
-  maxStorage            Int      @default(100) // in MB
+  maxStorage            Int      @default(0) // in MB
   maxApiKeys            Int      @default(10)
   maxReleasesPerProduct Int      @default(100)
   maxInvitations        Int      @default(10)
+  allowClassloader      Boolean  @default(false)
   updatedAt             DateTime @updatedAt
   createdAt             DateTime @default(now())
 }
@@ -494,4 +495,5 @@ enum RequestStatus {
   NO_ACCESS_TO_RELEASE
   RELEASE_ARCHIVED
   RELEASE_DRAFT
+  FORBIDDEN
 }

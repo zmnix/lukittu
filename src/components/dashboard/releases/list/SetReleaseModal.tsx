@@ -4,6 +4,7 @@ import { LicensesMultiselect } from '@/components/shared/form/LicensesMultiselec
 import MetadataFields from '@/components/shared/form/MetadataFields';
 import { ProductSelector } from '@/components/shared/form/ProductSelector';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -38,6 +39,7 @@ import {
   SetReleaseSchema,
 } from '@/lib/validation/products/set-release-schema';
 import { ReleaseModalContext } from '@/providers/ReleasesModalProvider';
+import { TeamContext } from '@/providers/TeamProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FileIcon, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -51,6 +53,14 @@ const MAX_FILE_SIZE = 1024 * 1024 * 10; // 10 MB
 export default function SetReleaseModal() {
   const t = useTranslations();
   const ctx = useContext(ReleaseModalContext);
+  const teamCtx = useContext(TeamContext);
+
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
+
+  const hasFileUploadPermission =
+    selectedTeam?.limits?.allowClassloader ?? false;
 
   const form = useForm<SetReleaseSchema>({
     resolver: zodResolver(setReleaseSchema(t)),
@@ -156,6 +166,7 @@ export default function SetReleaseModal() {
   };
 
   const handleFileSelect = () => {
+    if (!hasFileUploadPermission) return;
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = false;
@@ -188,6 +199,7 @@ export default function SetReleaseModal() {
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!hasFileUploadPermission) return;
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -374,14 +386,21 @@ export default function SetReleaseModal() {
                 />
               )}
               <FormItem>
-                <Label>{t('general.file')}</Label>
+                <div className="flex items-center gap-2">
+                  <Label>{t('general.file')}</Label>
+                  {!hasFileUploadPermission && (
+                    <Badge variant="primary">PRO</Badge>
+                  )}
+                </div>
                 {!file && !keepExistingFile ? (
                   <div
-                    className={`flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 transition-all duration-200 ease-in-out ${
-                      isDragging
+                    className={`flex cursor-${
+                      hasFileUploadPermission ? 'pointer' : 'not-allowed'
+                    } flex-col items-center gap-1 rounded-lg border-2 transition-all duration-200 ease-in-out ${
+                      isDragging && hasFileUploadPermission
                         ? 'scale-[1.01] border-solid border-primary bg-primary/5'
                         : 'border-dashed'
-                    } relative p-6`}
+                    } ${!hasFileUploadPermission ? 'opacity-50' : ''} relative p-6`}
                     onClick={handleFileSelect}
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
@@ -390,19 +409,25 @@ export default function SetReleaseModal() {
                     <div className="pointer-events-none flex flex-col items-center gap-1">
                       <FileIcon
                         className={`h-12 w-12 transition-transform duration-200 ${
-                          isDragging ? 'scale-110' : ''
+                          isDragging && hasFileUploadPermission
+                            ? 'scale-110'
+                            : ''
                         }`}
                       />
                       <span className="text-sm font-medium text-muted-foreground transition-opacity duration-200">
-                        {isDragging
-                          ? t('dashboard.releases.drop_file_here')
-                          : t('dashboard.releases.click_here_to_upload')}
+                        {!hasFileUploadPermission
+                          ? t('validation.paid_subsciption_required')
+                          : isDragging
+                            ? t('dashboard.releases.drop_file_here')
+                            : t('dashboard.releases.click_here_to_upload')}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t('dashboard.releases.supported_file_types', {
-                          size: bytesToSize(MAX_FILE_SIZE),
-                        })}
-                      </span>
+                      {hasFileUploadPermission && (
+                        <span className="text-xs text-muted-foreground">
+                          {t('dashboard.releases.supported_file_types', {
+                            size: bytesToSize(MAX_FILE_SIZE),
+                          })}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ) : (

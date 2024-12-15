@@ -3,7 +3,7 @@ import { getSession } from '@/lib/security/session';
 import { getLanguage } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { Session, Subscription, Team, User } from '@prisma/client';
+import { Limits, Session, Subscription, Team, User } from '@prisma/client';
 import { getTranslations } from 'next-intl/server';
 import { NextResponse } from 'next/server';
 
@@ -12,6 +12,7 @@ export type ISessionsGetCurrentSuccessResponse = {
     user: Omit<User, 'passwordHash'> & {
       teams: (Team & {
         subscription: Subscription | null;
+        limits: Limits | null;
       })[];
     };
   };
@@ -36,6 +37,7 @@ export async function GET(): Promise<
             },
             include: {
               subscription: true,
+              limits: true,
             },
           },
         },

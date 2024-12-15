@@ -4,6 +4,7 @@ import { HttpStatus } from '@/types/http-status';
 import { NextResponse } from 'next/server';
 import 'server-only';
 import Stripe from 'stripe';
+import { DEFAULT_LIMITS } from '../constants/limits';
 import { sendDiscordWebhook } from './discord-webhook';
 
 async function getProductMetadata(stripe: Stripe, priceId: string) {
@@ -12,16 +13,24 @@ async function getProductMetadata(stripe: Stripe, priceId: string) {
 
   return {
     limits: {
-      maxLicenses: +product.metadata.max_licenses || 100,
-      maxProducts: +product.metadata.max_products || 3,
-      logRetention: +product.metadata.log_retention || 30,
-      maxCustomers: +product.metadata.max_customers || 100,
-      maxTeamMembers: +product.metadata.max_team_members || 10,
-      maxBlacklist: +product.metadata.max_blacklist || 100,
-      maxStorage: +product.metadata.max_storage || 100,
-      maxApiKeys: +product.metadata.max_api_keys || 10,
-      maxReleasesPerProduct: +product.metadata.max_releases_per_product || 100,
-      maxInvitations: +product.metadata.max_invitations || 100,
+      maxLicenses: +product.metadata.max_licenses || DEFAULT_LIMITS.maxLicenses,
+      maxProducts: +product.metadata.max_products || DEFAULT_LIMITS.maxProducts,
+      logRetention:
+        +product.metadata.log_retention || DEFAULT_LIMITS.logRetention,
+      maxCustomers:
+        +product.metadata.max_customers || DEFAULT_LIMITS.maxCustomers,
+      maxTeamMembers:
+        +product.metadata.max_team_members || DEFAULT_LIMITS.maxTeamMembers,
+      maxBlacklist:
+        +product.metadata.max_blacklist || DEFAULT_LIMITS.maxBlacklist,
+      maxStorage: +product.metadata.max_storage || DEFAULT_LIMITS.maxStorage,
+      maxApiKeys: +product.metadata.max_api_keys || DEFAULT_LIMITS.maxApiKeys,
+      maxReleasesPerProduct:
+        +product.metadata.max_releases_per_product ||
+        DEFAULT_LIMITS.maxReleasesPerProduct,
+      maxInvitations:
+        +product.metadata.max_invitations || DEFAULT_LIMITS.maxInvitations,
+      allowClassloader: product.metadata.allow_classloader === 'true',
     },
     plan: product.metadata.subscription_name || 'free',
   };
@@ -30,7 +39,7 @@ async function getProductMetadata(stripe: Stripe, priceId: string) {
 export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
   const invoice = event.data.object as Stripe.Invoice;
 
-  await sendDiscordWebhook(process.env.DISCORD_WEBHOOK_STRIPE!, {
+  await sendDiscordWebhook(process.env.INTERNAL_STATUS_WEBHOOK!, {
     embeds: [
       {
         title: '💰 Invoice Paid',
@@ -151,7 +160,7 @@ export async function handleInvoicePaid(event: Stripe.Event, stripe: Stripe) {
 export async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
 ) {
-  await sendDiscordWebhook(process.env.DISCORD_WEBHOOK_STRIPE!, {
+  await sendDiscordWebhook(process.env.INTERNAL_STATUS_WEBHOOK!, {
     embeds: [
       {
         title: '🗑️ Subscription Deleted',
@@ -292,7 +301,7 @@ export async function handleSubscriptionUpdated(
     });
   }
 
-  await sendDiscordWebhook(process.env.DISCORD_WEBHOOK_STRIPE!, {
+  await sendDiscordWebhook(process.env.INTERNAL_STATUS_WEBHOOK!, {
     embeds: [
       {
         title,

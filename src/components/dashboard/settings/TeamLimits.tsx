@@ -1,4 +1,6 @@
 import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
+import { DateConverter } from '@/components/shared/DateConverter';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -35,6 +37,8 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
     (team) => team.id === teamCtx.selectedTeam,
   );
 
+  const hasActiveSubscription = selectedTeam?.subscription?.status === 'active';
+
   const isTeamOwner = selectedTeam?.ownerId === authCtx.session?.user.id;
 
   const limits = [
@@ -63,6 +67,7 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
       current: bytesToMb(team?.totalStorageUsed ?? 0),
       max: team?.limits.maxStorage ?? 1,
       unit: 'MB',
+      isPro: true,
     },
   ];
 
@@ -84,7 +89,14 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
         {limits.map((limit) => (
           <div key={limit.name} className="space-y-1">
             <div className="flex justify-between text-sm">
-              <span>{limit.name}</span>
+              <div className="flex items-center gap-2">
+                <span>{limit.name}</span>
+                {limit.isPro && (
+                  <Badge className="text-xs" variant="primary">
+                    PRO
+                  </Badge>
+                )}
+              </div>
               <span>
                 {limit.current} / {limit.max} {limit.unit ?? ''}
               </span>
@@ -108,6 +120,40 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
             {team?.limits.logRetention ?? 0} {t('general.days')}
           </span>
         </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {t('general.classloader')}
+            </span>
+            <Badge className="text-xs" variant="primary">
+              PRO
+            </Badge>
+          </div>
+          <span className="text-sm">
+            {team?.limits.allowClassloader
+              ? t('general.enabled')
+              : t('general.disabled')}
+          </span>
+        </div>
+        {hasActiveSubscription && team?.subscription && (
+          <div className="flex flex-col gap-2 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{t('general.plan')}</span>
+              <span className="text-sm">{team.subscription.plan}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                {t('general.billing_period_ends')}
+              </span>
+              <span className="text-sm">
+                <DateConverter
+                  date={team.subscription.billingPeriodEndsAt ?? new Date(0)}
+                  displayType="date"
+                />
+              </span>
+            </div>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-4">
         <p className="text-sm text-muted-foreground">
