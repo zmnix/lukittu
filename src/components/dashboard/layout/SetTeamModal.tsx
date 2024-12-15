@@ -119,7 +119,7 @@ export default function SetTeamModal({
               ...authCtx.session.user,
               teams: [
                 ...authCtx.session.user.teams,
-                { ...res.team, subscription: null },
+                { ...res.team, subscription: null, limits: null },
               ],
             },
           });
