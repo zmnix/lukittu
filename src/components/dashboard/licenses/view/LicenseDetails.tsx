@@ -15,7 +15,7 @@ import {
   getLicenseStatusBadgeVariant,
 } from '@/lib/licenses/license-status';
 import { CheckCircle, Copy, Infinity, User, XCircle } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -27,7 +27,6 @@ interface LicenseDetailsProps {
 export function LicenseDetails({ license }: LicenseDetailsProps) {
   const [showMore, setShowMore] = useState(false);
   const t = useTranslations();
-  const locale = useLocale();
 
   return (
     <Card>
@@ -145,21 +144,13 @@ export function LicenseDetails({ license }: LicenseDetailsProps) {
                 </div>
                 <div className="flex flex-col gap-2">
                   <h3 className="text-sm font-semibold">
-                    {t('dashboard.licenses.expiration_start')}
+                    {t('dashboard.licenses.expiration_date')}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {t(
-                      `dashboard.licenses.${
-                        license.expirationDate
-                          ? license.expirationDate.toLocaleString(locale, {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : 'not_yet_activated'
-                      }` as any,
+                    {license.expirationDate ? (
+                      <DateConverter date={license.expirationDate} />
+                    ) : (
+                      t('dashboard.licenses.not_yet_activated')
                     )}
                   </p>
                 </div>
