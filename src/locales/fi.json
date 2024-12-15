@@ -130,6 +130,7 @@
     "path": "Path",
     "search": "Search",
     "address": "Address",
+    "custom_emails": "Custom emails",
     "city": "City",
     "latest": "Latest",
     "search_license": "Search license",

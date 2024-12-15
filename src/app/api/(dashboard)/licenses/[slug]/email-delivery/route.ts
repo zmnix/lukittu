@@ -82,6 +82,7 @@ export async function POST(
             },
             include: {
               settings: true,
+              limits: true,
               licenses: {
                 where: {
                   id: licenseId,

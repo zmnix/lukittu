@@ -31,6 +31,7 @@ async function getProductMetadata(stripe: Stripe, priceId: string) {
       maxInvitations:
         +product.metadata.max_invitations || DEFAULT_LIMITS.maxInvitations,
       allowClassloader: product.metadata.allow_classloader === 'true',
+      allowCustomEmails: product.metadata.allow_custom_emails === 'true',
     },
     plan: product.metadata.subscription_name || 'free',
   };

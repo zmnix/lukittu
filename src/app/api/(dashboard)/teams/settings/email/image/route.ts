@@ -107,6 +107,7 @@ export async function POST(
             },
             include: {
               settings: true,
+              limits: true,
             },
           },
         },
@@ -132,6 +133,15 @@ export async function POST(
     }
 
     const team = session.user.teams[0];
+
+    if (!team.limits?.allowCustomEmails) {
+      return NextResponse.json(
+        {
+          message: t('validation.paid_subsciption_required'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     const fileBuffer = await file.arrayBuffer();
     let processedImageBuffer: Buffer;

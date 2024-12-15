@@ -1,5 +1,12 @@
 import LicenseDistributionEmailTemplate from '@/emails/LicenseDistributionTemplate';
-import { Customer, License, Product, Settings, Team } from '@prisma/client';
+import {
+  Customer,
+  License,
+  Limits,
+  Product,
+  Settings,
+  Team,
+} from '@prisma/client';
 import { render } from '@react-email/components';
 import { logger } from '../../logging/logger';
 import { sendEmail } from '../nodemailer';
@@ -8,7 +15,7 @@ interface SendLicenseDistributionEmailProps {
   customer: Customer;
   licenseKey: string;
   license: Omit<License, 'licenseKeyLookup'> & { products: Product[] };
-  team: Team & { settings?: Settings | null };
+  team: Team & { settings?: Settings | null; limits: Limits | null };
 }
 
 export const sendLicenseDistributionEmail = async ({
@@ -22,10 +29,14 @@ export const sendLicenseDistributionEmail = async ({
       LicenseDistributionEmailTemplate({
         customerName: customer.fullName ?? customer.email!,
         licenseKey,
-        businessLogoUrl: team.settings?.emailImageUrl ?? undefined,
+        businessLogoUrl: team.limits?.allowCustomEmails
+          ? (team.settings?.emailImageUrl ?? undefined)
+          : undefined,
         products: license.products.map((product) => product.name),
         teamName: team.name,
-        businessMessage: team.settings?.emailMessage ?? undefined,
+        businessMessage: team.limits?.allowCustomEmails
+          ? (team.settings?.emailMessage ?? undefined)
+          : undefined,
       }),
     );
 
@@ -33,10 +44,14 @@ export const sendLicenseDistributionEmail = async ({
       LicenseDistributionEmailTemplate({
         customerName: customer.fullName ?? customer.email!,
         licenseKey,
-        businessLogoUrl: team.settings?.emailImageUrl ?? undefined,
+        businessLogoUrl: team.limits?.allowCustomEmails
+          ? (team.settings?.emailImageUrl ?? undefined)
+          : undefined,
         products: license.products.map((product) => product.name),
         teamName: team.name,
-        businessMessage: team.settings?.emailMessage ?? undefined,
+        businessMessage: team.limits?.allowCustomEmails
+          ? (team.settings?.emailMessage ?? undefined)
+          : undefined,
       }),
       {
         plainText: true,

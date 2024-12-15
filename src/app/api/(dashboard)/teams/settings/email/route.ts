@@ -59,6 +59,9 @@ export async function PUT(
               id: selectedTeam,
               deletedAt: null,
             },
+            include: {
+              limits: true,
+            },
           },
         },
       },
@@ -80,6 +83,17 @@ export async function PUT(
           field: 'id',
         },
         { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const team = session.user.teams[0];
+
+    if (!team.limits?.allowCustomEmails) {
+      return NextResponse.json(
+        {
+          message: t('validation.paid_subsciption_required'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
       );
     }
 

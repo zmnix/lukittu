@@ -5,6 +5,7 @@ import {
 } from '@/app/api/(dashboard)/teams/settings/email/image/route';
 import { ITeamsSettingsEmailEditResponse } from '@/app/api/(dashboard)/teams/settings/email/route';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -32,11 +33,12 @@ import {
   SetTeamEmailSettingsSchema,
   setTeamEmailSettingsSchema,
 } from '@/lib/validation/team/set-team-email-settings-schema';
+import { TeamContext } from '@/providers/TeamProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -46,6 +48,14 @@ interface TeamEmailSettingsProps {
 
 export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
+
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
+
+  const hasCustomEmailsPermission =
+    selectedTeam?.limits?.allowCustomEmails ?? false;
 
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -176,12 +186,20 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
       <CardHeader>
         <CardTitle className="flex items-center text-xl font-bold">
           {t('dashboard.settings.email_settings')}
+          {!hasCustomEmailsPermission && (
+            <Badge className="ml-2 text-xs" variant="primary">
+              PRO
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form
-            className="space-y-2 max-md:px-2"
+            className={cn(
+              'space-y-2 max-md:px-2',
+              !hasCustomEmailsPermission && 'opacity-50',
+            )}
             onSubmit={handleSubmit(onSubmit)}
           >
             <div className="relative">
@@ -201,7 +219,11 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
                   'relative h-24 w-full overflow-hidden rounded-md',
                   'border bg-background p-4',
                   'flex items-center justify-center',
+                  !hasCustomEmailsPermission && 'cursor-not-allowed',
                 )}
+                onClick={
+                  hasCustomEmailsPermission ? handleFileSelect : undefined
+                }
               >
                 {imageUrl ? (
                   <Image
@@ -225,7 +247,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
                 <DropdownMenuTrigger asChild>
                   <LoadingButton
                     className="absolute bottom-2 left-2"
-                    disabled={uploading}
+                    disabled={uploading || !hasCustomEmailsPermission}
                     pending={uploading}
                     size="sm"
                     variant="secondary"
@@ -234,12 +256,17 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
                   </LoadingButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={handleFileSelect}>
+                  <DropdownMenuItem
+                    disabled={!hasCustomEmailsPermission}
+                    onClick={handleFileSelect}
+                  >
                     <Upload className="mr-2 h-4 w-4" />
                     {t('general.upload_photo')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    disabled={uploading || !imageUrl}
+                    disabled={
+                      uploading || !imageUrl || !hasCustomEmailsPermission
+                    }
                     onClick={handleRemove}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -264,7 +291,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
                   <Textarea
                     {...field}
                     className="form-textarea"
-                    disabled={!team || loading}
+                    disabled={!team || loading || !hasCustomEmailsPermission}
                     id="emailMessage"
                     maxLength={1000}
                   />
@@ -278,6 +305,7 @@ export default function TeamEmailSettings({ team }: TeamEmailSettingsProps) {
       </CardContent>
       <CardFooter>
         <LoadingButton
+          disabled={!hasCustomEmailsPermission}
           pending={loading}
           size="sm"
           type="submit"

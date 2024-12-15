@@ -135,6 +135,21 @@ export default function TeamLimits({ team }: TeamLimitsProps) {
               : t('general.disabled')}
           </span>
         </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {t('general.custom_emails')}
+            </span>
+            <Badge className="text-xs" variant="primary">
+              PRO
+            </Badge>
+          </div>
+          <span className="text-sm">
+            {team?.limits.allowCustomEmails
+              ? t('general.enabled')
+              : t('general.disabled')}
+          </span>
+        </div>
         {hasActiveSubscription && team?.subscription && (
           <div className="flex flex-col gap-2 border-t pt-4">
             <div className="flex items-center justify-between">

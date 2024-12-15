@@ -10,4 +10,5 @@ export const DEFAULT_LIMITS = {
   maxReleasesPerProduct: 100,
   maxInvitations: 100,
   allowClassloader: false,
+  allowCustomEmails: false,
 };
