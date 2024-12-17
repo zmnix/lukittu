@@ -450,7 +450,7 @@ export default function SetReleaseModal() {
                             <span className="truncate">
                               {t('general.uploaded')}:{' '}
                               {new Date(
-                                ctx.releaseToEdit.updatedAt,
+                                ctx.releaseToEdit.file.createdAt,
                               ).toLocaleString()}
                             </span>
                           )}
