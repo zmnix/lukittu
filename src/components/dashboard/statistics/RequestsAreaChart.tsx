@@ -32,10 +32,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useLocalStorageState } from '@/hooks/useLocalStorageState';
 import { TeamContext } from '@/providers/TeamProvider';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 import useSWR from 'swr';
@@ -72,8 +73,14 @@ export function RequestsAreaChart({ licenseId }: RequestsAreaChartProps) {
   const locale = useLocale();
   const teamCtx = useContext(TeamContext);
 
-  const [timeRange, setTimeRange] = useState('24h');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [timeRange, setTimeRange] = useLocalStorageState(
+    'requests-time-range',
+    '24h',
+  );
+  const [typeFilter, setTypeFilter] = useLocalStorageState(
+    'requests-type-filter',
+    'VERIFY',
+  );
 
   const { data: response, error } =
     useSWR<IStatisticsRequestsGetSuccessResponse>(

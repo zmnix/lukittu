@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useLocalStorageState } from '@/hooks/useLocalStorageState';
 import numberFormatter from '@/lib/utils/number-helpers';
 import { cn } from '@/lib/utils/tailwind-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
@@ -59,7 +60,10 @@ const fetchMapData = async (url: string) => {
 export default function WorldMapChart({ licenseId }: WorldMapChartProps) {
   const t = useTranslations();
   const teamCtx = useContext(TeamContext);
-  const [timeRange, setTimeRange] = useState('30d');
+  const [timeRange, setTimeRange] = useLocalStorageState(
+    'world-map-time-range',
+    '30d',
+  );
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
