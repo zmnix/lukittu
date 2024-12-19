@@ -1,5 +1,5 @@
 import prisma from '@/lib/database/prisma';
-import { BlacklistType, RequestStatus } from '@prisma/client';
+import { BlacklistType, License, RequestStatus } from '@prisma/client';
 import { iso2toIso3 } from '../../utils/country-helpers';
 
 class SharedVerificationHandler {
@@ -86,6 +86,58 @@ class SharedVerificationHandler {
         status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
         details: 'Device identifier is blacklisted',
       };
+    }
+
+    return null;
+  }
+
+  public async checkLicenseExpiration(
+    license: Omit<License, 'licenseKeyLookup'>,
+    licenseKeyLookup: string,
+  ) {
+    if (license.expirationType === 'DATE') {
+      const expirationDate = new Date(license.expirationDate!);
+      const currentDate = new Date();
+
+      if (currentDate.getTime() > expirationDate.getTime()) {
+        return {
+          status: RequestStatus.LICENSE_EXPIRED,
+          details: 'License expired',
+        };
+      }
+    }
+
+    if (license.expirationType === 'DURATION') {
+      const hasStartedExpiring = Boolean(license.expirationDate);
+
+      if (!hasStartedExpiring) {
+        const expirationDays = license.expirationDays!;
+        const expirationDate = new Date(
+          new Date().getTime() + expirationDays * 24 * 60 * 60 * 1000,
+        );
+
+        await prisma.license.update({
+          where: {
+            teamId_licenseKeyLookup: {
+              teamId: license.teamId,
+              licenseKeyLookup,
+            },
+          },
+          data: {
+            expirationDate,
+          },
+        });
+      } else {
+        const expirationDate = new Date(license.expirationDate!);
+        const currentDate = new Date();
+
+        if (currentDate.getTime() > expirationDate.getTime()) {
+          return {
+            status: RequestStatus.LICENSE_EXPIRED,
+            details: 'License expired',
+          };
+        }
+      }
     }
 
     return null;

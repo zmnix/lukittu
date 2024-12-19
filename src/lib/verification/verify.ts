@@ -320,62 +320,26 @@ export const handleVerify = async ({
     };
   }
 
-  if (license.expirationType === 'DATE') {
-    const expirationDate = new Date(license.expirationDate!);
-    const currentDate = new Date();
+  const licenseExpirationCheck =
+    await sharedVerificationHandler.checkLicenseExpiration(
+      license,
+      licenseKeyLookup,
+    );
 
-    if (currentDate.getTime() > expirationDate.getTime()) {
-      return {
-        ...commonBase,
-        status: RequestStatus.LICENSE_EXPIRED,
-        response: {
-          data: null,
-          result: {
-            timestamp: new Date(),
-            valid: false,
-            details: 'License expired',
-          },
+  if (licenseExpirationCheck) {
+    return {
+      ...commonBase,
+      status: licenseExpirationCheck.status,
+      response: {
+        data: null,
+        result: {
+          timestamp: new Date(),
+          valid: false,
+          details: licenseExpirationCheck.details,
         },
-        httpStatus: HttpStatus.FORBIDDEN,
-      };
-    }
-  }
-
-  if (license.expirationType === 'DURATION') {
-    const hasStartedExpiring = Boolean(license.expirationDate);
-
-    if (!hasStartedExpiring) {
-      const expirationDays = license.expirationDays!;
-      const expirationDate = new Date(
-        new Date().getTime() + expirationDays * 24 * 60 * 60 * 1000,
-      );
-
-      await prisma.license.update({
-        where: { teamId_licenseKeyLookup: { teamId, licenseKeyLookup } },
-        data: {
-          expirationDate,
-        },
-      });
-    } else {
-      const expirationDate = new Date(license.expirationDate!);
-      const currentDate = new Date();
-
-      if (currentDate.getTime() > expirationDate.getTime()) {
-        return {
-          ...commonBase,
-          status: RequestStatus.LICENSE_EXPIRED,
-          response: {
-            data: null,
-            result: {
-              timestamp: new Date(),
-              valid: false,
-              details: 'License expired',
-            },
-          },
-          httpStatus: HttpStatus.FORBIDDEN,
-        };
-      }
-    }
+      },
+      httpStatus: HttpStatus.FORBIDDEN,
+    };
   }
 
   if (license.ipLimit) {
