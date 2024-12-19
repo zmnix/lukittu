@@ -14,4 +14,6 @@ Sentry.init({
   debug: false,
 
   integrations: [Sentry.prismaIntegration()],
+
+  enabled: process.env.NODE_ENV !== 'development',
 });
