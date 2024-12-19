@@ -1,8 +1,9 @@
 import prisma from '@/lib/database/prisma';
-import { BlacklistType } from '@prisma/client';
+import { BlacklistType, RequestStatus } from '@prisma/client';
+import { iso2toIso3 } from '../../utils/country-helpers';
 
 class SharedVerificationHandler {
-  public async updateBlacklistHits(
+  private async updateBlacklistHits(
     teamId: string,
     type: BlacklistType,
     value: string,
@@ -21,6 +22,73 @@ class SharedVerificationHandler {
         },
       },
     });
+  }
+
+  public async checkBlacklist(
+    team: any,
+    teamId: string,
+    ipAddress: string | null,
+    geoData: any,
+    deviceIdentifier: string | undefined,
+  ) {
+    const blacklistedIps = team.blacklist.filter(
+      (b: any) => b.type === BlacklistType.IP_ADDRESS,
+    );
+    const blacklistedIpList = blacklistedIps.map((b: any) => b.value);
+
+    if (ipAddress && blacklistedIpList.includes(ipAddress)) {
+      await this.updateBlacklistHits(
+        teamId,
+        BlacklistType.IP_ADDRESS,
+        ipAddress,
+      );
+      return {
+        status: RequestStatus.IP_BLACKLISTED,
+        details: 'IP address is blacklisted',
+      };
+    }
+
+    const blacklistedCountries = team.blacklist.filter(
+      (b: any) => b.type === BlacklistType.COUNTRY,
+    );
+    const blacklistedCountryList = blacklistedCountries.map(
+      (b: any) => b.value,
+    );
+
+    if (blacklistedCountryList.length > 0 && geoData?.alpha2) {
+      const inIso3 = iso2toIso3(geoData.alpha2)!;
+      if (blacklistedCountryList.includes(inIso3)) {
+        await this.updateBlacklistHits(teamId, BlacklistType.COUNTRY, inIso3);
+        return {
+          status: RequestStatus.COUNTRY_BLACKLISTED,
+          details: 'Country is blacklisted',
+        };
+      }
+    }
+
+    const blacklistedDeviceIdentifiers = team.blacklist.filter(
+      (b: any) => b.type === BlacklistType.DEVICE_IDENTIFIER,
+    );
+    const blacklistedDeviceIdentifierList = blacklistedDeviceIdentifiers.map(
+      (b: any) => b.value,
+    );
+
+    if (
+      deviceIdentifier &&
+      blacklistedDeviceIdentifierList.includes(deviceIdentifier)
+    ) {
+      await this.updateBlacklistHits(
+        teamId,
+        BlacklistType.DEVICE_IDENTIFIER,
+        deviceIdentifier,
+      );
+      return {
+        status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
+        details: 'Device identifier is blacklisted',
+      };
+    }
+
+    return null;
   }
 }
 

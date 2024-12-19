@@ -1,11 +1,10 @@
 import { HttpStatus } from '@/types/http-status';
-import { BlacklistType, IpLimitPeriod, RequestStatus } from '@prisma/client';
+import { IpLimitPeriod, RequestStatus } from '@prisma/client';
 import { regex } from '../constants/regex';
 import prisma from '../database/prisma';
 import { CloudflareVisitorData } from '../providers/cloudflare';
 import { generateHMAC, signChallenge } from '../security/crypto';
 import { isRateLimited } from '../security/rate-limiter';
-import { iso2toIso3 } from '../utils/country-helpers';
 import { licenseHeartbeatSchema } from '../validation/licenses/license-heartbeat-schema';
 import { sharedVerificationHandler } from './shared/shared-verification';
 
@@ -218,91 +217,24 @@ export const handleHeartbeat = async ({
 
   commonBase.licenseKeyLookup = licenseKeyLookup;
 
-  const blacklistedIps = team.blacklist.filter(
-    (b) => b.type === BlacklistType.IP_ADDRESS,
+  const blacklistCheck = await sharedVerificationHandler.checkBlacklist(
+    team,
+    teamId,
+    ipAddress,
+    geoData,
+    deviceIdentifier,
   );
-  const blacklistedIpList = blacklistedIps.map((b) => b.value);
 
-  if (ipAddress && blacklistedIpList.includes(ipAddress)) {
-    await sharedVerificationHandler.updateBlacklistHits(
-      teamId,
-      BlacklistType.IP_ADDRESS,
-      ipAddress,
-    );
-
+  if (blacklistCheck) {
     return {
       ...commonBase,
-      status: RequestStatus.IP_BLACKLISTED,
+      status: blacklistCheck.status,
       response: {
         data: null,
         result: {
           timestamp: new Date(),
           valid: false,
-          details: 'IP address is blacklisted',
-        },
-      },
-      httpStatus: HttpStatus.FORBIDDEN,
-    };
-  }
-
-  const blacklistedCountries = team.blacklist.filter(
-    (b) => b.type === BlacklistType.COUNTRY,
-  );
-  const blacklistedCountryList = blacklistedCountries.map((b) => b.value);
-
-  if (blacklistedCountryList.length > 0) {
-    if (geoData?.alpha2) {
-      const inIso3 = iso2toIso3(geoData.alpha2!)!;
-
-      if (blacklistedCountryList.includes(inIso3)) {
-        await sharedVerificationHandler.updateBlacklistHits(
-          teamId,
-          BlacklistType.COUNTRY,
-          inIso3,
-        );
-        return {
-          ...commonBase,
-          status: RequestStatus.COUNTRY_BLACKLISTED,
-          response: {
-            data: null,
-            result: {
-              timestamp: new Date(),
-              valid: false,
-              details: 'Country is blacklisted',
-            },
-          },
-          httpStatus: HttpStatus.FORBIDDEN,
-        };
-      }
-    }
-  }
-
-  const blacklistedDeviceIdentifiers = team.blacklist.filter(
-    (b) => b.type === BlacklistType.DEVICE_IDENTIFIER,
-  );
-
-  const blacklistedDeviceIdentifierList = blacklistedDeviceIdentifiers.map(
-    (b) => b.value,
-  );
-
-  if (
-    deviceIdentifier &&
-    blacklistedDeviceIdentifierList.includes(deviceIdentifier)
-  ) {
-    await sharedVerificationHandler.updateBlacklistHits(
-      teamId,
-      BlacklistType.DEVICE_IDENTIFIER,
-      deviceIdentifier,
-    );
-    return {
-      ...commonBase,
-      status: RequestStatus.DEVICE_IDENTIFIER_BLACKLISTED,
-      response: {
-        data: null,
-        result: {
-          timestamp: new Date(),
-          valid: false,
-          details: 'Device identifier is blacklisted',
+          details: blacklistCheck.details,
         },
       },
       httpStatus: HttpStatus.FORBIDDEN,
