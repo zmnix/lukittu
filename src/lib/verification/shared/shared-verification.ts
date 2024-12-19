@@ -142,6 +142,33 @@ class SharedVerificationHandler {
 
     return null;
   }
+
+  public async checkSeats(
+    license: any,
+    deviceIdentifier: string | undefined,
+    deviceTimeout: number,
+  ) {
+    if (license.seats) {
+      const activeSeats = license.devices.filter(
+        (device: any) =>
+          new Date(device.lastBeatAt).getTime() >
+          new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
+      );
+
+      const seatsIncludesClient = activeSeats.some(
+        (seat: any) => seat.deviceIdentifier === deviceIdentifier,
+      );
+
+      if (!seatsIncludesClient && activeSeats.length >= license.seats) {
+        return {
+          status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
+          details: 'License seat limit reached',
+        };
+      }
+    }
+
+    return null;
+  }
 }
 
 export const sharedVerificationHandler = new SharedVerificationHandler();

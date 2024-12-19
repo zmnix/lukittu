@@ -366,34 +366,26 @@ export const handleHeartbeat = async ({
     }
   }
 
-  if (license.seats) {
-    const deviceTimeout = settings.deviceTimeout || 60;
+  const seatCheck = await sharedVerificationHandler.checkSeats(
+    license,
+    deviceIdentifier,
+    settings.deviceTimeout || 60,
+  );
 
-    const activeSeats = license.devices.filter(
-      (device) =>
-        new Date(device.lastBeatAt).getTime() >
-        new Date(Date.now() - deviceTimeout * 60 * 1000).getTime(),
-    );
-
-    const seatsIncludesClient = activeSeats.some(
-      (seat) => seat.deviceIdentifier === deviceIdentifier,
-    );
-
-    if (!seatsIncludesClient && activeSeats.length >= license.seats) {
-      return {
-        ...commonBase,
-        status: RequestStatus.MAXIMUM_CONCURRENT_SEATS,
-        response: {
-          data: null,
-          result: {
-            timestamp: new Date(),
-            valid: false,
-            details: 'License seat limit reached',
-          },
+  if (seatCheck) {
+    return {
+      ...commonBase,
+      status: seatCheck.status,
+      response: {
+        data: null,
+        result: {
+          timestamp: new Date(),
+          valid: false,
+          details: seatCheck.details,
         },
-        httpStatus: HttpStatus.FORBIDDEN,
-      };
-    }
+      },
+      httpStatus: HttpStatus.FORBIDDEN,
+    };
   }
 
   await prisma.$transaction(async (tx) => {
