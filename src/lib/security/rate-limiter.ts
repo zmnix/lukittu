@@ -30,6 +30,7 @@ export async function isRateLimited(
         logger.info(
           `Rate limit exceeded for ${key} but allowing in development`,
         );
+        return false;
       }
 
       return true;

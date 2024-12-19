@@ -25,7 +25,7 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
   }
 };
 
-interface CloudflareVisitorData {
+export interface CloudflareVisitorData {
   alpha2: string;
   alpha3: string;
   long: number;
