@@ -1,6 +1,6 @@
 import { HttpStatus } from '@/types/http-status';
 import { IpLimitPeriod, RequestStatus } from '@prisma/client';
-import "server-only";
+import 'server-only';
 import { regex } from '../constants/regex';
 import prisma from '../database/prisma';
 import { CloudflareVisitorData } from '../providers/cloudflare';
