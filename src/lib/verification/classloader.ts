@@ -1,5 +1,6 @@
 import { HttpStatus } from '@/types/http-status';
 import { IpLimitPeriod, ReleaseStatus, RequestStatus } from '@prisma/client';
+import "server-only";
 import { regex } from '../constants/regex';
 import prisma from '../database/prisma';
 import { logger } from '../logging/logger';
