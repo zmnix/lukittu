@@ -11,4 +11,4 @@ Lukittu is a free, open-source software for license distribution and management.
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/kasperip?style=flat&colorA=4153af&colorB=4153af)](https://github.com/sponsors/KasperiP)
 
 > [!IMPORTANT]  
-> Lukittu is currently under development and has not been released yet. I'm aiming to complete the project by the end of 2024. If you'd like to support its progress, feel free to give the project a star—it's completely free! :)
+> Lukittu is currently under development and has not been released yet. I'm aiming to complete the project by the end of 2024. If you'd like to support its progress, feel free to give the project a star—it's completely free! :).
