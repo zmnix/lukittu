@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ReleaseModalContext } from '@/providers/ReleasesModalProvider';
@@ -85,6 +86,9 @@ export const ReleasesActionDropdown = ({
           <Edit className="mr-2 h-4 w-4" />
           {t('dashboard.releases.update_release')}
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
           onClick={(e) => {

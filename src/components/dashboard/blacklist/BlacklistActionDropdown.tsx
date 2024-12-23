@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BlacklistModalContext } from '@/providers/BlacklistModalProvider';
@@ -46,6 +47,9 @@ export const BlacklistActionDropdown = ({
           <Edit className="mr-2 h-4 w-4" />
           {t('dashboard.blacklist.edit_blacklist')}
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
           onClick={(e) => {

@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { CustomerModalContext } from '@/providers/CustomerModalProvider';
@@ -46,6 +47,9 @@ export const CustomersActionDropdown = ({
           <Edit className="mr-2 h-4 w-4" />
           {t('dashboard.customers.edit_customer')}
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
           onClick={(e) => {

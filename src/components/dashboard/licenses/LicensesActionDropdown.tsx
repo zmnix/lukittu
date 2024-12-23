@@ -4,6 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LicenseModalContext } from '@/providers/LicenseModalProvider';
@@ -79,6 +80,9 @@ export const LicensesActionDropdown = ({
           <Send className="mr-2 h-4 w-4" />
           {t('dashboard.licenses.send_email_delivery')}
         </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem
           className="text-destructive hover:cursor-pointer"
           onClick={(e) => {
