@@ -2,6 +2,7 @@ import { regex } from '@/lib/constants/regex';
 import { sendLicenseDistributionEmail } from '@/lib/emails/templates/send-license-distribution-email';
 import { logger } from '@/lib/logging/logger';
 import { decryptLicenseKey } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
@@ -117,6 +118,17 @@ export async function POST(
     }
 
     const team = session.user.teams[0];
+
+    const key = `email-delivery:${team.id}`;
+    const isLimited = await isRateLimited(key, 50, 86400); // 50 requests per day
+    if (isLimited) {
+      return NextResponse.json(
+        {
+          message: t('validation.too_many_requests'),
+        },
+        { status: HttpStatus.TOO_MANY_REQUESTS },
+      );
+    }
 
     if (!team.licenses.length) {
       return NextResponse.json(

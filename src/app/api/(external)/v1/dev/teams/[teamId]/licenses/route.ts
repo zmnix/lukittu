@@ -5,6 +5,7 @@ import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
 import { verifyApiAuthorization } from '@/lib/security/api-key-auth';
 import { encryptLicenseKey, generateHMAC } from '@/lib/security/crypto';
+import { isRateLimited } from '@/lib/security/rate-limiter';
 import {
   CreateLicenseSchema,
   createLicenseSchema,
@@ -201,6 +202,22 @@ export async function POST(
         .filter(Boolean) as string[];
 
       if (customerEmails.length) {
+        const key = `email-delivery:${team.id}`;
+        const isLimited = await isRateLimited(key, 50, 86400); // 50 requests per day
+        if (isLimited) {
+          return NextResponse.json(
+            {
+              data: null,
+              result: {
+                details: 'Too many requests',
+                timestamp: new Date(),
+                valid: false,
+              },
+            },
+            { status: HttpStatus.TOO_MANY_REQUESTS },
+          );
+        }
+
         const emails = license.customers
           .filter((customer) => customer.email)
           .map(
