@@ -55,6 +55,11 @@ export async function GET(
     const search = (searchParams.get('search') as string) || '';
 
     const licenseId = searchParams.get('licenseId') as string;
+    const licenseCountMin = searchParams.get('licenseCountMin');
+    const licenseCountMax = searchParams.get('licenseCountMax');
+    const licenseCountComparisonMode = searchParams.get(
+      'licenseCountComparisonMode',
+    );
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
@@ -88,8 +93,54 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
+    let licenseCountFilter: Prisma.ProductWhereInput | undefined;
+
+    if (licenseCountMin) {
+      const min = parseInt(licenseCountMin);
+      if (!isNaN(min) && min >= 0) {
+        const licenseCounts = await prisma.$queryRaw<
+          { id: string; licenseCount: number }[]
+        >`
+          SELECT p.id, COUNT(l.id) as "licenseCount"
+          FROM "Product" p
+          LEFT JOIN "_LicenseToProduct" lp ON p.id = lp."B"
+          LEFT JOIN "License" l ON lp."A" = l.id
+          WHERE p."teamId" = ${Prisma.sql`${selectedTeam}`}
+          GROUP BY p.id
+        `;
+
+        const filteredProductIds = licenseCounts
+          .filter((product) => {
+            const licenseCount = Number(product.licenseCount);
+            switch (licenseCountComparisonMode) {
+              case 'between':
+                const max = parseInt(licenseCountMax || '');
+                return (
+                  !isNaN(max) && licenseCount >= min && licenseCount <= max
+                );
+              case 'equals':
+                return licenseCount === min;
+              case 'greater':
+                return licenseCount > min;
+              case 'less':
+                return licenseCount < min;
+              default:
+                return false;
+            }
+          })
+          .map((product) => product.id);
+
+        licenseCountFilter = {
+          id: {
+            in: filteredProductIds,
+          },
+        };
+      }
+    }
+
     const where = {
       teamId: selectedTeam,
+      ...licenseCountFilter,
       licenses: licenseId
         ? {
             some: {

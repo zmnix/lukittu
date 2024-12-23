@@ -4,6 +4,8 @@ import {
   ICustomersGetSuccessResponse,
 } from '@/app/api/(dashboard)/customers/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { ComparisonMode } from '@/components/shared/filtering/IpCountFilterChip';
+import { LicenseCountFilterChip } from '@/components/shared/filtering/LicenseCountFilterChip';
 import { MetadataFilterChip } from '@/components/shared/filtering/MetadataFilterChip';
 import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
@@ -67,6 +69,14 @@ export function CustomersTable() {
   const [metadataValue, setMetadataValue] = useState('');
   const [tempMetadataKey, setTempMetadataKey] = useState('');
   const [tempMetadataValue, setTempMetadataValue] = useState('');
+  const [licenseCountMin, setLicenseCountMin] = useState('');
+  const [licenseCountMax, setLicenseCountMax] = useState('');
+  const [tempLicenseCountMin, setTempLicenseCountMin] = useState('');
+  const [tempLicenseCountMax, setTempLicenseCountMax] = useState('');
+  const [licenseCountComparisonMode, setLicenseCountComparisonMode] =
+    useState<ComparisonMode>('');
+  const [tempLicenseCountComparisonMode, setTempLicenseCountComparisonMode] =
+    useState<ComparisonMode>('equals');
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -76,6 +86,10 @@ export function CustomersTable() {
     ...(search && { search }),
     ...(metadataKey && { metadataKey }),
     ...(metadataValue && { metadataValue }),
+    ...(licenseCountMin && { licenseCountMin }),
+    ...(licenseCountMax &&
+      licenseCountComparisonMode === 'between' && { licenseCountMax }),
+    ...(licenseCountComparisonMode && { licenseCountComparisonMode }),
   });
 
   const { data, error, isLoading } = useSWR<ICustomersGetSuccessResponse>(
@@ -130,7 +144,22 @@ export function CustomersTable() {
         tempMetadataValue={tempMetadataValue}
       />
 
-      {(search || (metadataKey && metadataValue)) && (
+      <LicenseCountFilterChip
+        comparisonMode={licenseCountComparisonMode}
+        licenseCountMax={licenseCountMax}
+        licenseCountMin={licenseCountMin}
+        setComparisonMode={setLicenseCountComparisonMode}
+        setLicenseCountMax={setLicenseCountMax}
+        setLicenseCountMin={setLicenseCountMin}
+        setTempComparisonMode={setTempLicenseCountComparisonMode}
+        setTempLicenseCountMax={setTempLicenseCountMax}
+        setTempLicenseCountMin={setTempLicenseCountMin}
+        tempComparisonMode={tempLicenseCountComparisonMode}
+        tempLicenseCountMax={tempLicenseCountMax}
+        tempLicenseCountMin={tempLicenseCountMin}
+      />
+
+      {(search || (metadataKey && metadataValue) || licenseCountMin) && (
         <Button
           className="h-7 rounded-full text-xs"
           size="sm"
@@ -141,6 +170,12 @@ export function CustomersTable() {
             setMetadataValue('');
             setTempMetadataKey('');
             setTempMetadataValue('');
+            setLicenseCountMin('');
+            setLicenseCountMax('');
+            setTempLicenseCountMin('');
+            setTempLicenseCountMax('');
+            setLicenseCountComparisonMode('');
+            setTempLicenseCountComparisonMode('equals');
           }}
         >
           {t('general.clear_all')}

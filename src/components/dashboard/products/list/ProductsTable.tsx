@@ -4,6 +4,8 @@ import {
   IProductsGetSuccessResponse,
 } from '@/app/api/(dashboard)/products/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { ComparisonMode } from '@/components/shared/filtering/IpCountFilterChip';
+import { LicenseCountFilterChip } from '@/components/shared/filtering/LicenseCountFilterChip';
 import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import MobileFilterModal from '@/components/shared/table/MobileFiltersModal';
 import TablePagination from '@/components/shared/table/TablePagination';
@@ -71,6 +73,14 @@ export function ProductsTable() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
+  const [licenseCountMin, setLicenseCountMin] = useState('');
+  const [licenseCountMax, setLicenseCountMax] = useState('');
+  const [tempLicenseCountMin, setTempLicenseCountMin] = useState('');
+  const [tempLicenseCountMax, setTempLicenseCountMax] = useState('');
+  const [licenseCountComparisonMode, setLicenseCountComparisonMode] =
+    useState<ComparisonMode>('');
+  const [tempLicenseCountComparisonMode, setTempLicenseCountComparisonMode] =
+    useState<ComparisonMode>('equals');
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -78,6 +88,10 @@ export function ProductsTable() {
     ...(sortColumn && { sortColumn }),
     ...(sortDirection && { sortDirection }),
     ...(search && { search }),
+    ...(licenseCountMin && { licenseCountMin }),
+    ...(licenseCountMax &&
+      licenseCountComparisonMode === 'between' && { licenseCountMax }),
+    ...(licenseCountComparisonMode && { licenseCountComparisonMode }),
   });
 
   const { data, error, isLoading } = useSWR<IProductsGetSuccessResponse>(
@@ -106,6 +120,56 @@ export function ProductsTable() {
       clearTimeout(timeout);
     };
   }, [debounceSearch]);
+
+  const renderFilters = () => (
+    <div className="mb-4 flex flex-wrap items-center gap-4 max-lg:hidden">
+      <div className="relative flex w-full min-w-[33%] max-w-xs items-center">
+        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+        <Input
+          className="pl-8"
+          placeholder={t('dashboard.licenses.search_product')}
+          value={debounceSearch}
+          onChange={(e) => {
+            setDebounceSearch(e.target.value);
+          }}
+        />
+      </div>
+
+      <LicenseCountFilterChip
+        comparisonMode={licenseCountComparisonMode}
+        licenseCountMax={licenseCountMax}
+        licenseCountMin={licenseCountMin}
+        setComparisonMode={setLicenseCountComparisonMode}
+        setLicenseCountMax={setLicenseCountMax}
+        setLicenseCountMin={setLicenseCountMin}
+        setTempComparisonMode={setTempLicenseCountComparisonMode}
+        setTempLicenseCountMax={setTempLicenseCountMax}
+        setTempLicenseCountMin={setTempLicenseCountMin}
+        tempComparisonMode={tempLicenseCountComparisonMode}
+        tempLicenseCountMax={tempLicenseCountMax}
+        tempLicenseCountMin={tempLicenseCountMin}
+      />
+
+      {(search || licenseCountMin) && (
+        <Button
+          className="h-7 rounded-full text-xs"
+          size="sm"
+          onClick={() => {
+            setDebounceSearch('');
+            setSearch('');
+            setLicenseCountMin('');
+            setLicenseCountMax('');
+            setTempLicenseCountMin('');
+            setTempLicenseCountMax('');
+            setLicenseCountComparisonMode('');
+            setTempLicenseCountComparisonMode('equals');
+          }}
+        >
+          {t('general.clear_all')}
+        </Button>
+      )}
+    </div>
+  );
 
   return (
     <ProductModalProvider>
@@ -143,17 +207,7 @@ export function ProductsTable() {
         <CardContent>
           {hasProducts && teamCtx.selectedTeam ? (
             <>
-              <div className="relative mb-4 flex min-w-[33%] max-w-xs items-center max-lg:hidden">
-                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
-                <Input
-                  className="pl-8"
-                  placeholder={t('dashboard.licenses.search_product')}
-                  value={debounceSearch}
-                  onChange={(e) => {
-                    setDebounceSearch(e.target.value);
-                  }}
-                />
-              </div>
+              {renderFilters()}
               <div className="flex flex-col md:hidden">
                 {isLoading
                   ? Array.from({ length: 5 }).map((_, index) => (
