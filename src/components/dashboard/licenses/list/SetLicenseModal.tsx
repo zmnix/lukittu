@@ -169,7 +169,7 @@ export default function SetLicenseModal() {
     ctx.licenseToEdit,
     ctx.initialProductIds,
     ctx.initialCustomerIds,
-    form,
+    setValue,
   ]);
 
   const handleLicenseGenerate = async () => {
@@ -251,6 +251,9 @@ export default function SetLicenseModal() {
       }
 
       mutate((key) => Array.isArray(key) && key[0] === '/api/licenses');
+      mutate((key) => Array.isArray(key) && key[0] === '/api/products');
+      mutate((key) => Array.isArray(key) && key[0] === '/api/customers');
+
       handleOpenChange(false);
       toast.success(
         ctx.licenseToEdit

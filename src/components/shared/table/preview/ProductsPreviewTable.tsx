@@ -1,10 +1,14 @@
 import {
+  ILicenseGetSuccessResponse,
+  ILicensesUpdateResponse,
+} from '@/app/api/(dashboard)/licenses/[slug]/route';
+import {
   IProductsGetResponse,
   IProductsGetSuccessResponse,
 } from '@/app/api/(dashboard)/products/route';
+import { LicenseProductsModal } from '@/components/dashboard/licenses/view/LicenseProductsModal';
 import { ProductsActionDropdown } from '@/components/dashboard/products/ProductsActionDropdown';
 import { DateConverter } from '@/components/shared/DateConverter';
-import AddEntityButton from '@/components/shared/misc/AddEntityButton';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
 import { Button } from '@/components/ui/button';
@@ -19,16 +23,18 @@ import {
 } from '@/components/ui/table';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { cn } from '@/lib/utils/tailwind-helpers';
+import { SetLicenseScheama } from '@/lib/validation/licenses/set-license-schema';
 import { ProductModalProvider } from '@/providers/ProductModalProvider';
 import { TeamContext } from '@/providers/TeamProvider';
-import { ArrowDownUp } from 'lucide-react';
+import { ArrowDownUp, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 
 interface ProductsPreviewTableProps {
+  license: ILicenseGetSuccessResponse['license'] | undefined;
   licenseId: string;
 }
 
@@ -44,12 +50,14 @@ const fetchProducts = async (url: string) => {
 };
 
 export default function ProductsPreviewTable({
+  license,
   licenseId,
 }: ProductsPreviewTableProps) {
   const t = useTranslations();
   const router = useRouter();
   const { showDropdown, containerRef } = useTableScroll();
   const teamCtx = useContext(TeamContext);
+  const { mutate } = useSWRConfig();
 
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<'name' | 'createdAt' | null>(
@@ -58,6 +66,8 @@ export default function ProductsPreviewTable({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
     null,
   );
+  const [licenseProductsModalOpen, setLicenseProductsModalOpen] =
+    useState(false);
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -80,6 +90,60 @@ export default function ProductsPreviewTable({
     }
   }, [error, t]);
 
+  const handleLicenseEdit = async (payload: SetLicenseScheama) => {
+    const response = await fetch(`/api/licenses/${licenseId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as ILicensesUpdateResponse;
+
+    return data;
+  };
+
+  const handleLicenseProductsSet = async (productIds: string[]) => {
+    if (!license) {
+      toast.error(t('general.error_occurred'));
+      return;
+    }
+    const res = await handleLicenseEdit({
+      customerIds: license.customers.map((c) => c.id),
+      productIds,
+      expirationDate: license.expirationDate,
+      expirationDays: license.expirationDays,
+      expirationStart:
+        license.expirationType === 'DURATION' ? license.expirationStart : null,
+      expirationType: license.expirationType,
+      ipLimit: license.ipLimit,
+      licenseKey: license.licenseKey,
+      metadata: license.metadata as {
+        key: string;
+        value: string;
+        locked: boolean;
+      }[],
+      seats: license.seats,
+      sendEmailDelivery: false,
+      suspended: license.suspended,
+    });
+
+    if ('message' in res) {
+      toast.error(res.message || t('general.error_occurred'));
+      return;
+    }
+
+    mutate((key) => Array.isArray(key) && key[0] === '/api/products');
+    mutate((key) => Array.isArray(key) && key[0] === '/api/licenses');
+
+    toast.success(t('dashboard.licenses.license_updated'));
+  };
+
+  const openModal = () => {
+    setLicenseProductsModalOpen(true);
+  };
+
   const products = data?.products ?? [];
   const totalProducts = data?.totalResults ?? 1;
 
@@ -90,7 +154,17 @@ export default function ProductsPreviewTable({
           <CardTitle className="flex w-full items-center text-xl font-bold">
             {t('dashboard.navigation.products')}
             <div className="ml-auto flex gap-2">
-              <AddEntityButton entityType="product" variant="outline" />
+              <Button
+                className="ml-auto flex gap-2"
+                size="sm"
+                variant="outline"
+                onClick={openModal}
+              >
+                <Plus className="h-4 w-4" />
+                <span className={cn('max-md:hidden')}>
+                  {t('dashboard.products.add_product')}
+                </span>
+              </Button>
             </div>
           </CardTitle>
         </CardHeader>
@@ -172,7 +246,11 @@ export default function ProductsPreviewTable({
                             },
                           )}
                         >
-                          <ProductsActionDropdown product={product} />
+                          <ProductsActionDropdown
+                            handleLicenseProductsSet={handleLicenseProductsSet}
+                            license={license}
+                            product={product}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -194,6 +272,13 @@ export default function ProductsPreviewTable({
           )}
         </CardContent>
       </Card>
+      <LicenseProductsModal
+        license={license}
+        open={licenseProductsModalOpen}
+        selectedProducts={products}
+        onOpenChange={setLicenseProductsModalOpen}
+        onSubmit={handleLicenseProductsSet}
+      />
     </ProductModalProvider>
   );
 }

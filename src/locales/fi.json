@@ -470,7 +470,8 @@
       "product_updated": "Product updated",
       "product_deleted": "Product deleted",
       "product_created": "Product created",
-      "no_licenses_assigned": "No licenses assigned"
+      "no_licenses_assigned": "No licenses assigned",
+      "editing_products_of_license": "You are editing products of license <strong>{license}</strong>."
     },
     "licenses": {
       "no_ip_addresses": "No IP-addresses",
@@ -536,7 +537,8 @@
       "delete_customer": "Delete customer",
       "search_customer": "Search customer...",
       "delete_customer_confirm_title": "Delete customer",
-      "delete_customer_confirm_description": "You are about to delete customer <strong>{name}</strong>! This will <strong>permanently delete</strong> this customer. This action cannot be undone."
+      "delete_customer_confirm_description": "You are about to delete customer <strong>{name}</strong>! This will <strong>permanently delete</strong> this customer. This action cannot be undone.",
+      "editing_customers_of_license": "You are editing customers of license <strong>{license}</strong>."
     },
     "subscriptions": {
       "upgrade_to_premium": "Upgrade your plan",

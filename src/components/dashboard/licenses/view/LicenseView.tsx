@@ -72,8 +72,8 @@ export default function LicenseView() {
         <div className="flex">
           <div className="flex w-full gap-4 max-xl:flex-col-reverse">
             <div className="flex w-full max-w-full flex-col gap-4 overflow-auto">
-              <ProductsPreviewTable licenseId={licenseId} />
-              <CustomersPreviewTable licenseId={licenseId} />
+              <ProductsPreviewTable license={license} licenseId={licenseId} />
+              <CustomersPreviewTable license={license} licenseId={licenseId} />
               <RequestLogsPreviewTable licenseId={licenseId} />
               <IpAddressPreviewTable licenseId={licenseId} />
               <DevicesPreviewTable licenseId={licenseId} />
