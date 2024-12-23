@@ -39,7 +39,7 @@ export async function GET(
     const selectedTeam = await getSelectedTeam();
     const licenseId = params.slug;
 
-    if (!selectedTeam || !regex.uuidV4.test(selectedTeam)) {
+    if (!selectedTeam) {
       return NextResponse.json(
         {
           message: t('validation.team_not_found'),

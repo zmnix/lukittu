@@ -98,43 +98,44 @@ export async function GET(
     if (licenseCountMin) {
       const min = parseInt(licenseCountMin);
       if (!isNaN(min) && min >= 0) {
-        const licenseCounts = await prisma.$queryRaw<
-          { id: string; licenseCount: number }[]
-        >`
-          SELECT p.id, COUNT(l.id) as "licenseCount"
-          FROM "Product" p
-          LEFT JOIN "_LicenseToProduct" lp ON p.id = lp."B"
-          LEFT JOIN "License" l ON lp."A" = l.id
-          WHERE p."teamId" = ${Prisma.sql`${selectedTeam}`}
-          GROUP BY p.id
-        `;
+        let havingClause: Prisma.Sql | undefined;
 
-        const filteredProductIds = licenseCounts
-          .filter((product) => {
-            const licenseCount = Number(product.licenseCount);
-            switch (licenseCountComparisonMode) {
-              case 'between':
-                const max = parseInt(licenseCountMax || '');
-                return (
-                  !isNaN(max) && licenseCount >= min && licenseCount <= max
-                );
-              case 'equals':
-                return licenseCount === min;
-              case 'greater':
-                return licenseCount > min;
-              case 'less':
-                return licenseCount < min;
-              default:
-                return false;
+        switch (licenseCountComparisonMode) {
+          case 'between': {
+            const max = parseInt(licenseCountMax || '');
+            if (!isNaN(max)) {
+              havingClause = Prisma.sql`HAVING COUNT(l.id) >= ${min} AND COUNT(l.id) <= ${max}`;
             }
-          })
-          .map((product) => product.id);
+            break;
+          }
+          case 'equals':
+            havingClause = Prisma.sql`HAVING COUNT(l.id) = ${min}`;
+            break;
+          case 'greater':
+            havingClause = Prisma.sql`HAVING COUNT(l.id) > ${min}`;
+            break;
+          case 'less':
+            havingClause = Prisma.sql`HAVING COUNT(l.id) < ${min}`;
+            break;
+        }
 
-        licenseCountFilter = {
-          id: {
-            in: filteredProductIds,
-          },
-        };
+        if (havingClause) {
+          const filteredProductIds = await prisma.$queryRaw<{ id: string }[]>`
+            SELECT p.id
+            FROM "Product" p
+            LEFT JOIN "_LicenseToProduct" lp ON p.id = lp."B"
+            LEFT JOIN "License" l ON lp."A" = l.id
+            WHERE p."teamId" = ${selectedTeam}
+            GROUP BY p.id
+            ${havingClause}
+          `;
+
+          licenseCountFilter = {
+            id: {
+              in: filteredProductIds.map((p) => p.id),
+            },
+          };
+        }
       }
     }
 

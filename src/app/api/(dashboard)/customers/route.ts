@@ -117,49 +117,49 @@ export async function GET(
 
     const skip = (page - 1) * pageSize;
     const take = pageSize;
-
     let licenseCountFilter: Prisma.CustomerWhereInput | undefined;
 
     if (licenseCountMin) {
       const min = parseInt(licenseCountMin);
       if (!isNaN(min) && min >= 0) {
-        const licenseCounts = await prisma.$queryRaw<
-          { id: string; licenseCount: number }[]
-        >`
-          SELECT c.id, COUNT(l.id) as "licenseCount"
-          FROM "Customer" c
-          LEFT JOIN "_CustomerToLicense" cl ON c.id = cl."A"
-          LEFT JOIN "License" l ON cl."B" = l.id
-          WHERE c."teamId" = ${Prisma.sql`${selectedTeam}`}
-          GROUP BY c.id
+        let havingClause: Prisma.Sql | undefined;
+
+        switch (licenseCountComparisonMode) {
+          case 'between': {
+            const max = parseInt(licenseCountMax || '');
+            if (!isNaN(max)) {
+              havingClause = Prisma.sql`HAVING COUNT(l.id) >= ${min} AND COUNT(l.id) <= ${max}`;
+            }
+            break;
+          }
+          case 'equals':
+            havingClause = Prisma.sql`HAVING COUNT(l.id) = ${min}`;
+            break;
+          case 'greater':
+            havingClause = Prisma.sql`HAVING COUNT(l.id) > ${min}`;
+            break;
+          case 'less':
+            havingClause = Prisma.sql`HAVING COUNT(l.id) < ${min}`;
+            break;
+        }
+
+        if (havingClause) {
+          const filteredCustomerIds = await prisma.$queryRaw<{ id: string }[]>`
+        SELECT c.id
+        FROM "Customer" c
+        LEFT JOIN "_CustomerToLicense" cl ON c.id = cl."A"
+        LEFT JOIN "License" l ON cl."B" = l.id
+        WHERE c."teamId" = ${selectedTeam}
+        GROUP BY c.id
+        ${havingClause}
         `;
 
-        const filteredCustomerIds = licenseCounts
-          .filter((customer) => {
-            const licenseCount = Number(customer.licenseCount);
-            switch (licenseCountComparisonMode) {
-              case 'between':
-                const max = parseInt(licenseCountMax || '');
-                return (
-                  !isNaN(max) && licenseCount >= min && licenseCount <= max
-                );
-              case 'equals':
-                return licenseCount === min;
-              case 'greater':
-                return licenseCount > min;
-              case 'less':
-                return licenseCount < min;
-              default:
-                return false;
-            }
-          })
-          .map((customer) => customer.id);
-
-        licenseCountFilter = {
-          id: {
-            in: filteredCustomerIds,
-          },
-        };
+          licenseCountFilter = {
+            id: {
+              in: filteredCustomerIds.map((c) => c.id),
+            },
+          };
+        }
       }
     }
 

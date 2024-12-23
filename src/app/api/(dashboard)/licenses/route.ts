@@ -46,7 +46,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const selectedTeam = await getSelectedTeam();
 
-    if (!selectedTeam || !regex.uuidV4.test(selectedTeam)) {
+    if (!selectedTeam) {
       return NextResponse.json(
         {
           message: t('validation.team_not_found'),
