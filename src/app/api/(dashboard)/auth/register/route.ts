@@ -2,6 +2,7 @@ import prisma from '@/lib/database/prisma';
 import { sendVerifyEmailEmail } from '@/lib/emails/templates/send-verify-email-email';
 import { logger } from '@/lib/logging/logger';
 import { verifyTurnstileToken } from '@/lib/providers/cloudflare';
+import { sendDiscordWebhook } from '@/lib/providers/discord-webhook';
 import { generateKeyPair, hashPassword } from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
 import { getIp, getLanguage } from '@/lib/utils/header-helpers';
@@ -190,6 +191,28 @@ export async function POST(
         { status: HttpStatus.INTERNAL_SERVER_ERROR },
       );
     }
+
+    await sendDiscordWebhook(process.env.INTERNAL_STATUS_WEBHOOK!, {
+      embeds: [
+        {
+          title: '🎉 New User Registered',
+          color: 0x00ff00,
+          fields: [
+            {
+              name: 'Email',
+              value: email,
+              inline: true,
+            },
+            {
+              name: 'Provider',
+              value: Provider.CREDENTIALS,
+              inline: true,
+            },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
 
     return NextResponse.json({
       success: true,

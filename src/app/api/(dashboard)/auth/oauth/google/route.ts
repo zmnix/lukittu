@@ -1,5 +1,6 @@
 import prisma from '@/lib/database/prisma';
 import { logger } from '@/lib/logging/logger';
+import { sendDiscordWebhook } from '@/lib/providers/discord-webhook';
 import { generateKeyPair } from '@/lib/security/crypto';
 import { createSession } from '@/lib/security/session';
 import { Provider } from '@prisma/client';
@@ -166,6 +167,28 @@ export async function GET(request: NextRequest) {
             create: {},
           },
         },
+      });
+
+      await sendDiscordWebhook(process.env.INTERNAL_STATUS_WEBHOOK!, {
+        embeds: [
+          {
+            title: '🎉 New User Registered',
+            color: 0x00ff00,
+            fields: [
+              {
+                name: 'Email',
+                value: newUser.email,
+                inline: true,
+              },
+              {
+                name: 'Provider',
+                value: Provider.GOOGLE,
+                inline: true,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
       });
 
       return newUser;
