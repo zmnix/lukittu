@@ -100,6 +100,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         ],
         success_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
         cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+        allow_promotion_codes: true,
         metadata: {
           lukittu_team_id: team.id,
         },
@@ -125,6 +126,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ],
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+      allow_promotion_codes: true,
       metadata: {
         lukittu_team_id: team.id,
       },
