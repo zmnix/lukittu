@@ -661,7 +661,7 @@ export const handleClassloader = async ({
     };
   }
 
-  const isJar = file.ContentType === 'application/java-archive';
+  const isJar = Boolean(releaseToUse.file?.mainClassName);
 
   const watermarkingEnabled = Boolean(
     settings.watermarking && limits.allowWatermarking && isJar,
