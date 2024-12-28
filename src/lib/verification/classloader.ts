@@ -667,6 +667,15 @@ export const handleClassloader = async ({
     settings.watermarking && limits.allowWatermarking && isJar,
   );
 
+  logger.info(
+    `Downloading file for team ${teamId}, release ${releaseToUse.id}, file ${fileToUse.id}`,
+    {
+      'settings.watermarking': settings.watermarking,
+      'limits.allowWatermarking': limits.allowWatermarking,
+      isJar,
+    },
+  );
+
   const fileStream = watermarkingEnabled
     ? await file.Body?.transformToByteArray()
     : file.Body?.transformToWebStream();
@@ -717,6 +726,10 @@ export const handleClassloader = async ({
     );
 
     if (!embedResponse.ok) {
+      logger.error(
+        `Error occurred while watermarking file for team ${teamId}`,
+        embedResponse,
+      );
       return {
         ...commonResponse,
         ...commonBase,
