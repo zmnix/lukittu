@@ -1,6 +1,7 @@
 import { ITeamGetSuccessResponse } from '@/app/api/(dashboard)/teams/[slug]/route';
 import { ITeamsSettingsValidationEditResponse } from '@/app/api/(dashboard)/teams/settings/validation/route';
 import LoadingButton from '@/components/shared/LoadingButton';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -24,14 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   SetTeamValidationSettingsSchema,
   setTeamValidationSettingsSchema,
 } from '@/lib/validation/team/set-team-validation-settings-schema';
+import { TeamContext } from '@/providers/TeamProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -43,6 +46,14 @@ export default function TeamValidationSettings({
   team,
 }: TeamValidationSettingsProps) {
   const t = useTranslations();
+  const teamCtx = useContext(TeamContext);
+
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
+
+  const hasWatermarkingPermission =
+    selectedTeam?.limits?.allowWatermarking ?? false;
 
   const [loading, setLoading] = useState(false);
 
@@ -54,6 +65,7 @@ export default function TeamValidationSettings({
       strictReleases: false,
       deviceTimeout: 60,
       ipLimitPeriod: 'DAY',
+      watermarking: false,
     },
   });
 
@@ -66,6 +78,7 @@ export default function TeamValidationSettings({
       strictReleases: team?.settings.strictReleases ?? false,
       deviceTimeout: team?.settings.deviceTimeout ?? 60,
       ipLimitPeriod: team?.settings.ipLimitPeriod ?? 'DAY',
+      watermarking: team?.settings.watermarking ?? false,
     });
   }, [team, reset]);
 
@@ -244,6 +257,35 @@ export default function TeamValidationSettings({
                 </FormItem>
               )}
             />
+            <div>
+              <FormField
+                control={control}
+                name="watermarking"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>
+                        {t('dashboard.settings.watermarking')}
+                        {!hasWatermarkingPermission && (
+                          <Badge className="ml-2 text-xs" variant="primary">
+                            PRO
+                          </Badge>
+                        )}
+                      </FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        disabled={
+                          !team || loading || !hasWatermarkingPermission
+                        }
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
           </form>
           <button className="hidden" type="submit" />
         </Form>

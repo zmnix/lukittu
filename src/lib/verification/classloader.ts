@@ -661,7 +661,15 @@ export const handleClassloader = async ({
     };
   }
 
-  const fileStream = file.Body?.transformToWebStream();
+  const isJar = file.ContentType === 'application/java-archive';
+
+  const watermarkingEnabled = Boolean(
+    settings.watermarking && limits.allowWatermarking && isJar,
+  );
+
+  const fileStream = watermarkingEnabled
+    ? await file.Body?.transformToByteArray()
+    : file.Body?.transformToWebStream();
 
   if (!fileStream) {
     return {
@@ -680,7 +688,64 @@ export const handleClassloader = async ({
     };
   }
 
-  const encryptedStream = fileStream.pipeThrough(
+  let fileStreamFormatted: ReadableStream<any> | null = null;
+
+  if (watermarkingEnabled) {
+    logger.info('Watermarking enabled');
+    const embedFormData = new FormData();
+    embedFormData.append(
+      'file',
+      new Blob([fileStream as Uint8Array<ArrayBufferLike>], {
+        type: 'application/java-archive',
+      }),
+      'file.jar',
+    );
+
+    const WATERMARK = `${teamId}:${licenseKeyLookup}`;
+    const ENCRYPTION_KEY = generateHMAC(teamId).slice(0, 16);
+
+    const embedResponse = await fetch(
+      `${process.env.WATERMARK_SERVICE_BASE_URL}/api/watermark/embed`,
+      {
+        method: 'POST',
+        headers: {
+          'X-Watermark': WATERMARK,
+          'X-Encryption-Key': ENCRYPTION_KEY,
+        },
+        body: embedFormData,
+      },
+    );
+
+    if (!embedResponse.ok) {
+      return {
+        ...commonResponse,
+        ...commonBase,
+        status: RequestStatus.INTERNAL_SERVER_ERROR,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Internal server error',
+          },
+        },
+        httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+
+    const watermarkedData = await embedResponse.arrayBuffer();
+
+    fileStreamFormatted = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array(watermarkedData));
+        controller.close();
+      },
+    });
+  } else {
+    fileStreamFormatted = fileStream as ReadableStream<any>;
+  }
+
+  const encryptedStream = fileStreamFormatted.pipeThrough(
     createEncryptionStream(validatedSessionKey),
   );
 

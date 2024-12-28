@@ -138,6 +138,7 @@ model Limits {
   maxInvitations        Int      @default(10)
   allowClassloader      Boolean  @default(false)
   allowCustomEmails     Boolean  @default(false)
+  allowWatermarking     Boolean  @default(false)
   updatedAt             DateTime @updatedAt
   createdAt             DateTime @default(now())
 }
@@ -151,6 +152,7 @@ model Settings {
   strictCustomers Boolean       @default(false)
   strictProducts  Boolean       @default(false)
   strictReleases  Boolean       @default(false)
+  watermarking    Boolean       @default(false)
   emailMessage    String?
   emailImageUrl   String?
   createdAt       DateTime      @default(now())

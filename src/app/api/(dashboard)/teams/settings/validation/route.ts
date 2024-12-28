@@ -90,6 +90,7 @@ export async function PUT(
       deviceTimeout,
       ipLimitPeriod,
       strictReleases,
+      watermarking,
     } = validated.data;
 
     const updatedSettings = await prisma.settings.update({
@@ -102,6 +103,7 @@ export async function PUT(
         strictReleases,
         deviceTimeout,
         ipLimitPeriod,
+        watermarking,
       },
     });
     const response = {

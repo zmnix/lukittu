@@ -660,6 +660,7 @@
       "rsa_public_key": "RSA 2048 Public Key",
       "rsa_public_key_description": "This is your team's public key, which can be used to verify the authenticity of license verify challenges.",
       "reset_key": "Reset key",
+      "watermarking": "Watermarking",
       "strict_customers": "Strict customers",
       "strict_products": "Strict products",
       "strict_releases": "Strict releases",

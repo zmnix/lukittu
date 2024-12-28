@@ -11,4 +11,5 @@ export const DEFAULT_LIMITS = {
   maxInvitations: 100,
   allowClassloader: false,
   allowCustomEmails: false,
+  allowWatermarking: false,
 };
