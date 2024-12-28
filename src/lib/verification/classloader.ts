@@ -735,6 +735,8 @@ export const handleClassloader = async ({
 
     const watermarkedData = await embedResponse.arrayBuffer();
 
+    logger.info(`Successfully watermarked file for team ${teamId}`);
+
     fileStreamFormatted = new ReadableStream({
       start(controller) {
         controller.enqueue(new Uint8Array(watermarkedData));
