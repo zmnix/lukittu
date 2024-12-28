@@ -747,12 +747,17 @@ export const handleClassloader = async ({
     }
 
     const watermarkedData = await embedResponse.arrayBuffer();
-
     logger.info(`Successfully watermarked file for team ${teamId}`);
 
+    // Create a readable stream with proper chunking (128KB)
+    const CHUNK_SIZE = 128 * 1024; // 128KB
     fileStreamFormatted = new ReadableStream({
       start(controller) {
-        controller.enqueue(new Uint8Array(watermarkedData));
+        const data = new Uint8Array(watermarkedData);
+        for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+          const chunk = data.slice(i, i + CHUNK_SIZE);
+          controller.enqueue(chunk);
+        }
         controller.close();
       },
     });
