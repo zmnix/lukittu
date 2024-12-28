@@ -62,14 +62,38 @@ export async function GET(request: NextRequest) {
 
     const user = (await userRes.json()) as any;
 
-    if (!user?.id || !user?.email) {
+    const emailsRes = await fetch('https://api.github.com/user/emails', {
+      headers: {
+        Authorization: 'Bearer ' + accessTokenData.access_token,
+        Accept: 'application/json; charset=utf-8',
+        'Accept-Encoding': 'application/json; charset=utf-8',
+      },
+    });
+
+    if (!emailsRes.ok) {
+      return NextResponse.redirect(
+        new URL('/auth/login?error=server_error&provider=github', baseUrl),
+      );
+    }
+
+    const emails = (await emailsRes.json()) as Array<{
+      email: string;
+      primary: boolean;
+      verified: boolean;
+    }>;
+
+    const primaryEmail = emails.find(
+      (email) => email.primary && email.verified,
+    );
+
+    if (!user?.id || !primaryEmail?.email) {
       return NextResponse.redirect(
         new URL('/auth/login?error=server_error&provider=github', baseUrl),
       );
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email: user.email },
+      where: { email: primaryEmail.email },
     });
 
     if (existingUser) {
@@ -96,7 +120,7 @@ export async function GET(request: NextRequest) {
     const waitlistEmails = process.env.WAITLIST_EMAILS!.split(',');
     if (
       process.env.IS_WAITLIST_ONLY === 'true' &&
-      !waitlistEmails.includes(user.email)
+      !waitlistEmails.includes(primaryEmail.email)
     ) {
       return NextResponse.redirect(
         new URL('/auth/login?error=waitlist_only', baseUrl),
@@ -106,7 +130,7 @@ export async function GET(request: NextRequest) {
     const newUser = await prisma.$transaction(async (prisma) => {
       const newUser = await prisma.user.create({
         data: {
-          email: user.email,
+          email: primaryEmail.email,
           fullName: user.name,
           provider: Provider.GITHUB,
           emailVerified: true,
