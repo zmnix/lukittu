@@ -222,20 +222,50 @@ export async function GET(
         case 'ACTIVE':
           statusFilter = {
             suspended: false,
-            updatedAt: {
-              gt: thirtyDaysAgo,
-            },
-            OR: [
-              { expirationType: 'NEVER' },
+            AND: [
               {
-                AND: [
-                  { expirationType: 'DATE' },
+                OR: [
                   {
-                    expirationDate: {
-                      gt: new Date(
-                        currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
-                      ),
+                    requestLogs: {
+                      some: {
+                        createdAt: {
+                          gt: thirtyDaysAgo,
+                        },
+                      },
                     },
+                  },
+                  {
+                    AND: [
+                      {
+                        NOT: {
+                          requestLogs: {
+                            some: {},
+                          },
+                        },
+                      },
+                      {
+                        createdAt: {
+                          gt: thirtyDaysAgo,
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                OR: [
+                  { expirationType: 'NEVER' },
+                  {
+                    AND: [
+                      { expirationType: 'DATE' },
+                      {
+                        expirationDate: {
+                          gt: new Date(
+                            currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
+                          ),
+                        },
+                      },
+                    ],
                   },
                 ],
               },
@@ -245,9 +275,44 @@ export async function GET(
         case 'INACTIVE':
           statusFilter = {
             suspended: false,
-            updatedAt: {
-              lt: thirtyDaysAgo,
-            },
+            OR: [
+              {
+                AND: [
+                  {
+                    requestLogs: {
+                      some: {},
+                    },
+                  },
+                  {
+                    NOT: {
+                      requestLogs: {
+                        some: {
+                          createdAt: {
+                            gt: thirtyDaysAgo,
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+              {
+                AND: [
+                  {
+                    NOT: {
+                      requestLogs: {
+                        some: {},
+                      },
+                    },
+                  },
+                  {
+                    createdAt: {
+                      lte: thirtyDaysAgo,
+                    },
+                  },
+                ],
+              },
+            ],
           };
           break;
         case 'EXPIRING':
