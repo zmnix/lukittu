@@ -10,9 +10,7 @@ export type LicenseStatus =
   | 'SUSPENDED';
 
 export const getLicenseStatus = (
-  license: Omit<License, 'licenseKeyLookup'> & {
-    lastActiveAt: Date;
-  },
+  license: Omit<License, 'licenseKeyLookup'>,
 ): LicenseStatus => {
   const currentDate = new Date();
 

@@ -56,44 +56,60 @@ export async function logRequest({
       ? iso2toIso3(geoData.alpha2!)
       : null;
 
-    await prisma.requestLog.create({
-      data: {
-        version: process.env.version!,
-        method: method.toUpperCase() as RequestMethod,
-        path: pathname,
-        userAgent: await getUserAgent(),
-        origin,
-        statusCode,
-        longitude: hasBothLongitudeAndLatitude ? longitude : null,
-        latitude: hasBothLongitudeAndLatitude ? latitude : null,
-        responseTime: new Date().getTime() - requestTime.getTime(),
-        status,
-        requestBody,
-        requestQuery,
-        responseBody,
-        type,
-        deviceIdentifier,
-        ipAddress,
-        release: releaseId ? { connect: { id: releaseId } } : undefined,
-        releaseFile: releaseFileId
-          ? { connect: { id: releaseFileId } }
-          : undefined,
-        country: countryAlpha3,
-        team: { connect: { id: teamId } },
-        customer: customerId ? { connect: { id: customerId } } : undefined,
-        product: productId ? { connect: { id: productId } } : undefined,
-        license:
-          licenseKeyLookup && teamId
-            ? {
-                connect: {
-                  teamId_licenseKeyLookup: {
-                    teamId,
-                    licenseKeyLookup,
-                  },
-                },
-              }
+    await prisma.$transaction(async (tx) => {
+      if (licenseKeyLookup && teamId) {
+        await tx.license.update({
+          where: {
+            teamId_licenseKeyLookup: {
+              teamId,
+              licenseKeyLookup,
+            },
+          },
+          data: {
+            lastActiveAt: new Date(),
+          },
+        });
+      }
+
+      await tx.requestLog.create({
+        data: {
+          version: process.env.version!,
+          method: method.toUpperCase() as RequestMethod,
+          path: pathname,
+          userAgent: await getUserAgent(),
+          origin,
+          statusCode,
+          longitude: hasBothLongitudeAndLatitude ? longitude : null,
+          latitude: hasBothLongitudeAndLatitude ? latitude : null,
+          responseTime: new Date().getTime() - requestTime.getTime(),
+          status,
+          requestBody,
+          requestQuery,
+          responseBody,
+          type,
+          deviceIdentifier,
+          ipAddress,
+          release: releaseId ? { connect: { id: releaseId } } : undefined,
+          releaseFile: releaseFileId
+            ? { connect: { id: releaseFileId } }
             : undefined,
-      },
+          country: countryAlpha3,
+          team: { connect: { id: teamId } },
+          customer: customerId ? { connect: { id: customerId } } : undefined,
+          product: productId ? { connect: { id: productId } } : undefined,
+          license:
+            licenseKeyLookup && teamId
+              ? {
+                  connect: {
+                    teamId_licenseKeyLookup: {
+                      teamId,
+                      licenseKeyLookup,
+                    },
+                  },
+                }
+              : undefined,
+        },
+      });
     });
   } catch (error) {
     logger.error("Error logging request in 'license/verify' route", error);

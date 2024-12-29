@@ -300,6 +300,7 @@ model License {
   updatedAt        DateTime               @updatedAt
   requestLogs      RequestLog[]
   devices          Device[]
+  lastActiveAt     DateTime               @default(now())
 
   @@unique([teamId, licenseKeyLookup])
 }

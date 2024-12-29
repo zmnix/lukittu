@@ -5,10 +5,8 @@ import {
 } from './license-status';
 
 const createBaseLicense = (
-  override: Partial<License & { lastActiveAt: Date }> = {},
-): Omit<License, 'licenseKeyLookup'> & {
-  lastActiveAt: Date;
-} =>
+  override: Partial<License> = {},
+): Omit<License, 'licenseKeyLookup'> =>
   ({
     id: '1',
     key: 'test-key',
@@ -20,9 +18,7 @@ const createBaseLicense = (
     expirationType: 'NEVER',
     expirationDate: null,
     ...override,
-  }) as Omit<License, 'licenseKeyLookup'> & {
-    lastActiveAt: Date;
-  };
+  }) as Omit<License, 'licenseKeyLookup'>;
 
 describe('getLicenseStatus', () => {
   test('returns SUSPENDED for suspended licenses', () => {

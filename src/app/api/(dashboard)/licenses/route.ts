@@ -31,7 +31,6 @@ export type ILicensesGetSuccessResponse = {
   licenses: (Omit<License, 'licenseKeyLookup'> & {
     products: Product[];
     customers: Customer[];
-    lastActiveAt: Date;
   })[];
   totalResults: number;
   hasResults: boolean;
@@ -222,50 +221,33 @@ export async function GET(
         case 'ACTIVE':
           statusFilter = {
             suspended: false,
-            AND: [
+            lastActiveAt: {
+              gt: thirtyDaysAgo,
+            },
+            OR: [
+              { expirationType: 'NEVER' },
               {
-                OR: [
+                AND: [
                   {
-                    requestLogs: {
-                      some: {
-                        createdAt: {
-                          gt: thirtyDaysAgo,
-                        },
-                      },
+                    expirationType: {
+                      in: ['DATE', 'DURATION'],
                     },
                   },
+
+                  // Not expired
                   {
-                    AND: [
-                      {
-                        NOT: {
-                          requestLogs: {
-                            some: {},
-                          },
-                        },
-                      },
-                      {
-                        createdAt: {
-                          gt: thirtyDaysAgo,
-                        },
-                      },
-                    ],
+                    expirationDate: {
+                      gt: currentDate,
+                    },
                   },
-                ],
-              },
-              {
-                OR: [
-                  { expirationType: 'NEVER' },
+
+                  // Not expiring (more than 30 days left)
                   {
-                    AND: [
-                      { expirationType: 'DATE' },
-                      {
-                        expirationDate: {
-                          gt: new Date(
-                            currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
-                          ),
-                        },
-                      },
-                    ],
+                    expirationDate: {
+                      gt: new Date(
+                        currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
+                      ),
+                    },
                   },
                 ],
               },
@@ -275,39 +257,28 @@ export async function GET(
         case 'INACTIVE':
           statusFilter = {
             suspended: false,
+            lastActiveAt: {
+              lte: thirtyDaysAgo,
+            },
             OR: [
+              { expirationType: 'NEVER' },
               {
                 AND: [
+                  { expirationType: { in: ['DATE', 'DURATION'] } },
+
+                  // Must not be expired
                   {
-                    requestLogs: {
-                      some: {},
+                    expirationDate: {
+                      gt: new Date(currentDate.getTime()),
                     },
                   },
+
+                  // Must not be expiring
                   {
-                    NOT: {
-                      requestLogs: {
-                        some: {
-                          createdAt: {
-                            gt: thirtyDaysAgo,
-                          },
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-              {
-                AND: [
-                  {
-                    NOT: {
-                      requestLogs: {
-                        some: {},
-                      },
-                    },
-                  },
-                  {
-                    createdAt: {
-                      lte: thirtyDaysAgo,
+                    expirationDate: {
+                      gt: new Date(
+                        currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
+                      ),
                     },
                   },
                 ],
@@ -319,11 +290,11 @@ export async function GET(
           statusFilter = {
             suspended: false,
             expirationType: {
-              not: 'NEVER',
+              in: ['DATE', 'DURATION'],
             },
             expirationDate: {
               gt: currentDate,
-              lt: new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+              lt: new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000),
             },
           };
           break;
@@ -331,7 +302,7 @@ export async function GET(
           statusFilter = {
             suspended: false,
             expirationType: {
-              not: 'NEVER',
+              in: ['DATE', 'DURATION'],
             },
             expirationDate: {
               lt: currentDate,
@@ -347,10 +318,10 @@ export async function GET(
     }
 
     const where = {
-      teamId: selectedTeam,
-      licenseKeyLookup,
       ...ipCountFilter,
       ...statusFilter,
+      teamId: selectedTeam,
+      licenseKeyLookup,
       products: productIdsFormatted.length
         ? {
             some: {
@@ -395,15 +366,6 @@ export async function GET(
                 include: {
                   products: true,
                   customers: true,
-                  requestLogs: {
-                    select: {
-                      createdAt: true,
-                    },
-                    orderBy: {
-                      createdAt: 'desc',
-                    },
-                    take: 1,
-                  },
                 },
               },
             },
@@ -448,10 +410,6 @@ export async function GET(
       ...license,
       licenseKey: decryptLicenseKey(license.licenseKey),
       licenseKeyLookup: undefined,
-      lastActiveAt: license.requestLogs.length
-        ? license.requestLogs[0].createdAt
-        : license.createdAt,
-      requestLogs: undefined,
     }));
 
     return NextResponse.json({
