@@ -1,10 +1,15 @@
+import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
 import { sendLicenseDistributionEmail } from '@/lib/emails/templates/send-license-distribution-email';
 import { generateUniqueLicense } from '@/lib/licenses/generate-license';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
 import { verifyApiAuthorization } from '@/lib/security/api-key-auth';
-import { encryptLicenseKey, generateHMAC } from '@/lib/security/crypto';
+import {
+  decryptLicenseKey,
+  encryptLicenseKey,
+  generateHMAC,
+} from '@/lib/security/crypto';
 import { isRateLimited } from '@/lib/security/rate-limiter';
 import {
   CreateLicenseSchema,
@@ -12,7 +17,7 @@ import {
 } from '@/lib/validation/licenses/set-license-schema';
 import { IExternalDevResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLogAction, AuditLogTargetType } from '@prisma/client';
+import { AuditLogAction, AuditLogTargetType, Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -30,9 +35,12 @@ export async function POST(
     if (!validated.success) {
       return NextResponse.json(
         {
-          data: null,
+          data: validated.error.errors.map((error) => ({
+            message: error.message,
+            path: error.path,
+          })),
           result: {
-            details: validated.error.errors[0].message,
+            details: 'Invalid request body',
             timestamp: new Date(),
             valid: false,
           },
@@ -256,6 +264,171 @@ export async function POST(
       requestBody: body,
       responseBody: response,
     });
+
+    return NextResponse.json(response);
+  } catch (error) {
+    logger.error(
+      "Error in '(external)/v1/dev/teams/[teamId]/licenses' route",
+      error,
+    );
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        {
+          data: null,
+          result: {
+            details: 'Invalid JSON body',
+            timestamp: new Date(),
+            valid: false,
+          },
+        },
+        {
+          status: HttpStatus.BAD_REQUEST,
+        },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        data: null,
+        result: {
+          details: 'Internal server error',
+          timestamp: new Date(),
+          valid: false,
+        },
+      },
+      {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      },
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ teamId: string }> },
+): Promise<NextResponse<IExternalDevResponse>> {
+  const params = await props.params;
+
+  try {
+    const { teamId } = params;
+
+    const { team } = await verifyApiAuthorization(teamId);
+
+    if (!team) {
+      return NextResponse.json(
+        {
+          data: null,
+          result: {
+            details: 'Invalid API key',
+            timestamp: new Date(),
+            valid: false,
+          },
+        },
+        {
+          status: HttpStatus.UNAUTHORIZED,
+        },
+      );
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+
+    const MAX_PAGE_SIZE = 100;
+    const DEFAULT_PAGE_SIZE = 25;
+    const DEFAULT_PAGE = 1;
+    const DEFAULT_SORT_DIRECTION = 'desc' as const;
+    const DEFAULT_SORT_COLUMN = 'createdAt';
+
+    const allowedPageSizes = [10, 25, 50, 100];
+    const allowedSortDirections = ['asc', 'desc'] as const;
+    const allowedSortColumns = ['createdAt', 'updatedAt'] as const;
+
+    const rawPage = parseInt(searchParams.get('page') as string);
+    const rawPageSize = parseInt(searchParams.get('pageSize') as string);
+    const rawSortColumn = searchParams.get('sortColumn');
+    const rawSortDirection = searchParams.get(
+      'sortDirection',
+    ) as (typeof allowedSortDirections)[number];
+
+    // Validate and sanitize input parameters
+    const page = !isNaN(rawPage) && rawPage > 0 ? rawPage : DEFAULT_PAGE;
+    const pageSize =
+      !isNaN(rawPageSize) && allowedPageSizes.includes(rawPageSize)
+        ? Math.min(rawPageSize, MAX_PAGE_SIZE)
+        : DEFAULT_PAGE_SIZE;
+    const sortDirection = allowedSortDirections.includes(rawSortDirection)
+      ? rawSortDirection
+      : DEFAULT_SORT_DIRECTION;
+    const sortColumn =
+      rawSortColumn &&
+      allowedSortColumns.includes(
+        rawSortColumn as (typeof allowedSortColumns)[number],
+      )
+        ? rawSortColumn
+        : DEFAULT_SORT_COLUMN;
+
+    const productIds = searchParams.get('productIds') || '';
+    const customerIds = searchParams.get('customerIds') || '';
+
+    const productIdsFormatted = productIds
+      .split(',')
+      .filter((id) => regex.uuidV4.test(id));
+
+    const customerIdsFormatted = customerIds
+      .split(',')
+      .filter((id) => regex.uuidV4.test(id));
+
+    const skip = (page - 1) * pageSize;
+
+    const where = {
+      teamId,
+      products: productIdsFormatted.length
+        ? {
+            some: {
+              id: {
+                in: productIdsFormatted,
+              },
+            },
+          }
+        : undefined,
+      customers: customerIdsFormatted.length
+        ? {
+            some: {
+              id: {
+                in: customerIdsFormatted,
+              },
+            },
+          }
+        : undefined,
+    } as Prisma.LicenseWhereInput;
+
+    const licenses = await prisma.license.findMany({
+      where,
+      skip,
+      take: pageSize + 1,
+      orderBy: {
+        [sortColumn]: sortDirection,
+      },
+    });
+
+    const hasNextPage = licenses.length > pageSize;
+
+    const formattedLicenses = licenses.slice(0, pageSize).map((license) => ({
+      ...license,
+      licenseKey: decryptLicenseKey(license.licenseKey),
+    }));
+
+    const response: IExternalDevResponse = {
+      data: {
+        hasNextPage,
+        licenses: formattedLicenses,
+      },
+      result: {
+        details: 'Licenses found',
+        timestamp: new Date(),
+        valid: true,
+      },
+    };
 
     return NextResponse.json(response);
   } catch (error) {

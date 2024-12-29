@@ -140,6 +140,23 @@ export async function POST(
       "Error in '(external)/v1/dev/teams/[teamId]/customers' route",
       error,
     );
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        {
+          data: null,
+          result: {
+            details: 'Invalid JSON body',
+            timestamp: new Date(),
+            valid: false,
+          },
+        },
+        {
+          status: HttpStatus.BAD_REQUEST,
+        },
+      );
+    }
+
     return NextResponse.json(
       {
         data: null,
