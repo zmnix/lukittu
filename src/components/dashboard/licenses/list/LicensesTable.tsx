@@ -9,6 +9,7 @@ import {
   ComparisonMode,
   IpCountFilterChip,
 } from '@/components/shared/filtering/IpCountFilterChip';
+import { LicenseStatusFilterChip } from '@/components/shared/filtering/LicenseStatusFilterChip';
 import { MetadataFilterChip } from '@/components/shared/filtering/MetadataFilterChip';
 import { ProductFilterChip } from '@/components/shared/filtering/ProductFilterChip';
 import { CustomersMultiselect } from '@/components/shared/form/CustomersMultiselect';
@@ -122,6 +123,8 @@ export function LicensesTable() {
     useState<ComparisonMode>('');
   const [tempIpCountComparisonMode, setTempIpCountComparisonMode] =
     useState<ComparisonMode>('equals');
+  const [status, setStatus] = useState<LicenseStatus | 'all'>('all');
+  const [tempStatus, setTempStatus] = useState<LicenseStatus | 'all'>('all');
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -136,6 +139,7 @@ export function LicensesTable() {
     ...(ipCountMin && { ipCountMin }),
     ...(ipCountMax && ipCountComparisonMode === 'between' && { ipCountMax }),
     ...(ipCountComparisonMode && { ipCountComparisonMode }),
+    ...(status !== 'all' && { status }),
   });
 
   const { data, error, isLoading } = useSWR<ILicensesGetSuccessResponse>(
@@ -219,9 +223,17 @@ export function LicensesTable() {
         tempIpCountMin={tempIpCountMin}
       />
 
+      <LicenseStatusFilterChip
+        setStatus={setStatus}
+        setTempStatus={setTempStatus}
+        status={status}
+        tempStatus={tempStatus}
+      />
+
       {(search ||
         productIds.length > 0 ||
         customerIds.length > 0 ||
+        status !== 'all' ||
         (metadataKey && metadataValue)) && (
         <Button
           className="h-7 rounded-full text-xs"
@@ -237,6 +249,8 @@ export function LicensesTable() {
             setMetadataValue('');
             setTempMetadataKey('');
             setTempMetadataValue('');
+            setStatus('all');
+            setTempStatus('all');
           }}
         >
           {t('general.clear_all')}

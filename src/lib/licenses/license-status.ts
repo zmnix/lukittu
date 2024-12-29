@@ -10,7 +10,9 @@ export type LicenseStatus =
   | 'SUSPENDED';
 
 export const getLicenseStatus = (
-  license: Omit<License, 'licenseKeyLookup'>,
+  license: Omit<License, 'licenseKeyLookup'> & {
+    lastActiveAt: Date;
+  },
 ): LicenseStatus => {
   const currentDate = new Date();
 
@@ -18,8 +20,7 @@ export const getLicenseStatus = (
     return 'SUSPENDED';
   }
 
-  // TODO: Activity logs
-  const lastActiveDate = new Date(license.updatedAt);
+  const lastActiveDate = new Date(license.lastActiveAt);
 
   if (license.expirationType === 'NEVER') {
     // Inactive if over 30 days since last activity
@@ -58,15 +59,15 @@ export const getLicenseStatus = (
   const hasStartedExpiring = Boolean(license.expirationDate);
 
   if (hasStartedExpiring) {
+    if (currentDate.getTime() > new Date(license.expirationDate!).getTime()) {
+      return 'EXPIRED';
+    }
+
     if (
       currentDate.getTime() >
       new Date(license.expirationDate!).getTime() - 30 * 24 * 60 * 60 * 1000
     ) {
       return 'EXPIRING';
-    }
-
-    if (currentDate.getTime() > new Date(license.expirationDate!).getTime()) {
-      return 'EXPIRED';
     }
   }
 

@@ -5,19 +5,24 @@ import {
 } from './license-status';
 
 const createBaseLicense = (
-  override: Partial<License> = {},
-): Omit<License, 'licenseKeyLookup'> =>
+  override: Partial<License & { lastActiveAt: Date }> = {},
+): Omit<License, 'licenseKeyLookup'> & {
+  lastActiveAt: Date;
+} =>
   ({
     id: '1',
     key: 'test-key',
     userId: '1',
     createdAt: new Date(),
     updatedAt: new Date(),
+    lastActiveAt: new Date(),
     suspended: false,
     expirationType: 'NEVER',
     expirationDate: null,
     ...override,
-  }) as Omit<License, 'licenseKeyLookup'>;
+  }) as Omit<License, 'licenseKeyLookup'> & {
+    lastActiveAt: Date;
+  };
 
 describe('getLicenseStatus', () => {
   test('returns SUSPENDED for suspended licenses', () => {
@@ -27,14 +32,14 @@ describe('getLicenseStatus', () => {
 
   test('returns INACTIVE for licenses without activity for 30+ days', () => {
     const license = createBaseLicense({
-      updatedAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+      lastActiveAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
     });
     expect(getLicenseStatus(license)).toBe('INACTIVE');
   });
 
   test('returns ACTIVE for valid never-expiring licenses', () => {
     const license = createBaseLicense({
-      updatedAt: new Date(),
+      lastActiveAt: new Date(),
     });
     expect(getLicenseStatus(license)).toBe('ACTIVE');
   });
@@ -43,7 +48,7 @@ describe('getLicenseStatus', () => {
     const license = createBaseLicense({
       expirationType: 'DATE',
       expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      updatedAt: new Date(),
+      lastActiveAt: new Date(),
     });
     expect(getLicenseStatus(license)).toBe('EXPIRED');
   });
@@ -52,7 +57,7 @@ describe('getLicenseStatus', () => {
     const license = createBaseLicense({
       expirationType: 'DATE',
       expirationDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(),
+      lastActiveAt: new Date(),
     });
     expect(getLicenseStatus(license)).toBe('EXPIRING');
   });

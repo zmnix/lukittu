@@ -31,6 +31,7 @@ export type ILicenseGetSuccessResponse = {
     products: Product[];
     customers: Customer[];
     createdBy: Omit<User, 'passwordHash'> | null;
+    lastActiveAt: Date;
   };
 };
 
@@ -91,6 +92,15 @@ export async function GET(
                     },
                   },
                   createdBy: true,
+                  requestLogs: {
+                    select: {
+                      createdAt: true,
+                    },
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                    take: 1,
+                  },
                 },
               },
             },
@@ -133,7 +143,13 @@ export async function GET(
     license.licenseKey = decryptLicenseKey(license.licenseKey);
 
     return NextResponse.json({
-      license,
+      license: {
+        ...license,
+        lastActiveAt: license.requestLogs.length
+          ? license.requestLogs[0].createdAt
+          : license.createdAt,
+        requestLogs: undefined,
+      },
     });
   } catch (error) {
     logger.error("Error occurred in 'licenses/[slug]' route", error);

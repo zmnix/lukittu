@@ -1,5 +1,6 @@
 import { regex } from '@/lib/constants/regex';
 import prisma from '@/lib/database/prisma';
+import { LicenseStatus } from '@/lib/licenses/license-status';
 import { createAuditLog } from '@/lib/logging/audit-log';
 import { logger } from '@/lib/logging/logger';
 import {
@@ -30,6 +31,7 @@ export type ILicensesGetSuccessResponse = {
   licenses: (Omit<License, 'licenseKeyLookup'> & {
     products: Product[];
     customers: Customer[];
+    lastActiveAt: Date;
   })[];
   totalResults: number;
   hasResults: boolean;
@@ -207,10 +209,83 @@ export async function GET(
       }
     }
 
+    const status = searchParams.get('status') as LicenseStatus | null;
+    const currentDate = new Date();
+    const thirtyDaysAgo = new Date(
+      currentDate.getTime() - 30 * 24 * 60 * 60 * 1000,
+    );
+
+    let statusFilter: Prisma.LicenseWhereInput = {};
+
+    if (status) {
+      switch (status) {
+        case 'ACTIVE':
+          statusFilter = {
+            suspended: false,
+            updatedAt: {
+              gt: thirtyDaysAgo,
+            },
+            OR: [
+              { expirationType: 'NEVER' },
+              {
+                AND: [
+                  { expirationType: 'DATE' },
+                  {
+                    expirationDate: {
+                      gt: new Date(
+                        currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
+                      ),
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+          break;
+        case 'INACTIVE':
+          statusFilter = {
+            suspended: false,
+            updatedAt: {
+              lt: thirtyDaysAgo,
+            },
+          };
+          break;
+        case 'EXPIRING':
+          statusFilter = {
+            suspended: false,
+            expirationType: {
+              not: 'NEVER',
+            },
+            expirationDate: {
+              gt: currentDate,
+              lt: new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+            },
+          };
+          break;
+        case 'EXPIRED':
+          statusFilter = {
+            suspended: false,
+            expirationType: {
+              not: 'NEVER',
+            },
+            expirationDate: {
+              lt: currentDate,
+            },
+          };
+          break;
+        case 'SUSPENDED':
+          statusFilter = {
+            suspended: true,
+          };
+          break;
+      }
+    }
+
     const where = {
       teamId: selectedTeam,
       licenseKeyLookup,
       ...ipCountFilter,
+      ...statusFilter,
       products: productIdsFormatted.length
         ? {
             some: {
@@ -255,6 +330,15 @@ export async function GET(
                 include: {
                   products: true,
                   customers: true,
+                  requestLogs: {
+                    select: {
+                      createdAt: true,
+                    },
+                    orderBy: {
+                      createdAt: 'desc',
+                    },
+                    take: 1,
+                  },
                 },
               },
             },
@@ -299,6 +383,10 @@ export async function GET(
       ...license,
       licenseKey: decryptLicenseKey(license.licenseKey),
       licenseKeyLookup: undefined,
+      lastActiveAt: license.requestLogs.length
+        ? license.requestLogs[0].createdAt
+        : license.createdAt,
+      requestLogs: undefined,
     }));
 
     return NextResponse.json({
