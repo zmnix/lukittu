@@ -108,6 +108,10 @@
                 "type": "string",
                 "format": "date-time"
               },
+              "lastActiveAt": {
+                "type": "string",
+                "format": "date-time"
+              },
               "customers": {
                 "type": "array",
                 "items": {
