@@ -1,13 +1,11 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
 export type SetStripeIntegrationSchema = z.infer<
   ReturnType<typeof setStripeIntegrationSchema>
 >;
 
-export const setStripeIntegrationSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setStripeIntegrationSchema = (t: I18nTranslator) =>
   z
     .object({
       active: z.boolean(),

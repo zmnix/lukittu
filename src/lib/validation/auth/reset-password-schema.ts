@@ -1,13 +1,11 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
 export type ResetPasswordSchema = z.infer<
   ReturnType<typeof resetPasswordSchema>
 >;
 
-export const resetPasswordSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const resetPasswordSchema = (t: I18nTranslator) =>
   z
     .object({
       password: z

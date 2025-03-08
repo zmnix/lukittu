@@ -1,9 +1,7 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
-export const metadataSchema = (
-  t?: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const metadataSchema = (t?: I18nTranslator) =>
   z.array(
     z.object({
       key: z

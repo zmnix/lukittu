@@ -1,11 +1,9 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
 export type SetTeamSchema = z.infer<ReturnType<typeof setTeamSchema>>;
 
-export const setTeamSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setTeamSchema = (t: I18nTranslator) =>
   z
     .object({
       name: z

@@ -1,13 +1,11 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
 export type SetTeamValidationSettingsSchema = z.infer<
   ReturnType<typeof setTeamValidationSettingsSchema>
 >;
 
-export const setTeamValidationSettingsSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setTeamValidationSettingsSchema = (t: I18nTranslator) =>
   z
     .object({
       strictProducts: z.boolean(),

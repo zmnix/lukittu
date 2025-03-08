@@ -1,11 +1,9 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
 export type LoginSchema = z.infer<ReturnType<typeof loginSchema>>;
 
-export const loginSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const loginSchema = (t: I18nTranslator) =>
   z
     .object({
       email: z

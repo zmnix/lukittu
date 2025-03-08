@@ -1,16 +1,14 @@
 import { regex } from '@/lib/constants/regex';
-import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 import { metadataSchema } from '../shared/metadata-schema';
+import { I18nTranslator } from '@/types/i18n-types';
 
 export type SetLicenseScheama = z.infer<ReturnType<typeof setLicenseSchema>>;
 export type CreateLicenseSchema = z.infer<
   ReturnType<typeof createLicenseSchema>
 >;
 
-const createBaseLicenseSchema = (
-  t?: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+const createBaseLicenseSchema = (t?: I18nTranslator) =>
   z
     .object({
       expirationType: z.enum(['DATE', 'DURATION', 'NEVER']),
@@ -27,9 +25,7 @@ const createBaseLicenseSchema = (
     })
     .strict();
 
-export const createLicenseSchema = (
-  t?: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const createLicenseSchema = (t?: I18nTranslator) =>
   createBaseLicenseSchema(t)
     .refine(
       (data) => {
@@ -66,9 +62,7 @@ export const createLicenseSchema = (
       return true;
     });
 
-export const setLicenseSchema = (
-  t?: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setLicenseSchema = (t?: I18nTranslator) =>
   createBaseLicenseSchema(t)
     .extend({
       licenseKey: z.string().regex(regex.licenseKey, {

@@ -1,12 +1,10 @@
-import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 import { metadataSchema } from '../shared/metadata-schema';
+import { I18nTranslator } from '@/types/i18n-types';
 
 export type SetProductSchema = z.infer<ReturnType<typeof setProductSchema>>;
 
-export const setProductSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setProductSchema = (t: I18nTranslator) =>
   z
     .object({
       name: z

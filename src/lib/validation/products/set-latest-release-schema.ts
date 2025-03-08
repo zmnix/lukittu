@@ -1,13 +1,11 @@
-import { getTranslations } from 'next-intl/server';
+import { I18nTranslator } from '@/types/i18n-types';
 import { z } from 'zod';
 
 export type SetLatestReleaseSchema = z.infer<
   ReturnType<typeof setLatestReleaseSchema>
 >;
 
-export const setLatestReleaseSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setLatestReleaseSchema = (t: I18nTranslator) =>
   z
     .object({
       releaseId: z

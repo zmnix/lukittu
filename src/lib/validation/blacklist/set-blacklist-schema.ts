@@ -1,14 +1,12 @@
 import { countries } from '@/lib/constants/countries';
 import { BlacklistType } from '@prisma/client';
-import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 import { metadataSchema } from '../shared/metadata-schema';
+import { I18nTranslator } from '@/types/i18n-types';
 
 export type SetBlacklistSchema = z.infer<ReturnType<typeof setBlacklistSchema>>;
 
-export const setBlacklistSchema = (
-  t: Awaited<ReturnType<typeof getTranslations<never>>>,
-) =>
+export const setBlacklistSchema = (t: I18nTranslator) =>
   z
     .object({
       type: z.enum(['COUNTRY', 'IP_ADDRESS', 'DEVICE_IDENTIFIER']),
