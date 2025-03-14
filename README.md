@@ -33,7 +33,7 @@ The best way to support Lukittu is to **give it a star on GitHub** – it’s fr
 
 ## Documentation
 
-For comprehensive documentation on how to use Lukittu, visit: [https://docs.lukittu.com/introduction](https://docs.lukittu.com/introduction)
+For comprehensive documentation on how to use Lukittu, visit: [https://docs.lukittu.com/introduction](https://docs.lukittu.com/introduction). **The documentation source can be found in its own repository [here](https://github.com/KasperiP/lukittu-docs).**  
 
 ## Contributing
 
