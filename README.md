@@ -1,5 +1,14 @@
 <img src="./.github/lukittu.png" alt="Lukittu GitHub-repository banner">
 
+<div align="center">
+  
+[![Build Status](https://img.shields.io/github/actions/workflow/status/KasperiP/lukittu/pipeline.yml?branch=main&style=flat&colorA=4153af&colorB=4153af)](https://github.com/KasperiP/lukittu/actions?query=pipeline)
+[![Discord Shield](https://img.shields.io/discord/1287496974303494214?style=flat&colorA=4153af&colorB=4153af&label=discord&logo=discord&logoColor=ffffff)](https://discord.lukittu.com)
+[![License](https://img.shields.io/github/license/kasperip/lukittu?style=flat&colorA=4153af&colorB=4153af)](https://github.com/KasperiP/lukittu/blob/main/LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/KasperiP/lukittu?style=flat&colorA=4153af&colorB=4153af)](https://github.com/KasperiP/lukittu/graphs/contributors)
+
+</div>
+
 # [Lukittu](https://lukittu.com)
 
 Lukittu is a modern software licensing service that provides robust APIs to enhance the security and trackability of your applications. It introduces a licensing layer to protect proprietary software from unauthorized sharing and misuse, offering benefits such as enhanced security, usage analytics, easy integration, and flexible licensing. Lukittu is particularly suitable for applications like game scripts and add-ons running on client servers, including platforms like Minecraft, FiveM, and Roblox.
@@ -47,6 +56,12 @@ We welcome contributions from the community! Whether it’s bug fixes, feature i
 5. **Submit a pull request** – Share your work with the community
 
 Discussing changes before implementation ensures efficient collaboration and valuable contributions.
+
+#### Contributors
+
+<a href="https://github.com/KasperiP/lukittu/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=KasperiP/lukittu" />
+</a>
 
 ## License
 
