@@ -18,8 +18,6 @@ import jwt from 'jsonwebtoken';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-
 type IAuthRegisterSuccessResponse = {
   success: boolean;
 };
@@ -108,16 +106,6 @@ export async function POST(
           reverifyEmail: true,
         },
         { status: HttpStatus.BAD_REQUEST },
-      );
-    }
-
-    const waitlistEmails = process.env.WAITLIST_EMAILS!.split(',');
-    if (
-      process.env.IS_WAITLIST_ONLY === 'true' &&
-      !waitlistEmails.includes(email)
-    ) {
-      return NextResponse.redirect(
-        new URL('/auth/login?error=waitlist_only', baseUrl),
       );
     }
 

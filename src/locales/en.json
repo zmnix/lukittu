@@ -290,14 +290,6 @@
     "confirm": "Confirm"
   },
   "auth": {
-    "waitlist": {
-      "coming_soon": "Coming Soon! 👀🚀",
-      "description": "We're still cooking up some magic. Join the waitlist and we will let you know when we are ready to launch! We don't spam, promise! 🤞",
-      "joined_waitlist": "Successfully joined the waitlist! Hold tight! 🚀",
-      "enter_your_email": "Enter your email",
-      "join_waitlist": "Join Waitlist!",
-      "join_questions": "Something you want to ask? Feel free to join our <discordLinkElement>Discord server</discordLinkElement> and ask us anything! Or send us an email at <emailElement>support@lukittu.com</emailElement>."
-    },
     "oauth": {
       "unverified_email": "You have an unverified email attached to your <strong>{provider}</strong> account. Please verify your email first.",
       "credentials": "email and password",

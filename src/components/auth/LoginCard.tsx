@@ -37,7 +37,6 @@ import { useForm, useWatch } from 'react-hook-form';
 import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 import { ThemeSwitcher } from '../shared/ThemeSwitcher';
 import LoginWithGithubButton from './LoginWithGithubButton';
-import WaitlistModal from './WaitlistModal';
 
 export default function LoginCard() {
   const t = useTranslations();
@@ -53,7 +52,6 @@ export default function LoginCard() {
     useState(false);
   const [showTurnstile, setShowTurnstile] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
-  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
 
   const error = searchParams.get('error');
   const provider = searchParams.get('provider');
@@ -76,16 +74,6 @@ export default function LoginCard() {
   useEffect(() => {
     setFormError(null);
   }, [formWatcher]);
-
-  useEffect(() => {
-    if (error) {
-      // TODO: REMOVE
-      if (error === 'waitlist_only') {
-        return setWaitlistModalOpen(true);
-      }
-      setErrorModalOpen(true);
-    }
-  }, [error]);
 
   const handleCredentialsLogin = async (payload: LoginSchema) => {
     const response = await fetch('/api/auth/login', {
@@ -140,10 +128,6 @@ export default function LoginCard() {
 
   return (
     <>
-      <WaitlistModal
-        open={waitlistModalOpen}
-        onOpenChange={setWaitlistModalOpen}
-      />
       <OauthLoginFailedccessModal
         error={error}
         open={errorModalOpen}
