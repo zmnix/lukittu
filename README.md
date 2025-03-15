@@ -32,6 +32,67 @@ Lukittu is available in two hosting options:
 
 For detailed pricing and feature comparisons, visit [our website](https://lukittu.com).
 
+Sure! Here's a local development guide for your GitHub README:
+
+## Local Development
+
+To get started with the project locally, follow the steps below:
+
+#### 1. Setup Environment Variables
+- Rename the `.env.example` file to `.env`.
+- Open the `.env` file and fill in the necessary details.
+
+#### 2. Install Node.js, Docker, and pnpm
+
+Ensure the following tools are installed on your system:
+
+- **Node.js** v20+ (Download from [nodejs.org](https://nodejs.org/))
+- **Docker** (Install from [docker.com](https://www.docker.com/get-started))
+- **pnpm** (Package manager for Node.js, install via [pnpm.io](https://pnpm.io/))
+
+#### 3. Install Dependencies
+
+Once the environment is set up:
+
+```bash
+pnpm install
+```
+
+#### 4. Start Local Databases
+
+To start the local databases (PostgreSQL & Redis), use Docker Compose:
+
+```bash
+docker compose -f docker-compose-local.yml up
+```
+
+This command will spin up the containers for both PostgreSQL and Redis.
+
+#### 5. Run Database Migrations
+
+Run the necessary database migrations to set up your database schema:
+
+```bash
+npx prisma migrate dev
+```
+
+#### 6. Start the Application
+
+After the migrations are complete, start the local application:
+
+```bash
+pnpm dev
+```
+
+#### 7. Access the Application
+
+Navigate to `http://localhost:3000` in your browser, and you should have everything running!
+
+### Troubleshooting
+
+- Ensure Docker is running before starting the databases.
+- Make sure to have all environment variables filled correctly in the `.env` file.
+
 ## Community & Support
 
 Join our community Discord server to get help, share ideas, and connect with other developers: [https://discord.lukittu.com/](https://discord.lukittu.com/)
