@@ -32,7 +32,8 @@ Lukittu is available in two hosting options:
 
 For detailed pricing and feature comparisons, visit [our website](https://lukittu.com).
 
-Sure! Here's a local development guide for your GitHub README:
+> [!IMPORTANT]  
+> While you can self-host Lukittu, it is **not highly recommended**. Lukittu is designed to be a SaaS platform. If you choose to self-host it, keep in mind that, by default, anyone can register and use it unless you implement custom modifications. However, these modifications may make it more difficult to receive updates from upstream when Lukittu is updated.
 
 ## Local Development
 
