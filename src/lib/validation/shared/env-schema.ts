@@ -36,7 +36,8 @@ export const envSchema = z.object({
     .string({
       required_error: 'REDIS_PORT is required',
     })
-    .transform((val) => parseInt(val, 10)),
+    .optional()
+    .transform((val) => val && parseInt(val, 10)),
 
   // Application URL
   NEXT_PUBLIC_BASE_URL: z
@@ -170,12 +171,14 @@ export const envSchema = z.object({
       required_error: 'SENTRY_AUTH_TOKEN is required',
     })
     .min(1, { message: 'SENTRY_AUTH_TOKEN is required' }),
-  SENTRY_SUPPRESS_TURBOPACK_WARNING: z.enum(['0', '1'], {
-    required_error:
-      "SENTRY_SUPPRESS_TURBOPACK_WARNING must be either '0' or '1'",
-    invalid_type_error:
-      "SENTRY_SUPPRESS_TURBOPACK_WARNING must be either '0' or '1'",
-  }),
+  SENTRY_SUPPRESS_TURBOPACK_WARNING: z
+    .enum(['0', '1'], {
+      required_error:
+        "SENTRY_SUPPRESS_TURBOPACK_WARNING must be either '0' or '1'",
+      invalid_type_error:
+        "SENTRY_SUPPRESS_TURBOPACK_WARNING must be either '0' or '1'",
+    })
+    .optional(),
 
   // Public object storage (Cloudflare R2 or S3-compatible)
   PUBLIC_OBJECT_STORAGE_ENDPOINT: z
