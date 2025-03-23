@@ -171,7 +171,7 @@ export const handleInvoicePaid = async (
 
         if (!licenseKey) {
           logger.error('Failed to generate a unique license key');
-          return;
+          throw new Error('Failed to generate a unique license key');
         }
 
         const encryptedLicenseKey = encryptLicenseKey(licenseKey);
