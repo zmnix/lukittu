@@ -293,7 +293,8 @@
     "remove_photo": "Remove photo",
     "unlock_metadata": "Unlock metadata",
     "locked_metadata_warning": "This metadata field is locked. These fields are typically locked because they are system-generated. Modifying this field may cause issues with integrations that depend on this data.",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "sending_email_failed": "Sending email failed"
   },
   "auth": {
     "oauth": {

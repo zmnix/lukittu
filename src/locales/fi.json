@@ -293,7 +293,8 @@
     "locked_metadata_warning": "Tämä metatietokenttä on lukittu. Nämä kentät on tyypillisesti lukittu, koska ne on luotu järjestelmän toimesta. Tämän kentän muokkaaminen voi aiheuttaa ongelmia integraatioissa, jotka riippuvat tästä tiedosta.",
     "confirm": "Vahvista",
     "connect": "Yhdistä",
-    "disconnect": "Katkaise yhteys"
+    "disconnect": "Katkaise yhteys",
+    "sending_email_failed": "Sähköpostin lähettäminen epäonnistui"
   },
   "auth": {
     "oauth": {

@@ -293,7 +293,8 @@
     "locked_metadata_warning": "Este campo de metadatos está bloqueado. Estos campos suelen estar bloqueados porque son generados por el sistema. Modificar este campo puede causar problemas con las integraciones que dependen de estos datos.",
     "confirm": "Confirmar",
     "connect": "Conectar",
-    "disconnect": "Desconectar"
+    "disconnect": "Desconectar",
+    "sending_email_failed": "El envío del correo electrónico falló"
   },
   "auth": {
     "oauth": {
