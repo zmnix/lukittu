@@ -158,7 +158,6 @@ export const handleVerify = async ({
             include: {
               file: true,
             },
-            take: 1,
           },
         },
       },

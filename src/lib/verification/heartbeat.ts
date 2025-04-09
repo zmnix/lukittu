@@ -158,7 +158,6 @@ export const handleHeartbeat = async ({
             include: {
               file: true,
             },
-            take: 1,
           },
         },
       },
