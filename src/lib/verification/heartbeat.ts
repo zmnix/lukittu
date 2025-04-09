@@ -61,12 +61,17 @@ export const handleHeartbeat = async ({
     };
   }
 
+  const validatedBody = {
+    body: validated.data,
+  };
+
   if (ipAddress) {
     const key = `license-heartbeat:${ipAddress}`;
     const isLimited = await isRateLimited(key, 5, 60); // 5 requests per 1 minute
 
     if (isLimited) {
       return {
+        ...validatedBody,
         status: RequestStatus.RATE_LIMIT,
         response: {
           data: null,
@@ -99,6 +104,7 @@ export const handleHeartbeat = async ({
 
   if (!team || !settings || !keyPair) {
     return {
+      ...validatedBody,
       status: RequestStatus.TEAM_NOT_FOUND,
       response: {
         data: null,
@@ -191,6 +197,7 @@ export const handleHeartbeat = async ({
   const latestRelease = matchingProduct?.releases.find((r) => r.latest);
 
   const commonBase = {
+    ...validatedBody,
     teamId,
     customerId: matchingCustomer ? customerId : undefined,
     productId: matchingProduct ? productId : undefined,

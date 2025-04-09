@@ -76,7 +76,7 @@ export const handleClassloader = async ({
     sessionKey,
   } = validated.data;
 
-  const commonResponse = {
+  const validatedQuery = {
     query: validated.data,
   };
 
@@ -86,7 +86,7 @@ export const handleClassloader = async ({
 
     if (isLimited) {
       return {
-        ...commonResponse,
+        ...validatedQuery,
         status: RequestStatus.RATE_LIMIT,
         response: {
           data: null,
@@ -113,7 +113,7 @@ export const handleClassloader = async ({
 
     if (isLicenseKeyLimited) {
       return {
-        ...commonResponse,
+        ...validatedQuery,
         status: RequestStatus.RATE_LIMIT,
         response: {
           data: null,
@@ -150,7 +150,7 @@ export const handleClassloader = async ({
 
   if (!team || !settings || !limits || !keyPair) {
     return {
-      ...commonResponse,
+      ...validatedQuery,
       status: RequestStatus.TEAM_NOT_FOUND,
       response: {
         data: null,
@@ -166,7 +166,7 @@ export const handleClassloader = async ({
 
   if (!limits.allowClassloader) {
     return {
-      ...commonResponse,
+      ...validatedQuery,
       teamId,
       status: RequestStatus.FORBIDDEN,
       response: {
@@ -201,7 +201,7 @@ export const handleClassloader = async ({
 
   if (!validatedSessionKey) {
     return {
-      ...commonResponse,
+      ...validatedQuery,
       teamId,
       status: RequestStatus.INVALID_SESSION_KEY,
       response: {
@@ -227,7 +227,7 @@ export const handleClassloader = async ({
 
   if (isSessionKeyLimited) {
     return {
-      ...commonResponse,
+      ...validatedQuery,
       teamId,
       status: RequestStatus.RATE_LIMIT,
       response: {
@@ -310,6 +310,7 @@ export const handleClassloader = async ({
   );
 
   const commonBase = {
+    ...validatedQuery,
     teamId,
     customerId: matchingCustomer ? customerId : undefined,
     productId: matchingProduct ? productId : undefined,
@@ -321,7 +322,6 @@ export const handleClassloader = async ({
 
   if (!license) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.LICENSE_NOT_FOUND,
       response: {
@@ -340,7 +340,6 @@ export const handleClassloader = async ({
 
   if (!matchingProduct) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.PRODUCT_NOT_FOUND,
       response: {
@@ -361,7 +360,6 @@ export const handleClassloader = async ({
   if (version) {
     if (!versionMatchRelease) {
       return {
-        ...commonResponse,
         ...commonBase,
         status: RequestStatus.RELEASE_NOT_FOUND,
         response: {
@@ -383,7 +381,6 @@ export const handleClassloader = async ({
 
   if (!latestRelease && !versionMatchRelease) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.RELEASE_NOT_FOUND,
       response: {
@@ -403,7 +400,6 @@ export const handleClassloader = async ({
 
   if (!fileToUse || !releaseToUse) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.RELEASE_NOT_FOUND,
       response: {
@@ -423,7 +419,6 @@ export const handleClassloader = async ({
 
   if (releaseToUse.status === ReleaseStatus.ARCHIVED) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.RELEASE_ARCHIVED,
       response: {
@@ -440,7 +435,6 @@ export const handleClassloader = async ({
 
   if (releaseToUse.status === ReleaseStatus.DRAFT) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.RELEASE_DRAFT,
       response: {
@@ -460,7 +454,6 @@ export const handleClassloader = async ({
 
     if (!allowedLicenses.includes(license.id)) {
       return {
-        ...commonResponse,
         ...commonBase,
         status: RequestStatus.NO_ACCESS_TO_RELEASE,
         response: {
@@ -486,7 +479,6 @@ export const handleClassloader = async ({
 
   if (blacklistCheck) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: blacklistCheck.status,
       response: {
@@ -508,7 +500,6 @@ export const handleClassloader = async ({
 
   if (strictModeNoCustomerId || noCustomerMatch) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.CUSTOMER_NOT_FOUND,
       response: {
@@ -525,7 +516,6 @@ export const handleClassloader = async ({
 
   if (license.suspended) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.LICENSE_SUSPENDED,
       response: {
@@ -548,7 +538,6 @@ export const handleClassloader = async ({
 
   if (licenseExpirationCheck) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: licenseExpirationCheck.status,
       response: {
@@ -572,7 +561,6 @@ export const handleClassloader = async ({
     // TODO: @KasperiP: Maybe add separate table for storing IP addresses because user's probably want to also remove old IP addresses
     if (!existingIps.includes(ipAddress) && ipLimitReached) {
       return {
-        ...commonResponse,
         ...commonBase,
         status: RequestStatus.IP_LIMIT_REACHED,
         response: {
@@ -596,7 +584,6 @@ export const handleClassloader = async ({
 
   if (seatCheck) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: seatCheck.status,
       response: {
@@ -648,7 +635,6 @@ export const handleClassloader = async ({
 
   if (!file) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.RELEASE_NOT_FOUND,
       response: {
@@ -693,7 +679,6 @@ export const handleClassloader = async ({
 
   if (!fileStream) {
     return {
-      ...commonResponse,
       ...commonBase,
       status: RequestStatus.INTERNAL_SERVER_ERROR,
       response: {
@@ -785,7 +770,6 @@ export const handleClassloader = async ({
         embedResponse,
       );
       return {
-        ...commonResponse,
         ...commonBase,
         status: RequestStatus.INTERNAL_SERVER_ERROR,
         response: {
