@@ -361,7 +361,9 @@ describe('Stripe Integration', () => {
     test('handles license generation failure', async () => {
       (generateUniqueLicense as jest.Mock).mockResolvedValue(null);
 
-      await handleCheckoutSessionCompleted(mockSession, mockTeam, mockStripe);
+      await expect(
+        handleCheckoutSessionCompleted(mockSession, mockTeam, mockStripe),
+      ).rejects.toThrow('Failed to generate a unique license key');
 
       expect(logger.error).toHaveBeenCalledWith(
         'Failed to generate a unique license key',
@@ -373,7 +375,9 @@ describe('Stripe Integration', () => {
       const error = new Error('Database error');
       prismaMock.$transaction.mockRejectedValue(error);
 
-      await handleCheckoutSessionCompleted(mockSession, mockTeam, mockStripe);
+      await expect(
+        handleCheckoutSessionCompleted(mockSession, mockTeam, mockStripe),
+      ).rejects.toThrow('Database error');
 
       expect(logger.error).toHaveBeenCalledWith(
         'Error occurred in handleCheckoutSessionCompleted',
@@ -553,7 +557,9 @@ describe('Stripe Integration', () => {
       const error = new Error('Database error');
       prismaMock.$transaction.mockRejectedValue(error);
 
-      await handleInvoicePaid(invoice, mockTeam, mockStripe);
+      await expect(
+        handleInvoicePaid(invoice, mockTeam, mockStripe),
+      ).rejects.toThrow('Database error');
 
       expect(logger.error).toHaveBeenCalledWith('Error in handleInvoicePaid', {
         error,
@@ -644,7 +650,9 @@ describe('Stripe Integration', () => {
 
       prismaMock.license.update.mockRejectedValue(error);
 
-      await handleSubscriptionDeleted(subscription, mockTeam);
+      await expect(
+        handleSubscriptionDeleted(subscription, mockTeam),
+      ).rejects.toThrow('Update failed');
 
       expect(logger.error).toHaveBeenCalledWith(
         'Error occurred in handleSubscriptionDeleted',
