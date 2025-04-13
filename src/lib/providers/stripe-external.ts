@@ -237,7 +237,7 @@ export const handleInvoicePaid = async (
       logger.info('License created for subscription', {
         subscriptionId: subscription.id,
         teamId: team.id,
-        licenseId: license?.id,
+        licenseId: license.id,
         customerId: stripeCustomerId,
         productId: lukittuProductId,
       });
@@ -297,6 +297,7 @@ export const handleInvoicePaid = async (
       teamId: team.id,
       subscriptionId: invoice.subscription,
     });
+    throw error;
   }
 };
 
@@ -353,6 +354,7 @@ export const handleSubscriptionDeleted = async (
       subscriptionId: subscription.id,
       teamId: team.id,
     });
+    throw error;
   }
 };
 
@@ -640,5 +642,6 @@ export const handleCheckoutSessionCompleted = async (
       teamId: team.id,
       paymentIntentId: session.payment_intent,
     });
+    throw error;
   }
 };
