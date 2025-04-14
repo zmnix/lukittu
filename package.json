@@ -14,7 +14,9 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "check-translations": "node src/locales/checkTranslations.js",
-    "sync-translations": "node src/locales/syncTranslations.js"
+    "sync-translations": "node src/locales/syncTranslations.js",
+    "bundle-docs": "npx @redocly/cli bundle ./docs/openapi.json --output ./docs/bundled-openapi.json",
+    "preview-docs": "npx @redocly/cli preview-docs ./docs/openapi.json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.772.0",

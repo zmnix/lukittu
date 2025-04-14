@@ -25,23 +25,28 @@
           "application/json": {
             "schema": {
               "type": "object",
-              "required": ["expirationType"],
+              "required": [
+                "expirationType",
+                "suspended",
+                "sendEmailDelivery",
+                "productIds",
+                "customerIds",
+                "metadata"
+              ],
               "properties": {
                 "customerIds": {
                   "type": "array",
                   "items": {
                     "type": "string",
                     "format": "uuid"
-                  },
-                  "default": []
+                  }
                 },
                 "productIds": {
                   "type": "array",
                   "items": {
                     "type": "string",
                     "format": "uuid"
-                  },
-                  "default": []
+                  }
                 },
                 "expirationDate": {
                   "type": "string",
@@ -82,8 +87,7 @@
                         "type": "boolean"
                       }
                     }
-                  },
-                  "default": []
+                  }
                 },
                 "seats": {
                   "type": "integer",
@@ -91,12 +95,10 @@
                   "nullable": true
                 },
                 "suspended": {
-                  "type": "boolean",
-                  "default": false
+                  "type": "boolean"
                 },
                 "sendEmailDelivery": {
-                  "type": "boolean",
-                  "default": false
+                  "type": "boolean"
                 }
               }
             }
