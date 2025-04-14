@@ -29,12 +29,6 @@
     },
     "/api/v1/dev/teams/{teamId}/licenses/{licenseKey}": {
       "$ref": "./openapi/paths/dev.json#/~1api~1v1~1dev~1teams~1{teamId}~1licenses~1{licenseKey}"
-    },
-    "/api/v1/dev/teams/{teamId}/licenses/{licenseKey}/delete": {
-      "$ref": "./openapi/paths/verify.json#/~1api~1v1~1dev~1teams~1{teamId}~1licenses~1{licenseKey}"
-    },
-    "/api/v1/dev/teams/{teamId}/licenses/id/{licenseId}/delete": {
-      "$ref": "./openapi/paths/verify.json#/~1api~1v1~1dev~1teams~1{teamId}~1licenses~1id~1{licenseId}"
     }
   },
   "components": {
