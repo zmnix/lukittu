@@ -39,6 +39,7 @@ services:
 
 volumes:
   postgres-data:
+    name: lukittu_postgres-data
 
 networks:
   lukittu-network:
