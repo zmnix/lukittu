@@ -25,8 +25,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 
-# Copy node_modules and project config
+# Copy all workspace files
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/prisma/node_modules ./packages/prisma/node_modules
+COPY --from=deps /app/apps/next/node_modules ./apps/next/node_modules
 COPY --from=deps /app/pnpm-workspace.yaml ./
 COPY --from=deps /app/package.json ./
 
@@ -34,11 +36,13 @@ COPY --from=deps /app/package.json ./
 COPY packages ./packages
 COPY apps ./apps
 
+# Set working directory to the Next.js app
+WORKDIR /app/apps/next
+
 # Generate Prisma client
-RUN cd packages/prisma && pnpm run generate
+RUN cd ../../packages/prisma && pnpm run generate
 
 # Build the Next.js app
-WORKDIR /app/apps/next
 RUN pnpm run build
 
 # 3. Production image, copy all the files and run next
