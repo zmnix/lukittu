@@ -25,10 +25,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 
-# Copy all workspace files
+# Copy node_modules and project config
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/prisma/node_modules ./packages/prisma/node_modules
-COPY --from=deps /app/apps/next/node_modules ./apps/next/node_modules
 COPY --from=deps /app/pnpm-workspace.yaml ./
 COPY --from=deps /app/package.json ./
 
@@ -36,13 +34,11 @@ COPY --from=deps /app/package.json ./
 COPY packages ./packages
 COPY apps ./apps
 
-# Set working directory to the Next.js app
-WORKDIR /app/apps/next
-
 # Generate Prisma client
-RUN cd ../../packages/prisma && pnpm run generate
+RUN cd packages/prisma && pnpm run generate
 
 # Build the Next.js app
+WORKDIR /app/apps/next
 RUN pnpm run build
 
 # 3. Production image, copy all the files and run next
@@ -54,12 +50,12 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/apps/next/public ./public
+COPY --from=builder /app/apps/next/public ./apps/next/public
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/apps/next/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/next/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/next/.next/static ./apps/next/.next/static
 
 USER nextjs
 
