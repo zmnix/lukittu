@@ -288,6 +288,7 @@ jobs:
 
             echo "📦 Pulling latest images..."
             docker pull ${{ secrets.REGISTRY_USERNAME }}/${{ secrets.IMAGE }}
+            docker pull ${{ secrets.REGISTRY_USERNAME }}/${{ secrets.IMAGE_BOT }}
 
             echo "🔄 Restarting containers..."
             docker compose -f docker/docker-compose-prod.yml down
