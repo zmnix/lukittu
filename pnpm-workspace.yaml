@@ -1,6 +1,6 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
 catalogs:
   prisma:
     prisma: latest
@@ -11,3 +11,4 @@ onlyBuiltDependencies:
   - esbuild
   - prisma
   - sharp
+  - unrs-resolver
