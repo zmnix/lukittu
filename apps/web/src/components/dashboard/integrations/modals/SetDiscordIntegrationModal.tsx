@@ -21,7 +21,6 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import {
   SetDiscordIntegrationSchema,
@@ -39,10 +38,7 @@ interface SetDiscordIntegrationModalProps {
   onOpenChange: (boolean: boolean) => void;
 }
 
-// You may need to replace these with your actual Discord URLs
-const DISCORD_BOT_SERVER_URL = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&integration_type=0&scope=applications.commands`;
-
-const DISCORD_BOT_USER_URL = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&integration_type=1&scope=applications.commands`;
+const DISCORD_BOT_URL = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`;
 
 export default function SetDiscordIntegrationModal({
   discordIntegration,
@@ -157,60 +153,25 @@ export default function SetDiscordIntegrationModal({
         <Form {...form}>
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col space-y-2">
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-3 flex items-center">
-                    <span className="mr-2">
-                      <DiscordIcon />
-                    </span>
-                    <h4 className="font-medium">
-                      {t('dashboard.integrations.add_to_server')}
-                    </h4>
-                  </div>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {t('dashboard.integrations.server_install_description', {
-                      defaultValue:
-                        'Add the bot to your Discord server to enable server-wide commands and functionality.',
-                    })}
-                  </p>
-                  <Button
-                    className="w-full sm:w-auto"
-                    size="sm"
-                    variant="default"
-                    onClick={() =>
-                      window.open(DISCORD_BOT_SERVER_URL, '_blank')
-                    }
-                  >
-                    {t('dashboard.integrations.add_to_server')}
-                  </Button>
+              <div>
+                <div className="mb-3 flex items-center">
+                  <span className="mr-2">
+                    <DiscordIcon />
+                  </span>
+                  <h4 className="font-medium">
+                    {t('dashboard.integrations.install_bot')}
+                  </h4>
                 </div>
-
-                <Separator />
-
-                <div>
-                  <div className="mb-3 flex items-center">
-                    <span className="mr-2">
-                      <DiscordIcon />
-                    </span>
-                    <h4 className="font-medium">
-                      {t('dashboard.integrations.user_install')}
-                    </h4>
-                  </div>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    {t('dashboard.integrations.user_install_description', {
-                      defaultValue:
-                        'Add the bot as a user integration to access Discord features through direct messages.',
-                    })}
-                  </p>
-                  <Button
-                    className="w-full sm:w-auto"
-                    size="sm"
-                    variant="default"
-                    onClick={() => window.open(DISCORD_BOT_USER_URL, '_blank')}
-                  >
-                    {t('dashboard.integrations.user_install')}
-                  </Button>
-                </div>
+                <p className="mb-3 text-sm text-muted-foreground">
+                  {t('dashboard.integrations.bot_install_description')}
+                </p>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => window.open(DISCORD_BOT_URL, '_blank')}
+                >
+                  {t('dashboard.integrations.install_bot')}
+                </Button>
               </div>
             </div>
 

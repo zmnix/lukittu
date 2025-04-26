@@ -668,11 +668,7 @@
       "discord_integration_deleted": "Integración con Discord eliminada",
       "discord_integration_created": "Integración con Discord creada",
       "discord_integration_updated": "Integración con Discord actualizada",
-      "add_to_server": "Agregar al servidor",
-      "user_install": "Instalación del usuario",
       "install_bot": "Instalar bot",
-      "server_install_description": "Instala el bot en tu servidor. Esto permite que tú y otros lo usen, pero solo dentro de este servidor específico.",
-      "user_install_description": "Instala el bot para uso personal. Esto te permite usarlo en cualquier lugar, pero otros no podrán utilizarlo.",
       "reroll_secret": "Regenerar clave secreta",
       "reroll_secret_warning": "¿Estás seguro de que deseas regenerar la clave secreta de la API?",
       "reset_secret": "Restablecer clave secreta de la API",
@@ -680,7 +676,8 @@
       "built_by_bit_integration_deleted": "Integración con BuiltByBit eliminada",
       "built_by_bit_integration_created": "Integración con BuiltByBit creada",
       "built_by_bit_integration_updated": "Integración con BuiltByBit actualizada",
-      "built_by_bit_integration_description": "Para la generación y distribución automática de licencias, puedes integrar Lukittu con BuiltByBit. Cuando un cliente compre un producto, se generará automáticamente una licencia."
+      "built_by_bit_integration_description": "Para la generación y distribución automática de licencias, puedes integrar Lukittu con BuiltByBit. Cuando un cliente compre un producto, se generará automáticamente una licencia.",
+      "bot_install_description": "Para instalar el bot de Discord Lukittu, haz clic en el botón de abajo. Serás redirigido a Discord donde podrás autorizar al bot para unirse a tu servidor."
     },
     "releases": {
       "license_restricted_tooltip": "La versión está restringida a licencias específicas",

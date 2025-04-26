@@ -668,11 +668,7 @@
       "discord_integration_deleted": "Discord-integraatio poistettu",
       "discord_integration_created": "Discord-integraatio luotu",
       "discord_integration_updated": "Discord-integraatio päivitetty",
-      "add_to_server": "Lisää palvelimelle",
-      "user_install": "Käyttäjän asennus",
       "install_bot": "Asenna botti",
-      "server_install_description": "Asenna botti palvelimellesi. Näin sinä ja muut voitte käyttää bottia, mutta vain tällä tietyllä palvelimella.",
-      "user_install_description": "Asenna botti henkilökohtaiseen käyttöön. Näin voit käyttää bottia missä tahansa, mutta muut eivät voi käyttää sitä.",
       "reroll_secret": "Uudelleenluo salaisuus",
       "reroll_secret_warning": "Oletko varma, että haluat luoda uuden salaisuuden? Tämä mitätöi nykyisen salaisuuden ja kaikki siihen liittyvät integraatiot lakkaavat toimimasta.",
       "reset_secret": "Nollaa salaisuus",
@@ -680,7 +676,8 @@
       "built_by_bit_integration_deleted": "BuiltByBit-integraatio poistettu",
       "built_by_bit_integration_created": "BuiltByBit-integraatio luotu",
       "built_by_bit_integration_updated": "BuiltByBit-integraatio päivitetty",
-      "built_by_bit_integration_description": "BuiltByBit-integraatio mahdollistaa ohjelmistosi automaattisen jakelun BuiltByBit-alustalla. Kun asiakas ostaa tuotteen, lisenssi luodaan automaattisesti."
+      "built_by_bit_integration_description": "BuiltByBit-integraatio mahdollistaa ohjelmistosi automaattisen jakelun BuiltByBit-alustalla. Kun asiakas ostaa tuotteen, lisenssi luodaan automaattisesti.",
+      "bot_install_description": "Asentaaksesi Lukittu Discord-botin, klikkaa alla olevaa painiketta. Sinut ohjataan Discordiin, jossa voit valtuuttaa botin liittymään palvelimellesi."
     },
     "releases": {
       "license_restricted_tooltip": "Julkaisu on rajoitettu tietyille lisensseille",
