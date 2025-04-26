@@ -14,7 +14,7 @@ function getAllKeys(obj, prefix = '') {
 }
 
 // Function to set a value at a nested path in an object
-function setNestedValue(obj, path, value) {
+function setNestedValue(obj, path) {
   const parts = path.split('.');
   let current = obj;
 
@@ -46,6 +46,43 @@ function getNestedValue(obj, path) {
   }
 
   return current;
+}
+
+// Function to remove a key at a nested path in an object
+function removeNestedKey(obj, path) {
+  const parts = path.split('.');
+  let current = obj;
+  const stack = [{ obj, key: null }];
+
+  // Navigate to the deepest level
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i];
+    if (!current[part] || typeof current[part] !== 'object') {
+      return false; // Path doesn't exist
+    }
+    current = current[part];
+    stack.push({ obj: current, key: part });
+  }
+
+  // Delete the key
+  const lastPart = parts[parts.length - 1];
+  if (current[lastPart] !== undefined) {
+    delete current[lastPart];
+
+    // Clean up empty objects
+    for (let i = stack.length - 1; i > 0; i--) {
+      const { obj, key } = stack[i - 1];
+      const childKey = stack[i].key;
+      if (Object.keys(obj[childKey]).length === 0) {
+        delete obj[childKey];
+      } else {
+        break; // Stop if object isn't empty
+      }
+    }
+    return true;
+  }
+
+  return false;
 }
 
 // Read all .json files in the current directory
@@ -83,6 +120,9 @@ for (const file of files) {
 
   const currentKeys = getAllKeys(fileContents[file]);
   const missingKeys = referenceKeys.filter((key) => !currentKeys.includes(key));
+  const extraKeys = currentKeys.filter((key) => !referenceKeys.includes(key));
+
+  let fileChanged = false;
 
   if (missingKeys.length > 0) {
     console.log(`Adding ${missingKeys.length} missing keys to ${file}...`);
@@ -92,14 +132,27 @@ for (const file of files) {
       const englishValue = getNestedValue(fileContents['en.json'], key);
       setNestedValue(fileContents[file], key, englishValue);
     }
+    fileChanged = true;
+  } else {
+    console.log(`${file} already contains all keys from en.json`);
+  }
 
+  if (extraKeys.length > 0) {
+    console.log(`Removing ${extraKeys.length} extra keys from ${file}...`);
+
+    // Remove each extra key
+    for (const key of extraKeys) {
+      removeNestedKey(fileContents[file], key);
+    }
+    fileChanged = true;
+  }
+
+  if (fileChanged) {
     // Write the updated file back
     const filePath = path.join(directoryPath, file);
     fs.writeFileSync(filePath, JSON.stringify(fileContents[file], null, 2));
     syncPerformed = true;
     console.log(`Updated ${file}`);
-  } else {
-    console.log(`${file} already contains all keys from en.json`);
   }
 }
 
