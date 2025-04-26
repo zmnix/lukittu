@@ -241,9 +241,7 @@ function createLicenseEmbed(
       embed.addFields({
         name: product.name,
         value: `${'```yaml\n' + product.id + '```'}\n${
-          product.url
-            ? `**Url:** [${product.url}](${product.url})`
-            : 'No URL provided'
+          product.url ? `**Url:** ${product.url}` : 'No URL provided'
         }`,
         inline: false,
       });
