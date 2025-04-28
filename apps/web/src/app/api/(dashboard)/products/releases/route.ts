@@ -548,20 +548,36 @@ export async function GET(
       );
     }
 
-    const [hasResults, totalResults] = await prisma.$transaction([
-      prisma.release.findFirst({
-        where: {
-          teamId: selectedTeam,
-        },
-        select: {
-          id: true,
-        },
-      }),
-      prisma.release.count({
-        where,
-      }),
-    ]);
-    const releases = session.user.teams[0].releases.map((release) => ({
+    const [hasResults, totalResults, latestRelease] = await prisma.$transaction(
+      [
+        prisma.release.findFirst({
+          where: {
+            teamId: selectedTeam,
+            productId,
+          },
+          select: {
+            id: true,
+          },
+        }),
+        prisma.release.count({
+          where,
+        }),
+        prisma.release.findFirst({
+          where: {
+            teamId: selectedTeam,
+            productId,
+            latest: true,
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ],
+    );
+
+    const team = session.user.teams[0];
+
+    const releases = team.releases.map((release) => ({
       ...release,
       allowedLicenses: release.allowedLicenses.map((license) => ({
         ...license,
@@ -570,7 +586,7 @@ export async function GET(
       })),
     }));
 
-    const hasLatestRelease = releases.some((release) => release.latest);
+    const hasLatestRelease = Boolean(latestRelease);
 
     return NextResponse.json({
       releases,
