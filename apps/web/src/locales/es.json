@@ -45,7 +45,7 @@
     "product_already_exists": "El equipo ya tiene un producto con este nombre!",
     "product_not_found": "Producto no encontrado.",
     "license_key_invalid": "La clave de licencia debe contener 5 grupos de 5 caracteres separados por guiones!",
-    "expiration_days_required": "Días son obligatorios!",
+    "expiration_days_required": "Días de expiración son obligatorios!",
     "expiration_date_required": "Fecha de expiración es obligatoria!",
     "metadata_key_min_length": "La clave de los metadatos debe tener al menos 1 carácter!",
     "metadata_key_max_length": "La clave de los metadatos debe tener como máximo 255 caracteres!",
@@ -304,7 +304,8 @@
     "sending_email_failed": "El envío del correo electrónico falló",
     "free": "Gratis",
     "api_secret": "Secreto de API",
-    "username": "Nombre de usuario"
+    "username": "Nombre de usuario",
+    "add": "Agregar"
   },
   "auth": {
     "oauth": {
@@ -539,7 +540,7 @@
       "expiration_start": "Inicio de expiración",
       "creation": "Creación",
       "activation": "Activación",
-      "expiration_days": "Días",
+      "expiration_days": "Días de expiración",
       "expiration_settings": "Configuraciones de expiración",
       "add_your_first_license": "Agrega tu primera licencia",
       "license_description": "Las licencias son las claves que permiten a tus clientes usar tus productos. Puedes asignarlas a clientes y rastrear su uso.",
@@ -703,7 +704,8 @@
       "release_deleted": "Versión eliminada",
       "set_as_latest_description": "Cuando esté marcado, esta versión se establecerá como la última versión para el producto y se usará si no se solicita una versión específica.",
       "no_latest_release": "No hay última versión",
-      "no_latest_release_description": "No has establecido una última versión para este producto. Se usa como respaldo si no se solicita una versión específica."
+      "no_latest_release_description": "No has establecido una última versión para este producto. Se usa como respaldo si no se solicita una versión específica.",
+      "latest_release": "Última versión"
     },
     "settings": {
       "watermarking_description": "El marcado de agua añade identificadores únicos a tu software para prevenir la distribución no autorizada. Esta función está disponible solo para aplicaciones Java en este momento.",
@@ -752,7 +754,17 @@
       "delete_api_key_confirm_description": "Estás a punto de eliminar la clave de API con ID <strong>{id}</strong>! Esto <strong>eliminará permanentemente</strong> esta clave de API. Esta acción no se puede deshacer.",
       "no_api_keys": "No hay claves de API",
       "api_key_created_description": "Clave de API creada con éxito. Mantén esta clave en secreto y no la compartas con nadie. <strong>Esta es la única vez que verás esta clave, así que guárdala ahora!</strong>.",
-      "api_key_expiration_date_description": "No necesitas establecer una fecha de expiración, pero puede ser útil por razones de seguridad. Si estableces una fecha de expiración, la clave de API se eliminará automáticamente después de la fecha."
+      "api_key_expiration_date_description": "No necesitas establecer una fecha de expiración, pero puede ser útil por razones de seguridad. Si estableces una fecha de expiración, la clave de API se eliminará automáticamente después de la fecha.",
+      "add_metadata_key": "Agregar clave de metadatos",
+      "product_metadata_keys": "Claves de metadatos del producto",
+      "license_metadata_keys": "Claves de metadatos de la licencia",
+      "customer_metadata_keys": "Claves de metadatos del cliente",
+      "product_fields": "Campos del producto",
+      "license_fields": "Campos de la licencia",
+      "customer_fields": "Campos del cliente",
+      "returned_fields_updated": "Campos devueltos actualizados",
+      "returned_fields": "Campos devueltos",
+      "returned_fields_description": "Selecciona qué campos deben ser devueltos al cliente en los puntos de verificación."
     },
     "blacklist": {
       "blacklist_updated": "Lista negra actualizada",

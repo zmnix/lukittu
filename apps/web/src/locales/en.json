@@ -54,7 +54,7 @@
     "product_already_exists": "Team already has a product with this name!",
     "product_not_found": "Product not found!",
     "license_key_invalid": "License key must contain 5 groups of 5 characters separated by dashes!",
-    "expiration_days_required": "Days are required!",
+    "expiration_days_required": "Expiration days is required!",
     "expiration_date_required": "Expiration date is required!",
     "metadata_key_min_length": "Metadata key must be at least 1 characters long!",
     "metadata_key_max_length": "Metadata key must be at most 255 characters long!",
@@ -127,6 +127,7 @@
     "max_releases_reached": "Your team has reached the maximum number of releases allowed for the current plan. Please upgrade to add more releases."
   },
   "general": {
+    "add": "Add",
     "api_secret": "API-secret",
     "username": "Username",
     "select_key": "Select key",
@@ -539,7 +540,7 @@
       "expiration_start": "Expiration start",
       "creation": "Creation",
       "activation": "Activation",
-      "expiration_days": "Days",
+      "expiration_days": "Expiration days",
       "expiration_settings": "Expiration settings",
       "add_your_first_license": "Add your first license",
       "license_description": "Licenses are the keys that allow your customers to use your products. You can assign them to customers and track their usage.",
@@ -680,6 +681,7 @@
       "built_by_bit_integration_description": "For automatic license generation and distribution, you can integrate Lukittu with BuiltByBit. When a customer purchases a product, a license will be automatically generated."
     },
     "releases": {
+      "latest_release": "Latest release",
       "license_restricted_tooltip": "Release is restricted to specific licenses",
       "no_license_restrictions": "No license restrictions",
       "drop_file_here": "Drop file here",
@@ -706,6 +708,16 @@
       "no_latest_release_description": "You have not set a latest release for this product. It is used as a fallback if no specific release is requested."
     },
     "settings": {
+      "add_metadata_key": "Add metadata key",
+      "product_metadata_keys": "Product metadata keys",
+      "license_metadata_keys": "License metadata keys",
+      "customer_metadata_keys": "Customer metadata keys",
+      "product_fields": "Product fields",
+      "license_fields": "License fields",
+      "customer_fields": "Customer fields",
+      "returned_fields_updated": "Returned fields updated",
+      "returned_fields": "Returned fields",
+      "returned_fields_description": "Select which fields should be returned to the client on verification endpoints.",
       "watermarking_description": "Watermarking adds unique identifiers to your software to prevent unauthorized distribution. This feature is available only for Java-applications at the moment.",
       "static_constant_pool_synthesis": "Static constant pool synthesis",
       "dynamic_bytecode_injection": "Dynamic bytecode injection",
