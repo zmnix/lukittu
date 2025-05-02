@@ -295,7 +295,7 @@ export const handleBuiltByBitPlaceholder = async (
           {
             metadata: {
               some: {
-                key: 'BBB_RESOURCE',
+                key: 'BBB_RESOURCE_ID',
                 value: validatedData.resource_id,
               },
             },
