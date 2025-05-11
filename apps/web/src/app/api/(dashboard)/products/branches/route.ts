@@ -2,39 +2,38 @@ import { createAuditLog } from '@/lib/logging/audit-log';
 import { getSession } from '@/lib/security/session';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import {
-  setProductSchema,
-  SetProductSchema,
-} from '@/lib/validation/products/set-product-schema';
+  setBranchSchema,
+  SetBranchSchema,
+} from '@/lib/validation/products/set-branch-schema';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
   AuditLogTargetType,
   logger,
-  Metadata,
-  prisma,
   Prisma,
-  Product,
+  prisma,
   regex,
+  ReleaseBranch,
 } from '@lukittu/shared';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export type IProductsGetSuccessResponse = {
-  products: (Product & {
-    latestRelease: string | null;
-    totalReleases: number;
-    metadata: Metadata[];
+export type IProductsBranchesGetSuccessResponse = {
+  branches: (ReleaseBranch & {
+    releaseCount: number;
   })[];
   totalResults: number;
   hasResults: boolean;
 };
 
-export type IProductsGetResponse = ErrorResponse | IProductsGetSuccessResponse;
+export type IProductsBranchesGetResponse =
+  | ErrorResponse
+  | IProductsBranchesGetSuccessResponse;
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<IProductsGetResponse>> {
+): Promise<NextResponse<IProductsBranchesGetResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {
@@ -52,22 +51,15 @@ export async function GET(
 
     const allowedPageSizes = [10, 25, 50, 100];
     const allowedSortDirections = ['asc', 'desc'];
-    const allowedSortColumns = ['name', 'createdAt', 'updatedAt'];
+    const allowedSortColumns = ['name', 'createdAt'];
 
-    const search = (searchParams.get('search') as string) || '';
-
-    const licenseId = searchParams.get('licenseId') as string;
-    const licenseCountMin = searchParams.get('licenseCountMin');
-    const licenseCountMax = searchParams.get('licenseCountMax');
-    const licenseCountComparisonMode = searchParams.get(
-      'licenseCountComparisonMode',
-    );
+    const productId = searchParams.get('productId') as string;
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
 
-    if (licenseId && !regex.uuidV4.test(licenseId)) {
+    if (!productId || !regex.uuidV4.test(productId)) {
       return NextResponse.json(
         {
           message: t('validation.bad_request'),
@@ -95,69 +87,12 @@ export async function GET(
     const skip = (page - 1) * pageSize;
     const take = pageSize;
 
-    let licenseCountFilter: Prisma.ProductWhereInput | undefined;
-
-    if (licenseCountMin) {
-      const min = parseInt(licenseCountMin);
-      if (!isNaN(min) && min >= 0) {
-        let havingClause: Prisma.Sql | undefined;
-
-        switch (licenseCountComparisonMode) {
-          case 'between': {
-            const max = parseInt(licenseCountMax || '');
-            if (!isNaN(max)) {
-              havingClause = Prisma.sql`HAVING COUNT(l.id) >= ${min} AND COUNT(l.id) <= ${max}`;
-            }
-            break;
-          }
-          case 'equals':
-            havingClause = Prisma.sql`HAVING COUNT(l.id) = ${min}`;
-            break;
-          case 'greater':
-            havingClause = Prisma.sql`HAVING COUNT(l.id) > ${min}`;
-            break;
-          case 'less':
-            havingClause = Prisma.sql`HAVING COUNT(l.id) < ${min}`;
-            break;
-        }
-
-        if (havingClause) {
-          const filteredProductIds = await prisma.$queryRaw<{ id: string }[]>`
-            SELECT p.id
-            FROM "Product" p
-            LEFT JOIN "_LicenseToProduct" lp ON p.id = lp."B"
-            LEFT JOIN "License" l ON lp."A" = l.id
-            WHERE p."teamId" = ${selectedTeam}
-            GROUP BY p.id
-            ${havingClause}
-          `;
-
-          licenseCountFilter = {
-            id: {
-              in: filteredProductIds.map((p) => p.id),
-            },
-          };
-        }
-      }
-    }
-
     const where = {
-      teamId: selectedTeam,
-      ...licenseCountFilter,
-      licenses: licenseId
-        ? {
-            some: {
-              id: licenseId,
-            },
-          }
-        : undefined,
-      name: search
-        ? {
-            contains: search,
-            mode: 'insensitive',
-          }
-        : undefined,
-    } as Prisma.ProductWhereInput;
+      productId,
+      product: {
+        teamId: selectedTeam,
+      },
+    } as Prisma.ReleaseBranchWhereInput;
 
     const session = await getSession({
       user: {
@@ -169,15 +104,26 @@ export async function GET(
             },
             include: {
               products: {
-                where,
-                include: {
-                  releases: true,
-                  metadata: true,
+                where: {
+                  id: productId,
+                  teamId: selectedTeam,
                 },
-                skip,
-                take,
-                orderBy: {
-                  [sortColumn]: sortDirection,
+                include: {
+                  branches: {
+                    where,
+                    skip,
+                    take,
+                    orderBy: {
+                      [sortColumn]: sortDirection,
+                    },
+                    include: {
+                      _count: {
+                        select: {
+                          releases: true,
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -205,35 +151,50 @@ export async function GET(
     }
 
     const [hasResults, totalResults] = await prisma.$transaction([
-      prisma.product.findFirst({
+      prisma.releaseBranch.findFirst({
         where: {
-          teamId: selectedTeam,
+          productId,
+          product: {
+            teamId: selectedTeam,
+          },
         },
         select: {
           id: true,
         },
       }),
-      prisma.product.count({
+      prisma.releaseBranch.count({
         where,
       }),
     ]);
-    const products = session.user.teams[0].products;
+
+    const team = session.user.teams[0];
+
+    const product = team.products[0];
+
+    if (!product) {
+      return NextResponse.json(
+        {
+          message: t('validation.product_not_found'),
+        },
+        { status: HttpStatus.NOT_FOUND },
+      );
+    }
+
+    const branches = product.branches;
+
+    const branchesFormatted = branches.map((branch) => ({
+      ...branch,
+      releases: undefined,
+      releaseCount: branch._count.releases,
+    }));
 
     return NextResponse.json({
-      products: products.map((product) => ({
-        ...product,
-        releases: undefined,
-        latestRelease:
-          product.releases.find(
-            (release) => release.latest && !release.branchId,
-          )?.version || null,
-        totalReleases: product.releases.length || 0,
-      })),
+      branches: branchesFormatted,
       totalResults,
-      hasResults: Boolean(hasResults),
+      hasResults: !!hasResults,
     });
   } catch (error) {
-    logger.error("Error occurred in 'products' route", error);
+    logger.error("Error occurred in 'branches' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
@@ -243,22 +204,22 @@ export async function GET(
   }
 }
 
-type IProductsCreateSuccessResponse = {
-  product: Product;
+type IBranchesCreateSuccessResponse = {
+  branch: ReleaseBranch;
 };
 
-export type IProductsCreateResponse =
+export type IProductsBranchesCreateResponse =
   | ErrorResponse
-  | IProductsCreateSuccessResponse;
+  | IBranchesCreateSuccessResponse;
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<IProductsCreateResponse>> {
+): Promise<NextResponse<IProductsBranchesCreateResponse>> {
   const t = await getTranslations({ locale: await getLanguage() });
 
   try {
-    const body = (await request.json()) as SetProductSchema;
-    const validated = await setProductSchema(t).safeParseAsync(body);
+    const body = (await request.json()) as SetBranchSchema;
+    const validated = setBranchSchema(t).safeParse(body);
 
     if (!validated.success) {
       return NextResponse.json(
@@ -270,7 +231,7 @@ export async function POST(
       );
     }
 
-    const { name, url, metadata } = validated.data;
+    const { name, productId } = validated.data;
 
     const selectedTeam = await getSelectedTeam();
 
@@ -292,8 +253,16 @@ export async function POST(
               id: selectedTeam,
             },
             include: {
-              products: true,
               limits: true,
+              products: {
+                where: {
+                  id: productId,
+                  teamId: selectedTeam,
+                },
+                include: {
+                  branches: true,
+                },
+              },
             },
           },
         },
@@ -330,67 +299,68 @@ export async function POST(
       );
     }
 
-    if (team.products.length >= team.limits.maxProducts) {
+    const product = team.products[0];
+
+    if (!product) {
       return NextResponse.json(
         {
-          message: t('validation.max_products_reached'),
+          message: t('validation.product_not_found'),
         },
-        { status: HttpStatus.BAD_REQUEST },
+        { status: HttpStatus.NOT_FOUND },
       );
     }
 
-    if (team.products.find((product) => product.name === name)) {
+    const existingBranches = product.branches;
+
+    const existingBranch = existingBranches.find(
+      (branch) => branch.name === name,
+    );
+
+    if (existingBranch) {
       return NextResponse.json(
         {
-          message: t('validation.product_already_exists'),
+          message: t('validation.branch_name_exists'),
           field: 'name',
         },
         { status: HttpStatus.BAD_REQUEST },
       );
     }
 
-    const product = await prisma.product.create({
+    if (existingBranches.length >= team.limits.maxBranchesPerProduct) {
+      return NextResponse.json(
+        {
+          message: t('validation.branch_limit_reached'),
+        },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const branch = await prisma.releaseBranch.create({
       data: {
         name,
-        url: url || null,
-        metadata: {
-          createMany: {
-            data: metadata.map((m) => ({
-              ...m,
-              teamId: team.id,
-            })),
-          },
-        },
-        createdBy: {
-          connect: {
-            id: session.user.id,
-          },
-        },
-        team: {
-          connect: {
-            id: selectedTeam,
-          },
-        },
+        productId,
       },
     });
 
     const response = {
-      product,
+      branch,
     };
 
     createAuditLog({
       userId: session.user.id,
-      teamId: team.id,
-      action: AuditLogAction.CREATE_PRODUCT,
-      targetId: product.id,
-      targetType: AuditLogTargetType.PRODUCT,
-      requestBody: body,
+      teamId: selectedTeam,
+      action: AuditLogAction.CREATE_BRANCH,
+      targetId: branch.id,
+      targetType: AuditLogTargetType.BRANCH,
       responseBody: response,
+      requestBody: body,
     });
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      status: HttpStatus.CREATED,
+    });
   } catch (error) {
-    logger.error("Error occurred in 'products' route", error);
+    logger.error("Error occurred in 'branches' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
