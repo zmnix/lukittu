@@ -31,7 +31,7 @@ export const getSourceAvatarColor = (source: AuditLogSource) => {
     case AuditLogSource.DASHBOARD:
       return 'bg-primary';
     case AuditLogSource.API_KEY:
-      return 'bg-amber-700';
+      return 'bg-amber-500';
     case AuditLogSource.STRIPE_INTEGRATION:
       return 'bg-[#635bff]';
     case AuditLogSource.DISCORD_INTEGRATION:
