@@ -322,7 +322,9 @@
     "select_branch": "Seleccionar sucursal",
     "releases_count": "Conteo de versiones",
     "branch": "Sucursal",
-    "source": "Fuente"
+    "source": "Fuente",
+    "select_source": "Seleccionar fuente",
+    "select_target": "Seleccionar objetivo"
   },
   "auth": {
     "oauth": {

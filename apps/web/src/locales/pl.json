@@ -322,7 +322,9 @@
     "select_branch": "Wybierz gałąź",
     "releases_count": "Liczba wydań",
     "branch": "Gałąź",
-    "source": "Źródło"
+    "source": "Źródło",
+    "select_source": "Wybierz źródło",
+    "select_target": "Wybierz cel"
   },
   "auth": {
     "oauth": {

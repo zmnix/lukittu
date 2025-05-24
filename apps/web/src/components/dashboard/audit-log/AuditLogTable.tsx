@@ -8,6 +8,10 @@ import {
   IAuditLogsGetSuccessResponse,
 } from '@/app/api/(dashboard)/audit-logs/route';
 import { DateConverter } from '@/components/shared/DateConverter';
+import { DateRangeFilterChip } from '@/components/shared/filtering/DateRangeFilterChip';
+import { IpFilterChip } from '@/components/shared/filtering/IpFilterChip';
+import { SourceFilterChip } from '@/components/shared/filtering/SourceFilterChip';
+import { TargetFilterChip } from '@/components/shared/filtering/TargetFilterChip';
 import { CountryFlag } from '@/components/shared/misc/CountryFlag';
 import TablePagination from '@/components/shared/table/TablePagination';
 import TableSkeleton from '@/components/shared/table/TableSkeleton';
@@ -33,6 +37,7 @@ import {
 import { getInitials } from '@/lib/utils/text-helpers';
 import { TeamContext } from '@/providers/TeamProvider';
 import { AuditLogSource } from '@lukittu/shared';
+import { addDays } from 'date-fns';
 import {
   ArrowDownUp,
   Bot,
@@ -48,7 +53,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import AuditLogRequestModal from './AuditLogRequestModal';
@@ -207,6 +213,11 @@ export default function AuditLogTable() {
   const teamCtx = useContext(TeamContext);
   const t = useTranslations();
   const locale = useLocale();
+  const isFirstLoad = useRef(true);
+
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
 
   const [auditLogModalOpen, setAuditLogModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<
@@ -221,12 +232,75 @@ export default function AuditLogTable() {
   );
   const [animatingRows, setAnimatingRows] = useState<Set<string>>(new Set());
 
+  const [sourceFilter, setSourceFilter] = useState<AuditLogSource | 'all'>(
+    'all',
+  );
+  const [targetTypeFilter, setTargetTypeFilter] = useState<string>('all');
+  const [ipSearch, setIpSearch] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: addDays(new Date(), -7),
+    to: new Date(),
+  });
+
+  const [tempSourceFilter, setTempSourceFilter] = useState(sourceFilter);
+  const [tempTargetTypeFilter, setTempTargetTypeFilter] =
+    useState(targetTypeFilter);
+  const [tempIpSearch, setTempIpSearch] = useState(ipSearch);
+  const [tempDateRange, setTempDateRange] = useState(dateRange);
+
+  const DEFAULT_FILTER = 'all';
+  const DEFAULT_SEARCH = '';
+  const DEFAULT_DATE_RANGE = {
+    from: addDays(new Date(), -7),
+    to: new Date(),
+  };
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (sourceFilter !== 'all') count++;
+    if (targetTypeFilter !== 'all') count++;
+    if (ipSearch) count++;
+    if (dateRange?.from || dateRange?.to) count++;
+    return count;
+  }, [sourceFilter, targetTypeFilter, ipSearch, dateRange]);
+
+  const handleResetToDefault = () => {
+    setSourceFilter(DEFAULT_FILTER);
+    setTempSourceFilter(DEFAULT_FILTER);
+    setTargetTypeFilter(DEFAULT_FILTER);
+    setTempTargetTypeFilter(DEFAULT_FILTER);
+    setIpSearch(DEFAULT_SEARCH);
+    setTempIpSearch(DEFAULT_SEARCH);
+    setDateRange(DEFAULT_DATE_RANGE);
+    setTempDateRange(DEFAULT_DATE_RANGE);
+  };
+
   const searchParams = new URLSearchParams({
     page: page.toString(),
     pageSize: pageSize.toString(),
     ...(sortColumn && { sortColumn }),
     ...(sortDirection && { sortDirection }),
   });
+
+  if (sourceFilter !== 'all') {
+    searchParams.append('source', sourceFilter);
+  }
+  if (targetTypeFilter !== 'all') {
+    searchParams.append('targetType', targetTypeFilter);
+  }
+  if (ipSearch) {
+    searchParams.append('ipSearch', ipSearch);
+  }
+  if (dateRange?.from) {
+    const dateRangeStartOfDay = new Date(dateRange.from);
+    dateRangeStartOfDay.setHours(0, 0, 0, 0);
+    searchParams.append('rangeStart', dateRangeStartOfDay.toISOString());
+  }
+  if (dateRange?.to) {
+    const dateRangeEndOfDay = new Date(dateRange.to);
+    dateRangeEndOfDay.setHours(23, 59, 59, 999);
+    searchParams.append('rangeEnd', dateRangeEndOfDay.toISOString());
+  }
 
   const { data, error, isLoading } = useSWR<IAuditLogsGetSuccessResponse>(
     teamCtx.selectedTeam
@@ -237,6 +311,20 @@ export default function AuditLogTable() {
       refreshInterval: 30 * 1000, // 30 seconds
     },
   );
+
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
+    setPage(1);
+  }, [
+    teamCtx.selectedTeam,
+    sourceFilter,
+    targetTypeFilter,
+    ipSearch,
+    dateRange,
+  ]);
 
   useEffect(() => {
     if (error) {
@@ -271,6 +359,70 @@ export default function AuditLogTable() {
     setAnimatingRows(newAnimatingRows);
   };
 
+  const handleResetAllFilters = () => {
+    setSourceFilter(DEFAULT_FILTER);
+    setTempSourceFilter(DEFAULT_FILTER);
+    setTargetTypeFilter(DEFAULT_FILTER);
+    setTempTargetTypeFilter(DEFAULT_FILTER);
+    setIpSearch(DEFAULT_SEARCH);
+    setTempIpSearch(DEFAULT_SEARCH);
+    setDateRange(undefined);
+    setTempDateRange(undefined);
+  };
+
+  const renderFilterChips = () => (
+    <div className="mb-4 flex flex-wrap items-center gap-2">
+      <SourceFilterChip
+        setSource={setSourceFilter}
+        setTempSource={setTempSourceFilter}
+        source={sourceFilter}
+        tempSource={tempSourceFilter}
+      />
+
+      <TargetFilterChip
+        setTargetType={setTargetTypeFilter}
+        setTempTargetType={setTempTargetTypeFilter}
+        targetType={targetTypeFilter}
+        tempTargetType={tempTargetTypeFilter}
+      />
+
+      <DateRangeFilterChip
+        dateRange={dateRange}
+        retentionDays={selectedTeam?.limits?.logRetention || 30}
+        setDateRange={setDateRange}
+        setTempDateRange={setTempDateRange}
+        tempDateRange={tempDateRange}
+      />
+
+      <IpFilterChip
+        ipSearch={ipSearch}
+        setIpSearch={setIpSearch}
+        setTempIpSearch={setTempIpSearch}
+        tempIpSearch={tempIpSearch}
+      />
+
+      <div className="flex gap-2">
+        <Button
+          className="h-7 rounded-full text-xs"
+          size="sm"
+          onClick={handleResetToDefault}
+        >
+          {t('general.reset_filters')}
+        </Button>
+
+        {activeFiltersCount > 0 && (
+          <Button
+            className="h-7 rounded-full text-xs"
+            size="sm"
+            onClick={handleResetAllFilters}
+          >
+            {t('general.clear_all')}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <AuditLogRequestModal
@@ -285,6 +437,9 @@ export default function AuditLogTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Filter chips section */}
+          {renderFilterChips()}
+
           {totalAuditLogs && teamCtx.selectedTeam ? (
             <>
               <style jsx>{`

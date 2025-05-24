@@ -140,6 +140,8 @@
     "polymart_signing_secret_invalid": "Polymart signing secret is invalid! It must be 20-255 characters long."
   },
   "general": {
+    "select_source": "Select source",
+    "select_target": "Select target",
     "source": "Source",
     "branches": "Branches",
     "select_branch": "Select branch",

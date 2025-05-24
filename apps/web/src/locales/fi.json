@@ -322,7 +322,9 @@
     "select_branch": "Valitse haara",
     "releases_count": "Julkaisujen määrä",
     "branch": "Haara",
-    "source": "Lähde"
+    "source": "Lähde",
+    "select_source": "Valitse lähde",
+    "select_target": "Valitse kohde"
   },
   "auth": {
     "oauth": {

@@ -3,10 +3,19 @@ import { iso3toIso2, iso3ToName } from '@/lib/utils/country-helpers';
 import { getLanguage, getSelectedTeam } from '@/lib/utils/header-helpers';
 import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { AuditLog, logger, prisma, Prisma, User } from '@lukittu/shared';
+import {
+  AuditLog,
+  AuditLogSource,
+  AuditLogTargetType,
+  logger,
+  prisma,
+  Prisma,
+  User,
+} from '@lukittu/shared';
 import { getTranslations } from 'next-intl/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { UAParser } from 'ua-parser-js';
+import { z } from 'zod';
 
 export type IAuditLogsGetSuccessResponse = {
   auditLogs: (AuditLog & {
@@ -47,10 +56,28 @@ export async function GET(
     const allowedSortDirections = ['asc', 'desc'];
     const allowedSortColumns = ['createdAt'];
 
+    const ipSearch = (searchParams.get('ipSearch') as string) || '';
+    const sourceFilter = (searchParams.get('source') as string) || '';
+    const targetTypeFilter = (searchParams.get('targetType') as string) || '';
+    const rangeStart = searchParams.get('rangeStart') as string;
+    const rangeEnd = searchParams.get('rangeEnd') as string;
+
     let page = parseInt(searchParams.get('page') as string) || 1;
     let pageSize = parseInt(searchParams.get('pageSize') as string) || 10;
     let sortColumn = searchParams.get('sortColumn') as string;
     let sortDirection = searchParams.get('sortDirection') as 'asc' | 'desc';
+
+    const invalidRangeStart = z.coerce
+      .date()
+      .safeParse(new Date(rangeStart)).error;
+    const invalidRangeEnd = z.coerce.date().safeParse(new Date(rangeEnd)).error;
+
+    if ((rangeStart && invalidRangeStart) || (rangeEnd && invalidRangeEnd)) {
+      return NextResponse.json(
+        { message: t('validation.bad_request') },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
 
     if (!allowedSortDirections.includes(sortDirection)) {
       sortDirection = 'desc';
@@ -58,6 +85,51 @@ export async function GET(
 
     if (!sortColumn || !allowedSortColumns.includes(sortColumn)) {
       sortColumn = 'createdAt';
+    }
+
+    const allowedTargetTypes = Object.values(AuditLogTargetType)
+      .map((type) => type.toLowerCase())
+      .concat(['all']);
+
+    if (
+      targetTypeFilter &&
+      !allowedTargetTypes.includes(targetTypeFilter.toLowerCase())
+    ) {
+      return NextResponse.json(
+        { message: t('validation.bad_request') },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    const allocatedSourceValues = Object.values(AuditLogSource)
+      .map((source) => source.toLowerCase())
+      .concat(['all']);
+
+    if (ipSearch && typeof ipSearch !== 'string') {
+      return NextResponse.json(
+        { message: t('validation.bad_request') },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (
+      sourceFilter &&
+      !allocatedSourceValues.includes(sourceFilter.toLowerCase())
+    ) {
+      return NextResponse.json(
+        { message: t('validation.bad_request') },
+        { status: HttpStatus.BAD_REQUEST },
+      );
+    }
+
+    if (
+      sourceFilter &&
+      !allocatedSourceValues.includes(sourceFilter.toLowerCase())
+    ) {
+      return NextResponse.json(
+        { message: t('validation.bad_request') },
+        { status: HttpStatus.BAD_REQUEST },
+      );
     }
 
     if (!allowedPageSizes.includes(pageSize)) {
@@ -96,13 +168,25 @@ export async function GET(
     const teamLogRetentionDays =
       team.limits?.logRetention ?? SIX_MONTHS_IN_DAYS;
 
+    const furthestAllowedDate = new Date();
+    furthestAllowedDate.setDate(
+      furthestAllowedDate.getDate() - teamLogRetentionDays,
+    );
+
+    let rangeStartToUse = furthestAllowedDate;
+    if (rangeStart && new Date(rangeStart) > furthestAllowedDate) {
+      rangeStartToUse = new Date(rangeStart);
+    }
+
     const where = {
       teamId: selectedTeam,
       createdAt: {
-        gte: new Date(
-          new Date().getTime() - teamLogRetentionDays * 24 * 60 * 60 * 1000,
-        ),
+        gte: rangeStartToUse,
+        lte: rangeEnd ? new Date(rangeEnd) : new Date(),
       },
+      source: sourceFilter ? sourceFilter : undefined,
+      targetType: targetTypeFilter ? targetTypeFilter : undefined,
+      ipAddress: ipSearch ? { contains: ipSearch } : undefined,
     } as Prisma.AuditLogWhereInput;
 
     const session = await getSession({
