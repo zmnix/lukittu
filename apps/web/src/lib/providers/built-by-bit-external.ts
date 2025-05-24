@@ -1,5 +1,8 @@
 import { HttpStatus } from '@/types/http-status';
 import {
+  AuditLogAction,
+  AuditLogSource,
+  AuditLogTargetType,
   BuiltByBitIntegration,
   decryptLicenseKey,
   encryptLicenseKey,
@@ -12,6 +15,7 @@ import {
   Team,
 } from '@lukittu/shared';
 import { BuiltByBitMetadataKeys } from '../constants/metadata';
+import { createAuditLog } from '../logging/audit-log';
 import { PlaceholderBuiltByBitSchema } from '../validation/integrations/placeholder-built-by-bit-schema';
 import { PurchaseBuiltByBitSchema } from '../validation/integrations/purchase-built-by-bit-schema';
 
@@ -172,6 +176,7 @@ export const handleBuiltByBitPurchase = async (
           teamId: team.id,
         },
       });
+
       const lukittuCustomer = await prisma.customer.upsert({
         where: {
           id: existingLukittuCustomer?.id || '',
@@ -192,6 +197,26 @@ export const handleBuiltByBitPurchase = async (
         update: {
           username: bbbUser.username,
         },
+      });
+
+      await createAuditLog({
+        teamId: team.id,
+        action: existingLukittuCustomer?.id
+          ? AuditLogAction.UPDATE_CUSTOMER
+          : AuditLogAction.CREATE_CUSTOMER,
+        targetId: lukittuCustomer.id,
+        targetType: AuditLogTargetType.CUSTOMER,
+        requestBody: JSON.stringify({
+          username: bbbUser.username,
+          metadata: metadata.map((m) => ({
+            key: m.key,
+            value: m.value,
+            locked: m.locked,
+          })),
+        }),
+        responseBody: JSON.stringify({ customer: lukittuCustomer }),
+        source: AuditLogSource.BUILT_BY_BIT_INTEGRATION,
+        tx: prisma,
       });
 
       const licenseKey = await generateUniqueLicense(team.id);
@@ -237,6 +262,38 @@ export const handleBuiltByBitPurchase = async (
         include: {
           products: true,
         },
+      });
+
+      await createAuditLog({
+        teamId: team.id,
+        action: AuditLogAction.CREATE_LICENSE,
+        targetId: license.id,
+        targetType: AuditLogTargetType.LICENSE,
+        requestBody: JSON.stringify({
+          licenseKey,
+          teamId: team.id,
+          customers: [lukittuCustomer.id],
+          products: [productId],
+          metadata: metadata.map((m) => ({
+            key: m.key,
+            value: m.value,
+            locked: m.locked,
+          })),
+          ipLimit,
+          seats,
+          expirationType: expirationDays ? 'DURATION' : 'NEVER',
+          expirationDays: expirationDays || null,
+          expirationStart: expirationStartFormatted,
+        }),
+        responseBody: JSON.stringify({
+          license: {
+            ...license,
+            licenseKey,
+            licenseKeyLookup: undefined,
+          },
+        }),
+        source: AuditLogSource.BUILT_BY_BIT_INTEGRATION,
+        tx: prisma,
       });
 
       return license;
@@ -345,6 +402,18 @@ export const handleBuiltByBitPlaceholder = async (
     });
 
     const decryptedKey = decryptLicenseKey(licenseKey.licenseKey);
+
+    await createAuditLog({
+      teamId,
+      action: AuditLogAction.SET_BUILT_BY_BIT_PLACEHOLDER,
+      targetId: licenseKey.id,
+      targetType: AuditLogTargetType.LICENSE,
+      requestBody: JSON.stringify(validatedData),
+      responseBody: JSON.stringify({
+        licenseKey: decryptedKey,
+      }),
+      source: AuditLogSource.BUILT_BY_BIT_INTEGRATION,
+    });
 
     return {
       success: true,

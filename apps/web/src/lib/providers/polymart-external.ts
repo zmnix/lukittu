@@ -1,5 +1,8 @@
 import { HttpStatus } from '@/types/http-status';
 import {
+  AuditLogAction,
+  AuditLogSource,
+  AuditLogTargetType,
   decryptLicenseKey,
   encryptLicenseKey,
   generateHMAC,
@@ -13,6 +16,7 @@ import {
 } from '@lukittu/shared';
 import crypto from 'crypto';
 import { PolymartMetadataKeys } from '../constants/metadata';
+import { createAuditLog } from '../logging/audit-log';
 import { PlaceholderPolymartSchema } from '../validation/integrations/placeholder-polymart-schema';
 import {
   PolymartPurchaseParams,
@@ -293,6 +297,26 @@ export const handlePolymartPurchase = async (
         },
       });
 
+      await createAuditLog({
+        teamId: team.id,
+        action: existingLukittuCustomer?.id
+          ? AuditLogAction.UPDATE_CUSTOMER
+          : AuditLogAction.CREATE_CUSTOMER,
+        targetId: lukittuCustomer.id,
+        targetType: AuditLogTargetType.CUSTOMER,
+        requestBody: JSON.stringify({
+          username,
+          metadata: metadata.map((m) => ({
+            key: m.key,
+            value: m.value,
+            locked: m.locked,
+          })),
+        }),
+        responseBody: JSON.stringify({ customer: lukittuCustomer }),
+        source: AuditLogSource.POLYMART_INTEGRATION,
+        tx: prisma,
+      });
+
       const licenseKey = await generateUniqueLicense(team.id);
       const hmac = generateHMAC(`${licenseKey}:${team.id}`);
 
@@ -336,6 +360,38 @@ export const handlePolymartPurchase = async (
         include: {
           products: true,
         },
+      });
+
+      await createAuditLog({
+        teamId: team.id,
+        action: AuditLogAction.CREATE_LICENSE,
+        targetId: license.id,
+        targetType: AuditLogTargetType.LICENSE,
+        requestBody: JSON.stringify({
+          licenseKey,
+          teamId: team.id,
+          customers: [lukittuCustomer.id],
+          products: [productId],
+          metadata: metadata.map((m) => ({
+            key: m.key,
+            value: m.value,
+            locked: m.locked,
+          })),
+          ipLimit,
+          seats,
+          expirationType: expirationDays ? 'DURATION' : 'NEVER',
+          expirationDays: expirationDays || null,
+          expirationStart: expirationStartFormatted,
+        }),
+        responseBody: JSON.stringify({
+          license: {
+            ...license,
+            licenseKey,
+            licenseKeyLookup: undefined,
+          },
+        }),
+        source: AuditLogSource.POLYMART_INTEGRATION,
+        tx: prisma,
       });
 
       return license;
@@ -460,6 +516,18 @@ export const handlePolymartPlaceholder = async (
     });
 
     const decryptedKey = decryptLicenseKey(licenseKey.licenseKey);
+
+    await createAuditLog({
+      teamId,
+      action: AuditLogAction.SET_POLYMART_PLACEHOLDER,
+      targetId: licenseKey.id,
+      targetType: AuditLogTargetType.LICENSE,
+      requestBody: JSON.stringify(validatedData),
+      responseBody: JSON.stringify({
+        licenseKey: decryptedKey,
+      }),
+      source: AuditLogSource.POLYMART_INTEGRATION,
+    });
 
     return {
       success: true,

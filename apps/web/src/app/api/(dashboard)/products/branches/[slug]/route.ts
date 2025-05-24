@@ -9,6 +9,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
   prisma,
@@ -152,30 +153,36 @@ export async function PUT(
       );
     }
 
-    const branch = await prisma.releaseBranch.update({
-      where: {
-        id: branchId,
-        product: {
-          teamId: selectedTeam,
+    const response = await prisma.$transaction(async (prisma) => {
+      const branch = await prisma.releaseBranch.update({
+        where: {
+          id: branchId,
+          product: {
+            teamId: selectedTeam,
+          },
         },
-      },
-      data: {
-        name,
-      },
-    });
+        data: {
+          name,
+        },
+      });
 
-    const response = {
-      branch,
-    };
+      const response = {
+        branch,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.UPDATE_BRANCH,
-      targetId: branch.id,
-      targetType: AuditLogTargetType.BRANCH,
-      responseBody: response,
-      requestBody: body,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.UPDATE_BRANCH,
+        targetId: branch.id,
+        targetType: AuditLogTargetType.BRANCH,
+        responseBody: response,
+        requestBody: body,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response);
@@ -298,27 +305,33 @@ export async function DELETE(
       );
     }
 
-    await prisma.releaseBranch.delete({
-      where: {
-        id: branchId,
-        product: {
-          teamId: selectedTeam,
+    const response = await prisma.$transaction(async (prisma) => {
+      await prisma.releaseBranch.delete({
+        where: {
+          id: branchId,
+          product: {
+            teamId: selectedTeam,
+          },
         },
-      },
-    });
+      });
 
-    const response = {
-      success: true,
-    };
+      const response = {
+        success: true,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.DELETE_BRANCH,
-      targetId: branchId,
-      targetType: AuditLogTargetType.BRANCH,
-      requestBody: null,
-      responseBody: response,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.DELETE_BRANCH,
+        targetId: branchId,
+        targetType: AuditLogTargetType.BRANCH,
+        requestBody: null,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response);

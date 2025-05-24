@@ -1,11 +1,20 @@
+import { createAuditLog } from '@/lib/logging/audit-log';
 import { verifyApiAuthorization } from '@/lib/security/api-key-auth';
 import { IExternalDevResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
-import { decryptLicenseKey, logger, prisma, regex } from '@lukittu/shared';
+import {
+  AuditLogAction,
+  AuditLogSource,
+  AuditLogTargetType,
+  decryptLicenseKey,
+  logger,
+  prisma,
+  regex,
+} from '@lukittu/shared';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   props: { params: Promise<{ teamId: string; licenseId: string }> },
 ): Promise<NextResponse<IExternalDevResponse>> {
   const params = await props.params;
@@ -136,7 +145,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   props: { params: Promise<{ teamId: string; licenseId: string }> },
 ): Promise<NextResponse<IExternalDevResponse>> {
   const params = await props.params;
@@ -217,14 +226,14 @@ export async function DELETE(
       );
     }
 
-    await prisma.license.delete({
-      where: {
-        id: license.id,
-      },
-    });
+    const response = await prisma.$transaction(async (prisma) => {
+      await prisma.license.delete({
+        where: {
+          id: license.id,
+        },
+      });
 
-    return NextResponse.json(
-      {
+      const response: IExternalDevResponse = {
         data: {
           licenseId,
           deleted: true,
@@ -234,11 +243,25 @@ export async function DELETE(
           timestamp: new Date(),
           valid: true,
         },
-      },
-      {
-        status: HttpStatus.OK,
-      },
-    );
+      };
+
+      await createAuditLog({
+        teamId: team.id,
+        action: AuditLogAction.DELETE_LICENSE,
+        targetId: license.id,
+        targetType: AuditLogTargetType.LICENSE,
+        requestBody: null,
+        responseBody: response,
+        source: AuditLogSource.API_KEY,
+        tx: prisma,
+      });
+
+      return response;
+    });
+
+    return NextResponse.json(response, {
+      status: HttpStatus.OK,
+    });
   } catch (error) {
     logger.error(
       "Error in DELETE '(external)/v1/dev/teams/[teamId]/licenses/id/[licenseId]' route",

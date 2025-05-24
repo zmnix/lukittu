@@ -321,7 +321,8 @@
     "branches": "Haarat",
     "select_branch": "Valitse haara",
     "releases_count": "Julkaisujen määrä",
-    "branch": "Haara"
+    "branch": "Haara",
+    "source": "Lähde"
   },
   "auth": {
     "oauth": {
@@ -649,13 +650,15 @@
         "delete_api_key": "poisti API-avaimen",
         "set_discord_integration": "asetti Discord-integraation",
         "delete_discord_integration": "poisti Discord-integraation",
-        "set_build_by_bit_integration": "asetti BuiltByBit-integraation",
-        "delete_build_by_bit_integration": "poisti BuiltByBit-integraation",
+        "set_built_by_bit_integration": "asetti BuiltByBit-integraation",
+        "delete_built_by_bit_integration": "poisti BuiltByBit-integraation",
         "update_branch": "päivitti haaran",
         "delete_branch": "poisti haaran",
         "create_branch": "loi haaran",
         "set_polymart_integration": "asetti Polymart-integraation",
-        "delete_polymart_integration": "poisti Polymart-integraation"
+        "delete_polymart_integration": "poisti Polymart-integraation",
+        "set_built_by_bit_placeholder": "asetti BuiltByBit-placeholderin",
+        "set_polymart_placeholder": "asetti Polymart-placeholderin"
       }
     },
     "members": {

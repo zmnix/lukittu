@@ -140,6 +140,7 @@
     "polymart_signing_secret_invalid": "Polymart signing secret is invalid! It must be 20-255 characters long."
   },
   "general": {
+    "source": "Source",
     "branches": "Branches",
     "select_branch": "Select branch",
     "releases_count": "Releases count",
@@ -649,13 +650,15 @@
         "delete_team_picture": "deleted team picture",
         "create_api_key": "created API key",
         "delete_api_key": "deleted API key",
-        "set_build_by_bit_integration": "set BuiltByBit integration",
-        "delete_build_by_bit_integration": "deleted BuiltByBit integration",
+        "set_built_by_bit_integration": "set BuiltByBit integration",
+        "delete_built_by_bit_integration": "deleted BuiltByBit integration",
         "set_polymart_integration": "set Polymart integration",
         "delete_polymart_integration": "deleted Polymart integration",
         "update_branch": "updated branch",
         "delete_branch": "deleted branch",
-        "create_branch": "created branch"
+        "create_branch": "created branch",
+        "set_built_by_bit_placeholder": "set BuiltByBit placeholder",
+        "set_polymart_placeholder": "set Polymart placeholder"
       }
     },
     "members": {

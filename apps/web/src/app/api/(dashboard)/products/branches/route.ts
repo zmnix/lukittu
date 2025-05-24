@@ -9,6 +9,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
   Prisma,
@@ -335,25 +336,31 @@ export async function POST(
       );
     }
 
-    const branch = await prisma.releaseBranch.create({
-      data: {
-        name,
-        productId,
-      },
-    });
+    const response = await prisma.$transaction(async (prisma) => {
+      const branch = await prisma.releaseBranch.create({
+        data: {
+          name,
+          productId,
+        },
+      });
 
-    const response = {
-      branch,
-    };
+      const response = {
+        branch,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.CREATE_BRANCH,
-      targetId: branch.id,
-      targetType: AuditLogTargetType.BRANCH,
-      responseBody: response,
-      requestBody: body,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.CREATE_BRANCH,
+        targetId: branch.id,
+        targetType: AuditLogTargetType.BRANCH,
+        responseBody: response,
+        requestBody: body,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response, {

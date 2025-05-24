@@ -1,4 +1,7 @@
 import {
+  AuditLogAction,
+  AuditLogSource,
+  AuditLogTargetType,
   encryptLicenseKey,
   generateHMAC,
   generateUniqueLicense,
@@ -14,6 +17,7 @@ import 'server-only';
 import Stripe from 'stripe';
 import { StripeMetadataKeys } from '../constants/metadata';
 import { sendLicenseDistributionEmail } from '../emails/templates/send-license-distribution-email';
+import { createAuditLog } from '../logging/audit-log';
 
 type ExtendedTeam = Team & {
   settings: Settings | null;
@@ -157,6 +161,7 @@ export const handleInvoicePaid = async (
             teamId: team.id,
           },
         });
+
         const lukittuCustomer = await prisma.customer.upsert({
           where: {
             id: existingLukittuCustomer?.id || '',
@@ -176,6 +181,27 @@ export const handleInvoicePaid = async (
             },
           },
           update: {},
+        });
+
+        await createAuditLog({
+          teamId: team.id,
+          action: existingLukittuCustomer?.id
+            ? AuditLogAction.UPDATE_CUSTOMER
+            : AuditLogAction.CREATE_CUSTOMER,
+          targetId: lukittuCustomer.id,
+          targetType: AuditLogTargetType.CUSTOMER,
+          requestBody: JSON.stringify({
+            fullName: lukittuCustomer.fullName,
+            email: lukittuCustomer.email,
+            metadata: metadata.map((m) => ({
+              key: m.key,
+              value: m.value,
+              locked: m.locked,
+            })),
+          }),
+          responseBody: JSON.stringify({ customer: lukittuCustomer }),
+          source: AuditLogSource.STRIPE_INTEGRATION,
+          tx: prisma,
         });
 
         const licenseKey = await generateUniqueLicense(team.id);
@@ -219,6 +245,37 @@ export const handleInvoicePaid = async (
           include: {
             products: true,
           },
+        });
+
+        await createAuditLog({
+          teamId: team.id,
+          action: AuditLogAction.CREATE_LICENSE,
+          targetId: license.id,
+          targetType: AuditLogTargetType.LICENSE,
+          requestBody: JSON.stringify({
+            licenseKey,
+            teamId: team.id,
+            customers: [lukittuCustomer.id],
+            products: [lukittuProductId],
+            metadata: metadata.map((m) => ({
+              key: m.key,
+              value: m.value,
+              locked: m.locked,
+            })),
+            ipLimit,
+            seats,
+            expirationType: 'DATE',
+            expirationDate: new Date(subscription.current_period_end * 1000),
+          }),
+          responseBody: JSON.stringify({
+            license: {
+              ...license,
+              licenseKey,
+              licenseKeyLookup: undefined,
+            },
+          }),
+          source: AuditLogSource.STRIPE_INTEGRATION,
+          tx: prisma,
         });
 
         const success = await sendLicenseDistributionEmail({
@@ -539,6 +596,7 @@ export const handleCheckoutSessionCompleted = async (
           teamId: team.id,
         },
       });
+
       const lukittuCustomer = await prisma.customer.upsert({
         where: {
           id: existingLukittuCustomer?.id || '',
@@ -570,6 +628,27 @@ export const handleCheckoutSessionCompleted = async (
           },
         },
         update: {},
+      });
+
+      await createAuditLog({
+        teamId: team.id,
+        action: existingLukittuCustomer?.id
+          ? AuditLogAction.UPDATE_CUSTOMER
+          : AuditLogAction.CREATE_CUSTOMER,
+        targetId: lukittuCustomer.id,
+        targetType: AuditLogTargetType.CUSTOMER,
+        requestBody: JSON.stringify({
+          fullName: lukittuCustomer.fullName,
+          email: lukittuCustomer.email,
+          metadata: metadata.map((m) => ({
+            key: m.key,
+            value: m.value,
+            locked: m.locked,
+          })),
+        }),
+        responseBody: JSON.stringify({ customer: lukittuCustomer }),
+        source: AuditLogSource.STRIPE_INTEGRATION,
+        tx: prisma,
       });
 
       const licenseKey = await generateUniqueLicense(team.id);
@@ -615,6 +694,38 @@ export const handleCheckoutSessionCompleted = async (
         include: {
           products: true,
         },
+      });
+
+      await createAuditLog({
+        teamId: team.id,
+        action: AuditLogAction.CREATE_LICENSE,
+        targetId: license.id,
+        targetType: AuditLogTargetType.LICENSE,
+        requestBody: JSON.stringify({
+          licenseKey,
+          teamId: team.id,
+          customers: [lukittuCustomer.id],
+          products: [lukittuProductId],
+          metadata: metadata.map((m) => ({
+            key: m.key,
+            value: m.value,
+            locked: m.locked,
+          })),
+          ipLimit,
+          seats,
+          expirationType: expirationDays ? 'DURATION' : 'NEVER',
+          expirationDays: expirationDays || null,
+          expirationStart: expirationStartFormatted,
+        }),
+        responseBody: JSON.stringify({
+          license: {
+            ...license,
+            licenseKey,
+            licenseKeyLookup: undefined,
+          },
+        }),
+        source: AuditLogSource.STRIPE_INTEGRATION,
+        tx: prisma,
       });
 
       const success = await sendLicenseDistributionEmail({
