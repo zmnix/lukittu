@@ -8,6 +8,7 @@ import {
   LicenseExpirationStart,
   LicenseExpirationType,
   logger,
+  Prisma,
   prisma,
   regex,
 } from '@lukittu/shared';
@@ -1931,14 +1932,14 @@ async function finalizeLicenseCreation(
           targetId: license.id,
           targetType: AuditLogTargetType.LICENSE,
           version: process.env.version || '',
-          requestBody: JSON.stringify(state),
-          responseBody: JSON.stringify({
+          requestBody: state as unknown as Prisma.InputJsonValue,
+          responseBody: {
             license: {
               ...license,
               licenseKey: state.licenseKey,
               licenseKeyLookup: undefined,
             },
-          }),
+          },
           teamId: state.teamId,
           userId,
         },

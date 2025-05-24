@@ -304,15 +304,15 @@ export const handlePolymartPurchase = async (
           : AuditLogAction.CREATE_CUSTOMER,
         targetId: lukittuCustomer.id,
         targetType: AuditLogTargetType.CUSTOMER,
-        requestBody: JSON.stringify({
+        requestBody: {
           username,
           metadata: metadata.map((m) => ({
             key: m.key,
             value: m.value,
             locked: m.locked,
           })),
-        }),
-        responseBody: JSON.stringify({ customer: lukittuCustomer }),
+        },
+        responseBody: { customer: lukittuCustomer },
         source: AuditLogSource.POLYMART_INTEGRATION,
         tx: prisma,
       });
@@ -367,7 +367,7 @@ export const handlePolymartPurchase = async (
         action: AuditLogAction.CREATE_LICENSE,
         targetId: license.id,
         targetType: AuditLogTargetType.LICENSE,
-        requestBody: JSON.stringify({
+        requestBody: {
           licenseKey,
           teamId: team.id,
           customers: [lukittuCustomer.id],
@@ -382,14 +382,14 @@ export const handlePolymartPurchase = async (
           expirationType: expirationDays ? 'DURATION' : 'NEVER',
           expirationDays: expirationDays || null,
           expirationStart: expirationStartFormatted,
-        }),
-        responseBody: JSON.stringify({
+        },
+        responseBody: {
           license: {
             ...license,
             licenseKey,
             licenseKeyLookup: undefined,
           },
-        }),
+        },
         source: AuditLogSource.POLYMART_INTEGRATION,
         tx: prisma,
       });
@@ -522,10 +522,10 @@ export const handlePolymartPlaceholder = async (
       action: AuditLogAction.SET_POLYMART_PLACEHOLDER,
       targetId: licenseKey.id,
       targetType: AuditLogTargetType.LICENSE,
-      requestBody: JSON.stringify(validatedData),
-      responseBody: JSON.stringify({
+      requestBody: validatedData,
+      responseBody: {
         licenseKey: decryptedKey,
-      }),
+      },
       source: AuditLogSource.POLYMART_INTEGRATION,
     });
 

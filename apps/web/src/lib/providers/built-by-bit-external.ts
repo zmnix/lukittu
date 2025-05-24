@@ -206,15 +206,15 @@ export const handleBuiltByBitPurchase = async (
           : AuditLogAction.CREATE_CUSTOMER,
         targetId: lukittuCustomer.id,
         targetType: AuditLogTargetType.CUSTOMER,
-        requestBody: JSON.stringify({
+        requestBody: {
           username: bbbUser.username,
           metadata: metadata.map((m) => ({
             key: m.key,
             value: m.value,
             locked: m.locked,
           })),
-        }),
-        responseBody: JSON.stringify({ customer: lukittuCustomer }),
+        },
+        responseBody: { customer: lukittuCustomer },
         source: AuditLogSource.BUILT_BY_BIT_INTEGRATION,
         tx: prisma,
       });
@@ -269,7 +269,7 @@ export const handleBuiltByBitPurchase = async (
         action: AuditLogAction.CREATE_LICENSE,
         targetId: license.id,
         targetType: AuditLogTargetType.LICENSE,
-        requestBody: JSON.stringify({
+        requestBody: {
           licenseKey,
           teamId: team.id,
           customers: [lukittuCustomer.id],
@@ -284,14 +284,14 @@ export const handleBuiltByBitPurchase = async (
           expirationType: expirationDays ? 'DURATION' : 'NEVER',
           expirationDays: expirationDays || null,
           expirationStart: expirationStartFormatted,
-        }),
-        responseBody: JSON.stringify({
+        },
+        responseBody: {
           license: {
             ...license,
             licenseKey,
             licenseKeyLookup: undefined,
           },
-        }),
+        },
         source: AuditLogSource.BUILT_BY_BIT_INTEGRATION,
         tx: prisma,
       });
@@ -408,10 +408,10 @@ export const handleBuiltByBitPlaceholder = async (
       action: AuditLogAction.SET_BUILT_BY_BIT_PLACEHOLDER,
       targetId: licenseKey.id,
       targetType: AuditLogTargetType.LICENSE,
-      requestBody: JSON.stringify(validatedData),
-      responseBody: JSON.stringify({
+      requestBody: validatedData,
+      responseBody: {
         licenseKey: decryptedKey,
-      }),
+      },
       source: AuditLogSource.BUILT_BY_BIT_INTEGRATION,
     });
 

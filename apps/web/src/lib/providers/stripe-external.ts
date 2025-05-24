@@ -190,7 +190,7 @@ export const handleInvoicePaid = async (
             : AuditLogAction.CREATE_CUSTOMER,
           targetId: lukittuCustomer.id,
           targetType: AuditLogTargetType.CUSTOMER,
-          requestBody: JSON.stringify({
+          requestBody: {
             fullName: lukittuCustomer.fullName,
             email: lukittuCustomer.email,
             metadata: metadata.map((m) => ({
@@ -198,8 +198,8 @@ export const handleInvoicePaid = async (
               value: m.value,
               locked: m.locked,
             })),
-          }),
-          responseBody: JSON.stringify({ customer: lukittuCustomer }),
+          },
+          responseBody: { customer: lukittuCustomer },
           source: AuditLogSource.STRIPE_INTEGRATION,
           tx: prisma,
         });
@@ -252,7 +252,7 @@ export const handleInvoicePaid = async (
           action: AuditLogAction.CREATE_LICENSE,
           targetId: license.id,
           targetType: AuditLogTargetType.LICENSE,
-          requestBody: JSON.stringify({
+          requestBody: {
             licenseKey,
             teamId: team.id,
             customers: [lukittuCustomer.id],
@@ -266,14 +266,14 @@ export const handleInvoicePaid = async (
             seats,
             expirationType: 'DATE',
             expirationDate: new Date(subscription.current_period_end * 1000),
-          }),
-          responseBody: JSON.stringify({
+          },
+          responseBody: {
             license: {
               ...license,
               licenseKey,
               licenseKeyLookup: undefined,
             },
-          }),
+          },
           source: AuditLogSource.STRIPE_INTEGRATION,
           tx: prisma,
         });
@@ -637,7 +637,7 @@ export const handleCheckoutSessionCompleted = async (
           : AuditLogAction.CREATE_CUSTOMER,
         targetId: lukittuCustomer.id,
         targetType: AuditLogTargetType.CUSTOMER,
-        requestBody: JSON.stringify({
+        requestBody: {
           fullName: lukittuCustomer.fullName,
           email: lukittuCustomer.email,
           metadata: metadata.map((m) => ({
@@ -645,8 +645,8 @@ export const handleCheckoutSessionCompleted = async (
             value: m.value,
             locked: m.locked,
           })),
-        }),
-        responseBody: JSON.stringify({ customer: lukittuCustomer }),
+        },
+        responseBody: { customer: lukittuCustomer },
         source: AuditLogSource.STRIPE_INTEGRATION,
         tx: prisma,
       });
@@ -701,7 +701,7 @@ export const handleCheckoutSessionCompleted = async (
         action: AuditLogAction.CREATE_LICENSE,
         targetId: license.id,
         targetType: AuditLogTargetType.LICENSE,
-        requestBody: JSON.stringify({
+        requestBody: {
           licenseKey,
           teamId: team.id,
           customers: [lukittuCustomer.id],
@@ -716,14 +716,14 @@ export const handleCheckoutSessionCompleted = async (
           expirationType: expirationDays ? 'DURATION' : 'NEVER',
           expirationDays: expirationDays || null,
           expirationStart: expirationStartFormatted,
-        }),
-        responseBody: JSON.stringify({
+        },
+        responseBody: {
           license: {
             ...license,
             licenseKey,
             licenseKeyLookup: undefined,
           },
-        }),
+        },
         source: AuditLogSource.STRIPE_INTEGRATION,
         tx: prisma,
       });

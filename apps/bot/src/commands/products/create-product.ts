@@ -3,6 +3,7 @@ import {
   AuditLogSource,
   AuditLogTargetType,
   logger,
+  Prisma,
   prisma,
 } from '@lukittu/shared';
 import {
@@ -947,10 +948,10 @@ async function finalizeProductCreation(
           targetId: product.id,
           targetType: AuditLogTargetType.PRODUCT,
           version: process.env.version || '',
-          requestBody: JSON.stringify(state),
-          responseBody: JSON.stringify({
+          requestBody: state as unknown as Prisma.InputJsonValue,
+          responseBody: {
             product,
-          }),
+          },
           teamId,
           userId,
         },
