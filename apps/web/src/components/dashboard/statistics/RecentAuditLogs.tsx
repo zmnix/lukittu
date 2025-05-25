@@ -213,7 +213,7 @@ export default function RecentAuditLogs() {
                             />
                           )}
                         </span>
-                        <span>{row.ipAddress}</span>
+                        <span>{row.ipAddress ?? t('general.unknown')}</span>
                       </div>
                     </TableCell>
                     <TableCell className="truncate">
