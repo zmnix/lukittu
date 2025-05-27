@@ -126,14 +126,14 @@ export default function SessionsTable() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <span className="flex-shrink-0">
-                        {session.alpha2 && (
+                      {session.alpha2 && (
+                        <span className="flex-shrink-0">
                           <CountryFlag
                             countryCode={session.alpha2}
                             countryName={session.country}
                           />
-                        )}
-                      </span>
+                        </span>
+                      )}
                       <span>{session.ipAddress}</span>
                     </div>
                   </TableCell>

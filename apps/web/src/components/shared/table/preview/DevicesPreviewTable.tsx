@@ -127,14 +127,14 @@ export default function DevicesPreviewTable({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="flex-shrink-0">
-                            {device.alpha2 && (
+                          {device.alpha2 && (
+                            <span className="flex-shrink-0">
                               <CountryFlag
                                 countryCode={device.alpha2}
                                 countryName={device.country}
                               />
-                            )}
-                          </span>
+                            </span>
+                          )}
                           <span>{device.ipAddress}</span>
                         </div>
                       </TableCell>

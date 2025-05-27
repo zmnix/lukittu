@@ -205,14 +205,14 @@ export default function RecentAuditLogs() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="flex-shrink-0">
-                          {row.alpha2 && (
+                        {row.alpha2 && (
+                          <span className="flex-shrink-0">
                             <CountryFlag
                               countryCode={row.alpha2}
                               countryName={row.country}
                             />
-                          )}
-                        </span>
+                          </span>
+                        )}
                         <span>{row.ipAddress ?? t('general.unknown')}</span>
                       </div>
                     </TableCell>

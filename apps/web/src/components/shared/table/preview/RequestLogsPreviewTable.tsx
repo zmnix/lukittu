@@ -172,14 +172,14 @@ export default function RequestLogsPreviewTable({
                     >
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="flex-shrink-0">
-                            {log.alpha2 && (
+                          {log.alpha2 && (
+                            <span className="flex-shrink-0">
                               <CountryFlag
                                 countryCode={log.alpha2}
                                 countryName={log.country}
                               />
-                            )}
-                          </span>
+                            </span>
+                          )}
                           <span>{log.ipAddress}</span>
                         </div>
                       </TableCell>
