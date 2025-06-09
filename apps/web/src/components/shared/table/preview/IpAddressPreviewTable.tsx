@@ -113,14 +113,14 @@ export default function IpAddressPreviewTable({
                     <TableRow key={ip.ipAddress}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="flex-shrink-0">
-                            {ip.alpha2 && (
+                          {ip.alpha2 && (
+                            <span className="flex-shrink-0">
                               <CountryFlag
                                 countryCode={ip.alpha2}
                                 countryName={ip.country}
                               />
-                            )}
-                          </span>
+                            </span>
+                          )}
                           <span>{ip.ipAddress}</span>
                         </div>
                       </TableCell>

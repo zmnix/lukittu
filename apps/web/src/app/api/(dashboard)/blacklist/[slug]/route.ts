@@ -9,6 +9,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   Blacklist,
   logger,
@@ -103,23 +104,29 @@ export async function DELETE(
       );
     }
 
-    await prisma.blacklist.delete({
-      where: {
-        id: blacklistId,
-      },
-    });
+    const response = await prisma.$transaction(async (prisma) => {
+      await prisma.blacklist.delete({
+        where: {
+          id: blacklistId,
+        },
+      });
 
-    const response = {
-      success: true,
-    };
+      const response = {
+        success: true,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.DELETE_BLACKLIST,
-      targetId: blacklist.id,
-      targetType: AuditLogTargetType.BLACKLIST,
-      responseBody: response,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.DELETE_BLACKLIST,
+        targetId: blacklist.id,
+        targetType: AuditLogTargetType.BLACKLIST,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response);
@@ -249,37 +256,43 @@ export async function PUT(
       );
     }
 
-    const blacklist = await prisma.blacklist.update({
-      where: {
-        id: blacklistId,
-      },
-      data: {
-        value,
-        type,
-        metadata: {
-          deleteMany: {},
-          createMany: {
-            data: metadata.map((m) => ({
-              ...m,
-              teamId: team.id,
-            })),
+    const response = await prisma.$transaction(async (prisma) => {
+      const blacklist = await prisma.blacklist.update({
+        where: {
+          id: blacklistId,
+        },
+        data: {
+          value,
+          type,
+          metadata: {
+            deleteMany: {},
+            createMany: {
+              data: metadata.map((m) => ({
+                ...m,
+                teamId: team.id,
+              })),
+            },
           },
         },
-      },
-    });
+      });
 
-    const response = {
-      blacklist,
-    };
+      const response = {
+        blacklist,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.UPDATE_BLACKLIST,
-      targetId: blacklist.id,
-      targetType: AuditLogTargetType.BLACKLIST,
-      requestBody: body,
-      responseBody: response,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.UPDATE_BLACKLIST,
+        targetId: blacklist.id,
+        targetType: AuditLogTargetType.BLACKLIST,
+        requestBody: body,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response);

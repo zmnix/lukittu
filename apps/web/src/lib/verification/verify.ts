@@ -134,6 +134,7 @@ export const handleVerify = async ({
     challenge,
     deviceIdentifier,
     version,
+    branch,
   } = validated.data;
 
   const licenseKeyLookup = generateHMAC(`${licenseKey}:${teamId}`);
@@ -202,14 +203,6 @@ export const handleVerify = async ({
     (product) => product.id === productId,
   );
 
-  const productHasReleases = (matchingProduct?.releases.length ?? 0) > 0;
-
-  const matchingRelease = matchingProduct?.releases.find(
-    (release) => release.version === version,
-  );
-
-  const latestRelease = matchingProduct?.releases.find((r) => r.latest);
-
   const commonBase = {
     ...validatedBody,
     teamId,
@@ -220,6 +213,65 @@ export const handleVerify = async ({
     releaseId: undefined as string | undefined,
     releaseFileId: undefined as string | undefined,
   };
+
+  let filteredReleases = matchingProduct?.releases || [];
+  if (branch && matchingProduct) {
+    const branchEntity = await prisma.releaseBranch.findUnique({
+      where: {
+        productId_name: {
+          name: branch,
+          productId: matchingProduct.id,
+        },
+        product: {
+          teamId,
+        },
+      },
+    });
+
+    if (!branchEntity) {
+      return {
+        ...commonBase,
+        status: RequestStatus.RELEASE_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'Branch not found',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    filteredReleases = filteredReleases.filter(
+      (release) => release.branchId === branchEntity.id,
+    );
+
+    if (filteredReleases.length === 0) {
+      return {
+        ...commonBase,
+        status: RequestStatus.RELEASE_NOT_FOUND,
+        response: {
+          data: null,
+          result: {
+            timestamp: new Date(),
+            valid: false,
+            details: 'No releases found for this branch',
+          },
+        },
+        httpStatus: HttpStatus.NOT_FOUND,
+      };
+    }
+  }
+
+  const productHasReleases = filteredReleases.length > 0;
+
+  const matchingRelease = filteredReleases.find(
+    (release) => release.version === version,
+  );
+
+  const latestRelease = filteredReleases.find((r) => r.latest);
 
   if (!license) {
     return {
@@ -410,9 +462,9 @@ export const handleVerify = async ({
     };
   }
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (prisma) => {
     if (deviceIdentifier) {
-      await tx.device.upsert({
+      await prisma.device.upsert({
         where: {
           licenseId_deviceIdentifier: {
             licenseId: license.id,
@@ -438,7 +490,7 @@ export const handleVerify = async ({
     if (matchingRelease || latestRelease) {
       const idToUse = matchingRelease?.id || latestRelease?.id;
 
-      await tx.release.update({
+      await prisma.release.update({
         where: { id: idToUse },
         data: {
           lastSeenAt: new Date(),
@@ -452,6 +504,7 @@ export const handleVerify = async ({
     : undefined;
 
   const returnedData = getReturnedFields({
+    requestedBranch: branch || null,
     returnedFields: settings.returnedFields,
     license,
   });

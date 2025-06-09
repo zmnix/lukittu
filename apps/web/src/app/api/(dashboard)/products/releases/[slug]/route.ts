@@ -20,6 +20,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   generateMD5Hash,
   logger,
@@ -91,6 +92,7 @@ export async function PUT(
       keepExistingFile,
       setAsLatest,
       licenseIds,
+      branchId,
     } = validated.data;
 
     if (file) {
@@ -144,7 +146,18 @@ export async function PUT(
             include: {
               releases: true,
               products: {
-                where: { id: validated.data.productId },
+                where: {
+                  id: productId,
+                },
+                include: {
+                  branches: branchId
+                    ? {
+                        where: {
+                          id: branchId,
+                        },
+                      }
+                    : undefined,
+                },
               },
               limits: true,
             },
@@ -215,16 +228,31 @@ export async function PUT(
         (release) =>
           release.version === version &&
           release.productId === productId &&
+          release.branchId === branchId &&
           release.id !== releaseId,
       )
     ) {
       return NextResponse.json(
         {
-          message: t('validation.release_exists'),
+          message: t('validation.release_exists_this_branch'),
           field: 'version',
         },
         { status: HttpStatus.CONFLICT },
       );
+    }
+
+    if (branchId) {
+      const product = team.products[0];
+      const branch = product.branches.find((branch) => branch.id === branchId);
+
+      if (!branch) {
+        return NextResponse.json(
+          {
+            message: t('validation.branch_not_found'),
+          },
+          { status: HttpStatus.NOT_FOUND },
+        );
+      }
     }
 
     if (licenseIds.length) {
@@ -356,13 +384,14 @@ export async function PUT(
       );
     }
 
-    const release = await prisma.$transaction(async (prisma) => {
+    const response = await prisma.$transaction(async (prisma) => {
       const isPublished = status === 'PUBLISHED';
 
       if (isPublished && setAsLatest) {
         await prisma.release.updateMany({
           where: {
             productId,
+            branchId, // Only clear "latest" flag for releases in the same branch
           },
           data: {
             latest: false,
@@ -387,6 +416,7 @@ export async function PUT(
           version,
           teamId: team.id,
           latest: Boolean(setAsLatest && isPublished),
+          branchId,
           allowedLicenses: {
             set: licenseIds.map((id) => ({ id })),
           },
@@ -404,29 +434,28 @@ export async function PUT(
         },
       });
 
-      return release;
-    });
+      const response = {
+        release,
+      };
 
-    const response = {
-      release,
-    };
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.UPDATE_RELEASE,
+        targetId: release.id,
+        targetType: AuditLogTargetType.RELEASE,
+        responseBody: response,
+        requestBody: body,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.UPDATE_RELEASE,
-      targetId: release.id,
-      targetType: AuditLogTargetType.RELEASE,
-      responseBody: response,
-      requestBody: body,
+      return response;
     });
 
     return NextResponse.json(response);
   } catch (error) {
-    logger.error(
-      "Error occurred in PUT '/api/products/releases/[slug]' route",
-      error,
-    );
+    logger.error("Error occurred in 'products/releases/[slug]' route", error);
     return NextResponse.json(
       { message: t('general.server_error') },
       { status: HttpStatus.INTERNAL_SERVER_ERROR },
@@ -526,31 +555,37 @@ export async function DELETE(
 
     const release = team.releases[0];
 
-    await prisma.release.delete({
-      where: {
-        id: releaseId,
-      },
-    });
+    const response = await prisma.$transaction(async (prisma) => {
+      await prisma.release.delete({
+        where: {
+          id: releaseId,
+        },
+      });
 
-    if (release.file) {
-      await deleteFileFromPrivateS3(
-        process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
-        release.file.key,
-      );
-    }
+      if (release.file) {
+        await deleteFileFromPrivateS3(
+          process.env.PRIVATE_OBJECT_STORAGE_BUCKET_NAME!,
+          release.file.key,
+        );
+      }
 
-    const response = {
-      success: true,
-    };
+      const response = {
+        success: true,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: team.id,
-      action: AuditLogAction.DELETE_RELEASE,
-      targetId: releaseId,
-      targetType: AuditLogTargetType.RELEASE,
-      requestBody: null,
-      responseBody: response,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: team.id,
+        action: AuditLogAction.DELETE_RELEASE,
+        targetId: releaseId,
+        targetType: AuditLogTargetType.RELEASE,
+        requestBody: null,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response, { status: HttpStatus.OK });

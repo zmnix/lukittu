@@ -1,13 +1,22 @@
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
+  Prisma,
   prisma,
+  PrismaClient,
 } from '@lukittu/shared';
+import { DefaultArgs } from '@lukittu/shared/dist/prisma/generated/client/runtime/library';
 import 'server-only';
 import { getCloudflareVisitorData } from '../providers/cloudflare';
 import { iso2toIso3 } from '../utils/country-helpers';
 import { getIp, getUserAgent } from '../utils/header-helpers';
+
+type PrismaTransaction = Omit<
+  PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>;
 
 interface BaseAuditLogProps {
   teamId: string;
@@ -16,37 +25,35 @@ interface BaseAuditLogProps {
   targetType: AuditLogTargetType;
   requestBody?: any;
   responseBody?: any;
+  tx?: PrismaTransaction;
 }
 
-interface SystemAuditLogProps extends BaseAuditLogProps {
-  system: true;
-  userId?: never;
-}
+type SystemAuditLogProps = BaseAuditLogProps & {
+  source: Exclude<AuditLogSource, 'DASHBOARD'>;
+};
 
-interface UserAuditLogProps extends BaseAuditLogProps {
+type UserAuditLogProps = BaseAuditLogProps & {
+  source: 'DASHBOARD';
   userId: string;
-  system?: never;
-}
+};
 
 type CreateAuditLogProps = SystemAuditLogProps | UserAuditLogProps;
 
 export const createAuditLog = async ({
-  userId,
-  system,
   teamId,
   action,
   targetId,
   targetType,
+  source,
   requestBody,
   responseBody,
+  tx,
+  ...rest
 }: CreateAuditLogProps) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (userId && system) {
-    throw new Error('Cannot specify both userId and system');
-  }
-  if (!userId && !system) {
-    throw new Error('Must specify either userId or system');
-  }
+  const prismaClient = tx || prisma;
+
+  const userId =
+    source === 'DASHBOARD' ? (rest as UserAuditLogProps).userId : undefined;
 
   const ipAddress = await getIp();
   const userAgent = await getUserAgent();
@@ -59,7 +66,7 @@ export const createAuditLog = async ({
     : null;
 
   try {
-    await prisma.auditLog.create({
+    await prismaClient.auditLog.create({
       data: {
         version: process.env.version!,
         teamId,
@@ -73,7 +80,7 @@ export const createAuditLog = async ({
         requestBody,
         responseBody,
         userId: userId || null,
-        system: system || false,
+        source: source || AuditLogSource.DASHBOARD,
         country: countryAlpha3,
       },
     });

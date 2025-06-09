@@ -1,10 +1,14 @@
 import {
+  AuditLogAction,
+  AuditLogSource,
+  AuditLogTargetType,
   encryptLicenseKey,
   generateHMAC,
   generateUniqueLicense,
   LicenseExpirationStart,
   LicenseExpirationType,
   logger,
+  Prisma,
   prisma,
   regex,
 } from '@lukittu/shared';
@@ -1884,40 +1888,64 @@ async function finalizeLicenseCreation(
     const hmac = generateHMAC(`${state.licenseKey}:${state.teamId}`);
     const encryptedLicenseKey = encryptLicenseKey(state.licenseKey);
 
-    const license = await prisma.license.create({
-      data: {
-        licenseKey: encryptedLicenseKey,
-        licenseKeyLookup: hmac,
-        ipLimit: state.ipLimit || null,
-        expirationType: state.expirationType,
-        expirationStart: expirationStart,
-        expirationDate: expirationDate,
-        expirationDays: expirationDays,
-        seats: state.seats || null,
-        suspended: state.suspended,
-        teamId: state.teamId,
-        createdByUserId: userId,
-        metadata:
-          state.metadata.length > 0
-            ? {
-                createMany: {
-                  data: state.metadata.map((m) => ({
-                    key: m.key,
-                    value: m.value,
-                    teamId: state.teamId,
-                  })),
-                },
-              }
-            : undefined,
-        products:
-          state.productIds.length > 0
-            ? { connect: state.productIds.map((id) => ({ id })) }
-            : undefined,
-        customers:
-          state.customerIds.length > 0
-            ? { connect: state.customerIds.map((id) => ({ id })) }
-            : undefined,
-      },
+    const license = await prisma.$transaction(async (prisma) => {
+      const license = await prisma.license.create({
+        data: {
+          licenseKey: encryptedLicenseKey,
+          licenseKeyLookup: hmac,
+          ipLimit: state.ipLimit || null,
+          expirationType: state.expirationType,
+          expirationStart: expirationStart,
+          expirationDate: expirationDate,
+          expirationDays: expirationDays,
+          seats: state.seats || null,
+          suspended: state.suspended,
+          teamId: state.teamId,
+          createdByUserId: userId,
+          metadata:
+            state.metadata.length > 0
+              ? {
+                  createMany: {
+                    data: state.metadata.map((m) => ({
+                      key: m.key,
+                      value: m.value,
+                      teamId: state.teamId,
+                    })),
+                  },
+                }
+              : undefined,
+          products:
+            state.productIds.length > 0
+              ? { connect: state.productIds.map((id) => ({ id })) }
+              : undefined,
+          customers:
+            state.customerIds.length > 0
+              ? { connect: state.customerIds.map((id) => ({ id })) }
+              : undefined,
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          action: AuditLogAction.CREATE_LICENSE,
+          source: AuditLogSource.DISCORD_INTEGRATION,
+          targetId: license.id,
+          targetType: AuditLogTargetType.LICENSE,
+          version: process.env.version || '',
+          requestBody: state as unknown as Prisma.InputJsonValue,
+          responseBody: {
+            license: {
+              ...license,
+              licenseKey: state.licenseKey,
+              licenseKeyLookup: undefined,
+            },
+          },
+          teamId: state.teamId,
+          userId,
+        },
+      });
+
+      return license;
     });
 
     const successEmbed = new EmbedBuilder()

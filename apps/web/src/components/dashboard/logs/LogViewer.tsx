@@ -49,6 +49,10 @@ export default function LogViewer() {
   const teamCtx = useContext(TeamContext);
   const isFirstLoad = useRef(true);
 
+  const selectedTeam = teamCtx.teams.find(
+    (team) => team.id === teamCtx.selectedTeam,
+  );
+
   const [selectedLog, setSelectedLog] = useState<
     ILogsGetSuccessResponse['logs'][number] | null
   >(null);
@@ -252,6 +256,7 @@ export default function LogViewer() {
 
       <DateRangeFilterChip
         dateRange={dateRange}
+        retentionDays={selectedTeam?.limits?.logRetention || 30}
         setDateRange={setDateRange}
         setTempDateRange={setTempDateRange}
         tempDateRange={tempDateRange}
@@ -579,14 +584,6 @@ export default function LogViewer() {
                                 selectedLog.os ? `(${selectedLog.os})` : ''
                               }`
                             : t('general.unknown')}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          {t('general.origin')}
-                        </p>
-                        <p className="text-sm">
-                          {selectedLog.origin ?? t('general.unknown')}
                         </p>
                       </div>
                       <div>

@@ -97,7 +97,10 @@
     "release_version_min_length": "Numer wersji musi mieć co najmniej 3 znaki!",
     "release_version_max_length": "Numer wersji może mieć maksymalnie 255 znaków!",
     "release_product_required": "Wymagany jest produkt!",
+<<<<<<< HEAD
     "release_exists": "Wydanie o tej wersji już istnieje!",
+=======
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
     "invalid_release_version": "Nieprawidłowa wersja!",
     "main_class_not_found": "Przesłany plik jest JAR, ale ekstrakcja głównej klasy nie powiodła się! Skontaktuj się z pomocą techniczną.",
     "city_required": "Wymagane jest miasto!",
@@ -124,7 +127,25 @@
     "api_key_limit_reached": "Twój zespół osiągnął maksymalną liczbę kluczy API dozwoloną w ramach obecnego planu. Aby dodać więcej kluczy API, ulepsz plan.",
     "api_key_not_found": "Klucz API nie znaleziony!",
     "max_invitations_reached": "Twój zespół osiągnął maksymalną liczbę zaproszeń dozwoloną w ramach obecnego planu. Aby dodać więcej zaproszeń, ulepsz plan.",
+<<<<<<< HEAD
     "max_releases_reached": "Twój zespół osiągnął maksymalną liczbę wydań dozwoloną w ramach obecnego planu. Aby dodać więcej wydań, ulepsz plan."
+=======
+    "max_releases_reached": "Twój zespół osiągnął maksymalną liczbę wydań dozwoloną w ramach obecnego planu. Aby dodać więcej wydań, ulepsz plan.",
+    "branch_has_releases": "Gałąź zawiera wydania i nie może zostać usunięta! Usuń wszystkie wydania z tej gałęzi przed jej usunięciem.",
+    "branch_limit_reached": "Twój zespół osiągnął maksymalną liczbę gałęzi dozwoloną w obecnym planie. Zaktualizuj plan, aby dodać więcej gałęzi.",
+    "branch_name_exists": "Nazwa gałęzi już istnieje!",
+    "branch_not_found": "Nie znaleziono gałęzi!",
+    "branch_name_required": "Nazwa gałęzi jest wymagana!",
+    "branch_name_min_length": "Nazwa gałęzi musi mieć co najmniej 2 znaki!",
+    "branch_name_max_length": "Nazwa gałęzi może mieć maksymalnie 255 znaków!",
+    "branch_name_invalid": "Nazwa gałęzi może zawierać tylko litery, cyfry oraz następujące znaki: - _",
+    "release_exists_this_branch": "Wydanie z tą wersją już istnieje w tej gałęzi!",
+    "polymart_integration_not_found": "Integracja Polymart nie znaleziona!",
+    "polymart_webhook_secret_required": "Wymagany jest tajny klucz webhook Polymart!",
+    "polymart_webhook_secret_invalid": "Nieprawidłowy tajny klucz webhook Polymart! Musi mieć od 20 do 255 znaków.",
+    "polymart_signing_secret_required": "Wymagany jest tajny klucz podpisujący Polymart!",
+    "polymart_signing_secret_invalid": "Nieprawidłowy tajny klucz podpisujący Polymart! Musi mieć od 20 do 255 znaków."
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
   },
   "general": {
     "add": "Dodaj",
@@ -183,7 +204,10 @@
     "density": "Gęstość",
     "avatar": "Awatar",
     "code": "Kod",
+<<<<<<< HEAD
     "origin": "Pochodzenie",
+=======
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
     "load_more": "Załaduj więcej",
     "draft": "Szkic",
     "published": "Opublikowany",
@@ -305,7 +329,18 @@
     "unlock_metadata": "Odblokuj metadane",
     "locked_metadata_warning": "To pole metadanych jest zablokowane. Pola te są zazwyczaj blokowane, ponieważ są generowane przez system. Modyfikacja tego pola może powodować problemy z integracjami, które zależą od tych danych.",
     "confirm": "Potwierdź",
+<<<<<<< HEAD
     "sending_email_failed": "Wysłanie wiadomości email nie powiodło się"
+=======
+    "sending_email_failed": "Wysłanie wiadomości email nie powiodło się",
+    "branches": "Gałęzie",
+    "select_branch": "Wybierz gałąź",
+    "releases_count": "Liczba wydań",
+    "branch": "Gałąź",
+    "source": "Źródło",
+    "select_source": "Wybierz źródło",
+    "select_target": "Wybierz cel"
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
   },
   "auth": {
     "oauth": {
@@ -633,8 +668,20 @@
         "delete_team_picture": "usunął zdjęcie zespołu",
         "create_api_key": "utworzył klucz API",
         "delete_api_key": "usunął klucz API",
+<<<<<<< HEAD
         "set_build_by_bit_integration": "ustawił integrację BuiltByBit",
         "delete_build_by_bit_integration": "usunął integrację BuiltByBit"
+=======
+        "set_built_by_bit_integration": "ustawił integrację BuiltByBit",
+        "delete_built_by_bit_integration": "usunął integrację BuiltByBit",
+        "update_branch": "zaktualizował gałąź",
+        "delete_branch": "usunął gałąź",
+        "create_branch": "utworzył gałąź",
+        "set_polymart_integration": "ustawił integrację Polymart",
+        "delete_polymart_integration": "usunął integrację Polymart",
+        "set_built_by_bit_placeholder": "ustawiono zastępczy BuiltByBit",
+        "set_polymart_placeholder": "ustawiono zastępczy Polymart"
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
       }
     },
     "members": {
@@ -678,7 +725,16 @@
       "built_by_bit_integration_deleted": "Integracja BuiltByBit usunięta",
       "built_by_bit_integration_created": "Integracja BuiltByBit utworzona",
       "built_by_bit_integration_updated": "Integracja BuiltByBit zaktualizowana",
+<<<<<<< HEAD
       "built_by_bit_integration_description": "Aby automatycznie generować i dystrybuować licencje, możesz zintegrować Lukittu z BuiltByBit. Gdy klient zakupi produkt, licencja zostanie automatycznie wygenerowana."
+=======
+      "built_by_bit_integration_description": "Aby automatycznie generować i dystrybuować licencje, możesz zintegrować Lukittu z BuiltByBit. Gdy klient zakupi produkt, licencja zostanie automatycznie wygenerowana.",
+      "polymart_integration_deleted": "Integracja Polymart usunięta",
+      "polymart_integration_created": "Integracja Polymart utworzona",
+      "polymart_integration_updated": "Integracja Polymart zaktualizowana",
+      "polymart_integration_description": "Aby automatycznie generować i dystrybuować licencje, możesz zintegrować Lukittu z Polymart. Gdy klient zakupi produkt, licencja zostanie automatycznie wygenerowana.",
+      "signing_secret": "Sekret podpisywania"
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
     },
     "releases": {
       "latest_release": "Najnowsze wydanie",
@@ -705,7 +761,22 @@
       "release_deleted": "Wydanie usunięte",
       "set_as_latest_description": "Po zaznaczeniu, to wydanie zostanie ustawione jako najnowsze wydanie dla produktu i będzie używane, jeśli nie zostanie żądane konkretne wydanie.",
       "no_latest_release": "Brak najnowszego wydania",
+<<<<<<< HEAD
       "no_latest_release_description": "Nie ustawiłeś najnowszego wydania dla tego produktu. Jest ono używane jako rezerwa, jeśli nie zostanie żądane konkretne wydanie."
+=======
+      "no_latest_release_description": "Nie ustawiłeś najnowszego wydania dla tego produktu. Jest ono używane jako rezerwa, jeśli nie zostanie żądane konkretne wydanie.",
+      "update_branch": "Zaktualizuj gałąź",
+      "delete_branch": "Usuń gałąź",
+      "no_branches_assigned": "Brak przypisanych gałęzi",
+      "branch_created": "Utworzono gałąź",
+      "branch_updated": "Zaktualizowano gałąź",
+      "create_branch": "Utwórz gałąź",
+      "search_branch": "Szukaj gałęzi...",
+      "branch_description": "Wybierz gałąź produktu, dla której chcesz wydać tę wersję. Gałęzie służą do oddzielania różnych wersji Twojego produktu.",
+      "branch_deleted": "Gałąź usunięta",
+      "delete_branch_confirm_title": "Usuń gałąź",
+      "delete_branch_confirm_description": "Zamierzasz usunąć gałąź <strong>{name}</strong>! Spowoduje to <strong>trwałe usunięcie</strong> tej gałęzi oraz wszystkich jej wydań. Tej operacji nie można cofnąć."
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906
     },
     "settings": {
       "add_metadata_key": "Dodaj klucz metadanych",
@@ -780,4 +851,8 @@
       "delete_blacklist_confirm_description": "Zamierzasz usunąć wartość <strong>{value}</strong> z czarnej listy! Spowoduje to <strong>trwałe usunięcie</strong> tej wartości. Tej akcji nie można cofnąć."
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 92f85c1ff66fc4d7e3bd6c54bacda09662634906

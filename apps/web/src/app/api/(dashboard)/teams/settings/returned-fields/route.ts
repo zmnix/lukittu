@@ -9,6 +9,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
   prisma,
@@ -109,32 +110,38 @@ export async function PUT(
       productLatestRelease: validated.data.productLatestRelease,
     };
 
-    const updatedSettings = await prisma.settings.update({
-      where: {
-        teamId: selectedTeam,
-      },
-      data: {
-        returnedFields: {
-          upsert: {
-            create: data,
-            update: data,
+    const response = await prisma.$transaction(async (prisma) => {
+      const updatedSettings = await prisma.settings.update({
+        where: {
+          teamId: selectedTeam,
+        },
+        data: {
+          returnedFields: {
+            upsert: {
+              create: data,
+              update: data,
+            },
           },
         },
-      },
-    });
+      });
 
-    const response = {
-      settings: updatedSettings,
-    };
+      const response = {
+        settings: updatedSettings,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.UPDATE_TEAM_SETTINGS,
-      targetId: selectedTeam,
-      targetType: AuditLogTargetType.TEAM,
-      requestBody: body,
-      responseBody: response,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.UPDATE_TEAM_SETTINGS,
+        targetId: selectedTeam,
+        targetType: AuditLogTargetType.TEAM,
+        requestBody: body,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response);

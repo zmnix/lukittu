@@ -14,7 +14,7 @@ import { useContext, useState } from 'react';
 import { toast } from 'sonner';
 import { useSWRConfig } from 'swr';
 
-export function DeleteDeleteConfirmModal() {
+export function ReleaseDeleteConfirmModal() {
   const t = useTranslations();
   const ctx = useContext(ReleaseModalContext);
   const [loading, setLoading] = useState(false);
@@ -49,7 +49,9 @@ export function DeleteDeleteConfirmModal() {
       }
 
       mutate(
-        (key) => Array.isArray(key) && key[0] === '/api/products/releases',
+        (key) =>
+          Array.isArray(key) &&
+          ['/api/products/releases', '/api/products/branches'].includes(key[0]),
       );
       ctx.setReleaseToDelete(null);
       handleOpenChange(false);

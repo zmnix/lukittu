@@ -9,6 +9,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
   Metadata,
@@ -224,7 +225,9 @@ export async function GET(
         ...product,
         releases: undefined,
         latestRelease:
-          product.releases.find((release) => release.latest)?.version || null,
+          product.releases.find(
+            (release) => release.latest && !release.branchId,
+          )?.version || null,
         totalReleases: product.releases.length || 0,
       })),
       totalResults,
@@ -347,45 +350,50 @@ export async function POST(
       );
     }
 
-    const product = await prisma.product.create({
-      data: {
-        name,
-        url: url || null,
-        metadata: {
-          createMany: {
-            data: metadata.map((m) => ({
-              ...m,
-              teamId: team.id,
-            })),
+    const response = await prisma.$transaction(async (prisma) => {
+      const product = await prisma.product.create({
+        data: {
+          name,
+          url: url || null,
+          metadata: {
+            createMany: {
+              data: metadata.map((m) => ({
+                ...m,
+                teamId: team.id,
+              })),
+            },
+          },
+          createdBy: {
+            connect: {
+              id: session.user.id,
+            },
+          },
+          team: {
+            connect: {
+              id: selectedTeam,
+            },
           },
         },
-        createdBy: {
-          connect: {
-            id: session.user.id,
-          },
-        },
-        team: {
-          connect: {
-            id: selectedTeam,
-          },
-        },
-      },
+      });
+
+      const response = {
+        product,
+      };
+
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: team.id,
+        action: AuditLogAction.CREATE_PRODUCT,
+        targetId: product.id,
+        targetType: AuditLogTargetType.PRODUCT,
+        requestBody: body,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
-
-    const response = {
-      product,
-    };
-
-    createAuditLog({
-      userId: session.user.id,
-      teamId: team.id,
-      action: AuditLogAction.CREATE_PRODUCT,
-      targetId: product.id,
-      targetType: AuditLogTargetType.PRODUCT,
-      requestBody: body,
-      responseBody: response,
-    });
-
     return NextResponse.json(response);
   } catch (error) {
     logger.error("Error occurred in 'products' route", error);

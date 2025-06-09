@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import 'server-only';
 import { getCloudflareVisitorData } from '../providers/cloudflare';
 import { iso2toIso3 } from '../utils/country-helpers';
-import { getIp, getOrigin, getUserAgent } from '../utils/header-helpers';
+import { getIp, getUserAgent } from '../utils/header-helpers';
 
 interface LogRequestProps {
   pathname: string;
@@ -50,7 +50,6 @@ export async function logRequest({
   releaseId,
 }: LogRequestProps) {
   try {
-    const origin = await getOrigin();
     const ipAddress = await getIp();
     const geoData = await getCloudflareVisitorData();
     const longitude = geoData?.long || null;
@@ -60,9 +59,9 @@ export async function logRequest({
       ? iso2toIso3(geoData.alpha2!)
       : null;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (prisma) => {
       if (licenseKeyLookup && teamId) {
-        await tx.license.update({
+        await prisma.license.update({
           where: {
             teamId_licenseKeyLookup: {
               teamId,
@@ -75,13 +74,12 @@ export async function logRequest({
         });
       }
 
-      await tx.requestLog.create({
+      await prisma.requestLog.create({
         data: {
           version: process.env.version!,
           method: method.toUpperCase() as RequestMethod,
           path: pathname,
           userAgent: await getUserAgent(),
-          origin,
           statusCode,
           longitude: hasBothLongitudeAndLatitude ? longitude : null,
           latitude: hasBothLongitudeAndLatitude ? latitude : null,

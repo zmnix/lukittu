@@ -10,6 +10,7 @@ interface DateRangeFilterChipProps {
   tempDateRange: DateRange | undefined;
   setDateRange: (range: DateRange | undefined) => void;
   setTempDateRange: (range: DateRange | undefined) => void;
+  retentionDays: number;
 }
 
 export function DateRangeFilterChip({
@@ -17,9 +18,11 @@ export function DateRangeFilterChip({
   tempDateRange,
   setDateRange,
   setTempDateRange,
+  retentionDays,
 }: DateRangeFilterChipProps) {
   const t = useTranslations();
   const isDesktop = useMediaQuery('(min-width: 640px)');
+  const fromDate = addDays(new Date(), -retentionDays);
 
   return (
     <FilterChip
@@ -50,6 +53,7 @@ export function DateRangeFilterChip({
           disabled={(date) =>
             date > new Date() || date < new Date('2000-01-01')
           }
+          fromDate={fromDate}
           mode="range"
           numberOfMonths={isDesktop ? 2 : 1}
           selected={tempDateRange}

@@ -10,6 +10,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
   prisma,
@@ -170,26 +171,47 @@ export async function POST(
       }
     }
 
-    const invitation = await prisma.$transaction(async (prisma) => {
-      if (existingInvitation) {
-        await prisma.invitation.deleteMany({
-          where: {
+    const { invitation, response } = await prisma.$transaction(
+      async (prisma) => {
+        if (existingInvitation) {
+          await prisma.invitation.deleteMany({
+            where: {
+              email,
+              teamId: team.id,
+            },
+          });
+        }
+
+        const invitation = await prisma.invitation.create({
+          data: {
             email,
             teamId: team.id,
+            createdByUserId: session.user.id,
           },
         });
-      }
 
-      const invitation = await prisma.invitation.create({
-        data: {
-          email,
+        const response = {
+          success: true,
+        };
+
+        await createAuditLog({
+          userId: session.user.id,
           teamId: team.id,
-          createdByUserId: session.user.id,
-        },
-      });
+          action: AuditLogAction.INVITE_MEMBER,
+          targetId: invitation.id,
+          targetType: AuditLogTargetType.TEAM,
+          requestBody: body,
+          responseBody: response,
+          source: AuditLogSource.DASHBOARD,
+          tx: prisma,
+        });
 
-      return invitation;
-    });
+        return {
+          response,
+          invitation,
+        };
+      },
+    );
 
     const inviteLink = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?invite=${invitation.id}`;
 
@@ -208,20 +230,6 @@ export async function POST(
         { status: HttpStatus.INTERNAL_SERVER_ERROR },
       );
     }
-
-    const response = {
-      success: true,
-    };
-
-    createAuditLog({
-      userId: session.user.id,
-      teamId: team.id,
-      action: AuditLogAction.INVITE_MEMBER,
-      targetId: invitation.id,
-      targetType: AuditLogTargetType.TEAM,
-      requestBody: body,
-      responseBody: response,
-    });
 
     return NextResponse.json(response, { status: HttpStatus.OK });
   } catch (error) {

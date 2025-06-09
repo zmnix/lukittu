@@ -5,6 +5,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   logger,
   prisma,
@@ -100,24 +101,30 @@ export async function DELETE(
       );
     }
 
-    await prisma.apiKey.delete({
-      where: {
-        id: apiKeyId,
-      },
-    });
+    const response = await prisma.$transaction(async (prisma) => {
+      await prisma.apiKey.delete({
+        where: {
+          id: apiKeyId,
+        },
+      });
 
-    const response = {
-      success: true,
-    };
+      const response = {
+        success: true,
+      };
 
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.DELETE_API_KEY,
-      targetId: team.id,
-      targetType: AuditLogTargetType.TEAM,
-      requestBody: null,
-      responseBody: response,
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.DELETE_API_KEY,
+        targetId: team.id,
+        targetType: AuditLogTargetType.TEAM,
+        requestBody: null,
+        responseBody: response,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
     });
 
     return NextResponse.json(response);

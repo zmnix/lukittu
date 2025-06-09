@@ -33,7 +33,7 @@ Lukittu is available in two hosting options:
 For detailed pricing and feature comparisons, visit [our website](https://lukittu.com).
 
 > [!IMPORTANT]  
-> While you can self-host Lukittu, it is **not highly recommended**. Lukittu is designed to be a SaaS platform. If you choose to self-host it, keep in mind that, by default, anyone can register and use it unless you implement custom modifications. However, these modifications may make it more difficult to receive updates from upstream when Lukittu is updated.
+> While self-hosting Lukittu is possible, it is **not recommended** for most users. Lukittu is designed as a SaaS platform with proper security measures and ongoing maintenance. If you choose to self-host, be aware that by default anyone can register and use the platform unless you implement custom modifications. These modifications may complicate receiving updates from upstream. For more information about self-hosting requirements and limitations, please refer to our [self-hosting documentation](https://docs.lukittu.com/hosting/self-hosting).
 
 ## Local Development
 
@@ -47,8 +47,15 @@ To get started with the project locally, follow the steps below:
 
 #### 1. Setup Environment Variables
 
-- Rename the `.env.example` file to `.env`.
-- Open the `.env` file and fill in the necessary details.
+Lukittu requires three different `.env` files for each part of the application **on local development**:
+
+- **Web Application:** Copy `apps/web/.env.example` to `apps/web/.env`
+- **Bot Application:** Copy `apps/bot/.env.example` to `apps/bot/.env`
+- **Shared Package:** Copy `packages/shared/.env.example` to `packages/shared/.env`
+
+Each `.env` file contains configuration specific to its respective application component. Fill in all required values in each file before proceeding.
+
+> **Note:** The `DATABASE_URL` must be consistent across all environment files that require it.
 
 #### 2. Install Node.js, Docker, and pnpm
 

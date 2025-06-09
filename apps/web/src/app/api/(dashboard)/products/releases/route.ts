@@ -17,6 +17,7 @@ import { ErrorResponse } from '@/types/common-api-types';
 import { HttpStatus } from '@/types/http-status';
 import {
   AuditLogAction,
+  AuditLogSource,
   AuditLogTargetType,
   decryptLicenseKey,
   generateMD5Hash,
@@ -28,6 +29,7 @@ import {
   Product,
   regex,
   Release,
+  ReleaseBranch,
   ReleaseFile,
 } from '@lukittu/shared';
 import { getTranslations } from 'next-intl/server';
@@ -73,8 +75,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { metadata, productId, status, version, setAsLatest, licenseIds } =
-      body;
+    const {
+      metadata,
+      productId,
+      status,
+      version,
+      setAsLatest,
+      licenseIds,
+      branchId,
+    } = body;
 
     if (file && !(file instanceof File)) {
       return NextResponse.json(
@@ -133,12 +142,21 @@ export async function POST(request: NextRequest) {
             include: {
               releases: {
                 where: {
-                  productId: validated.data.productId,
+                  productId,
                 },
               },
               products: {
                 where: {
-                  id: validated.data.productId,
+                  id: productId,
+                },
+                include: {
+                  branches: branchId
+                    ? {
+                        where: {
+                          id: branchId,
+                        },
+                      }
+                    : undefined,
                 },
               },
               limits: true,
@@ -235,15 +253,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (branchId) {
+      const product = team.products[0];
+      const branch = product.branches.find((branch) => branch.id === branchId);
+
+      if (!branch) {
+        return NextResponse.json(
+          {
+            message: t('validation.branch_not_found'),
+          },
+          { status: HttpStatus.NOT_FOUND },
+        );
+      }
+    }
+
     if (
       previousProductReleases.find(
         (release) =>
-          release.version === version && release.productId === productId,
+          release.version === version &&
+          release.productId === productId &&
+          release.branchId === branchId,
       )
     ) {
       return NextResponse.json(
         {
-          message: t('validation.release_exists'),
+          message: t('validation.release_exists_this_branch'),
           field: 'version',
         },
         { status: HttpStatus.CONFLICT },
@@ -331,13 +365,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const release = await prisma.$transaction(async (prisma) => {
+    const response = await prisma.$transaction(async (prisma) => {
       const isPublished = status === 'PUBLISHED';
 
       if (isPublished && setAsLatest) {
         await prisma.release.updateMany({
           where: {
             productId,
+            branchId, // Only clear "latest" flag for releases in the same branch
           },
           data: {
             latest: false,
@@ -361,6 +396,7 @@ export async function POST(request: NextRequest) {
           teamId: team.id,
           createdByUserId: session.user.id,
           latest: Boolean(setAsLatest && isPublished),
+          branchId,
           allowedLicenses: licenseIds.length
             ? {
                 connect: licenseIds.map((id) => ({
@@ -382,31 +418,28 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return release;
-    });
-
-    const response = {
-      release,
-    };
-
-    createAuditLog({
-      userId: session.user.id,
-      teamId: selectedTeam,
-      action: AuditLogAction.CREATE_RELEASE,
-      targetId: release.id,
-      targetType: AuditLogTargetType.RELEASE,
-      responseBody: response,
-      requestBody: body,
-    });
-
-    return NextResponse.json(
-      {
+      const response = {
         release,
-      },
-      { status: HttpStatus.CREATED },
-    );
+      };
+
+      await createAuditLog({
+        userId: session.user.id,
+        teamId: selectedTeam,
+        action: AuditLogAction.CREATE_RELEASE,
+        targetId: release.id,
+        targetType: AuditLogTargetType.RELEASE,
+        responseBody: response,
+        requestBody: body,
+        source: AuditLogSource.DASHBOARD,
+        tx: prisma,
+      });
+
+      return response;
+    });
+
+    return NextResponse.json(response, { status: HttpStatus.CREATED });
   } catch (error) {
-    logger.error("Error occurred in '/api/products/releases' route", error);
+    logger.error("Error occurred in '/products/releases' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),
@@ -422,6 +455,7 @@ export type IProductsReleasesGetSuccessResponse = {
     product: Product;
     allowedLicenses: Omit<License, 'licenseKeyLookup'>[];
     metadata: Metadata[];
+    branch: ReleaseBranch | null;
   })[];
   totalResults: number;
   hasLatestRelease: boolean;
@@ -517,6 +551,7 @@ export async function GET(
                   file: true,
                   allowedLicenses: true,
                   metadata: true,
+                  branch: true,
                 },
                 skip,
                 take,
@@ -548,8 +583,8 @@ export async function GET(
       );
     }
 
-    const [hasResults, totalResults, latestRelease] = await prisma.$transaction(
-      [
+    const [hasResults, totalResults, hasLatestReleasesData] =
+      await prisma.$transaction([
         prisma.release.findFirst({
           where: {
             teamId: selectedTeam,
@@ -562,17 +597,32 @@ export async function GET(
         prisma.release.count({
           where,
         }),
-        prisma.release.findFirst({
-          where: {
-            teamId: selectedTeam,
-            productId,
-            latest: true,
-          },
-          select: {
-            id: true,
-          },
-        }),
-      ],
+        prisma.$queryRaw`
+          WITH UniqueBranches AS (
+            SELECT DISTINCT "branchId"
+            FROM "Release"
+            WHERE "teamId" = ${selectedTeam}
+            AND "productId" = ${productId}
+          )
+          SELECT ub."branchId", 
+                CASE WHEN COUNT(r.id) > 0 THEN true ELSE false END AS "hasLatestRelease"
+          FROM UniqueBranches ub
+          LEFT JOIN "Release" r ON ((ub."branchId" IS NULL AND r."branchId" IS NULL) 
+                                OR (ub."branchId" IS NOT NULL AND r."branchId" = ub."branchId"))
+            AND r."teamId" = ${selectedTeam}
+            AND r."productId" = ${productId}
+            AND r.latest = true
+          GROUP BY ub."branchId"
+        `,
+      ]);
+
+    const hasLatestReleases = hasLatestReleasesData as {
+      branchId: string | null;
+      hasLatestRelease: boolean;
+    }[];
+
+    const hasLatestForAll = hasLatestReleases.every(
+      (release) => release.hasLatestRelease,
     );
 
     const team = session.user.teams[0];
@@ -586,16 +636,14 @@ export async function GET(
       })),
     }));
 
-    const hasLatestRelease = Boolean(latestRelease);
-
     return NextResponse.json({
       releases,
       totalResults,
-      hasLatestRelease,
+      hasLatestRelease: hasLatestForAll,
       hasResults: Boolean(hasResults),
     });
   } catch (error) {
-    logger.error("Error occurred in 'products' route", error);
+    logger.error("Error occurred in 'products/releases' route", error);
     return NextResponse.json(
       {
         message: t('general.server_error'),

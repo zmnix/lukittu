@@ -36,6 +36,7 @@ model User {
     createdStripeIntegrations     StripeIntegration[]
     createdDiscordIntegrations    DiscordIntegration[]
     createdBuiltByBitIntegrations BuiltByBitIntegration[]
+    createdPolymartIntegrations   PolymartIntegration[]
     createdInvitations            Invitation[]
     blacklist                     Blacklist[]
     releases                      Release[]
@@ -89,6 +90,7 @@ model Team {
     stripeIntegration     StripeIntegration?
     discordIntegration    DiscordIntegration?
     builtByBitIntegration BuiltByBitIntegration?
+    polymartIntegration   PolymartIntegration?
     settings              Settings?
     keyPair               KeyPair?
     activeDiscordAccounts DiscordAccount[]
@@ -150,6 +152,19 @@ model BuiltByBitIntegration {
     updatedAt       DateTime @updatedAt
 }
 
+model PolymartIntegration {
+    id              String   @id @default(uuid())
+    teamId          String   @unique
+    team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+    webhookSecret   String // Polymart webhook secret
+    signingSecret   String // Placeholder signing secret
+    active          Boolean  @default(true)
+    createdByUserId String?
+    createdBy       User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+}
+
 model Blacklist {
     id              String        @id @default(uuid())
     type            BlacklistType
@@ -179,6 +194,7 @@ model Limits {
     maxStorage            Int      @default(0) // in MB
     maxApiKeys            Int      @default(10)
     maxReleasesPerProduct Int      @default(100)
+    maxBranchesPerProduct Int      @default(10)
     maxInvitations        Int      @default(10)
     allowClassloader      Boolean  @default(false)
     allowCustomEmails     Boolean  @default(false)
@@ -274,43 +290,58 @@ model Invitation {
 }
 
 model Product {
-    id              String       @id @default(uuid())
+    id              String          @id @default(uuid())
     name            String
     url             String?
     metadata        Metadata[]
     teamId          String
-    team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+    team            Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
     createdByUserId String?
-    createdBy       User?        @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+    createdBy       User?           @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
     licenses        License[]
     releases        Release[]
+    branches        ReleaseBranch[]
     requestLogs     RequestLog[]
-    createdAt       DateTime     @default(now())
-    updatedAt       DateTime     @updatedAt
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
 
     @@index([teamId])
 }
 
+model ReleaseBranch {
+    id        String    @id @default(uuid())
+    name      String
+    productId String
+    product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+    releases  Release[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
+    @@unique([productId, name])
+}
+
 model Release {
-    id              String        @id @default(uuid())
+    id              String         @id @default(uuid())
     version         String
     metadata        Metadata[]
-    status          ReleaseStatus @default(DRAFT)
-    latest          Boolean       @default(false)
+    status          ReleaseStatus  @default(DRAFT)
+    latest          Boolean        @default(false)
+    branchId        String?
+    branch          ReleaseBranch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
     teamId          String
-    team            Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+    team            Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
     createdByUserId String?
-    createdBy       User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
-    createdAt       DateTime      @default(now())
-    updatedAt       DateTime      @updatedAt
+    createdBy       User?          @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
     lastSeenAt      DateTime?
-    product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+    product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
     productId       String
     allowedLicenses License[]
     file            ReleaseFile?
     requestLogs     RequestLog[]
 
-    @@unique([productId, version])
+    @@unique([productId, version, branchId])
     @@index([teamId])
 }
 
@@ -437,15 +468,15 @@ model AuditLog {
     country      String?
     requestBody  Json?
     responseBody Json?
-    userId       String?
     version      String
+    userId       String?
     user         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
     targetId     String
     targetType   AuditLogTargetType
     teamId       String
     team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
     action       AuditLogAction
-    system       Boolean            @default(false)
+    source       AuditLogSource
     createdAt    DateTime           @default(now())
 
     @@index([teamId, createdAt])
@@ -463,7 +494,6 @@ model RequestLog {
     statusCode       Int
     version          String
     userAgent        String?
-    origin           String?
     deviceIdentifier String?
     path             String
     method           RequestMethod
@@ -500,6 +530,15 @@ enum RequestMethod {
     PUT
     PATCH
     DELETE
+}
+
+enum AuditLogSource {
+    DASHBOARD /// Logged-in user via the dashboard
+    API_KEY /// Through developer API using API key
+    STRIPE_INTEGRATION
+    DISCORD_INTEGRATION
+    BUILT_BY_BIT_INTEGRATION
+    POLYMART_INTEGRATION
 }
 
 enum AuditLogAction {
@@ -540,8 +579,15 @@ enum AuditLogAction {
     SET_LATEST_RELEASE
     UPDATE_EMAIL_PICTURE
     DELETE_EMAIL_PICTURE
-    SET_BUILD_BY_BIT_INTEGRATION
-    DELETE_BUILD_BY_BIT_INTEGRATION
+    SET_BUILT_BY_BIT_INTEGRATION
+    DELETE_BUILT_BY_BIT_INTEGRATION
+    SET_POLYMART_INTEGRATION
+    DELETE_POLYMART_INTEGRATION
+    CREATE_BRANCH
+    UPDATE_BRANCH
+    DELETE_BRANCH
+    SET_BUILT_BY_BIT_PLACEHOLDER
+    SET_POLYMART_PLACEHOLDER
 }
 
 enum ReleaseStatus {
@@ -558,6 +604,7 @@ enum AuditLogTargetType {
     TEAM
     BLACKLIST
     RELEASE
+    BRANCH
 }
 
 enum BlacklistType {
